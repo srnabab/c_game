@@ -1,0 +1,13 @@
+.vscode/
+build/
+include/cJSON/
+include/libpng/
+include/SDL3/
+include/zlib/
+include/vk_video/
+include/vulkan/
+include/GLFW/
+include/cglm/
+lib/
+out/
+run/

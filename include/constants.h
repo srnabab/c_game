@@ -1,0 +1,12 @@
+#ifndef CONSTANTS_H
+#define CONSTANTS_H
+
+#define SDL_MAIN_HANDLED
+
+#define WINDOW_WIDTH 800
+#define WINDOW_HEIGHT 600
+
+#define FPS 1000
+#define FRAME_TARGET_TIME (1000 / FPS)
+
+#endif
