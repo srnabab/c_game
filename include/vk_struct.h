@@ -1,18 +1,9 @@
-//useful common structs, functions and headers for the others
-#ifndef VK_ALL_H
-#define VK_ALL_H
-
-#define MAX_FRAMES_IN_FLIGHT 2
-#define PARTICLE_COUNT 8192
-
-#include "std_c.h"
 #include "vulkan.h"
-#include "SDL3/SDL.h"
-
+#include "std_c.h"
 #include "cglm.h"
-#include "judge.h"
-#include "file.h"
-#include "debug.h"
+
+#ifndef VK_STRUCT_H
+#define VK_STRUCT_H
 
 typedef struct _QueueFamilyIndices{
     uint32_t graphicsFamily;
@@ -53,6 +44,11 @@ typedef struct _DevicePack
     VkPhysicalDevice * pPhysicalDevice;
 }DevicePack;
 
+typedef struct _ImageRotate
+{
+    float rotation;
+} ImageRotate;
+
 typedef struct _Recreate
 {
     DevicePack DevicePack;
@@ -62,7 +58,9 @@ typedef struct _Recreate
     VkPresentModeKHR * pPresentMode;
 
     VkSurfaceKHR * pSurface;
+    VkExtent2D * pOldExtent2D;
     VkExtent2D * pExtent2D;
+    Vertex ** ppVertices;
 
     QueueFamilyIndices * pIndices;
     VkQueue * pGraphicQueue;
@@ -74,6 +72,8 @@ typedef struct _Recreate
     uint32_t * imageCount;
     VkImage ** ppSwapchainImages;
     VkImageView ** ppSwapchainImageViews;
+
+    VkImageView ** ppSwapchainImageViews2;
 
     VkFramebuffer ** ppSwapchainFramebuffer;
 
@@ -87,6 +87,8 @@ typedef struct _Recreate
 
 typedef struct _VK_ALL
 {
+    VkPhysicalDevice * pPhysicalDevice;
+
     VkDevice * pDevice;
     VkQueue * pGraphicQueue;
     VkQueue * pPresentQueue;
@@ -116,9 +118,14 @@ typedef struct _VK_ALL
     VkBuffer * pVertexBuffer;
     Vertex ** ppVertices;
     uint32_t * pVerticesCount;
+    VkDeviceMemory * pVertexBufferMem;
+    void ** ppVertexBufferMemMapped;
 
     VkBuffer * pIndexBuffer;
+    uint16_t ** ppIndices;
     uint32_t * pIndicesCount;
+    VkDeviceMemory * pIndexBufferMem;
+    void ** ppIndexBufferMemMapped;
 
     void *** pppGraphicUniformBufferMapped;
 
@@ -151,21 +158,13 @@ typedef struct _VK_ALL
 
     uint32_t * pCurrentFrame;
 
-    VkBuffer * pMovingStagingBuffer;
-
-    void ** ppMovingBufferMapped;
-
     float * pCamera_X;
     float * pCamera_Y;
     
     float * pPictureX;
     float * pPictureY;
+
+    ImageRotate * pImageRotate;
 } VK_ALL;
 
-static inline void debug_printf(char * str)
-{
-    if (DEBUG)
-        puts(str);
-}
-
-#endif //vk_all.h
+#endif

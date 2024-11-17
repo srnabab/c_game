@@ -1,4 +1,4 @@
-#include "vk_all.h"
+#include "core.h"
 
 #ifndef VK_FRAMEBUFFER_H
 #define VK_FRAMEBUFFER_H

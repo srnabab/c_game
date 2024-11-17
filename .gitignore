@@ -3,11 +3,14 @@ build/
 include/cJSON/
 include/libpng/
 include/SDL3/
+include/SDL3_mixer/
 include/zlib/
 include/vk_video/
 include/vulkan/
-include/GLFW/
+include/freetype/
 include/cglm/
 lib/
 out/
 run/
+test/
+vulkan_info.txt

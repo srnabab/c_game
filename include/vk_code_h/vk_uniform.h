@@ -1,5 +1,4 @@
-#include "vk_all.h"
-#include "vk_buffer.h"
+#include "core.h"
 
 #ifndef VK_UNIFORM_H
 #define VK_UNIFORM_H

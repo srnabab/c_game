@@ -1,8 +1,10 @@
 #include "vk_present.h"
 #include "vk_move.h"
-#include <windows.h>
+#include "vk_buffer.h"
+//#include <windows.h>
 
 extern bool pictureMove[4];
+extern bool scale;
 
 void recordCommandBuffer(VK_ALL * pAllInOne, uint32_t imageIndex)
 {
@@ -23,7 +25,7 @@ void recordCommandBuffer(VK_ALL * pAllInOne, uint32_t imageIndex)
     VkRect2D renderArea = {offset, *pAllInOne->pExtent2D};
 
     VkClearValue clearValue[2];
-    clearValue[0].color= (VkClearColorValue){0.0f, 0.0f, 0.0f, 1.0f};
+    clearValue[0].color= (VkClearColorValue){{0.0f, 0.0f, 0.0f, 1.0f}};
     clearValue[1].depthStencil = (VkClearDepthStencilValue){1.0f, 0};
 
     VkRenderPassBeginInfo renderBeginInfo = {};
@@ -37,8 +39,6 @@ void recordCommandBuffer(VK_ALL * pAllInOne, uint32_t imageIndex)
 
     vkCmdBeginRenderPass((*pAllInOne->ppCommandBuffer)[*pCurrentFrame], &renderBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
     //printf("render pass begin\n");
-
-    vkCmdBindPipeline((*pAllInOne->ppCommandBuffer)[*pCurrentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *pAllInOne->pGraphicPipeline);
 
     VkViewport viewport = {};
     viewport.x = 0.0f;
@@ -57,14 +57,25 @@ void recordCommandBuffer(VK_ALL * pAllInOne, uint32_t imageIndex)
     vkCmdSetScissor((*pAllInOne->ppCommandBuffer)[*pCurrentFrame], 0, 1, &scissor);
     
     //printf("commandBuffer width: %u, height: %u\n", pAllInOne->pExtent2D->width, pAllInOne->pExtent2D->height);
-    if (pictureMove[0] | pictureMove[1] | pictureMove[2] | pictureMove[3])
-    {
-        size_t bufferSize = sizeof((*pAllInOne->ppVertices)[0]) * *pAllInOne->pVerticesCount;
-        copyBuffer(pAllInOne->pMovingStagingBuffer, pAllInOne->pVertexBuffer, bufferSize, pAllInOne->pDevice, pAllInOne->pSwapchainCommandPool, pAllInOne->pGraphicQueue);
-    }
+    /*size_t bufferSize = sizeof((*pAllInOne->ppVertices)[0]) * *pAllInOne->pVerticesCount;
+    //copyBuffer(pAllInOne->pMovingStagingBuffer, pAllInOne->pVertexBuffer, bufferSize, pAllInOne->pDevice, pAllInOne->pSwapchainCommandPool, pAllInOne->pGraphicQueue);
+    memcpy(*pAllInOne->ppVertexBufferMemMapped, *pAllInOne->ppVertices, bufferSize);*/
+    VkDeviceSize offsets[] = {0};
+
+    vkCmdBindPipeline((*pAllInOne->ppCommandBuffer)[*pCurrentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *pAllInOne->pParticlePipeline);
+
+    vkCmdBindVertexBuffers((*pAllInOne->ppCommandBuffer)[*pCurrentFrame], 0, 1, &(*pAllInOne->ppShaderStorageBuffers)[*pCurrentFrame], offsets);
+
+    vkCmdBindDescriptorSets((*pAllInOne->ppCommandBuffer)[*pCurrentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *pAllInOne->pParticlePipelineLayout, 0,
+    1, &(*pAllInOne->ppParticleDescriptorSets)[*pCurrentFrame], 0, VK_NULL_HANDLE);
+
+    vkCmdDraw((*pAllInOne->ppCommandBuffer)[*pCurrentFrame], PARTICLE_COUNT, 1, 0, 0);
+
+    vkCmdBindPipeline((*pAllInOne->ppCommandBuffer)[*pCurrentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *pAllInOne->pGraphicPipeline);
+
+    vkCmdPushConstants((*pAllInOne->ppCommandBuffer)[*pCurrentFrame], *pAllInOne->pGraphicPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ImageRotate), pAllInOne->pImageRotate);
 
     VkBuffer vertexBuffer[] = {*pAllInOne->pVertexBuffer};
-    VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers((*pAllInOne->ppCommandBuffer)[*pCurrentFrame], 0, 1, vertexBuffer, offsets);
 
     //vkCmdBindVertexBuffers((*pAllInOne->ppCommandBuffer)[*pCurrentFrame], 2, 1, &(*pAllInOne->ppShaderStorageBuffers)[*pCurrentFrame], offsets);
@@ -76,16 +87,7 @@ void recordCommandBuffer(VK_ALL * pAllInOne, uint32_t imageIndex)
 
     //vkCmdDraw((*pAllInOne->ppCommandBuffer)[*pCurrentFrame], PARTICLE_COUNT, 1, 0, 0);
 
-    vkCmdDrawIndexed((*pAllInOne->ppCommandBuffer)[*pCurrentFrame], *pAllInOne->pIndicesCount, 1, 0, 0, 0);
-
-    vkCmdBindPipeline((*pAllInOne->ppCommandBuffer)[*pCurrentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *pAllInOne->pParticlePipeline);
-
-    vkCmdBindVertexBuffers((*pAllInOne->ppCommandBuffer)[*pCurrentFrame], 0, 1, &(*pAllInOne->ppShaderStorageBuffers)[*pCurrentFrame], offsets);
-
-    vkCmdBindDescriptorSets((*pAllInOne->ppCommandBuffer)[*pCurrentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *pAllInOne->pParticlePipelineLayout, 0,
-    1, &(*pAllInOne->ppParticleDescriptorSets)[*pCurrentFrame], 0, VK_NULL_HANDLE);
-
-    vkCmdDraw((*pAllInOne->ppCommandBuffer)[*pCurrentFrame], PARTICLE_COUNT, 1, 0, 0);
+    vkCmdDrawIndexed((*pAllInOne->ppCommandBuffer)[*pCurrentFrame], 12600, 1, 0, 0, 0);
 
     vkCmdEndRenderPass((*pAllInOne->ppCommandBuffer)[*pCurrentFrame]);
 }
@@ -104,42 +106,13 @@ void recordComputeCommandBuffer(VK_ALL * pAllInOne)
 
     vkCmdBindPipeline((*pAllInOne->ppComputeCommandBuffer)[*pCurrentFrame], VK_PIPELINE_BIND_POINT_COMPUTE, *pAllInOne->pComputePipeline);
 
-    /*VkDeviceSize offsets[] = {0};
-    vkCmdBindVertexBuffers((*pAllInOne->ppComputeCommandBuffer)[*pCurrentFrame], 0, 1, &(*pAllInOne->ppShaderStorageBuffers)[*pCurrentFrame], offsets);*/
-
     vkCmdBindDescriptorSets((*pAllInOne->ppComputeCommandBuffer)[*pCurrentFrame], VK_PIPELINE_BIND_POINT_COMPUTE, *pAllInOne->pComputePipelineLayout, 0, 1, &(*pAllInOne->ppComputeDescriptorSets)[*pCurrentFrame], 0, VK_NULL_HANDLE);
 
     vkCmdDispatch((*pAllInOne->ppComputeCommandBuffer)[*pCurrentFrame], PARTICLE_COUNT / 256, 1, 1);
 }
-void updateUniformBuffer(uint32_t currentImage, VkExtent2D * pExtent2D, UniformBufferObject * pUbo, void *** pUniformBuffersMapped, float camera_X, float camera_Y, ComputeUniformBufferObject * pComputeUbo, void *** pppComputeUniformBufferMapped, float deltaTime)
-{
-    //printf("time: %.2f\n", time);
-
-    glm_mat4_identity(pUbo->model);
-    //glm_rotate(pUbo->model, time * glm_rad(90.0f), (vec3){0.0f, 0.0f, 1.0f});
-
-    glm_lookat((vec3){camera_X, camera_Y, 1.5f}, (vec3){camera_X, camera_Y, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pUbo->view);
-
-    float aspect = (float)pExtent2D->width / pExtent2D->height;
-    //printf("aspect : %.2f\n", aspect);
-    glm_mat4_identity(pUbo->proj);
-    //glm_perspective(glm_rad(45.0f), aspect, 0.1f, 10.0f, pUbo->proj);
-    glm_ortho_vulkan(-1.0f, 1.0f, -1.0f, 1.0f, 0.1f, 100.0f, pUbo->proj);
-
-    pUbo->proj[1][1] *= -1;
-
-    memcpy((*pUniformBuffersMapped)[currentImage], pUbo, sizeof(UniformBufferObject));
-
-    pComputeUbo->deltaTime = deltaTime;
-
-    //printf("time: %f, preTime: %f\n", time, preTime);
-    //printf("delta time = %f\n", pComputeUbo->deltaTime);
-
-    memcpy((*pppComputeUniformBufferMapped)[currentImage], pComputeUbo, sizeof(ComputeUniformBufferObject));
-}
 void drawFrame(VK_ALL * pAllInOne)
 {
-    FuncCode code = drawFrameF;
+    // FuncCode code = drawFrameF;
     uint32_t * pCurrentFrame = pAllInOne->pCurrentFrame;
     //printf("draw width: %u, height: %u\n", pAllInOne->pExtent2D->width, pAllInOne->pExtent2D->height);
     //printf("pDevice: %p\n", pAllInOne->pDevice);
@@ -220,7 +193,7 @@ void updatePosition(float x, float y, VkExtent2D * pExtent2D, Vertex ** ppVertic
 {
     uint32_t startNumber = pictureSequence * 4;
 
-    float NDCx = x / (pExtent2D->width / 2);
+    float NDCx = x / (pExtent2D->height / 2);
     float NDCy = y / (pExtent2D->height / 2);
 
     float offSetX = NDCx - (*ppVertices)[startNumber].pos[0];
@@ -239,3 +212,30 @@ void updatePosition(float x, float y, VkExtent2D * pExtent2D, Vertex ** ppVertic
     (*ppVertices)[startNumber + 3].pos[1] += offSetY;
 }
 
+
+/*void updateUniformBuffer(uint32_t currentImage, VkExtent2D * pExtent2D, UniformBufferObject * pUbo, void *** pUniformBuffersMapped, float camera_X, float camera_Y, ComputeUniformBufferObject * pComputeUbo, void *** pppComputeUniformBufferMapped, float deltaTime)
+{
+    //printf("time: %.2f\n", time);
+
+    glm_mat4_identity(pUbo->model);
+    //glm_rotate(pUbo->model, time * glm_rad(90.0f), (vec3){0.0f, 0.0f, 1.0f});
+
+    glm_lookat((vec3){camera_X, camera_Y, 1.5f}, (vec3){camera_X, camera_Y, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pUbo->view);
+
+    float aspect = (float)pExtent2D->width / pExtent2D->height;
+    //printf("aspect : %.2f\n", aspect);
+    glm_mat4_identity(pUbo->proj);
+    //glm_perspective(glm_rad(45.0f), aspect, 0.1f, 10.0f, pUbo->proj);
+    glm_ortho_vulkan(-1.0f, 1.0f, -1.0f, 1.0f, 0.1f, 100.0f, pUbo->proj);
+
+    pUbo->proj[1][1] *= -1;
+
+    memcpy((*pUniformBuffersMapped)[currentImage], pUbo, sizeof(UniformBufferObject));
+
+    pComputeUbo->deltaTime = deltaTime;
+
+    //printf("time: %f, preTime: %f\n", time, preTime);
+    //printf("delta time = %f\n", pComputeUbo->deltaTime);
+
+    memcpy((*pppComputeUniformBufferMapped)[currentImage], pComputeUbo, sizeof(ComputeUniformBufferObject));
+}*/

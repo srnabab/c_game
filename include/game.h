@@ -1,6 +1,5 @@
 #ifndef GAME_H
 #define GAME_H
-#include "SDL3/SDL.h"
 
 // Function to poll SDL events and process keyboard input
 int process_input(void *);

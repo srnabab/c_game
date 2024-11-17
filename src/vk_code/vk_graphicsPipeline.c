@@ -64,25 +64,25 @@ void configurePipelineInputAssemblyState(VkPipelineInputAssemblyStateCreateInfo 
 }
 void configurePipelineViewportsStateCreateInfo(VkPipelineViewportStateCreateInfo * pPipelineViewportStateCreateInfo, VkExtent2D * pExtent2D)
 {
-    VkViewport viewport = {};
-    viewport.x = 0.0f;
-    viewport.y = 0.0f;
-    viewport.width = (float)pExtent2D->width;
-    viewport.height = (float)pExtent2D->height;
-    viewport.minDepth = 0.0f;
-    viewport.maxDepth = 1.0f;
+    VkViewport * viewport = (VkViewport*)malloc(sizeof(VkViewport));
+    viewport->x = 0.0f;
+    viewport->y = 0.0f;
+    viewport->width = (float)pExtent2D->width;
+    viewport->height = (float)pExtent2D->height;
+    viewport->minDepth = 0.0f;
+    viewport->maxDepth = 1.0f;
 
-    VkRect2D scissor = {};
-    scissor.offset = (VkOffset2D){0, 0};
-    scissor.extent = *pExtent2D;
+    VkRect2D * scissor = (VkRect2D *)malloc(sizeof(VkRect2D));
+    scissor->offset = (VkOffset2D){0, 0};
+    scissor->extent = *pExtent2D;
 
     (*pPipelineViewportStateCreateInfo).sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
     (*pPipelineViewportStateCreateInfo).pNext = VK_NULL_HANDLE;
     (*pPipelineViewportStateCreateInfo).flags = 0;
     (*pPipelineViewportStateCreateInfo).viewportCount = 1;
-    (*pPipelineViewportStateCreateInfo).pViewports = &viewport;
+    (*pPipelineViewportStateCreateInfo).pViewports = viewport;
     (*pPipelineViewportStateCreateInfo).scissorCount =1;
-    (*pPipelineViewportStateCreateInfo).pScissors = &scissor;
+    (*pPipelineViewportStateCreateInfo).pScissors = scissor;
 }
 void configurePipelineRasterizationStateCreateInfo(VkPipelineRasterizationStateCreateInfo * pPipelineRasterizationStateCreateInfo)
 {
@@ -128,42 +128,52 @@ void configurePipelineDepthStencilStateCreateInfo(VkPipelineDepthStencilStateCre
     (*pPipelineDepthStencilStateCreateInfo).minDepthBounds = 0.0f;
     (*pPipelineDepthStencilStateCreateInfo).maxDepthBounds = 1.0f;
 }
-void configurePipelineColorBlendStateCreateInfo(VkPipelineColorBlendStateCreateInfo * pPipelineColorBlendStateCreateInfo)
+void configurePipelineColorBlendStateCreateInfo(uint32_t attachmentCount, VkPipelineColorBlendStateCreateInfo * pPipelineColorBlendStateCreateInfo)
 {
-    VkPipelineColorBlendAttachmentState * colorBlendAttachmentState = (VkPipelineColorBlendAttachmentState *)malloc(sizeof(VkPipelineColorBlendAttachmentState));
+    VkPipelineColorBlendAttachmentState * colorBlendAttachmentState = (VkPipelineColorBlendAttachmentState *)malloc(attachmentCount * sizeof(VkPipelineColorBlendAttachmentState));
     
-    colorBlendAttachmentState->blendEnable = VK_FALSE;
-    colorBlendAttachmentState->srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-    colorBlendAttachmentState->dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
-    colorBlendAttachmentState->colorBlendOp = VK_BLEND_OP_ADD;
-    colorBlendAttachmentState->srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-    colorBlendAttachmentState->dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-    colorBlendAttachmentState->alphaBlendOp = VK_BLEND_OP_ADD;
-    colorBlendAttachmentState->colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    for (uint32_t i = 0;i < attachmentCount;i++)
+    {
+        colorBlendAttachmentState[i].blendEnable = VK_TRUE;
+        colorBlendAttachmentState[i].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+        colorBlendAttachmentState[i].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+        colorBlendAttachmentState[i].colorBlendOp = VK_BLEND_OP_ADD;
+        colorBlendAttachmentState[i].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+        colorBlendAttachmentState[i].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+        colorBlendAttachmentState[i].alphaBlendOp = VK_BLEND_OP_ADD;
+        colorBlendAttachmentState[i].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    }
 
     (*pPipelineColorBlendStateCreateInfo).sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
     (*pPipelineColorBlendStateCreateInfo).pNext = VK_NULL_HANDLE;
     (*pPipelineColorBlendStateCreateInfo).flags = 0;
     (*pPipelineColorBlendStateCreateInfo).logicOpEnable = VK_FALSE;
     (*pPipelineColorBlendStateCreateInfo).logicOp = VK_LOGIC_OP_COPY; // Optional
-    (*pPipelineColorBlendStateCreateInfo).attachmentCount = 1;
+    (*pPipelineColorBlendStateCreateInfo).attachmentCount = attachmentCount;
     (*pPipelineColorBlendStateCreateInfo).pAttachments = colorBlendAttachmentState;
     (*pPipelineColorBlendStateCreateInfo).blendConstants[0] = 0.0f; // Optional
     (*pPipelineColorBlendStateCreateInfo).blendConstants[1] = 0.0f; // Optional
     (*pPipelineColorBlendStateCreateInfo).blendConstants[2] = 0.0f; // Optional
     (*pPipelineColorBlendStateCreateInfo).blendConstants[3] = 0.0f; // Optional
 }
-void createPipelineLayout(VkDevice * pDevice, uint32_t setLayoutCount, VkDescriptorSetLayout ** ppDescriptorSetLayout, VkPipelineLayout * pPipelineLayout)
+void createPushConstantRange(VkShaderStageFlags flag, uint32_t offset, uint32_t size, VkPushConstantRange * pConstantRange)
+{
+    pConstantRange->stageFlags = flag;
+    pConstantRange->offset = offset;
+    pConstantRange->size = size;
+}
+void createPipelineLayout(VkDevice * pDevice, uint32_t setLayoutCount, VkDescriptorSetLayout ** ppDescriptorSetLayout, uint32_t pushConstantRangeCount, VkPushConstantRange * pPushConstantRange, VkPipelineLayout * pPipelineLayout)
 {
     FuncCode code = createPipelineLayoutF;
+
     VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
     pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipelineLayoutCreateInfo.pNext = VK_NULL_HANDLE;
     pipelineLayoutCreateInfo.flags = 0;
     pipelineLayoutCreateInfo.setLayoutCount = setLayoutCount;
     pipelineLayoutCreateInfo.pSetLayouts = *ppDescriptorSetLayout;
-    pipelineLayoutCreateInfo.pushConstantRangeCount = 0;
-    pipelineLayoutCreateInfo.pPushConstantRanges = VK_NULL_HANDLE;
+    pipelineLayoutCreateInfo.pushConstantRangeCount = pushConstantRangeCount;
+    pipelineLayoutCreateInfo.pPushConstantRanges = pPushConstantRange;
 
     resultVulkan(vkCreatePipelineLayout(*pDevice, &pipelineLayoutCreateInfo, VK_NULL_HANDLE, pPipelineLayout), code, 0);
 
@@ -223,7 +233,7 @@ void createRenderPass(VkDevice * pDevice, VkFormat * pFormat, VkFormat * pDepthF
     dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
     dependency.dependencyFlags = 0;
 
-    VkAttachmentDescription attachments[2] = {colorAttachment, depthAttachment};
+    VkAttachmentDescription attachments[3] = {colorAttachment, depthAttachment};
 
     VkRenderPassCreateInfo renderPassCreateInfo = {};
     renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -262,9 +272,11 @@ void createGraphicsPipeline(VkDevice * pDevice, VkExtent2D * pExtent2D, uint32_t
 
     VkPipelineDepthStencilStateCreateInfo pipelineDepthStencilStateCreateInfo = {};
     configurePipelineDepthStencilStateCreateInfo(&pipelineDepthStencilStateCreateInfo);
+    pipelineDepthStencilStateCreateInfo.depthTestEnable = VK_FALSE;
+    pipelineDepthStencilStateCreateInfo.depthWriteEnable = VK_FALSE;
 
     VkPipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo = {};
-    configurePipelineColorBlendStateCreateInfo(&pipelineColorBlendStateCreateInfo);
+    configurePipelineColorBlendStateCreateInfo(1, &pipelineColorBlendStateCreateInfo);
     
     VkPipelineDynamicStateCreateInfo pipelineDynamicStateCreateInfo = {};
     configureDynamicsState(&pipelineDynamicStateCreateInfo);
@@ -357,7 +369,7 @@ void createParticlePipeline(VkDevice * pDevice, VkExtent2D * pExtent2D, uint32_t
     pipelineDepthStencilStateCreateInfo.depthWriteEnable = VK_FALSE;*/
 
     VkPipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo = {};
-    configurePipelineColorBlendStateCreateInfo(&pipelineColorBlendStateCreateInfo);
+    configurePipelineColorBlendStateCreateInfo(1, &pipelineColorBlendStateCreateInfo);
     VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
     colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     colorBlendAttachment.blendEnable = VK_TRUE;

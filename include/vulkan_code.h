@@ -1,6 +1,3 @@
-//include all header files associated with vulkan
-#include "vk_all.h"
-
 #ifndef VULKAN_CODE_H
 #define VULKAN_CODE_H
 
@@ -27,6 +24,5 @@
 #include "vk_depth.h"
 #include "vk_move.h"
 #include "vk_computeShader.h"
-#include "file.h"
 
 #endif //vulkan_code.h

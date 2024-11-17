@@ -3,7 +3,65 @@
 #include "vk_image.h"
 #include "vk_framebuffer.h"
 #include "vk_depth.h"
+#include "custom_math.h"
+#include "vk_move.h"
 
+static void newSwapchain(VkDevice * pDevice, VkSurfaceCapabilitiesKHR * pSurfaceCapabilities, VkSurfaceKHR * pSurface, VkSurfaceFormatKHR * pSurfaceFormat, VkExtent2D * pExtent2D, VkPresentModeKHR * pPresentMode, QueueFamilyIndices indices, VkSwapchainKHR * pSwapchain)
+{
+    // FuncCode code = createSwapchainF;
+    uint32_t imageCount = pSurfaceCapabilities->minImageCount + 1;
+
+    if (pSurfaceCapabilities->maxImageCount > 0 && imageCount > pSurfaceCapabilities->maxImageCount)
+        imageCount = pSurfaceCapabilities->maxImageCount;
+        
+    if (*pSwapchain == VK_NULL_HANDLE)
+    {
+        //printf("imageCount: %u\n", imageCount);
+    }
+
+    VkSwapchainKHR oldSwapchain = *pSwapchain;
+
+    *pSwapchain = VK_NULL_HANDLE;
+
+    VkSwapchainCreateInfoKHR createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+    createInfo.pNext = VK_NULL_HANDLE;
+    createInfo.flags = 0;
+    createInfo.surface = *pSurface;
+    createInfo.minImageCount = imageCount;
+    createInfo.imageFormat = (*pSurfaceFormat).format;
+    createInfo.imageColorSpace = (*pSurfaceFormat).colorSpace;
+    createInfo.imageExtent = *pExtent2D;
+    createInfo.imageArrayLayers = 1;
+    createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    createInfo.imageSharingMode = 0;
+    createInfo.queueFamilyIndexCount = 0;
+    createInfo.pQueueFamilyIndices = VK_NULL_HANDLE;
+    createInfo.preTransform = (*pSurfaceCapabilities).currentTransform;
+    createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+    createInfo.presentMode = *pPresentMode;
+    createInfo.clipped = VK_TRUE;
+    createInfo.oldSwapchain = oldSwapchain;
+
+    uint32_t queueFamilyIndices[2] = {indices.graphicsFamily, indices.presentFamily};
+    if (indices.graphicsFamily != indices.presentFamily) 
+    {
+        createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+        createInfo.queueFamilyIndexCount = 2;
+        createInfo.pQueueFamilyIndices = queueFamilyIndices;
+    } 
+    else 
+    {
+        createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        createInfo.queueFamilyIndexCount = 0; // Optional
+        createInfo.pQueueFamilyIndices = VK_NULL_HANDLE; // Optional
+    }
+
+    //resultVulkan(
+        vkCreateSwapchainKHR(*pDevice, &createInfo, VK_NULL_HANDLE, pSwapchain);//, code, 0);
+    
+    vkDestroySwapchainKHR(*pDevice, oldSwapchain, VK_NULL_HANDLE);
+}
 void recreateSwapchain(Recreate * pRecreate)
 {
     FuncCode code = recreateSwapchainF; 
@@ -50,61 +108,12 @@ void recreateSwapchain(Recreate * pRecreate)
     printf("depth resoures created\n");
     createFrameBuffer(pDevice, pRecreate->pExtent2D, *pRecreate->imageCount, *pRecreate->ppSwapchainImageViews, pRecreate->pDepthImageView, pRecreate->pRenderPass, pRecreate->ppSwapchainFramebuffer);
     printf("swapchain framebuffer created\n");
+
+    //fix_ratio(pRecreate->ppVertices, *pRecreate->pOldExtent2D, *pRecreate->pExtent2D, 0);
+    //fix_ratio(pRecreate->ppVertices, *pRecreate->pOldExtent2D, *pRecreate->pExtent2D, 1);
+    //fix_ratio(pR)
+
+    //reInitializePosition(64, 64, *pRecreate->pExtent2D, pRecreate->ppVertices, 0);
     
     printf("recreate swapchain\n");
-}
-static void newSwapchain(VkDevice * pDevice, VkSurfaceCapabilitiesKHR * pSurfaceCapabilities, VkSurfaceKHR * pSurface, VkSurfaceFormatKHR * pSurfaceFormat, VkExtent2D * pExtent2D, VkPresentModeKHR * pPresentMode, QueueFamilyIndices indices, VkSwapchainKHR * pSwapchain)
-{
-    FuncCode code = createSwapchainF;
-    uint32_t imageCount = pSurfaceCapabilities->minImageCount + 1;
-
-    if (pSurfaceCapabilities->maxImageCount > 0 && imageCount > pSurfaceCapabilities->maxImageCount)
-        imageCount = pSurfaceCapabilities->maxImageCount;
-        
-    if (*pSwapchain == VK_NULL_HANDLE)
-        //printf("imageCount: %u\n", imageCount);
-        ;
-
-    VkSwapchainKHR oldSwapchain = *pSwapchain;
-
-    *pSwapchain = VK_NULL_HANDLE;
-
-    VkSwapchainCreateInfoKHR createInfo = {};
-    createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    createInfo.pNext = VK_NULL_HANDLE;
-    createInfo.flags = 0;
-    createInfo.surface = *pSurface;
-    createInfo.minImageCount = imageCount;
-    createInfo.imageFormat = (*pSurfaceFormat).format;
-    createInfo.imageColorSpace = (*pSurfaceFormat).colorSpace;
-    createInfo.imageExtent = *pExtent2D;
-    createInfo.imageArrayLayers = 1;
-    createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-    createInfo.imageSharingMode = 0;
-    createInfo.queueFamilyIndexCount = 0;
-    createInfo.pQueueFamilyIndices = VK_NULL_HANDLE;
-    createInfo.preTransform = (*pSurfaceCapabilities).currentTransform;
-    createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-    createInfo.presentMode = *pPresentMode;
-    createInfo.clipped = VK_TRUE;
-    createInfo.oldSwapchain = oldSwapchain;
-
-    uint32_t queueFamilyIndices[2] = {indices.graphicsFamily, indices.presentFamily};
-    if (indices.graphicsFamily != indices.presentFamily) 
-    {
-        createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
-        createInfo.queueFamilyIndexCount = 2;
-        createInfo.pQueueFamilyIndices = queueFamilyIndices;
-    } 
-    else 
-    {
-        createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        createInfo.queueFamilyIndexCount = 0; // Optional
-        createInfo.pQueueFamilyIndices = VK_NULL_HANDLE; // Optional
-    }
-
-    //resultVulkan(
-        vkCreateSwapchainKHR(*pDevice, &createInfo, VK_NULL_HANDLE, pSwapchain);//, code, 0);
-    
-    vkDestroySwapchainKHR(*pDevice, oldSwapchain, VK_NULL_HANDLE);
 }

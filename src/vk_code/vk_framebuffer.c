@@ -7,7 +7,7 @@ void createFrameBuffer(VkDevice * pDevice, VkExtent2D * pExtent2D, uint32_t imag
     *pSwapchainFramebuffer = (VkFramebuffer *)calloc(imageCount, sizeof(VkFramebuffer));
     printf("framebuffer width: %u, height: %u\n", pExtent2D->width, pExtent2D->height);
 
-    for (int i = 0;i < imageCount;i++)
+    for (uint32_t i = 0;i < imageCount;i++)
     {
         VkImageView attachments[2] = {pSwapchainImageView[i], *pDepthImageView};
 
@@ -29,7 +29,7 @@ void createFrameBuffer(VkDevice * pDevice, VkExtent2D * pExtent2D, uint32_t imag
 }
 void destroyedFrameBuffer(VkDevice * pDevice, uint32_t imageCount, VkFramebuffer * pSwapchainFramebuffer)
 {
-    for (int i = 0;i < imageCount;i++)
+    for (uint32_t i = 0;i < imageCount;i++)
     {
         vkDestroyFramebuffer(*pDevice, pSwapchainFramebuffer[i], VK_NULL_HANDLE);
     }

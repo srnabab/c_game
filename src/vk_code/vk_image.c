@@ -76,7 +76,7 @@ VkResult createImageViews(VkDevice * pDevice, VkImage ** ppImages, uint32_t imag
     //printf("imageview: %p\n", *pSwapchainImageView);
     *ppImageView = (VkImageView *)calloc(imageCount, sizeof(VkImageView));
 
-    for (int i = 0;i < imageCount;i++)
+    for (uint32_t i = 0;i < imageCount;i++)
     {
         result |= createImageView(pDevice, &(*ppImages)[i], format, aspectFlags, &(*ppImageView)[i]);
     }
@@ -88,7 +88,7 @@ VkResult createImageViews(VkDevice * pDevice, VkImage ** ppImages, uint32_t imag
 }
 void destroyImageViews(VkDevice * pDevice, VkImageView * pImageView, uint32_t imageCount)
 {
-    for (int i = 0;i < imageCount;i++)
+    for (uint32_t i = 0;i < imageCount;i++)
     {
         vkDestroyImageView(*pDevice, pImageView[i], VK_NULL_HANDLE);
     }

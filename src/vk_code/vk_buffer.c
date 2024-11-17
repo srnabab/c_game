@@ -101,7 +101,7 @@ VkResult copyBuffer(VkBuffer * pSrcBuffer, VkBuffer * pDstBuffer, VkDeviceSize s
     else 
         return result;
 }
-uint32_t findMemoryType(VkPhysicalDevice * pPhysicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties)
+int findMemoryType(VkPhysicalDevice * pPhysicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties)
 {
     VkPhysicalDeviceMemoryProperties memProperties;
     vkGetPhysicalDeviceMemoryProperties(*pPhysicalDevice, &memProperties);
@@ -110,4 +110,6 @@ uint32_t findMemoryType(VkPhysicalDevice * pPhysicalDevice, uint32_t typeFilter,
         if ((typeFilter & (i << i)) && (memProperties.memoryTypes[i].propertyFlags & properties))
             return i;
     }
+
+    return -1;
 }

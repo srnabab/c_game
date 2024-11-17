@@ -1,10 +1,5 @@
-#include "std_c.h"
 #include "vulkan_code.h"
-#include "judge.h"
-#include "flow.h"
-#include "glfw3.h"
-
-#define KEY_OUTPUT 0
+#include "graphic.h"
 
 //declare a sdl window
 SDL_Window * window = NULL;
@@ -15,11 +10,9 @@ uint32_t height = 600;
 
 bool initWindow(void)
 {
-    if(!glfwInit())
-        return false;
     /*initialize sdl
     timer, audio, video, event, joysitck, haptic, gamecontroller, sensor*/
-    if (!SDL_Init(SDL_INIT_EVENTS)) 
+    if (!SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO)) 
     {
         //todo
         //add result juadge for sdl
@@ -34,16 +27,16 @@ bool initWindow(void)
         return false;
     }
     //create sdl window and sign window as a vulkan window
-    window = SDL_CreateWindow("Vulkan", width, height, SDL_WINDOW_VULKAN);
+    window = SDL_CreateWindow("Vulkan", width, height, SDL_WINDOW_VULKAN | SDL_WINDOW_HIGH_PIXEL_DENSITY);
     if (window == NULL)
         return false;
-    debug_printf("window initialized");
+    logMessage("window initialized");
 
     uint32_t iconWidth, iconHeight;
-    iconWidth = iconHeight = 0;
+    iconWidth = iconHeight = 0;         
     uint8_t iconChannel;
-    png_bytep iconPixels = readPNG("Textures\\icon.png", &iconWidth, &iconHeight, &iconChannel);
-    SDL_Surface * iconSurface = SDL_CreateSurfaceFrom(iconWidth, iconHeight, SDL_PIXELFORMAT_RGBA32, iconPixels, iconWidth * 4);
+    png_bytep iconPixels = readPNG(IconPng, &iconWidth, &iconHeight, &iconChannel);
+    SDL_Surface * iconSurface = SDL_CreateSurfaceFrom(iconWidth, iconHeight, SDL_PIXELFORMAT_RGBA32, iconPixels, iconWidth * iconChannel);
     if (iconSurface == NULL)
     {
         free(iconPixels);
@@ -55,7 +48,7 @@ bool initWindow(void)
 
     SDL_DestroySurface(iconSurface);
     free(iconPixels);
-    glfwTerminate();
+    //glfwTerminate();
 
     return true;
 }
@@ -77,11 +70,13 @@ static VkSurfaceFormatKHR surfaceFormat = {};
 static VkPresentModeKHR presentMode = 0;
 static VkSurfaceCapabilitiesKHR surfaceCapabilities = {};
 static VkExtent2D extent2D = {};
+static VkExtent2D oldExtent2D = {};
 static VkSwapchainKHR swapchain = VK_NULL_HANDLE;
 
 static uint32_t imageCount = 0;
-static VkImage * swapchainImages = VK_NULL_HANDLE;
 static VkFormat swapchainFormat = 0;
+
+static VkImage * swapchainImages = VK_NULL_HANDLE;
 static VkImageView * swapchainImageViews = VK_NULL_HANDLE;
 
 static VkShaderModule vertShaderCode = VK_NULL_HANDLE;
@@ -104,21 +99,22 @@ static VkDescriptorSetLayout * particleDescriptorSetLayout = VK_NULL_HANDLE;
 
 static VkDescriptorSetLayout * computeDescriptorSetLayout = VK_NULL_HANDLE;
 
-static uint32_t graphicBinding = 0;
+// static uint32_t graphicBinding = 0;
 static VkDescriptorSetLayoutBinding * graphicBindings = VK_NULL_HANDLE;
 static uint32_t graphicBindingCount = 0;
+static VkPushConstantRange pushConstantRange = {};
 static VkPipelineLayout graphicPipelineLayout = VK_NULL_HANDLE;
 
 static VkDescriptorSetLayoutBinding * particleBindings = VK_NULL_HANDLE;
 static uint32_t particleBindingCount = 0;
 static VkPipelineLayout particlePipelineLayout = VK_NULL_HANDLE;
 
-static uint32_t computeBinding = 0;
+// static uint32_t computeBinding = 0;
 static VkDescriptorSetLayoutBinding * computeBindings = VK_NULL_HANDLE;
 static uint32_t computeBindingCount = 0;
 static VkPipelineLayout computePipelineLayout = VK_NULL_HANDLE;
 
-static VkSubpassDependency dependency = {};
+// static VkSubpassDependency dependency = {};
 static VkRenderPass renderPass = VK_NULL_HANDLE;
 
 static VkPipeline graphicPipeline = VK_NULL_HANDLE;
@@ -129,8 +125,6 @@ static VkPipeline computePipeline = VK_NULL_HANDLE;
 
 static VkCommandPool swapchainCommandPool = VK_NULL_HANDLE;
 
-static VkCommandPool particleCommandPool = VK_NULL_HANDLE;
-
 static VkCommandPool computeCommandPool = VK_NULL_HANDLE;
 
 static VkImage depthImage = VK_NULL_HANDLE;
@@ -140,26 +134,34 @@ static VkFormat depthFormat = 0;
 
 static VkFramebuffer * swapchainFramebuffer = VK_NULL_HANDLE;
 
-static VkFramebuffer * particleFramebuffer = VK_NULL_HANDLE;
+// static VkFramebuffer * particleFramebuffer = VK_NULL_HANDLE;
 
 static VkImage texturesImage = VK_NULL_HANDLE;
 static VkDeviceMemory textureImageMem = VK_NULL_HANDLE;
 static VkImageView textureImageView = VK_NULL_HANDLE;
+
+static VkImage loadingImage = VK_NULL_HANDLE;
+static VkDeviceMemory loadingImageMem = VK_NULL_HANDLE;
+static VkImageView loadingImageView = VK_NULL_HANDLE;
+
+static VkImage textImage = VK_NULL_HANDLE;
+static VkDeviceMemory textImageMem = VK_NULL_HANDLE;
+static VkImageView textImageView = VK_NULL_HANDLE;
+
 static VkSampler textureSampler = VK_NULL_HANDLE;
 
 static VkBuffer vertexBuffer = VK_NULL_HANDLE;
 static VkDeviceMemory vertexBufferMem = VK_NULL_HANDLE;
-static uint32_t verticesCount = 8;
+static void * vertexBufferMemMapped = VK_NULL_HANDLE;
+static uint32_t verticesCount = 4;
 //three vertices of a triangle and color
 static Vertex * vertices = NULL;
 
 static VkBuffer indexBuffer = VK_NULL_HANDLE;
 static VkDeviceMemory indexBufferMem = VK_NULL_HANDLE;
-static uint32_t indicesCount = 12;
-static uint16_t indices_v[12] = {
-    0, 1, 2, 2, 3, 0,
-    4, 5, 6, 6, 7, 4
-};
+static void * indexBufferMemMapped = NULL;
+static uint32_t indicesCount = 6;
+static uint16_t * indices_v = NULL;
 
 static VkBuffer * graphicUniformBuffers = VK_NULL_HANDLE;
 static VkDeviceMemory * graphicUniformBuffersMemory = VK_NULL_HANDLE;
@@ -191,7 +193,7 @@ static VkDescriptorSet * computeDescriptorSets = VK_NULL_HANDLE;
 
 static VkCommandBuffer * commandBuffer = VK_NULL_HANDLE;
 
-static VkCommandBuffer * particleCommandBuffer = VK_NULL_HANDLE;
+// static VkCommandBuffer * particleCommandBuffer = VK_NULL_HANDLE;
 
 static VkCommandBuffer * computeCommandBuufer = VK_NULL_HANDLE;
 
@@ -200,18 +202,14 @@ static VkSemaphore * renderFinishedSemaphore = VK_NULL_HANDLE;
 
 static VkFence * inFlightFence = VK_NULL_HANDLE;
 
-static VkSemaphore * particleRenderFinishedSemaphore = VK_NULL_HANDLE;
+// static VkSemaphore * particleRenderFinishedSemaphore = VK_NULL_HANDLE;
 
-static VkFence * particleInFlightFence = VK_NULL_HANDLE;
+// static VkFence * particleInFlightFence = VK_NULL_HANDLE;
 
 static VkSemaphore * computeFinishedSemaphore = VK_NULL_HANDLE;
 static VkFence * computeInFlightFences = VK_NULL_HANDLE;
 
 static uint32_t currentFrame = 0;
-
-static VkBuffer movingStagingBuffer = VK_NULL_HANDLE;
-static VkDeviceMemory movingStagingMemory = VK_NULL_HANDLE;
-static void * movingBufferMapped = VK_NULL_HANDLE;
 
 static float camera_X = 0.0f;
 static float camera_Y = 0.0f;
@@ -219,21 +217,141 @@ static float camera_Y = 0.0f;
 static float pictureX = 0;
 static float pictureY = 0;
 
-static bool moveEnabled = false;
+// static bool moveEnabled = false;
 
 static VkBuffer * shaderStorageBuffers = VK_NULL_HANDLE;
 static VkDeviceMemory * shaderStorageBuffersMem = VK_NULL_HANDLE;
 
 static Particle * particles = VK_NULL_HANDLE;
 
+static ImageRotate pictureImageRotate = {0.0f};
+
 Recreate recreateSwap = {};
 
 //store all compoents for initialize vulkan in a struct
 VK_ALL allInOne = {};
 
+
+static inline void initializeRecreate(void)
+{
+    recreateSwap.DevicePack.pDevice = &device;
+    recreateSwap.DevicePack.pPhysicalDevice = &physicalDevice;
+
+    recreateSwap.pSurfaceCapabilities = &surfaceCapabilities;
+    recreateSwap.pSurfaceFormat = &surfaceFormat;
+    recreateSwap.pPresentMode = &presentMode;
+
+    recreateSwap.pSurface = &surface;
+    recreateSwap.pOldExtent2D = &oldExtent2D;
+    recreateSwap.pExtent2D = &extent2D;
+    recreateSwap.ppVertices = &vertices;
+
+    recreateSwap.pIndices = &indices;
+    recreateSwap.pGraphicQueue = &graphicQueue;
+
+    recreateSwap.swapchainFormat = swapchainFormat;
+    recreateSwap.pSwapchain = &swapchain;
+    recreateSwap.pSwapchainCommandPool = &swapchainCommandPool;
+
+    recreateSwap.imageCount = &imageCount;
+    recreateSwap.ppSwapchainImages = &swapchainImages;
+    recreateSwap.ppSwapchainImageViews = &swapchainImageViews;
+    
+    recreateSwap.ppSwapchainFramebuffer = &swapchainFramebuffer;
+
+    recreateSwap.pDepthImage = &depthImage;
+    recreateSwap.pDepthImageView = &depthImageView;
+    recreateSwap.pDepthImageMem = &depthImageMemory;
+
+    recreateSwap.pRenderPass = &renderPass;
+}
+static inline void initializeAllInOne(void)
+{
+    allInOne.pPhysicalDevice = &physicalDevice;
+
+    allInOne.pDevice = &device;
+
+    allInOne.pGraphicQueue = &graphicQueue;
+    allInOne.pPresentQueue = &presentQueue;
+
+    allInOne.pComputeQueue = &computeQueue;
+
+    allInOne.pExtent2D = &extent2D;
+    allInOne.pSwapchain = &swapchain;
+
+    allInOne.pGraphicPipelineLayout = &graphicPipelineLayout;
+
+    allInOne.pParticlePipelineLayout = &particlePipelineLayout;
+
+    allInOne.pComputePipelineLayout = &computePipelineLayout;
+
+    allInOne.pRenderPass = &renderPass;
+
+    allInOne.pGraphicPipeline = &graphicPipeline;
+
+    allInOne.pParticlePipeline = &particlePipeline;
+
+    allInOne.pComputePipeline = &computePipeline;
+
+    allInOne.ppSwapchainFramebuffer = &swapchainFramebuffer;
+    allInOne.pSwapchainCommandPool = &swapchainCommandPool;
+
+    allInOne.pVertexBuffer = &vertexBuffer;
+    allInOne.ppVertices = &vertices;
+    allInOne.pVerticesCount = &verticesCount;
+    allInOne.pVertexBufferMem = &vertexBufferMem;
+    allInOne.ppVertexBufferMemMapped = &vertexBufferMemMapped;
+
+    allInOne.pIndexBuffer = &indexBuffer;
+    allInOne.ppIndices = &indices_v;
+    allInOne.pIndicesCount = &indicesCount;
+    allInOne.pIndexBufferMem = &indexBufferMem;
+    allInOne.ppIndexBufferMemMapped = &indexBufferMemMapped;
+
+    allInOne.pppGraphicUniformBufferMapped = &graphicUniformBufferMapped;
+
+    allInOne.pGraphicUbo = &ubo;
+
+    allInOne.ppGraphicDescriptorSets = &graphicDescriptorSets;
+
+    allInOne.ppParticleDescriptorSets = &particleDescriptorSets;
+
+    allInOne.pComputeUbo = &computeUbo;
+
+    allInOne.pppComputeUniformBufferMapped = &computeUniformBufferMapped;
+
+    allInOne.ppComputeDescriptorSets = &computeDescriptorSets;
+
+    allInOne.ppShaderStorageBuffers = &shaderStorageBuffers;
+
+    allInOne.ppCommandBuffer = &commandBuffer;
+
+    allInOne.ppComputeCommandBuffer = &computeCommandBuufer;
+
+    allInOne.ppImageAvailableSemaphore = &imageAvailableSemaphore;
+    allInOne.ppRenderFinishedSemaphore = &renderFinishedSemaphore;
+
+    allInOne.ppInFlightFence = &inFlightFence;
+
+    allInOne.ppComputeFinishedSemaphore = &computeFinishedSemaphore;
+
+    allInOne.ppComputeInFlightFence = &computeInFlightFences;
+
+    allInOne.pCurrentFrame = &currentFrame;
+
+    allInOne.pCamera_X = &camera_X;
+    allInOne.pCamera_Y = &camera_Y;
+
+    allInOne.pPictureX = &pictureX;
+    allInOne.pPictureY = &pictureY;
+
+    allInOne.pImageRotate = &pictureImageRotate;
+}
+
 void initVulkan(void)
 {
-    debug_printf("initializing...");
+    /*fixed compoent*/
+    logMessage("initializing...");
 
     vulkanVersion();
 
@@ -267,42 +385,47 @@ void initVulkan(void)
     findDepthFormat(&physicalDevice, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT, &depthFormat);
     createRenderPass(&device, &swapchainFormat, &depthFormat, &renderPass);
 
+
+
+    /*unfixed code*/
+
     //graphic shader
-    createShaderModule(&device, "Shaders\\triangle_vertex.spv", &vertShaderCode);
+    createShaderModule(&device, TriangleVertexShader, &vertShaderCode);
     addShaderStageCreateInfo(&vertShaderCode, VK_SHADER_STAGE_VERTEX_BIT, &graphicShaderCount, &graphciShaderStageCreateInfo);
     setDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 1, 0, &graphicBindingCount, &graphicBindings);//0
     setDescriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT, &graphicPoolSizeCount, &graphicDescriptorPoolSize);
 
-    createShaderModule(&device, "Shaders\\triangle_fragment.spv", &fragShaderCode);
+    createShaderModule(&device, TriangleFragmentShader, &fragShaderCode);
     addShaderStageCreateInfo(&fragShaderCode, VK_SHADER_STAGE_FRAGMENT_BIT, &graphicShaderCount, &graphciShaderStageCreateInfo);
-    setDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1, 1, &graphicBindingCount, &graphicBindings);//1
-    setDescriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_FRAMES_IN_FLIGHT, &graphicPoolSizeCount, &graphicDescriptorPoolSize);
+    setDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 3, 1, &graphicBindingCount, &graphicBindings);//1
+    setDescriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_FRAMES_IN_FLIGHT * 3, &graphicPoolSizeCount, &graphicDescriptorPoolSize);
 
     addDescriptorSetLayout(&device, graphicBindingCount, graphicBindings, 0, &graphicDescriptorSetLayout);
 
-    createPipelineLayout(&device, 1, &graphicDescriptorSetLayout, &graphicPipelineLayout);
+    createPushConstantRange(VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ImageRotate), &pushConstantRange);
+    createPipelineLayout(&device, 1, &graphicDescriptorSetLayout, 1, &pushConstantRange, &graphicPipelineLayout);
     createGraphicsPipeline(&device, &extent2D, graphicShaderCount, graphciShaderStageCreateInfo, &graphicPipelineLayout, &renderPass, &graphicPipeline);
 
     createDescriptorPool(&device, graphicPoolSizeCount, graphicDescriptorPoolSize, 2, &graphicDescriptorPool);
 
     //particle shader
-    createShaderModule(&device, "Shaders\\particle_vertex.spv", &particleVertexShaderCode);
+    createShaderModule(&device, ParticleVertexShader, &particleVertexShaderCode);
     addShaderStageCreateInfo(&particleVertexShaderCode, VK_SHADER_STAGE_VERTEX_BIT, &particleShaderCount, &particleShaderStageCreateInfo);
     setDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 1, 1, &particleBindingCount, &particleBindings);//1
     setDescriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT, &particlePoolSizeCount, &particleDescriptorPoolSize);
 
-    createShaderModule(&device, "Shaders\\particle_fragment.spv", &particleFragmentShaderCode);
+    createShaderModule(&device, ParticleFragmentShader, &particleFragmentShaderCode);
     addShaderStageCreateInfo(&particleFragmentShaderCode, VK_SHADER_STAGE_FRAGMENT_BIT, &particleShaderCount, &particleShaderStageCreateInfo);
 
     addDescriptorSetLayout(&device, particleBindingCount, particleBindings, 0, &particleDescriptorSetLayout);
 
-    createPipelineLayout(&device, 1, &particleDescriptorSetLayout, &particlePipelineLayout);
+    createPipelineLayout(&device, 1, &particleDescriptorSetLayout, 0, VK_NULL_HANDLE, &particlePipelineLayout);
     createParticlePipeline(&device, &extent2D, particleShaderCount, particleShaderStageCreateInfo, &particlePipelineLayout, &renderPass, &particlePipeline);
 
     createDescriptorPool(&device, particlePoolSizeCount, particleDescriptorPoolSize, 2, &particleDescriptorPool);
 
     //compute shader
-    createShaderModule(&device, "Shaders\\particle_compute.spv", &compShaderCode);
+    createShaderModule(&device, ParticleComputeShader, &compShaderCode);
     addShaderStageCreateInfo(&compShaderCode, VK_SHADER_STAGE_COMPUTE_BIT, &computeShaderCount, &computeShaderStageCreateInfo);
     setDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT, 1, 0, &computeBindingCount, &computeBindings);//0
     setDescriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT, &computePoolSizeCount, &computeDescriptorPoolSize);
@@ -313,7 +436,7 @@ void initVulkan(void)
 
     addDescriptorSetLayout(&device, computeBindingCount, computeBindings, 0, &computeDescriptorSetLayout);
 
-    createPipelineLayout(&device, 1, &computeDescriptorSetLayout, &computePipelineLayout);
+    createPipelineLayout(&device, 1, &computeDescriptorSetLayout, 0, VK_NULL_HANDLE, &computePipelineLayout);
     createComputePipeline(&device, &computePipelineLayout, computeShaderStageCreateInfo, &computePipeline);
 
     createDescriptorPool(&device, computePoolSizeCount, computeDescriptorPoolSize, 3, &computeDescriptorPool);
@@ -327,29 +450,93 @@ void initVulkan(void)
 
     createFrameBuffer(&device, &extent2D, imageCount, swapchainImageViews, &depthImageView, &renderPass, &swapchainFramebuffer);
 
-    createTextureImage(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, "Textures\\5.png", &texturesImage, &textureImageMem);
+    createTextureImage(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, CirclePng, VK_FORMAT_R8G8B8A8_SRGB, &texturesImage, &textureImageMem);
     createTextureImageView(&device, &texturesImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, &textureImageView);
+
+    /*loadingImage = (VkImage*)malloc(8 * sizeof(VkImage));
+    loadingImageView = (VkImageView*)malloc(8 * sizeof(VkImageView));
+    loadingImageMem = (VkDeviceMemory*)malloc(8 * sizeof(VkDeviceMemory));
+    for (int i = 0;i < 8;i++)
+    {
+        char loadingPicPath[100];
+        strcpy(loadingPicPath, "Textures\\loading1\\loading");
+        char tempIndex = i + 49;
+        char * tempPath = strcat(strncat(loadingPicPath, &tempIndex, 1), ".png");*/
+    createTextureImage(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, LoadingPng, VK_FORMAT_R8G8B8A8_SRGB, &loadingImage, &loadingImageMem);
+    createTextureImageView(&device, &loadingImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, &loadingImageView);
+    //}
+
+    createTextureImage(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, TextPng, VK_FORMAT_R8_UNORM, &textImage, &textImageMem);
+    createTextureImageView(&device, &textImage, VK_FORMAT_R8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, &textImageView);
+    
     createTextureSampler(&physicalDevice, &device, &textureSampler);
 
-    vertices = (Vertex *)malloc(8 * sizeof(Vertex));
-    vertices[0] = (Vertex){{-0.5f, -0.5f, 0.2f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}};
-    vertices[1] = (Vertex){{0.5f, -0.5f, 0.2f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}};
-    vertices[2] = (Vertex){{0.5f, 0.5f, 0.2f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}};
-    vertices[3] = (Vertex){{-0.5f, 0.5f, 0.2f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}};
+    vertices = (Vertex *)calloc(BALLCOUNT * 4 + 100 * 4, sizeof(Vertex));
+    vertices[0] = (Vertex){{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}};
+    vertices[1] = (Vertex){{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}};
+    vertices[2] = (Vertex){{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}};
+    vertices[3] = (Vertex){{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}};
 
-    vertices[4] = (Vertex){{-0.0f, -0.0f, 0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}};
-    vertices[5] = (Vertex){{1.0f, -0.0f, 0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}};
-    vertices[6] = (Vertex){{1.0f, 1.0f, 0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}};
-    vertices[7] = (Vertex){{-0.0f, 1.0f, 0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}};
+    /*vertices[4] = (Vertex){{-0.0f, -0.0f, 0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}};
+    vertices[5] = (Vertex){{1.0f, -0.0f, 0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}};
+    vertices[6] = (Vertex){{1.0f, 1.0f, 0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}};
+    vertices[7] = (Vertex){{-0.0f, 1.0f, 0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}};*/
 
-    positionInitialize(-200, -150, 400, 300, extent2D, &vertices, 0);
-    positionInitialize(0, 0, 400, 300, extent2D, &vertices, 1);
+    verticesCount = 4;
 
-    createVertexBuffer(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, &vertexBuffer, &vertexBufferMem, vertices, verticesCount);
+    positionInitialize(-32, -32, 64, 64, extent2D, &vertices, 0);
+    vertices[0].pos[2] = 0.0f; vertices[1].pos[2] = 0.0f; vertices[2].pos[2] = 0.0f; vertices[3].pos[2] = 0.0f;
+    vertices[4].pos[2] = 0.9f; vertices[5].pos[2] = 0.9f; vertices[6].pos[2] = 0.9f; vertices[7].pos[2] = 0.9f;
+    vertices[8].pos[2] = 0.9f; vertices[9].pos[2] = 0.9f; vertices[10].pos[2] = 0.9f; vertices[11].pos[2] = 0.9f;
+    //positionInitialize(-24, -24, 16, 16, extent2D, &vertices, 1);
 
-    createIndexBuffer(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, &indexBuffer, &indexBufferMem, indices_v, indicesCount);
+    createVertexBuffer(&physicalDevice, &device, &vertexBuffer, &vertexBufferMem, &vertexBufferMemMapped, vertices, BALLCOUNT * 4 + 100 * 4);
 
-    initializeMovingBuffer(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, &movingStagingBuffer, &movingStagingMemory, &movingBufferMapped, vertices, verticesCount);
+    indices_v = (uint16_t *)calloc(BALLCOUNT * 6 + 100 * 6, sizeof(uint16_t));
+    indices_v[0] = 0; indices_v[1] = 1; indices_v[2] = 2; indices_v[3] = 2; indices_v[4] = 3; indices_v[5] = 0;
+    //indices_v[6] = 4; indices_v[7] = 5; indices_v[8] = 6; indices_v[9] = 6; indices_v[10] = 7; indices_v[11] = 4;
+    indicesCount = 6;
+
+    createIndexBuffer(&physicalDevice, &device, &indexBuffer, &indexBufferMem, &indexBufferMemMapped, indices_v, BALLCOUNT * 6 + 100 * 6);
+
+    for (int i = 0;i < 50;i++)
+    {
+        positionInitialize(-300 + i * 24, -100, 24, 24, extent2D, &vertices, i + BALLCOUNT);
+        for (int j = 0;j < 4;j++)
+        {
+            vertices[(i + BALLCOUNT) * 4 + j].texCoord[0] = 0.0f;
+            vertices[(i + BALLCOUNT) * 4 + j].texCoord[1] = 0.0f;
+            vertices[(i + BALLCOUNT) * 4 + j].pos[2] = 0.1f;
+        }
+        int index = (i + BALLCOUNT) * 6;
+        int serial = (i + BALLCOUNT) * 4;
+        indices_v[index] = serial;
+        indices_v[index + 1] = serial + 1;
+        indices_v[index + 2] = serial + 2;
+        indices_v[index + 3] = serial + 2;
+        indices_v[index + 4] = serial + 3;
+        indices_v[index + 5] = serial;
+    }
+    for (int i = 0;i < 50;i++)
+    {
+        positionInitialize(-300 + i * 12, -114, 12, 12, extent2D, &vertices, i + BALLCOUNT + 50);
+        for (int j = 0;j < 4;j++)
+        {
+            vertices[(i + BALLCOUNT + 50) * 4 + j].texCoord[0] = 0.0f;
+            vertices[(i + BALLCOUNT + 50) * 4 + j].texCoord[1] = 0.0f;
+            vertices[(i + BALLCOUNT + 50) * 4 + j].pos[2] = 0.1f;
+        }
+        int index = (i + BALLCOUNT + 50) * 6;
+        int serial = (i + BALLCOUNT + 50) * 4;
+        indices_v[index] = serial;
+        indices_v[index + 1] = serial + 1;
+        indices_v[index + 2] = serial + 2;
+        indices_v[index + 3] = serial + 2;
+        indices_v[index + 4] = serial + 3;
+        indices_v[index + 5] = serial;
+    }
+
+    //initializeMovingBuffer(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, &movingStagingBuffer, &movingStagingMemory, &movingBufferMapped, vertices, verticesCount);
 
     createUniformBuffers(&physicalDevice, &device, &graphicUniformBuffers, &graphicUniformBuffersMemory, &graphicUniformBufferMapped);
 
@@ -358,7 +545,11 @@ void initVulkan(void)
     createShaderStorageBuffers(&physicalDevice, &device, &swapchainCommandPool, &computeQueue, extent2D, &shaderStorageBuffers, &shaderStorageBuffersMem, &particles);
 
     //graphics
-    createGraphicDescriptorSets(&device, &graphicUniformBuffers, graphicDescriptorSetLayout, &graphicDescriptorPool, &graphicDescriptorSets, &textureImageView, &textureSampler);
+    VkImageView tempImageView[3];
+    tempImageView[0] = loadingImageView;
+    tempImageView[1] = textureImageView;
+    tempImageView[2] = textImageView;
+    createGraphicDescriptorSets(&device, &graphicUniformBuffers, graphicDescriptorSetLayout, &graphicDescriptorPool, &graphicDescriptorSets, tempImageView, &textureSampler);
 
     createCommandbuffer(&device, &swapchainCommandPool, &commandBuffer);
 
@@ -379,78 +570,73 @@ void initVulkan(void)
 
     createFence(&device, &computeInFlightFences);
 
-    initializeRecreate();
-
     initializeAllInOne();
+
+    initializeRecreate();
 
     resultVulkan(VK_SUCCESS, initializedF, 0);
 }
+
+extern bool input_end;
+
 void cleanup(FuncCode code)
 {
-    debug_printf("\nclean up");
+    logMessage("\nclean up");
 
         vkDeviceWaitIdle(device);
-
-        vkUnmapMemory(device, movingStagingMemory);
-
-        vkDestroyBuffer(device, movingStagingBuffer, VK_NULL_HANDLE);
-        debug_printf("moving staging buffer destroyed");
-
-        vkFreeMemory(device, movingStagingMemory, VK_NULL_HANDLE);
-        debug_printf("moving staging buffer memory freed");
 
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
         {
             vkDestroyFence(device, computeInFlightFences[i], VK_NULL_HANDLE);
         }
         free(computeInFlightFences);
-        debug_printf("compute in flight fences destroyed");
+        logMessage("compute in flight fences destroyed");
 
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
         {
             vkDestroyFence(device, inFlightFence[i], VK_NULL_HANDLE);
         }
         free(inFlightFence);
-        debug_printf("in flight fence destroyed");
+        logMessage("in flight fence destroyed");
 
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
         {
             vkDestroySemaphore(device, computeFinishedSemaphore[i], VK_NULL_HANDLE);
         }
         free(computeFinishedSemaphore);
-        debug_printf("compute finished semaphore destroyed");
+        logMessage("compute finished semaphore destroyed");
 
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
         {
             vkDestroySemaphore(device, renderFinishedSemaphore[i], VK_NULL_HANDLE);
         }
         free(renderFinishedSemaphore);
-        debug_printf("render finished semaphore destroyed");
+        logMessage("render finished semaphore destroyed");
 
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
         {
             vkDestroySemaphore(device, imageAvailableSemaphore[i], VK_NULL_HANDLE);
         }
         free(imageAvailableSemaphore);
-        debug_printf("image available semaphore destroyed");
+        logMessage("image available semaphore destroyed");
 
         free(computeCommandBuufer);
-        debug_printf("compute command buffer freed");
+        logMessage("compute command buffer freed");
 
         free(commandBuffer);
-        debug_printf("command buffer freed");
+        logMessage("command buffer freed");
 
         vkDestroyDescriptorPool(device, computeDescriptorPool, VK_NULL_HANDLE);
         free(computeDescriptorPoolSize);
-        debug_printf("compute descriptro pool destroyed");
+        logMessage("compute descriptro pool destroyed");
 
         vkDestroyDescriptorPool(device, particleDescriptorPool, VK_NULL_HANDLE);
         free(particleDescriptorPoolSize);
-        debug_printf("particle descriptor pool destroyed");
+        logMessage("particle descriptor pool destroyed");
 
         vkDestroyDescriptorPool(device, graphicDescriptorPool, VK_NULL_HANDLE);
         free(graphicDescriptorPoolSize);
-        debug_printf("graphic descriptor pool destroyed");
+        logMessage("graphic descriptor pool destroyed");
 
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
         {
@@ -458,7 +644,7 @@ void cleanup(FuncCode code)
             vkDestroyBuffer(device, computeUniformBuffers[i], VK_NULL_HANDLE);
         }
         free(computeUniformBuffers);
-        debug_printf("compute uniform buffers destroyed");
+        logMessage("compute uniform buffers destroyed");
 
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
         {
@@ -466,21 +652,21 @@ void cleanup(FuncCode code)
         }
         free(computeUniformBuffersmemory);
         free(computeUniformBufferMapped);
-        debug_printf("compute uniform buffer memory freed");
+        logMessage("compute uniform buffer memory freed");
 
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
         {
             vkDestroyBuffer(device, shaderStorageBuffers[i], VK_NULL_HANDLE);
         }
         free(shaderStorageBuffers);
-        debug_printf("shader storage buffer destroyed");
+        logMessage("shader storage buffer destroyed");
 
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
         {
             vkFreeMemory(device, shaderStorageBuffersMem[i], VK_NULL_HANDLE);
         }
         free(shaderStorageBuffersMem);
-        debug_printf("shader storage buffer memory freed");
+        logMessage("shader storage buffer memory freed");
 
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
         {
@@ -488,7 +674,7 @@ void cleanup(FuncCode code)
             vkDestroyBuffer(device, graphicUniformBuffers[i], VK_NULL_HANDLE);
         }
         free(graphicUniformBuffers);
-        debug_printf("graphic uniform buffer destroyed");
+        logMessage("graphic uniform buffer destroyed");
 
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
         {
@@ -496,384 +682,148 @@ void cleanup(FuncCode code)
         }
         free(graphicUniformBuffersMemory);
         free(graphicUniformBufferMapped);
-        debug_printf("graphic uniform buffer memory freed");
+        logMessage("graphic uniform buffer memory freed");
+
+        vkUnmapMemory(device, indexBufferMem);
 
         vkDestroyBuffer(device, indexBuffer, VK_NULL_HANDLE);
-        debug_printf("index buffer destroyed");
+        free(indices_v);
+        logMessage("index buffer destroyed");
 
         vkFreeMemory(device, indexBufferMem, VK_NULL_HANDLE);
-        debug_printf("index buffer memory freed");
+        logMessage("index buffer memory freed");
+
+        vkUnmapMemory(device, vertexBufferMem);
 
         vkDestroyBuffer(device, vertexBuffer, VK_NULL_HANDLE);
         free(vertices);
-        debug_printf("vertex buffer destroyed");
+        logMessage("vertex buffer destroyed");
 
         vkFreeMemory(device, vertexBufferMem, VK_NULL_HANDLE);
-        debug_printf("vertex buffer memory freed");
+        logMessage("vertex buffer memory freed");
 
         vkDestroySampler(device, textureSampler, VK_NULL_HANDLE);
-        debug_printf("texture sampler detroyed");
+        logMessage("texture sampler detroyed");
 
         vkDestroyImageView(device, textureImageView, VK_NULL_HANDLE);
-        debug_printf("texture image view destroyed");
+        logMessage("texture image view destroyed");
 
         vkDestroyImage(device, texturesImage, VK_NULL_HANDLE);
-        debug_printf("texture image destroyed");
+        logMessage("texture image destroyed");
 
         vkFreeMemory(device, textureImageMem, VK_NULL_HANDLE);
-        debug_printf("texture image memory freed");
+        logMessage("texture image memory freed");
+
+        vkDestroyImageView(device, loadingImageView, VK_NULL_HANDLE);
+        logMessage("texture image view destroyed");
+
+        vkDestroyImage(device, loadingImage, VK_NULL_HANDLE);
+        logMessage("texture image destroyed");
+
+        vkFreeMemory(device, loadingImageMem, VK_NULL_HANDLE);
+        logMessage("texture image memory freed");
+
+        vkDestroyImageView(device, textImageView, VK_NULL_HANDLE);
+        logMessage("texture image view destroyed");
+
+        vkDestroyImage(device, textImage, VK_NULL_HANDLE);
+        logMessage("texture image destroyed");
+
+        vkFreeMemory(device, textImageMem, VK_NULL_HANDLE);
+        logMessage("texture image memory freed");
 
         destroyedFrameBuffer(&device, imageCount, swapchainFramebuffer);
         free(swapchainFramebuffer);
-        debug_printf("framebuffer destroyed");
+        logMessage("framebuffer destroyed");
 
         vkDestroyImageView(device, depthImageView, VK_NULL_HANDLE);
-        debug_printf("depth image view destroyed");
+        logMessage("depth image view destroyed");
 
         vkDestroyImage(device, depthImage, VK_NULL_HANDLE);
-        debug_printf("depth image destroyed");
+        logMessage("depth image destroyed");
 
         vkFreeMemory(device, depthImageMemory, VK_NULL_HANDLE);
-        debug_printf("depth image memory freed");
+        logMessage("depth image memory freed");
         
         vkDestroyCommandPool(device, computeCommandPool, VK_NULL_HANDLE);
-        debug_printf("compute commandpool destroyed");
+        logMessage("compute commandpool destroyed");
 
         vkDestroyCommandPool(device, swapchainCommandPool, VK_NULL_HANDLE);
-        debug_printf("commandpool destroyed");
+        logMessage("commandpool destroyed");
 
         vkDestroyPipeline(device, computePipeline, VK_NULL_HANDLE);
-        debug_printf("compute pipeline destroyed");
+        logMessage("compute pipeline destroyed");
 
         vkDestroyPipeline(device, particlePipeline, VK_NULL_HANDLE);
-        debug_printf("particle pipeline destroyed");
+        logMessage("particle pipeline destroyed");
 
         vkDestroyPipeline(device, graphicPipeline, VK_NULL_HANDLE);
-        debug_printf("graphic pipelne destroyed");
+        logMessage("graphic pipelne destroyed");
 
         vkDestroyRenderPass(device, renderPass, VK_NULL_HANDLE);
-        debug_printf("renderPass destroyed");
+        logMessage("renderPass destroyed");
 
         vkDestroyPipelineLayout(device, computePipelineLayout, VK_NULL_HANDLE);
-        debug_printf("compute pipeline layout destroyed");
+        logMessage("compute pipeline layout destroyed");
 
         vkDestroyPipelineLayout(device, particlePipelineLayout, VK_NULL_HANDLE);
-        debug_printf("particle pipeline layout destroyed");
+        logMessage("particle pipeline layout destroyed");
 
         vkDestroyPipelineLayout(device, graphicPipelineLayout, VK_NULL_HANDLE);
-        debug_printf("graphic pipeline layout destroyed");
+        logMessage("graphic pipeline layout destroyed");
 
         vkDestroyDescriptorSetLayout(device, *computeDescriptorSetLayout, VK_NULL_HANDLE);
         free(computeDescriptorSetLayout);
         free(computeBindings);
-        debug_printf("compute descriptor set layout destroyed");
+        logMessage("compute descriptor set layout destroyed");
 
         vkDestroyDescriptorSetLayout(device, *particleDescriptorSetLayout, VK_NULL_HANDLE);
         free(particleDescriptorSetLayout);
         free(particleBindings);
-        debug_printf("particle descriptoe set layout destroyed");
+        logMessage("particle descriptoe set layout destroyed");
 
         vkDestroyDescriptorSetLayout(device, *graphicDescriptorSetLayout, VK_NULL_HANDLE);
         free(graphicDescriptorSetLayout);
         free(graphicBindings);
-        debug_printf("graphic descriptor set layout destroyed");
+        logMessage("graphic descriptor set layout destroyed");
 
         vkDestroyShaderModule(device, compShaderCode, VK_NULL_HANDLE);
         free(computeShaderStageCreateInfo);
-        debug_printf("compute shader stage create info destroyed");
+        logMessage("compute shader stage create info destroyed");
 
         vkDestroyShaderModule(device, particleFragmentShaderCode, VK_NULL_HANDLE);
         vkDestroyShaderModule(device, particleVertexShaderCode, VK_NULL_HANDLE);
         free(particleShaderStageCreateInfo);
-        debug_printf("particle shader stage create info destroyed");
+        logMessage("particle shader stage create info destroyed");
 
         vkDestroyShaderModule(device, fragShaderCode, VK_NULL_HANDLE);
         vkDestroyShaderModule(device, vertShaderCode, VK_NULL_HANDLE);
         free(graphciShaderStageCreateInfo);
-        debug_printf("shaderCode destroyed");
+        logMessage("shaderCode destroyed");
 
         destroyImageViews(&device, swapchainImageViews, imageCount);
         free(swapchainImageViews);
-        debug_printf("swapchain image views destroyed");
+        logMessage("swapchain image views destroyed");
 
         free(swapchainImages);
-        debug_printf("swapchainImages freed");
+        logMessage("swapchainImages freed");
 
         vkDestroySwapchainKHR(device, swapchain, VK_NULL_HANDLE);
-        debug_printf("swapchain destroyed");
+        logMessage("swapchain destroyed");
 
         vkDestroyDevice(device, VK_NULL_HANDLE);
-        debug_printf("device destroyed");
+        logMessage("device destroyed");
 
         //free(indices);
-        debug_printf("indices freed");
+        logMessage("indices freed");
 
         vkDestroySurfaceKHR(instance, surface, VK_NULL_HANDLE);
-        debug_printf("surface destroyed");
+        logMessage("surface destroyed");
 
         vkDestroyInstance(instance, VK_NULL_HANDLE);
-        debug_printf("instance destroyed");
+        logMessage("instance destroyed");
 
         SDL_DestroyWindow(window);
-        debug_printf("window destroyed");
-
-        SDL_Quit();
-        debug_printf("SDL quited");
+        input_end = true;
+        logMessage("window destroyed");
 }
-static inline void initializeRecreate(void)
-{
-    recreateSwap.DevicePack.pDevice = &device;
-    recreateSwap.DevicePack.pPhysicalDevice = &physicalDevice;
-
-    recreateSwap.pSurfaceCapabilities = &surfaceCapabilities;
-    recreateSwap.pSurfaceFormat = &surfaceFormat;
-    recreateSwap.pPresentMode = &presentMode;
-
-    recreateSwap.pSurface = &surface;
-    recreateSwap.pExtent2D = &extent2D;
-
-    recreateSwap.pIndices = &indices;
-    recreateSwap.pGraphicQueue = &graphicQueue;
-
-    recreateSwap.swapchainFormat = swapchainFormat;
-    recreateSwap.pSwapchain = &swapchain;
-    recreateSwap.pSwapchainCommandPool = &swapchainCommandPool;
-
-    recreateSwap.imageCount = &imageCount;
-    recreateSwap.ppSwapchainImages = &swapchainImages;
-    recreateSwap.ppSwapchainImageViews = &swapchainImageViews;
-    
-    recreateSwap.ppSwapchainFramebuffer = &swapchainFramebuffer;
-
-    recreateSwap.pDepthImage = &depthImage;
-    recreateSwap.pDepthImageView = &depthImageView;
-    recreateSwap.pDepthImageMem = &depthImageMemory;
-
-    recreateSwap.pRenderPass = &renderPass;
-}
-static inline void initializeAllInOne(void)
-{
-    allInOne.pDevice = &device;
-
-    allInOne.pGraphicQueue = &graphicQueue;
-    allInOne.pPresentQueue = &presentQueue;
-
-    allInOne.pComputeQueue = &computeQueue;
-
-    allInOne.pExtent2D = &extent2D;
-    allInOne.pSwapchain = &swapchain;
-
-    allInOne.pGraphicPipelineLayout = &graphicPipelineLayout;
-
-    allInOne.pParticlePipelineLayout = &particlePipelineLayout;
-
-    allInOne.pComputePipelineLayout = &computePipelineLayout;
-
-    allInOne.pRenderPass = &renderPass;
-
-    allInOne.pGraphicPipeline = &graphicPipeline;
-
-    allInOne.pParticlePipeline = &particlePipeline;
-
-    allInOne.pComputePipeline = &computePipeline;
-
-    allInOne.ppSwapchainFramebuffer = &swapchainFramebuffer;
-    allInOne.pSwapchainCommandPool = &swapchainCommandPool;
-
-    allInOne.pVertexBuffer = &vertexBuffer;
-    allInOne.ppVertices = &vertices;
-    allInOne.pVerticesCount = &verticesCount;
-
-    allInOne.pIndexBuffer = &indexBuffer;
-    allInOne.pIndicesCount = &indicesCount;
-
-    allInOne.pppGraphicUniformBufferMapped = &graphicUniformBufferMapped;
-
-    allInOne.pGraphicUbo = &ubo;
-
-    allInOne.ppGraphicDescriptorSets = &graphicDescriptorSets;
-
-    allInOne.ppParticleDescriptorSets = &particleDescriptorSets;
-
-    allInOne.pComputeUbo = &computeUbo;
-
-    allInOne.pppComputeUniformBufferMapped = &computeUniformBufferMapped;
-
-    allInOne.ppComputeDescriptorSets = &computeDescriptorSets;
-
-    allInOne.ppShaderStorageBuffers = &shaderStorageBuffers;
-
-    allInOne.ppCommandBuffer = &commandBuffer;
-
-    allInOne.ppComputeCommandBuffer = &computeCommandBuufer;
-
-    allInOne.ppImageAvailableSemaphore = &imageAvailableSemaphore;
-    allInOne.ppRenderFinishedSemaphore = &renderFinishedSemaphore;
-
-    allInOne.ppInFlightFence = &inFlightFence;
-
-    allInOne.ppComputeFinishedSemaphore = &computeFinishedSemaphore;
-
-    allInOne.ppComputeInFlightFence = &computeInFlightFences;
-
-    allInOne.pCurrentFrame = &currentFrame;
-
-    allInOne.pMovingStagingBuffer = &movingStagingBuffer;
-    allInOne.ppMovingBufferMapped = &movingBufferMapped;
-
-    allInOne.pCamera_X = &camera_X;
-    allInOne.pCamera_Y = &camera_Y;
-
-    allInOne.pPictureX = &pictureX;
-    allInOne.pPictureY = &pictureY;
-}
-
-/*void mainLoop(void)
-{
-    debug_printf("\nmain loop");
-    bool running = false;
-
-    SDL_StopTextInput(window);
-
-    bool stop = false;
-    
-    uint32_t preKeyState = 0;
-
-    while (!running)
-    {
-        SDL_Event event;
-
-        while(SDL_PollEvent(&event))
-        {   
-            if (event.type == SDL_EVENT_MOUSE_MOTION | event.type == SDL_EVENT_MOUSE_BUTTON_DOWN | event.type == SDL_EVENT_MOUSE_BUTTON_UP)
-                continue;
-            if (preKeyState == SDL_EVENT_KEY_DOWN && event.type == SDL_EVENT_KEY_DOWN)
-            {
-                SDL_Keycode key = event.key.key;
-                if (key == SDLK_RIGHT)
-                {
-                    *allInOne.pCamera_X -= 0.05f;
-                }
-                else if (key == SDLK_LEFT)
-                {
-                    *allInOne.pCamera_X += 0.05f;
-                }
-                else if (key == SDLK_UP)
-                {
-                    *allInOne.pCamera_Y -= 0.05f;
-                }
-                else if (key == SDLK_DOWN)
-                {
-                    *allInOne.pCamera_Y += 0.05f;
-                }
-                else if (key == SDLK_A)
-                {
-                    *allInOne.pPictureX -= 10;
-                    *allInOne.pMoveEnabled = true;
-                }
-                else if (key == SDLK_D)
-                {
-                    *allInOne.pPictureX += 10;
-                    *allInOne.pMoveEnabled = true;
-                }
-                else if (key == SDLK_W)
-                {
-                    *allInOne.pPictureY += 10;
-                    *allInOne.pMoveEnabled = true;
-                }
-                else if (key == SDLK_S)
-                {
-                    *allInOne.pPictureY -= 10;
-                    *allInOne.pMoveEnabled = true;
-                }
-            }
-
-            if (preKeyState == SDL_EVENT_KEY_UP && event.type == SDL_EVENT_KEY_DOWN)
-            {
-                SDL_Keycode key = event.key.key;
-                if (key == SDLK_RIGHT)
-                {
-                    *allInOne.pCamera_X -= 0.05f;
-                }
-                else if (key == SDLK_LEFT)
-                {
-                    *allInOne.pCamera_X += 0.05f;
-                }
-                else if (key == SDLK_UP)
-                {
-                    *allInOne.pCamera_Y -= 0.05f;
-                }
-                else if (key == SDLK_DOWN)
-                {
-                    *allInOne.pCamera_Y += 0.05f;
-                }
-                else if (key == SDLK_A)
-                {
-                    *allInOne.pPictureX -= 10;
-                    *allInOne.pMoveEnabled = true;
-                }
-                else if (key == SDLK_D)
-                {
-                    *allInOne.pPictureX += 10;
-                    *allInOne.pMoveEnabled = true;
-                }
-                else if (key == SDLK_W)
-                {
-                    *allInOne.pPictureY += 10;
-                    *allInOne.pMoveEnabled = true;
-                }
-                else if (key == SDLK_S)
-                {
-                    *allInOne.pPictureY -= 10;
-                    *allInOne.pMoveEnabled = true;
-                }
-            }
-
-
-            switch(event.type)
-            {
-                case SDL_EVENT_QUIT:
-                running = true;
-                break;
-
-                case SDL_EVENT_WINDOW_MINIMIZED:
-                
-                    SDL_MinimizeWindow(window);
-                    stop = true;
-                
-                case SDL_EVENT_WINDOW_MAXIMIZED:
-                
-                    stop = false;
-                
-                
-
-
-                case SDL_EVENT_KEY_DOWN:
-                if (event.key.key == SDLK_ESCAPE)
-                {
-                    running = true;
-                }
-                else if (event.key.key == SDLK_F11)
-                {
-                    //SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
-                    allInOne.pExtent2D->width = 1600;
-                    allInOne.pExtent2D->height = 900;
-                    SDL_SetWindowSize(window, allInOne.pExtent2D->width, allInOne.pExtent2D->height);
-                    printf("sdl width: %u, height: %u\n", allInOne.pExtent2D->width, allInOne.pExtent2D->height);
-                }
-                else if (event.key.key == SDLK_1)
-                {
-                    allInOne.pExtent2D->width++;
-                    allInOne.pExtent2D->height++;
-                    SDL_SetWindowSize(window, allInOne.pExtent2D->width, allInOne.pExtent2D->height);
-                }
-                break;
-            }
-            if (KEY_OUTPUT)
-                printf("key:\npre: %d, now: %d\n", preKeyState, event.type);
-            preKeyState = event.type;
-        }
-        if (!stop)
-            drawFrame(&allInOne);
-    }
-}*/

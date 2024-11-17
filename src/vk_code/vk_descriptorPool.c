@@ -2,7 +2,7 @@
 
 void addDescriptorSetLayout(VkDevice * pDevice, uint32_t bindingCount, VkDescriptorSetLayoutBinding * pBindings, uint32_t set, VkDescriptorSetLayout ** ppDescriptorSetLayout)
 {
-    FuncCode code = createDescriptorSetLayoutF;
+    // FuncCode code = createDescriptorSetLayoutF;
 
     *ppDescriptorSetLayout = (VkDescriptorSetLayout *)realloc(*ppDescriptorSetLayout, (set + 1) * sizeof(VkDescriptorSetLayout));
 
@@ -28,7 +28,7 @@ void setDescriptorSetLayoutBinding(VkDescriptorType descriptorType, VkShaderStag
     (*ppDescriptorSetLayoutBinding)[index].stageFlags = stage;
     (*ppDescriptorSetLayoutBinding)[index].pImmutableSamplers = VK_NULL_HANDLE;
 
-    printf("binding: %u\n", binding);    
+    logMessage("binding: %u\n", binding);
 }
 void createDescriptorPool(VkDevice * pDevice, uint32_t poolSizeCount, VkDescriptorPoolSize * pPoolSizes, uint32_t maxSets, VkDescriptorPool * pDescriptorPool)
 {
@@ -52,12 +52,10 @@ void setDescriptorPoolSize(VkDescriptorType type, uint32_t descriptorCount, uint
     uint32_t index = *pPoolCount - 1;
     (*ppPoolSize)[index].type = type;
     (*ppPoolSize)[index].descriptorCount = descriptorCount;
-
-    puts("a");
 }
 void modifyPoolSizeDescriptorCount(VkDescriptorType type, uint32_t addDescriptorCount, uint32_t poolCount, VkDescriptorPoolSize ** ppPoolSize)
 {
-    for (int i = 0;i < poolCount;i++)
+    for (uint32_t i = 0;i < poolCount;i++)
     {
         if ((*ppPoolSize)[i].type == type)
         {
@@ -106,20 +104,22 @@ void createGraphicDescriptorSets(VkDevice * pDevice, VkBuffer ** ppUniformBuffer
         descriptorWrite[0].pBufferInfo = &bufferInfo;
         descriptorWrite[0].pTexelBufferView = VK_NULL_HANDLE;
 
-        VkDescriptorImageInfo imageInfo = {};
-        imageInfo.sampler = *pTextureSampler;
-        imageInfo.imageView = *pTextureImageView;
-        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        VkDescriptorImageInfo imageInfo[3];
+        for (int j = 0;j < 3;j++)
+        {
+            imageInfo[j].sampler = *pTextureSampler;
+            imageInfo[j].imageView = pTextureImageView[j];
+            imageInfo[j].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        }
 
         descriptorWrite[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         descriptorWrite[1].pNext = VK_NULL_HANDLE;
         descriptorWrite[1].dstSet = (*ppDescriptorSets)[i];
         descriptorWrite[1].dstBinding = 1;
         descriptorWrite[1].dstArrayElement = 0;
-        descriptorWrite[1].descriptorCount = 1;
         descriptorWrite[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        descriptorWrite[1].descriptorCount = 1;
-        descriptorWrite[1].pImageInfo = &imageInfo;
+        descriptorWrite[1].descriptorCount = 3;
+        descriptorWrite[1].pImageInfo = imageInfo;
         descriptorWrite[1].pBufferInfo = VK_NULL_HANDLE;
         descriptorWrite[1].pTexelBufferView = VK_NULL_HANDLE;
 
@@ -142,7 +142,7 @@ void createParticleDescriptorSets(VkDevice * pDevice, VkBuffer ** ppUniformBuffe
     allocInfo.descriptorPool = *pDescriptorPool;
     allocInfo.pSetLayouts = layouts;
 
-    printf("allocate descriptor sets: %d\n", vkAllocateDescriptorSets(*pDevice, &allocInfo, *ppDescriptorSets));
+    logMessage("allocate descriptor sets: %d\n", vkAllocateDescriptorSets(*pDevice, &allocInfo, *ppDescriptorSets));
 
     for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
     {
@@ -184,7 +184,7 @@ void createComputeDescriptorSets(VkDevice * pDevice, VkBuffer ** ppUniformBuffer
     allocInfo.descriptorPool = *pDescriptorPool;
     allocInfo.pSetLayouts = layouts;
 
-    printf("allocate descriptor sets: %d\n", vkAllocateDescriptorSets(*pDevice, &allocInfo, *ppDescriptorSets));
+    logMessage("allocate descriptor sets: %d\n", vkAllocateDescriptorSets(*pDevice, &allocInfo, *ppDescriptorSets));
 
     for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
     {

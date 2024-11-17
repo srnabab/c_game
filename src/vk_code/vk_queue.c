@@ -9,18 +9,18 @@ void findQueueFamilies(VkPhysicalDevice * pPhysicalDevice, VkSurfaceKHR * pSurfa
 
     uint32_t queueFamilyCount = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(*pPhysicalDevice, &queueFamilyCount, VK_NULL_HANDLE);
-    printf("queueFamilyCount: %u\n", queueFamilyCount);
+    logMessage("queueFamilyCount: %u\n", queueFamilyCount);
 
     VkQueueFamilyProperties * queueFamily = (VkQueueFamilyProperties *)malloc(queueFamilyCount * sizeof(VkQueueFamilyProperties));
     vkGetPhysicalDeviceQueueFamilyProperties(*pPhysicalDevice, &queueFamilyCount, queueFamily);
 
-    for (int i = 0;i < queueFamilyCount;i++)
+    for (uint32_t i = 0;i < queueFamilyCount;i++)
     {
-        printf("queueFlags: %d\n", queueFamily[i].queueFlags);
+        logMessage("queueFlags: %d\n", queueFamily[i].queueFlags);
     }
     bool ok1, ok2, ok3;
     ok1 = ok2 = ok3 = false;
-    for (int i = 0;i < queueFamilyCount;i++)
+    for (uint32_t i = 0;i < queueFamilyCount;i++)
     {
         if ((queueFamily[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) && !ok1)
         {
@@ -77,15 +77,15 @@ bool checkDeviceExtensionSupport(VkPhysicalDevice * pPhysicalDevice)
     resultVulkan(vkEnumerateDeviceExtensionProperties(*pPhysicalDevice, VK_NULL_HANDLE, &extensionCount, availableExtension), code, 1, availableExtension);
 
     bool support = false;
-    for (int q = 0;q < deviceExtensionCount;q++)
+    for (uint32_t q = 0;q < deviceExtensionCount;q++)
     {
         support = false;
-        for (int i = 0;i < extensionCount;i++)
+        for (uint32_t i = 0;i < extensionCount;i++)
         {
             //printf("%s\n", availableExtension[i].extensionName);
             if (!strcmp(deviceExtensions[q], availableExtension[i].extensionName))
             {
-                printf("extension %s supported\n", deviceExtensions[q]);
+                logMessage("extension %s supported\n", deviceExtensions[q]);
                 support = true;
                 break;
             }

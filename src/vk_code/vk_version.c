@@ -10,5 +10,5 @@ void vulkanVersion(void)
     uint32_t minor = VK_VERSION_MINOR(apiVersion);
     uint32_t patch = VK_VERSION_PATCH(apiVersion);
 
-    //printf("Vulkan API Version: %u.%u.%u\n", major, minor, patch);
+    printf("Vulkan API Version: %u.%u.%u\n", major, minor, patch);
 }

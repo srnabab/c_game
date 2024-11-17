@@ -10,8 +10,9 @@ void getSurfaceFormats(VkPhysicalDevice * pDevice, VkSurfaceKHR * pSurface, VkSu
     uint32_t surfaceFormatCount = 0;
     resultVulkan(vkGetPhysicalDeviceSurfaceFormatsKHR(*pDevice, *pSurface, &surfaceFormatCount, VK_NULL_HANDLE), code, 0);
     if (pSurfaceFormat == VK_NULL_HANDLE)
+    {
         //printf("surfaceFormatsCount: %u\n", surfaceFormatCount);
-        ;
+    }
 
     VkSurfaceFormatKHR * surfaceFormat = (VkSurfaceFormatKHR *)malloc(surfaceFormatCount * sizeof(VkSurfaceFormatKHR));
     if (surfaceFormatCount != 0)
@@ -20,7 +21,7 @@ void getSurfaceFormats(VkPhysicalDevice * pDevice, VkSurfaceKHR * pSurface, VkSu
     }
 
     bool selected = false;
-    for (int i = 0;i < surfaceFormatCount;i++)
+    for (uint32_t i = 0;i < surfaceFormatCount;i++)
     {
         //printf("format: %u\n", surfaceFormat[i]);
         if (surfaceFormat[i].colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR && surfaceFormat[i].format == VK_FORMAT_R8G8B8A8_SRGB)
@@ -41,15 +42,16 @@ void getPresentModes(VkPhysicalDevice * pDevice, VkSurfaceKHR * pSurface, VkPres
     uint32_t presentModeCount;
     resultVulkan(vkGetPhysicalDeviceSurfacePresentModesKHR(*pDevice, *pSurface, &presentModeCount, VK_NULL_HANDLE), code, 0);
     if (pPresentMode == VK_NULL_HANDLE)
+    {
         //printf("presentModeCount: %u\n ", presentModeCount);
-        ;
+    }
 
     VkPresentModeKHR * presentModes = (VkPresentModeKHR *)malloc(presentModeCount * sizeof(VkPresentModeKHR));
     if (presentModeCount != 0) 
     {
         resultVulkan(vkGetPhysicalDeviceSurfacePresentModesKHR(*pDevice, *pSurface, &presentModeCount, presentModes), code, 1, presentModes);
     
-        for (int i = 0;i < presentModeCount;i++)
+        for (uint32_t i = 0;i < presentModeCount;i++)
         {
             //printf("present mode%u\n", presentModes[i]);
             if (presentModes[i] == VK_PRESENT_MODE_MAILBOX_KHR)
@@ -95,29 +97,29 @@ void createSwapchain(VkDevice * pDevice, VkSurfaceKHR * pSurface, VkSurfaceForma
         imageCount = pSurfaceCapabilities->maxImageCount;
         
     if (*pSwapchain == VK_NULL_HANDLE)
+    {
         //printf("imageCount: %u\n", imageCount);
-        ;
+    }
 
-    VkSwapchainCreateInfoKHR createInfo = {
-        VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
-        VK_NULL_HANDLE,
-        0,
-        *pSurface,
-        imageCount,
-        (*pSurfaceFormat).format,
-        (*pSurfaceFormat).colorSpace,
-        *pExent2D,
-        1,
-        VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-        0,
-        0,
-        VK_NULL_HANDLE,
-        (*pSurfaceCapabilities).currentTransform,
-        VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
-        *pPresentMode,
-        VK_TRUE,
-        VK_NULL_HANDLE
-    };
+    VkSwapchainCreateInfoKHR createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+    createInfo.pNext = VK_NULL_HANDLE;
+    createInfo.flags = 0;
+    createInfo.surface = *pSurface;
+    createInfo.minImageCount = imageCount;
+    createInfo.imageFormat = (*pSurfaceFormat).format;
+    createInfo.imageColorSpace = (*pSurfaceFormat).colorSpace;
+    createInfo.imageExtent = *pExent2D;
+    createInfo.imageArrayLayers = 1;
+    createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+    createInfo.imageSharingMode = 0;
+    createInfo.queueFamilyIndexCount = 0;
+    createInfo.pQueueFamilyIndices = VK_NULL_HANDLE;
+    createInfo.preTransform = (*pSurfaceCapabilities).currentTransform;
+    createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+    createInfo.presentMode = *pPresentMode;
+    createInfo.clipped = VK_TRUE;
+    createInfo.oldSwapchain = VK_NULL_HANDLE;
 
     uint32_t queueFamilyIndices[2] = {indices.graphicsFamily, indices.presentFamily};
     if (indices.graphicsFamily != indices.presentFamily) 

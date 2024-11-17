@@ -1,4 +1,4 @@
-#include "vk_all.h"
+#include "core.h"
 #include "judge.h"
 #include "vulkan_code.h"
 
@@ -61,10 +61,10 @@ void resultVulkan(VkResult result, FuncCode code, uint32_t num, ...)
         {
             va_list ap;
             va_start(ap, num);
-            for (int i = 0;i < num;i++)
+            for (uint32_t i = 0;i < num;i++)
             {
                 free(va_arg(ap, void *));
-                printf("freed(%d)\n", i);
+                printf("freed(%u)\n", i);
             }
             va_end(ap);
         }
@@ -241,6 +241,9 @@ void resultVulkan(VkResult result, FuncCode code, uint32_t num, ...)
             case queuePresentF:
             fprintf(stderr, "\nqueue present failed\n");
             goto end;
+
+            default:
+            fprintf(stderr, "\nunprocessed value\n");
         }
     }
 

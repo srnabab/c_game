@@ -4,6 +4,29 @@
 
 extern SDL_Window * window;
 
+static bool extensionSupportedCheck(uint32_t sdlExtensionCount, const char * const * sdlExtensions, uint32_t extensionCount, VkExtensionProperties * pExtensionProperties)
+{
+    uint32_t count = 0;
+    for (uint32_t i = 0;i < sdlExtensionCount;i++)
+    {
+        for (uint32_t q = 0;q < extensionCount;q++)
+        {
+            if (strcmp(sdlExtensions[i], pExtensionProperties[q].extensionName) == 0)
+            {
+                count++;
+                break;
+            }
+        }
+    }
+    //printf("count: %u\n", count);
+    if (count != sdlExtensionCount)
+    {
+        fprintf(stderr, "extension not supported\n");
+        return true;
+    }
+
+    return false;
+}
 void createInstance(VkInstance * pInstance)
 {
     FuncCode code = createInstanceF;
@@ -56,30 +79,7 @@ void createInstance(VkInstance * pInstance)
 
     free(extensionsProperties);
 
-    debug_printf("instance created");
-}
-static bool extensionSupportedCheck(uint32_t sdlExtensionCount, const char * const * sdlExtensions, uint32_t extensionCount, VkExtensionProperties * pExtensionProperties)
-{
-    uint32_t count = 0;
-    for (int i = 0;i < sdlExtensionCount;i++)
-    {
-        for (int q = 0;q < extensionCount;q++)
-        {
-            if (strcmp(sdlExtensions[i], pExtensionProperties[q].extensionName) == 0)
-            {
-                count++;
-                break;
-            }
-        }
-    }
-    //printf("count: %u\n", count);
-    if (count != sdlExtensionCount)
-    {
-        fprintf(stderr, "extension not supported\n");
-        return true;
-    }
-
-    return false;
+    logMessage("instance created");
 }
 bool checkValidationLayerSupport(uint32_t pCount, const char ** pLayers)
 {
@@ -89,10 +89,10 @@ bool checkValidationLayerSupport(uint32_t pCount, const char ** pLayers)
     VkLayerProperties * avaliableLayers = (VkLayerProperties *)malloc(layerCount * sizeof(VkLayerProperties));
     vkEnumerateInstanceLayerProperties(&layerCount, avaliableLayers);
 
-    for (int i = 0;i < pCount;i++)
+    for (uint32_t i = 0;i < pCount;i++)
     {
         bool layerFound = false;
-        for (int q = 0;q < layerCount;q++)
+        for (uint32_t q = 0;q < layerCount;q++)
         {
             if (!strcmp(pLayers[i], avaliableLayers[q].layerName))
             {

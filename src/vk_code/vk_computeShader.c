@@ -1,5 +1,6 @@
 #include "vk_computeShader.h"
 #include <time.h>
+#include "vk_buffer.h"
 
 void createShaderStorageBuffers(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkCommandPool * pCommandPool, VkQueue * pGraphicQueue, VkExtent2D extent2D, VkBuffer ** ppShaderStorageBuffers, VkDeviceMemory ** ppShaderStorageBuffersMem, Particle ** ppParticles)
 {

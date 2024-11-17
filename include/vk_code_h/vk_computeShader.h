@@ -1,5 +1,4 @@
-#include "vk_all.h"
-#include "vk_buffer.h"
+#include "core.h"
 
 #ifndef VK_COMPUTESHADER_H
 #define VK_COMPUTESHADER_H

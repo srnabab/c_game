@@ -1,14 +1,15 @@
 #include "vk_texture.h"
 #include "vk_image.h"
+#include "vk_buffer.h"
 
-void createTextureImage(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkCommandPool * pCommandPool, VkQueue * pGraphicQueue, const char * pFileName, VkImage * pTextureImage, VkDeviceMemory * pTextureImageMem)
+void createTextureImage(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkCommandPool * pCommandPool, VkQueue * pGraphicQueue, PathType type, VkFormat format, VkImage * pTextureImage, VkDeviceMemory * pTextureImageMem)
 {
     FuncCode code = createTextureImageF;
 
     uint32_t width, height;
     width = height = 0;
     uint8_t channel = 0;
-    png_bytep pixels = readPNG(pFileName, &width, &height, &channel);
+    png_bytep pixels = readPNG(type, &width, &height, &channel);
     VkDeviceSize imageSize = width * height * channel;
     //printf("imagesize: %u\n", imageSize);
 
@@ -22,29 +23,24 @@ void createTextureImage(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, 
     memcpy(data, pixels, imageSize);
     vkUnmapMemory(*pDevice, stagingBufferMemory);
 
-    free(pixels);
+    resultVulkan(createImage(pPhysicalDevice, pDevice, width, height, format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, pTextureImage, pTextureImageMem), code, 1, pixels);
 
-    resultVulkan(createImage(pPhysicalDevice, pDevice, width, height, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, pTextureImage, pTextureImageMem), code, 1, pixels);
-
-    resultVulkan(transitionImageLayout(pDevice, pCommandPool, pGraphicQueue, pTextureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL), code, 1, pixels);
+    resultVulkan(transitionImageLayout(pDevice, pCommandPool, pGraphicQueue, pTextureImage, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL), code, 1, pixels);
     resultVulkan(copyBufferToImage(pDevice, pCommandPool, pGraphicQueue, pTextureImage, width, height, &stagingBuffer), code, 1, pixels);
 
-    resultVulkan(transitionImageLayout(pDevice, pCommandPool, pGraphicQueue, pTextureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL), code, 1, pixels);
+    resultVulkan(transitionImageLayout(pDevice, pCommandPool, pGraphicQueue, pTextureImage, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL), code, 1, pixels);
     
+    free(pixels);
+
     vkDestroyBuffer(*pDevice, stagingBuffer, VK_NULL_HANDLE);
     vkFreeMemory(*pDevice, stagingBufferMemory, VK_NULL_HANDLE);
 }
-png_bytep readPNG(const char * fileName, uint32_t * pWidth, uint32_t * pHeight, uint8_t * pChannel)
+png_bytep readPNG(PathType type, uint32_t * pWidth, uint32_t * pHeight, uint8_t * pChannel)
 {
-    char fileLocation[100];
-    strcpy(fileLocation, __argv[0]);
-    strcat(fileLocation, fileName);
-    //printf("%s\n", fileLocation);
-
     FILE * fp;
-    if ((fp = fopen(fileLocation, "rb+")) == NULL)
+    if ((fp = fopen(getPath(type), "rb+")) == NULL)
     {
-        fprintf(stderr, "open file %s failed\n", fileLocation);
+        fprintf(stderr, "open file %s failed\n", getPath(type));
         exit(0);
     }
 
@@ -91,11 +87,16 @@ png_bytep readPNG(const char * fileName, uint32_t * pWidth, uint32_t * pHeight, 
     {
         *pChannel = 3;
     }
-    if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8) {
-        png_set_expand_gray_1_2_4_to_8(png);  // Expand grayscale to 8-bit
+    if (color_type == PNG_COLOR_TYPE_GRAY)
+    {
+        *pChannel = 1;
     }
     if (png_get_valid(png, info, PNG_INFO_tRNS)) {
         png_set_tRNS_to_alpha(png);  // Convert transparency to alpha
+    }
+    if (color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
+    {
+        *pChannel = 2;
     }
     if (bit_depth == 16) {
         png_set_strip_16(png);  // Strip 16-bit to 8-bit
@@ -125,7 +126,7 @@ png_bytep readPNG(const char * fileName, uint32_t * pWidth, uint32_t * pHeight, 
     png_read_image(png, row_pointers);
 
     // Pixel data is now fully decoded and filtered, ready for use
-    printf("Width: %u, Height: %u\n", *pWidth, *pHeight);
+    logMessage("Width: %u, Height: %u\n", *pWidth, *pHeight);
     //printf("Bit Depth: %u, Color Type: %u\n", bit_depth, color_type);
 
     //exit(0);
@@ -217,3 +218,5 @@ void createTextureSampler(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice
 
     resultVulkan(vkCreateSampler(*pDevice, &samplerInfo, VK_NULL_HANDLE, pTextureSampler), code, 0);
 }
+void loadTexture()
+{}

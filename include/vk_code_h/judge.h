@@ -1,3 +1,6 @@
+#include "std_c.h"
+#include "vulkan/vulkan.h"
+
 #ifndef JUDGE_H
 #define JUDGE_H
 

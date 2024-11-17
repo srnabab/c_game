@@ -1,17 +1,13 @@
 #include "vk_shader.h"
 
-void createShaderModule(VkDevice * pDevice, const char * shaderName, VkShaderModule * pShaderModule)
+void createShaderModule(VkDevice * pDevice, PathType type, VkShaderModule * pShaderModule)
 {
     FuncCode code = createShaderModuleF;
-    char fileLocation[100];
-    strcpy(fileLocation, __argv[0]);
-    strcat(fileLocation, shaderName);
-    //printf("%s\n", fileLocation);
 
     FILE * shaderFile;
-    if ((shaderFile = fopen(fileLocation, "rb+")) == NULL)
+    if ((shaderFile = fopen(getPath(type), "rb+")) == NULL)
     {
-        fprintf(stderr, "open file %s failed\n", fileLocation);
+        fprintf(stderr, "open file %s failed\n", getPath(type));
         cleanup(createShaderModuleF);
         exit(code + 1000);
     }

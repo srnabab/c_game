@@ -1,7 +1,8 @@
 #include "constants.h"
+#include "SDL3/SDL.h"
 #include "game.h"
-#include "glfw3.h"
-#include "flow.h"
+#include "graphic.h"
+#include "file.h"
 
 bool game_is_running = false;
 
@@ -17,16 +18,18 @@ SDL_Mutex * sdl_mutex = NULL;
 SDL_Semaphore * main_semaphore1 = NULL;
 SDL_Semaphore * main_semaphore2 = NULL;
 
-extern bool update_done, draw_done, signal_done;
+extern bool update_done, draw_done;
 
 uint64_t last_frame_time = 0;
 
+bool input_end = false;
 // Main function
 int main(int argc, char* args[]) 
 {
-    changeArgv_0();
+    initFileSystem();
+    initLog();
     game_is_running = initWindow();
-    printf("%d\n", game_is_running);
+    logMessage("game_is_running: %d", game_is_running);
 
     setup();
 
@@ -35,25 +38,29 @@ int main(int argc, char* args[])
     SDL_SignalSemaphore(main_semaphore1);
     SDL_SignalSemaphore(main_semaphore2);
 
-    while (game_is_running) 
+    while (true) 
     {
         process_input(NULL);
+
+        if (!game_is_running)
+        {
+            SDL_WaitThread(sdl_pid_control, NULL);
+            SDL_WaitThread(sdl_pid_signal, NULL);
+            printf("signal end\n");
+            SDL_WaitThread(sdl_pid_update, NULL);
+            printf("update end\n");
+            SDL_WaitThread(sdl_pid_draw, NULL);
+            printf("draw end\n");
+
+            cleanup(FuncCodeMax);
+        }
+        
+        if (input_end)
+            break;
     }
     //SDL_BroadcastCondition(main_cond);
     
-
-    SDL_WaitThread(sdl_pid_control, NULL);
-    SDL_WaitThread(sdl_pid_signal, NULL);
-    printf("signal end\n");
-    SDL_WaitThread(sdl_pid_update, NULL);
-    printf("update end\n");
-    SDL_WaitThread(sdl_pid_draw, NULL);
-    printf("draw end\n");
-
-    SDL_DestroyCondition(done_cond);
-    //SDL_DestroyCondition(main_cond);
-    SDL_DestroyMutex(sdl_mutex);
-    printf("window destroyed\n");
+    destroy_window();
 
     //getchar();
 

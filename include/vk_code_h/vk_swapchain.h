@@ -1,5 +1,4 @@
-#include "vk_all.h"
-#include "vk_queue.h"
+#include "core.h"
 
 #ifndef VK_SWAPCHAIN_H
 #define VK_SWAPCHAIN_H
