@@ -77,17 +77,8 @@ static Timer * findTimer(int id)
 }
 bool intervalIsDone(uint64_t nano, int * id, int repeat)
 {
-    if (*id == 0)
-    {
-        static int Ids = 1;
-        SDL_LockMutex(timerMutex);
-        *id = Ids;
-        Ids++;
-
-        addTimer(nano, *id, repeat);
-        SDL_UnlockMutex(timerMutex);
-    }
-    else
+    static int Ids = 1;
+    if (*id)
     {
         Timer * tempTimer = findTimer(*id);
 
@@ -104,20 +95,35 @@ bool intervalIsDone(uint64_t nano, int * id, int repeat)
             return true;
         }
     }
+    else
+    {
+        SDL_LockMutex(timerMutex);
+        *id = Ids;
+        Ids++;
+
+        addTimer(nano, *id, repeat);
+        SDL_UnlockMutex(timerMutex);
+    }
     return false;
 }
 bool addTimerFunc(uint64_t nano, int * id, int repeat, int (*func)(void *), void * data)
 {
-    intervalIsDone(nano, id, repeat);
+    if (*id)
+    {
+        return intervalIsDone(nano, id, repeat);
+    }
+    else
+    {
+        intervalIsDone(nano, id, repeat);
+        SDL_LockMutex(timerMutex);
+        Timer * tempTimer = findTimer(*id);
 
-    SDL_LockMutex(timerMutex);
-    Timer * tempTimer = findTimer(*id);
+        tempTimer->data = data;
+        tempTimer->func = func;
+        SDL_UnlockMutex(timerMutex);
+    }
 
-    tempTimer->data = data;
-    tempTimer->func = func;
-    SDL_UnlockMutex(timerMutex);
-
-    return true;
+    return false;
 }
 bool deleteTimeSet(int *id)
 {
@@ -138,12 +144,7 @@ void accumlateTime(uint64_t nano)
     {
         if (timerS[i].id)
         {
-            if (timerS[i].repeat > 0)
-            {
-                timerS[i].accumulated += nano;
-                timerS[i].repeat--;
-            }
-            else if (timerS[i].repeat < 0)
+            if (timerS[i].repeat)
             {
                 timerS[i].accumulated += nano;
             }
@@ -152,6 +153,9 @@ void accumlateTime(uint64_t nano)
             {
                 timerS[i].accumulated -= timerS[i].nanoSecond;
                 timerS[i].done = true;
+
+                if (timerS[i].repeat > 0)
+                    timerS[i].repeat--;
             }
         }
     }

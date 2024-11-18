@@ -109,8 +109,8 @@ int process_input(void * arg)
         while(SDL_PollEvent(&event))
         {   
             SDL_Keycode key = event.key.key;
-            logMessage("pressed Key:%u", pressedKey);
-            logMessage("preKeyState: %u, keyState: %u, key: %s(%u)", preKeyState, event.type, SDL_GetKeyName(key));
+            // logMessage("pressed Key:%u", pressedKey);
+            // logMessage("preKeyState: %u, keyState: %u, key: %s(%u)", preKeyState, event.type, SDL_GetKeyName(key));
             if (event.type == SDL_EVENT_WINDOW_MINIMIZED)
             {
                 pause = (pause + 1) % 2;
@@ -128,7 +128,7 @@ int process_input(void * arg)
             if (event.type == SDL_EVENT_MOUSE_MOTION)
             {
                 //logMessage("mouse moving: %d", event.type);
-                logMessage("mouse: (%f, %f)", event.motion.x, event.motion.y);
+                // logMessage("mouse: (%f, %f)", event.motion.x, event.motion.y);
             }
 
             if (event.type == SDL_EVENT_MOUSE_BUTTON_UP)
@@ -278,6 +278,12 @@ int process_input(void * arg)
     return 0;
 }
 
+static int test(void * arg)
+{
+    printf("test test: %d\n", *((int *)arg));
+    return 0;
+}
+
 extern EmptyStack ballStack;
 extern vec2 UVs[MAX_CHARACTERS][FOUR_POINT];
 
@@ -292,10 +298,13 @@ int update(void * arg)
     int scene = 0;
 
     // float accumulator = 0.0f;
-    const float timeStep = 1.0f / 120.0f;
+    const float timeStep = 1000.0f / 120.0f;
 
+    uint64_t delta_time_ns = 0;
     float delta_time = 0.0f;
+    uint64_t totalTimeNs = 0;
     float totalTime = 0.0f;
+    bool first = true;
     // float timer = 0.0f;
     // uint64_t timerCount = 0;
     // float loadingTime = 0.0f;
@@ -305,12 +314,21 @@ int update(void * arg)
     {
         SDL_WaitSemaphore(main_semaphore1);
 
+        if (first)
+        {
+            last_frame_time = SDL_GetPerformanceCounter();
+            first = false;
+        }
+
         // Get delta_time factor converted to seconds to be used to update objects
         uint64_t tempTime = SDL_GetPerformanceCounter();
-        delta_time = (tempTime - last_frame_time) / (float)frequency;
+        delta_time_ns = ((tempTime - last_frame_time) * 1000000000ULL) / frequency;
         last_frame_time = tempTime;
-        totalTime += delta_time;
-        accumlateTime(f32_ms_to_ns(delta_time));
+        totalTimeNs += delta_time_ns;
+        delta_time = delta_time_ns / ((float)S_TO_NS);
+        totalTime = totalTimeNs / ((float)S_TO_NS);
+        accumlateTime(delta_time_ns);
+        // logMessage("TotalTime: %fms", totalTime);
 
 
         if (!Mix_PlayingMusic() && (scene == 0))
@@ -339,7 +357,7 @@ int update(void * arg)
         }
 
         static int id_1s = 0;
-        if (intervalIsDone(f32_ms_to_ns(1.0f), &id_1s, -1))
+        if (intervalIsDone(u32_s_to_ns(1), &id_1s, -1))
         {
             //logMessage("1.0s");
             leftButtonEnabled = true;
@@ -359,6 +377,10 @@ int update(void * arg)
         }
 
         testNum += 2 * delta_time;
+
+        static int id_test = 0;
+        int test_a = -1;
+        addTimerFunc(u32_s_to_ns(1), &id_test, 10, test, &test_a);
 
         if (cameraMove[0])
         {
