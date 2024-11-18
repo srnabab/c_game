@@ -5,6 +5,7 @@
 #include <time.h>
 
 #define MAX_MESSAGE_STORAGE 10000
+#define MAX_MESSAGE_IN_FILE 100000
 #define MAX_MESSAGE_SIZE 256
 
 static char ** message;
@@ -83,6 +84,65 @@ int putMessage(void * arg)
     {
         while(1)
         {
+            if ((messagePrintCount % MAX_MESSAGE_IN_FILE == 0) && messagePrintCount != 0)
+            {
+                fclose(log_file);
+                log_file = fopen(getPath(PathPath), "r+");
+                int fileOpenCount = 0;
+                while ((log_file == NULL))
+                {
+                    log_file = fopen(getPath(PathPath), "r+");
+                    fileOpenCount++;
+                    if (fileOpenCount == 10)
+                        return -1;
+                }
+
+                char buffer[255];
+                static int static_index = 0;
+                int index;
+                while ((fgets(buffer, 255, log_file) != NULL))
+                {
+                    buffer[strcspn(buffer, "\n")] = '\0';
+                    if (strcmp(buffer, "[LogPath]") == 0)
+                    {
+                        fgets(buffer, 255, log_file);
+                        int length = strlen(buffer);
+                        char digits[4];
+                        for (int i = 0;i < 4;i++)
+                        {
+                            digits[i] = 0;
+                        }
+                        for (int i = 0;i < strcspn(buffer, ".") - 7;i++)
+                        {
+                            digits[i] = buffer[7 + i];
+                        }
+                        index = atoi(digits) + 1;
+                        index = (index > static_index) ? index : static_index++;
+                        buffer[7] = '\0';
+                        sprintf(digits, "%d", index);
+                        strcat(buffer, digits);
+                        strcat(buffer, ".txt\0\0\0\0\0\0\0\0");
+                        fseek(log_file, -length, SEEK_CUR);
+                        fwrite(buffer, strlen(buffer), 1, log_file);
+                        break;
+                    }
+                }
+                static_index = index;
+
+                fclose(log_file);
+                char tempbuffer[255];
+                strcpy(tempbuffer, getPath(RootPath));
+                log_file = fopen(strcat(tempbuffer, buffer), "w");
+                fileOpenCount = 0;
+                while ((log_file == NULL))
+                {
+                    log_file = fopen(tempbuffer, "w");
+                    fileOpenCount++;
+                    if (fileOpenCount == 10)
+                        return -1;
+                }
+            }
+
             SDL_WaitSemaphore(log_semaphore);
             
             if (!game_is_running && (messageCount + 1 == messagePrintCount))

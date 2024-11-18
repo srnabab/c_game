@@ -15,10 +15,6 @@ PathType pathCompare(char * buffer)
     {
         return TextPng;
     }
-    else if ((strcmp(buffer, "[LogPath]") == 0))
-    {
-        return LogPath;
-    }
     else if ((strcmp(buffer, "[TriangleVertexShader]") == 0))
     {
         return TriangleVertexShader;
@@ -62,6 +58,18 @@ PathType pathCompare(char * buffer)
     else if ((strcmp(buffer, "[EmojiPng]") == 0))
     {
         return EmojiPng;
+    }
+    else if ((strcmp(buffer, "[PathPath]") == 0))
+    {
+        return PathPath;
+    }
+    else if ((strcmp(buffer, "[RootPath]") == 0))
+    {
+        return RootPath;
+    }
+    else if ((strcmp(buffer, "[LogPath]") == 0))
+    {
+        return LogPath;
     }
 
     return None;

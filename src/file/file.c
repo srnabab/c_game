@@ -43,16 +43,17 @@ static bool changeArgv_0(void)
     return true;
 }
 
-static char Path[MAX_FILES][MAX_PATHLEN];
+static char PathTemp[MAX_FILES][MAX_PATHLEN];
+static const char (*Path)[MAX_PATHLEN] = NULL;
 static bool initPath(void)
 {
     char pathFilePath[MAX_PATHLEN];
     strcpy(pathFilePath, __argv[0]);
 
-    memset(Path, 0, sizeof(Path));
+    memset(PathTemp, 0, sizeof(PathTemp));
     for (int i = 0;i < MAX_FILES;i++)
     {
-        memcpy(Path[i], pathFilePath, MAX_PATHLEN);
+        memcpy(PathTemp[i], pathFilePath, MAX_PATHLEN);
     }
 
     strcat(pathFilePath, "\\Path");
@@ -73,13 +74,14 @@ static bool initPath(void)
         {
             fgets(buffer, MAX_PATHLEN, fp);
             buffer[strcspn(buffer, "\n")] = '\0';
-            strcat(Path[type], buffer);
-            puts(Path[type]);
+            strcat(PathTemp[type], buffer);
+            puts(PathTemp[type]);
             fgets(buffer, MAX_PATHLEN, fp);
             fileCount++;
         }
     }
     fclose(fp);
+    Path = (const char (*)[MAX_PATHLEN])PathTemp;
     return true;
 }
 int initFileSystem(void)

@@ -7,7 +7,6 @@ typedef enum _PathType
     TextFont,
     TextHashTable,
     TextPng,
-    LogPath,
     TriangleVertexShader,
     TriangleFragmentShader,
     ParticleVertexShader,
@@ -19,6 +18,9 @@ typedef enum _PathType
     EmojiFont,
     EmojiHashTable,
     EmojiPng,
+    PathPath,
+    RootPath,
+    LogPath,
 } PathType;
 
 PathType pathCompare(char * buffer);
