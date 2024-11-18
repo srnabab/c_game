@@ -310,7 +310,7 @@ int update(void * arg)
         delta_time = (tempTime - last_frame_time) / (float)frequency;
         last_frame_time = tempTime;
         totalTime += delta_time;
-        accumlateTime(delta_time);
+        accumlateTime(f32_ms_to_ns(delta_time));
 
 
         if (!Mix_PlayingMusic() && (scene == 0))
@@ -338,7 +338,8 @@ int update(void * arg)
             textDisplay = false;
         }
 
-        if (intervalIsDone(1.0f))
+        static int id_1s = 0;
+        if (intervalIsDone(f32_ms_to_ns(1.0f), &id_1s, -1))
         {
             //logMessage("1.0s");
             leftButtonEnabled = true;
@@ -460,7 +461,8 @@ int update(void * arg)
 
         allInOne.pComputeUbo->deltaTime = delta_time;
         
-        while (intervalIsDone(timeStep))
+        static int id_timeStep = 0;
+        while (intervalIsDone(f32_ms_to_ns(timeStep), &id_timeStep, -1))
         {
             updateCircle(allInOne.pExtent2D, allInOne.ppVertices);
             // accumulator -= timeStep;
@@ -512,14 +514,6 @@ int render(void * arg)
         drawFrame(&allInOne);
         //logMessage("render frames: %d ----%s", render_frame, timeNow);
         render_frame++;
-        
-        if (pause)
-        {
-            SDL_LockMutex(pause_mutex);
-            SDL_WaitCondition(pause_condition, pause_mutex);
-            last_frame_time = SDL_GetPerformanceCounter();
-            SDL_UnlockMutex(pause_mutex);
-        }
 
         draw_done = true;
     }
@@ -588,6 +582,7 @@ int flow_control(void * arg)
 void destroy_window(void) 
 {
     destroyLog();
+    deInitTimerSystem();
     deInitMusicManagement();
     SDL_DestroyCondition(done_cond);
     SDL_DestroyCondition(pause_condition);

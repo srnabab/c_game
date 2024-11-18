@@ -1,202 +1,164 @@
 #include "std_c.h"
 #include "timer.h"
+#include "SDL3/SDL.h"
 
-#define MAX_TIMER_HASH_MAP 128
-
-static uint32_t timerCount = 0;
-
-typedef struct _TimerHash
+typedef struct _Timer
 {
-    float timeSet_Key;
-    float timeAccumulated;
-    bool timeDone;
-    bool hasValue;
-} TimerHash;
+    int id;
+    uint64_t nanoSecond;
+    uint64_t accumulated;
+    int repeat;
+    bool done;
+    int (*func)(void *);
+    void * data;
+} Timer;
 
-static TimerHash timerHash[MAX_TIMER_HASH_MAP];
+// typedef struct _TimerList
+// {
+//     Timer * node;
+//     Timer * next;
+// } TimerList;
+
+// static TimerList * root = NULL;
+static Timer timerS[128];
+static SDL_Mutex * timerMutex = NULL;
 
 bool initTimerSystem(void)
 {
-    for (int i = 0;i < MAX_TIMER_HASH_MAP;i++)
-    {
-        timerHash[i].hasValue = false;
-        timerHash[i].timeDone = false;
-        timerHash[i].timeAccumulated = 0.0f;
-    }
+    memset(timerS, 0, sizeof(timerS));
+
+    timerMutex = SDL_CreateMutex();
 
     return true;
 }
 
-static uint32_t hashFn1(uint32_t key)
+uint64_t f32_ms_to_ns(float ms)
 {
-    return key % MAX_TIMER_HASH_MAP;
+    return (uint64_t)(ms * MS_TO_NS);
+}
+uint64_t u32_s_to_ns(uint32_t s)
+{
+    return (uint64_t)(s * S_TO_NS);
+}
+uint64_t u32_min_to_ns(uint32_t min)
+{
+    return (uint64_t)(min * MIN_TO_NS);
+}
+uint64_t u32_hour_to_ns(uint32_t hour)
+{
+    return (uint64_t)(hour * HOUR_TO_NS);
 }
 
-static uint32_t hashFn2(uint32_t key)
+static bool addTimer(uint64_t nano, int id, int repeat)
 {
-    return (key + 7) % MAX_TIMER_HASH_MAP;
-}
-
-static uint32_t hashFn3(uint32_t key)
-{
-    return (key + 13) % MAX_TIMER_HASH_MAP;
-}
-
-static uint32_t hashFn4(uint32_t key)
-{
-    return (key * 3 + 17) % MAX_TIMER_HASH_MAP;
-}
-
-static bool insertTime(float time)
-{
-    static int count = 0;
-    if (count > 7)
-        return false;
-
-    uint32_t temp1;
-    memcpy(&temp1, &time, sizeof(float));
-
-    uint32_t pos1 = hashFn1(temp1);
-
-    if (!timerHash[pos1].hasValue)
+    for (int i = 0;i < 128;i++)
     {
-        timerHash[pos1].hasValue = true;
-        timerHash[pos1].timeSet_Key = time;
-        count = 0;
-        return true;
-    }
-
-    float old_key1 = timerHash[pos1].timeSet_Key;
-    timerHash[pos1].timeSet_Key = time;
-    uint32_t temp2;
-    memcpy(&temp2, &old_key1, sizeof(float));
-
-    uint32_t pos2 = hashFn2(temp2);
-
-    if (!timerHash[pos2].hasValue)
-    {
-        timerHash[pos2].hasValue = true;
-        timerHash[pos2].timeSet_Key = old_key1;
-        count = 0;
-        return true;
-    }
-
-    float old_key2 = timerHash[pos2].timeSet_Key;
-    timerHash[pos2].timeSet_Key = old_key1;
-    uint32_t temp3;
-    memcpy(&temp3, &old_key2, sizeof(float));
-
-    uint32_t pos3 = hashFn3(temp3);
-
-    if (!timerHash[pos3].hasValue)
-    {
-        timerHash[pos3].hasValue = true;
-        timerHash[pos3].timeSet_Key = old_key2;
-        count = 0;
-        return true;
-    }
-
-    float old_key3 = timerHash[pos3].timeSet_Key;
-    timerHash[pos3].timeSet_Key = old_key2;
-    uint32_t temp4;
-    memcpy(&temp4, &old_key3, sizeof(float));
-
-    uint32_t pos4 = hashFn4(temp4);
-
-    if (!timerHash[pos4].hasValue)
-    {
-        timerHash[pos4].hasValue = true;
-        timerHash[pos4].timeSet_Key = old_key3;
-        count = 0;
-        return true;
-    }
-
-    count++;
-    return insertTime(time);
-}
-
-static bool searchInterval(float second, int * index)
-{
-    uint32_t temp1;
-    memcpy(&temp1, &second, sizeof(float));
-
-    uint32_t pos1 = hashFn1(temp1);
-    uint32_t pos2 = hashFn2(temp1);
-    uint32_t pos3 = hashFn3(temp1);
-    uint32_t pos4 = hashFn4(temp1);
-
-    if (timerHash[pos1].hasValue && timerHash[pos1].timeSet_Key == second)
-    {
-        *index = pos1;
-        return true;
-    }
-    else if (timerHash[pos2].hasValue && timerHash[pos2].timeSet_Key == second)
-    {
-        *index = pos2;
-        return true;
-    }
-    else if (timerHash[pos3].hasValue && timerHash[pos3].timeSet_Key == second)
-    {
-        *index = pos3;
-        return true;
-    }
-    else if (timerHash[pos4].hasValue && timerHash[pos4].timeSet_Key == second)
-    {
-        *index = pos4;
-        return true;
+        if (timerS[i].id == 0)
+        {
+            timerS[i].id = id;
+            timerS[i].repeat = repeat;
+            timerS[i].nanoSecond = nano;
+            return true;
+        }
     }
 
     return false;
 }
-bool intervalIsDone(float second)
+static Timer * findTimer(int id)
 {
-    if (timerCount > 128)
-        return false;
-    int index;
-    //printf("second check: %f\n", second);
-    if (searchInterval(second, &index))
+    for (int i = 0;i < 128;i++)
     {
-        if (timerHash[index].timeDone)
+        if (id == timerS[i].id)
         {
-            timerHash[index].timeDone = false;
-            return true;
+            return &timerS[i];
         }
-        else
-        {
-            return false;
-        }
+    }
+    return NULL;
+}
+bool intervalIsDone(uint64_t nano, int * id, int repeat)
+{
+    if (*id == 0)
+    {
+        static int Ids = 1;
+        SDL_LockMutex(timerMutex);
+        *id = Ids;
+        Ids++;
+
+        addTimer(nano, *id, repeat);
+        SDL_UnlockMutex(timerMutex);
     }
     else
     {
-        insertTime(second);
-        timerCount++;
-        return false;
+        Timer * tempTimer = findTimer(*id);
+
+        SDL_LockMutex(timerMutex);
+        if (tempTimer->done)
+        {
+            if (tempTimer->func != NULL)
+            {
+                tempTimer->func(tempTimer->data);
+            }
+            tempTimer->done = false;
+
+            SDL_UnlockMutex(timerMutex);
+            return true;
+        }
     }
+    return false;
 }
-bool deleteTimeSet(float time)
+bool addTimerFunc(uint64_t nano, int * id, int repeat, int (*func)(void *), void * data)
 {
-    int index;
-    if (searchInterval(time, &index))
-    {
-        timerHash[index].hasValue = false;
-        timerHash[index].timeDone = false;
-        timerHash[index].timeAccumulated = 0.0f;
-    }
+    intervalIsDone(nano, id, repeat);
+
+    SDL_LockMutex(timerMutex);
+    Timer * tempTimer = findTimer(*id);
+
+    tempTimer->data = data;
+    tempTimer->func = func;
+    SDL_UnlockMutex(timerMutex);
+
     return true;
 }
-void accumlateTime(float deltaTime)
+bool deleteTimeSet(int *id)
 {
-    for (int i = 0;i < MAX_TIMER_HASH_MAP;i++)
+    Timer * tempTimer = findTimer(*id);
+
+    SDL_LockMutex(timerMutex);
+    memset(tempTimer, 0, sizeof(Timer));
+    SDL_UnlockMutex(timerMutex);
+
+    *id = 0;
+
+    return true;
+}
+void accumlateTime(uint64_t nano)
+{
+    SDL_LockMutex(timerMutex);
+    for (int i = 0;i < 128;i++)
     {
-        if (timerHash[i].hasValue)
+        if (timerS[i].id)
         {
-            timerHash[i].timeAccumulated += deltaTime;
-            //printf("time: %f\n", timerHash[i].timeAccumulated);
-            if (timerHash[i].timeAccumulated >= timerHash[i].timeSet_Key)
+            if (timerS[i].repeat > 0)
             {
-                timerHash[i].timeAccumulated -= timerHash[i].timeSet_Key;
-                timerHash[i].timeDone = true;
+                timerS[i].accumulated += nano;
+                timerS[i].repeat--;
+            }
+            else if (timerS[i].repeat < 0)
+            {
+                timerS[i].accumulated += nano;
+            }
+
+            if (timerS[i].accumulated >= timerS[i].nanoSecond)
+            {
+                timerS[i].accumulated -= timerS[i].nanoSecond;
+                timerS[i].done = true;
             }
         }
     }
+    SDL_UnlockMutex(timerMutex);
+}
+bool deInitTimerSystem(void)
+{
+    SDL_DestroyMutex(timerMutex);
+    return true;
 }

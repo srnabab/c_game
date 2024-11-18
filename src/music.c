@@ -112,7 +112,7 @@ bool deInitMusicManagement(void)
             Mix_FreeMusic(musics[i].music);
         }
     }
-    free(stack.data);
+    deInitStack(&stack);
 
     return true;
 }
