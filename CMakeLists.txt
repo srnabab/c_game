@@ -34,6 +34,7 @@ add_executable(game ${SRC_ROOT}/main.c
                     ${SRC_ROOT}/stack.c
                     ${SRC_ROOT}/timer.c
                     ${SRC_ROOT}/text.c
+                    ${SRC_ROOT}/pop_window.c
                     ${SRC_ROOT}/vk_code/vk_instace.c 
                     ${SRC_ROOT}/vk_code/vk_surface.c
                     ${SRC_ROOT}/vk_code/vk_physical_device.c 

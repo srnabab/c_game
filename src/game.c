@@ -14,6 +14,7 @@
 #include "world.h"
 #include "timer.h"
 #include "text.h"
+#include "pop_window.h"
 
 extern SDL_Thread * sdl_pid_update, * sdl_pid_draw, * sdl_pid_signal, * sdl_pid_control;
 
@@ -69,6 +70,7 @@ void setup(void)
     initTextSystem();
 
     initVulkan();
+    initPopWindow();
     initMusicManagement();
     loadMusic("10test.wav", "test");
 
@@ -103,6 +105,8 @@ int process_input(void * arg)
     static uint32_t preKeyState = 0;
     static uint8_t pressedKey = 0;
     //debug_printf("\nmain loop");
+
+    popWindow();
 
         SDL_Event event;
 
@@ -164,6 +168,7 @@ int process_input(void * arg)
                     textLine++;
                     textDisplay = true;
                     logMessage("textline: %u", textLine);
+                    pushMessage(SDL_MESSAGEBOX_INFORMATION, "text line", "textline: %u\n", textLine);
                 }
                 if (key == SDLK_RIGHT)
                 {
@@ -316,6 +321,7 @@ int update(void * arg)
 
         if (first)
         {
+            pushMessage(SDL_MESSAGEBOX_INFORMATION, "test", "first frame\n");
             last_frame_time = SDL_GetPerformanceCounter();
             first = false;
         }
@@ -334,7 +340,10 @@ int update(void * arg)
         if (!Mix_PlayingMusic() && (scene == 0))
         {
             playMusic("test");
+            pushMessage(SDL_MESSAGEBOX_INFORMATION, "music", "music start\n");
             Mix_VolumeMusic(0);
+            pushMessage(SDL_MESSAGEBOX_INFORMATION, "music", "music muted\n");
+            scene++;
         }
 
         if (textDisplay)
