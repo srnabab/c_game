@@ -1,4 +1,3 @@
-#include "constants.h"
 #include "game.h"
 #include "graphic.h"
 
@@ -7,14 +6,12 @@
 #include "SDL3/SDL.h"
 #include "SDL3/SDL_vulkan.h"
 
-#include "log.h"
 #include "custom_math.h"
 
 #include "music.h"
 #include "world.h"
 #include "timer.h"
 #include "text.h"
-#include "pop_window.h"
 
 extern SDL_Thread * sdl_pid_update, * sdl_pid_draw, * sdl_pid_signal, * sdl_pid_control;
 
@@ -44,6 +41,8 @@ extern Recreate recreateSwap;
 extern SDL_Semaphore * main_semaphore1;
 extern SDL_Semaphore * main_semaphore2;
 
+static SDL_MessageBoxData * boxData;
+
 // Setup function that runs once at the beginning of our program
 void setup(void) 
 {
@@ -63,6 +62,22 @@ void setup(void)
     main_semaphore1 = SDL_CreateSemaphore(0);
     main_semaphore2 = SDL_CreateSemaphore(0);
     //main_semaphore3 = SDL_CreateSemaphore(0);
+
+    static SDL_MessageBoxButtonData buttons[2] = {
+        {SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "No"},
+        {SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 2, "Yes"},
+    };
+
+    static SDL_MessageBoxData messageBoxData = {0};
+    messageBoxData.flags = SDL_MESSAGEBOX_WARNING;
+    messageBoxData.window = window;
+    messageBoxData.title = "Do you want to quit?";
+    messageBoxData.message = "Yes or No?";
+    messageBoxData.numbuttons = 2;
+    messageBoxData.buttons = buttons;
+    messageBoxData.colorScheme = NULL;
+
+    boxData = &messageBoxData;
 
     initWorld();
 
@@ -104,182 +119,205 @@ int process_input(void * arg)
 {
     static uint32_t preKeyState = 0;
     static uint8_t pressedKey = 0;
+    static int buttonId = 0;
     //debug_printf("\nmain loop");
 
-    popWindow();
+    if (willPopWindow())
+    {
+        pause = (pause + 1) % 2;
+        pause_signal_send = true;
+        popWindow();
+        pause = (pause + 1) % 2;
+        pause_signal_send = true;
+    }
 
-        SDL_Event event;
+    SDL_Event event;
 
-        while(SDL_PollEvent(&event))
-        {   
-            SDL_Keycode key = event.key.key;
-            // logMessage("pressed Key:%u", pressedKey);
-            // logMessage("preKeyState: %u, keyState: %u, key: %s(%u)", preKeyState, event.type, SDL_GetKeyName(key));
-            if (event.type == SDL_EVENT_WINDOW_MINIMIZED)
+    while(SDL_PollEvent(&event))
+    {   
+        SDL_Keycode key = event.key.key;
+        // logMessage("pressed Key:%u", pressedKey);
+        // logMessage("preKeyState: %u, keyState: %u, key: %s(%u)", preKeyState, event.type, SDL_GetKeyName(key));
+        if (event.type == SDL_EVENT_WINDOW_MINIMIZED)
+        {
+            pause = (pause + 1) % 2;
+            pause_signal_send = true;
+            continue;
+        }
+
+        if (event.type == SDL_EVENT_WINDOW_RESTORED)
+        {
+            pause = (pause + 1) % 2;
+            pause_signal_send = true;
+            continue;
+        }
+
+        if (event.type == SDL_EVENT_MOUSE_MOTION)
+        {
+            //logMessage("mouse moving: %d", event.type);
+            // logMessage("mouse: (%f, %f)", event.motion.x, event.motion.y);
+        }
+
+        if (event.type == SDL_EVENT_MOUSE_BUTTON_UP)
+        {
+            ;
+        }
+
+        if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
+        {
+            if (leftButtonEnabled && (ballCount < BALLCOUNT))
             {
-                pause = (pause + 1) % 2;
-                pause_signal_send = true;
-                continue;
-            }
-
-            if (event.type == SDL_EVENT_WINDOW_RESTORED)
-            {
-                    pause = (pause + 1) % 2;
-                    pause_signal_send = true;
-                    continue;
-            }
-
-            if (event.type == SDL_EVENT_MOUSE_MOTION)
-            {
-                //logMessage("mouse moving: %d", event.type);
-                // logMessage("mouse: (%f, %f)", event.motion.x, event.motion.y);
-            }
-
-            if (event.type == SDL_EVENT_MOUSE_BUTTON_UP)
-            {
-                ;
-            }
-
-            if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
-            {
-                if (leftButtonEnabled && (ballCount < BALLCOUNT))
+                if (event.button.button == SDL_BUTTON_LEFT)
                 {
-                    if (event.button.button == SDL_BUTTON_LEFT)
-                    {
-                        leftButtonClickedTimes++;
-                        ballCount++;
-                        ballAdd = true;
-                    }
-                }
-            }
-
-            if (event.type == SDL_EVENT_KEY_UP)
-            {
-                if (preKeyState == SDL_EVENT_KEY_DOWN)
-                {
-                    if (key == SDLK_Q)
-                    {
-                        scale = true;
-                    }
-                    logMessage("scale: %d", scale);
-                }
-                if (key == SDLK_T)
-                {
-                    textLine++;
-                    textDisplay = true;
-                    logMessage("textline: %u", textLine);
-                    pushMessage(SDL_MESSAGEBOX_INFORMATION, "text line", "textline: %u\n", textLine);
-                }
-                if (key == SDLK_RIGHT)
-                {
-                    cameraMove[3] = false;
-                }
-                if (key == SDLK_LEFT)
-                {
-                    cameraMove[2] = false;
-                }
-                if (key == SDLK_UP)
-                {
-                    cameraMove[0] = false;
-                }
-                if (key == SDLK_DOWN)
-                {
-                    cameraMove[1] = false;
-                }
-                if (key == SDLK_A)
-                {
-                    pictureMove[2] = false;
-                }
-                if (key == SDLK_D)
-                {
-                    pictureMove[3] = false;
-                }
-                if (key == SDLK_W)
-                {
-                    pictureMove[0] = false;
-                }
-                if (key == SDLK_S)
-                {
-                    pictureMove[1] = false;
+                    leftButtonClickedTimes++;
+                    ballCount++;
+                    ballAdd = true;
                 }
             }
-            
-            if (event.type == SDL_EVENT_KEY_DOWN)
-            {
-                if (key == SDLK_ESCAPE)
-                {
-                    Mix_HaltMusic();
-                    SDL_SignalSemaphore(main_semaphore1);
-                    SDL_SignalSemaphore(main_semaphore2);
-                    game_is_running = false;
-                }
-                if (key == SDLK_F11)
-                {
-                    //SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
-                    recreateSwap.pOldExtent2D->width = allInOne.pExtent2D->width;
-                    recreateSwap.pOldExtent2D->height = allInOne.pExtent2D->height;
-                    allInOne.pExtent2D->width = 1600;
-                    allInOne.pExtent2D->height = 900;
-                    SDL_SetWindowSize(window, allInOne.pExtent2D->width, allInOne.pExtent2D->height);
-                    logMessage("sdl width: %u, height: %u", allInOne.pExtent2D->width, allInOne.pExtent2D->height);
-                }
-                if (key == SDLK_PAUSE)
-                {
-                    pause = (pause + 1) % 2;
-                    pause_signal_send = true;
-                }
-                if (event.key.down && !event.key.repeat)
-                {
-                    pressedKey++;
-                }
-                if (key == SDLK_RIGHT)
-                {
-                    cameraMove[3] = true;
-                }
-                if (key == SDLK_LEFT)
-                {
-                    cameraMove[2] = true;
-                }
-                if (key == SDLK_UP)
-                {
-                    cameraMove[0] = true;
-                }
-                if (key == SDLK_DOWN)
-                {
-                    cameraMove[1] = true;
-                }
-                if (key == SDLK_A)
-                {
-                    pictureMove[2] = true;
-                }
-                if (key == SDLK_D)
-                {
-                    pictureMove[3] = true;
-                }
-                if (key == SDLK_W)
-                {
-                    pictureMove[0] = true;
-                }
-                if (key == SDLK_S)
-                {
-                    pictureMove[1] = true;
-                }
-            }
+        }
 
-            switch (event.type)
+        if (event.type == SDL_EVENT_KEY_UP)
+        {
+            if (preKeyState == SDL_EVENT_KEY_DOWN)
             {
-                case SDL_EVENT_QUIT:
+                if (key == SDLK_Q)
+                {
+                    scale = true;
+                }
+                logMessage("scale: %d", scale);
+            }
+            if (key == SDLK_T)
+            {
+                textLine++;
+                textDisplay = true;
+                logMessage("textline: %u", textLine);
+                pushMessage(SDL_MESSAGEBOX_INFORMATION, "text line", "textline: %u\n", textLine);
+            }
+            if (key == SDLK_RIGHT)
+            {
+                cameraMove[3] = false;
+            }
+            if (key == SDLK_LEFT)
+            {
+                cameraMove[2] = false;
+            }
+            if (key == SDLK_UP)
+            {
+                cameraMove[0] = false;
+            }
+            if (key == SDLK_DOWN)
+            {
+                cameraMove[1] = false;
+            }
+            if (key == SDLK_A)
+            {
+                pictureMove[2] = false;
+            }
+            if (key == SDLK_D)
+            {
+                pictureMove[3] = false;
+            }
+            if (key == SDLK_W)
+            {
+                pictureMove[0] = false;
+            }
+            if (key == SDLK_S)
+            {
+                pictureMove[1] = false;
+            }
+        }
+        
+        if (event.type == SDL_EVENT_KEY_DOWN)
+        {
+            if (key == SDLK_ESCAPE)
+            {
+                Mix_HaltMusic();
                 SDL_SignalSemaphore(main_semaphore1);
                 SDL_SignalSemaphore(main_semaphore2);
                 game_is_running = false;
-                break;
-
-                case SDL_EVENT_KEY_UP:
-                pressedKey--;
-                break;
             }
-            preKeyState = event.type;
+            if (key == SDLK_F11)
+            {
+                //SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
+                recreateSwap.pOldExtent2D->width = allInOne.pExtent2D->width;
+                recreateSwap.pOldExtent2D->height = allInOne.pExtent2D->height;
+                allInOne.pExtent2D->width = 1600;
+                allInOne.pExtent2D->height = 900;
+                SDL_SetWindowSize(window, allInOne.pExtent2D->width, allInOne.pExtent2D->height);
+                logMessage("sdl width: %u, height: %u", allInOne.pExtent2D->width, allInOne.pExtent2D->height);
+            }
+            if (key == SDLK_PAUSE)
+            {
+                pause = (pause + 1) % 2;
+                pause_signal_send = true;
+            }
+            if (event.key.down && !event.key.repeat)
+            {
+                pressedKey++;
+            }
+            if (key == SDLK_RIGHT)
+            {
+                cameraMove[3] = true;
+            }
+            if (key == SDLK_LEFT)
+            {
+                cameraMove[2] = true;
+            }
+            if (key == SDLK_UP)
+            {
+                cameraMove[0] = true;
+            }
+            if (key == SDLK_DOWN)
+            {
+                cameraMove[1] = true;
+            }
+            if (key == SDLK_A)
+            {
+                pictureMove[2] = true;
+            }
+            if (key == SDLK_D)
+            {
+                pictureMove[3] = true;
+            }
+            if (key == SDLK_W)
+            {
+                pictureMove[0] = true;
+            }
+            if (key == SDLK_S)
+            {
+                pictureMove[1] = true;
+            }
         }
+
+        switch (event.type)
+        {
+            case SDL_EVENT_QUIT:
+
+            pause = (pause + 1) % 2;
+            pause_signal_send = true;
+
+            SDL_ShowMessageBox(boxData, &buttonId);
+
+            if (buttonId == 2)
+            {
+                SDL_SignalSemaphore(main_semaphore1);
+                SDL_SignalSemaphore(main_semaphore2);
+                game_is_running = false;
+            }
+            else if (buttonId == 1)
+            {
+                pause = (pause + 1) % 2;
+                pause_signal_send = true;
+            }
+            break;
+
+            case SDL_EVENT_KEY_UP:
+            pressedKey--;
+            break;
+        }
+        preKeyState = event.type;
+    }
+
     return 0;
 }
 
@@ -615,6 +653,7 @@ void destroy_window(void)
     destroyLog();
     deInitTimerSystem();
     deInitMusicManagement();
+    deInitPopWindow();
     SDL_DestroyCondition(done_cond);
     SDL_DestroyCondition(pause_condition);
     SDL_DestroyMutex(pause_mutex);

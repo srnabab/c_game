@@ -90,6 +90,13 @@ static void cleanList(void)
     root->next = NULL;
     root->node = NULL;
 }
+bool willPopWindow(void)
+{
+    if (root->node != NULL)
+        return true;
+    
+    return false;
+}
 void popWindow(void)
 {
     SDL_LockMutex(mutex);
@@ -100,6 +107,7 @@ void popWindow(void)
         next = next->next;
     }
     cleanList();
+    
     SDL_UnlockMutex(mutex);
 }
 bool deInitPopWindow(void)

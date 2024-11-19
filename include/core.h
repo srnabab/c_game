@@ -15,5 +15,6 @@
 #include "struct.h"
 
 #include "stack.h"
+#include "pop_window.h"
 
 #endif //core.h
