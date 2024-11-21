@@ -3,7 +3,7 @@
 void configureDynamicsState(VkPipelineDynamicStateCreateInfo * pDynamicStateCreateInfo)
 {
     uint32_t dynamicCount = 2;
-    VkDynamicState * dynamicStates = (VkDynamicState *)malloc(dynamicCount * sizeof(VkDynamicState));
+    VkDynamicState * dynamicStates = (VkDynamicState *)SDL_malloc(dynamicCount * sizeof(VkDynamicState));
     dynamicStates[0] = VK_DYNAMIC_STATE_VIEWPORT;
     dynamicStates[1] = VK_DYNAMIC_STATE_SCISSOR;
 
@@ -15,14 +15,14 @@ void configureDynamicsState(VkPipelineDynamicStateCreateInfo * pDynamicStateCrea
 }
 static void getBlindingDescription(VkVertexInputBindingDescription ** pBindingDescription)
 {
-    (*pBindingDescription) = (VkVertexInputBindingDescription *)malloc(1 * sizeof(VkVertexInputBindingDescription));
+    (*pBindingDescription) = (VkVertexInputBindingDescription *)SDL_malloc(1 * sizeof(VkVertexInputBindingDescription));
     (*pBindingDescription)[0].binding = 0;
     (*pBindingDescription)[0].stride = sizeof(Vertex);
     (*pBindingDescription)[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 }
 static void getAttributeDescription(VkVertexInputAttributeDescription ** pAttributeDescription)
 {
-    *pAttributeDescription = (VkVertexInputAttributeDescription*)malloc(3 * sizeof(VkVertexInputAttributeDescription));
+    *pAttributeDescription = (VkVertexInputAttributeDescription*)SDL_malloc(3 * sizeof(VkVertexInputAttributeDescription));
     (*pAttributeDescription)[0].location = 0;
     (*pAttributeDescription)[0].binding = 0;
     (*pAttributeDescription)[0].format = VK_FORMAT_R32G32B32_SFLOAT;
@@ -64,7 +64,7 @@ void configurePipelineInputAssemblyState(VkPipelineInputAssemblyStateCreateInfo 
 }
 void configurePipelineViewportsStateCreateInfo(VkPipelineViewportStateCreateInfo * pPipelineViewportStateCreateInfo, VkExtent2D * pExtent2D)
 {
-    VkViewport * viewport = (VkViewport*)malloc(sizeof(VkViewport));
+    VkViewport * viewport = (VkViewport*)SDL_malloc(sizeof(VkViewport));
     viewport->x = 0.0f;
     viewport->y = 0.0f;
     viewport->width = (float)pExtent2D->width;
@@ -72,7 +72,7 @@ void configurePipelineViewportsStateCreateInfo(VkPipelineViewportStateCreateInfo
     viewport->minDepth = 0.0f;
     viewport->maxDepth = 1.0f;
 
-    VkRect2D * scissor = (VkRect2D *)malloc(sizeof(VkRect2D));
+    VkRect2D * scissor = (VkRect2D *)SDL_malloc(sizeof(VkRect2D));
     scissor->offset = (VkOffset2D){0, 0};
     scissor->extent = *pExtent2D;
 
@@ -130,7 +130,7 @@ void configurePipelineDepthStencilStateCreateInfo(VkPipelineDepthStencilStateCre
 }
 void configurePipelineColorBlendStateCreateInfo(uint32_t attachmentCount, VkPipelineColorBlendStateCreateInfo * pPipelineColorBlendStateCreateInfo)
 {
-    VkPipelineColorBlendAttachmentState * colorBlendAttachmentState = (VkPipelineColorBlendAttachmentState *)malloc(attachmentCount * sizeof(VkPipelineColorBlendAttachmentState));
+    VkPipelineColorBlendAttachmentState * colorBlendAttachmentState = (VkPipelineColorBlendAttachmentState *)SDL_malloc(attachmentCount * sizeof(VkPipelineColorBlendAttachmentState));
     
     for (uint32_t i = 0;i < attachmentCount;i++)
     {
@@ -309,10 +309,10 @@ void createGraphicsPipeline(VkDevice * pDevice, VkExtent2D * pExtent2D, uint32_t
                                         (void*)pipelineColorBlendStateCreateInfo.pAttachments,
                                         (void*)pipelineDynamicStateCreateInfo.pDynamicStates);
 
-    free((void*)pipelineVertexInputStateCreateInfo.pVertexBindingDescriptions);
-    free((void*)pipelineVertexInputStateCreateInfo.pVertexAttributeDescriptions);
-    free((void*)pipelineColorBlendStateCreateInfo.pAttachments);
-    free((void*)pipelineDynamicStateCreateInfo.pDynamicStates);
+    SDL_free((void*)pipelineVertexInputStateCreateInfo.pVertexBindingDescriptions);
+    SDL_free((void*)pipelineVertexInputStateCreateInfo.pVertexAttributeDescriptions);
+    SDL_free((void*)pipelineColorBlendStateCreateInfo.pAttachments);
+    SDL_free((void*)pipelineDynamicStateCreateInfo.pDynamicStates);
     //printf("graphicsPipelinecreated\n");
 }
 void createParticlePipeline(VkDevice * pDevice, VkExtent2D * pExtent2D, uint32_t shaderCount, VkPipelineShaderStageCreateInfo * pPipelineShaderStageCreateInfo, VkPipelineLayout * pPipelineLayout, VkRenderPass * pRenderPass, VkPipeline * pGraphicsPipeline)

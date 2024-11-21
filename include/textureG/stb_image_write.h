@@ -148,6 +148,10 @@ LICENSE
 
 */
 
+#include "SDL3/SDL_stdinc.h"
+#include "SDL3/SDL_assert.h"
+#include "SDL3/SDL_iostream.h"
+
 #ifndef INCLUDE_STB_IMAGE_WRITE_H
 #define INCLUDE_STB_IMAGE_WRITE_H
 
@@ -225,9 +229,9 @@ STBIWDEF void stbi_flip_vertically_on_write(int flip_boolean);
 #endif
 
 #ifndef STBIW_MALLOC
-#define STBIW_MALLOC(sz)        malloc(sz)
-#define STBIW_REALLOC(p,newsz)  realloc(p,newsz)
-#define STBIW_FREE(p)           free(p)
+#define STBIW_MALLOC(sz)        SDL_malloc(sz)
+#define STBIW_REALLOC(p,newsz)  SDL_realloc(p,newsz)
+#define STBIW_FREE(p)           SDL_free(p)
 #endif
 
 #ifndef STBIW_REALLOC_SIZED
@@ -236,13 +240,13 @@ STBIWDEF void stbi_flip_vertically_on_write(int flip_boolean);
 
 
 #ifndef STBIW_MEMMOVE
-#define STBIW_MEMMOVE(a,b,sz) memmove(a,b,sz)
+#define STBIW_MEMMOVE(a,b,sz) SDL_memmove(a,b,sz)
 #endif
 
 
 #ifndef STBIW_ASSERT
 #include <assert.h>
-#define STBIW_ASSERT(x) assert(x)
+#define STBIW_ASSERT(x) SDL_assert(x)
 #endif
 
 #define STBIW_UCHAR(x) (unsigned char) ((x) & 0xff)
@@ -301,9 +305,19 @@ STBIWDEF int stbiw_convert_wchar_to_utf8(char *buffer, size_t bufferlen, const w
 }
 #endif
 
+#if defined(_WIN32) && defined(STBIW_WINDOWS_UTF8)
 static FILE *stbiw__fopen(char const *filename, char const *mode)
 {
    FILE *f;
+#elif defined(_MSC_VER) && _MSC_VER >= 1400
+static FILE *stbiw__fopen(char const *filename, char const *mode)
+{
+   FILE *f;
+#else
+static SDL_IOStream *stbiw__fopen(char const *filename, char const *mode)
+{
+   SDL_IOStream *f;
+#endif
 #if defined(_WIN32) && defined(STBIW_WINDOWS_UTF8)
    wchar_t wMode[64];
    wchar_t wFilename[1024];
@@ -324,14 +338,20 @@ static FILE *stbiw__fopen(char const *filename, char const *mode)
    if (0 != fopen_s(&f, filename, mode))
       f=0;
 #else
-   f = fopen(filename, mode);
+   f = SDL_IOFromFile(filename, mode);
 #endif
    return f;
 }
 
 static int stbi__start_write_file(stbi__write_context *s, const char *filename)
 {
+#if defined(_WIN32) && defined(STBIW_WINDOWS_UTF8)
    FILE *f = stbiw__fopen(filename, "wb");
+#elif defined(_MSC_VER) && _MSC_VER >= 1400
+   FILE *f = stbiw__fopen(filename, "wb");
+#else
+   SDL_IOStream *f = stbiw__fopen(filename, "wb");
+#endif
    stbi__start_write_callbacks(s, stbi__stdio_write, (void *) f);
    return f != NULL;
 }
@@ -771,9 +791,9 @@ static int stbi_write_hdr_core(stbi__write_context *s, int x, int y, int comp, f
       s->func(s->context, header, sizeof(header)-1);
 
 #ifdef __STDC_LIB_EXT1__
-      len = sprintf_s(buffer, sizeof(buffer), "EXPOSURE=          1.0000000000000\n\n-Y %d +X %d\n", y, x);
+      len = SDL_snprintf(buffer, sizeof(buffer), "EXPOSURE=          1.0000000000000\n\n-Y %d +X %d\n", y, x);
 #else
-      len = sprintf(buffer, "EXPOSURE=          1.0000000000000\n\n-Y %d +X %d\n", y, x);
+      len = SDL_snprintf(buffer, 255, "EXPOSURE=          1.0000000000000\n\n-Y %d +X %d\n", y, x);
 #endif
       s->func(s->context, buffer, len);
 
@@ -1082,7 +1102,7 @@ static void stbiw__wpcrc(unsigned char **data, int len)
 
 static unsigned char stbiw__paeth(int a, int b, int c)
 {
-   int p = a + b - c, pa = abs(p-a), pb = abs(p-b), pc = abs(p-c);
+   int p = a + b - c, pa = SDL_abs(p-a), pb = SDL_abs(p-b), pc = SDL_abs(p-c);
    if (pa <= pb && pa <= pc) return STBIW_UCHAR(a);
    if (pb <= pc) return STBIW_UCHAR(b);
    return STBIW_UCHAR(c);
@@ -1156,7 +1176,7 @@ STBIWDEF unsigned char *stbi_write_png_to_mem(const unsigned char *pixels, int s
             // Estimate the entropy of the line using this filter; the less, the better.
             est = 0;
             for (i = 0; i < x*n; ++i) {
-               est += abs((signed char) line_buffer[i]);
+               est += SDL_abs((signed char) line_buffer[i]);
             }
             if (est < best_filter_val) {
                best_filter_val = est;
@@ -1214,15 +1234,31 @@ STBIWDEF unsigned char *stbi_write_png_to_mem(const unsigned char *pixels, int s
 #ifndef STBI_WRITE_NO_STDIO
 STBIWDEF int stbi_write_png(char const *filename, int x, int y, int comp, const void *data, int stride_bytes)
 {
+#if defined(_WIN32) && defined(STBIW_WINDOWS_UTF8)
    FILE *f;
+#elif defined(_MSC_VER) && _MSC_VER >= 1400
+   FILE *f;
+#else
+   SDL_IOStream *f;
+#endif
+
    int len;
    unsigned char *png = stbi_write_png_to_mem((const unsigned char *) data, stride_bytes, x, y, comp, &len);
    if (png == NULL) return 0;
 
    f = stbiw__fopen(filename, "wb");
    if (!f) { STBIW_FREE(png); return 0; }
+
+#if defined(_WIN32) && defined(STBIW_WINDOWS_UTF8)
    fwrite(png, 1, len, f);
    fclose(f);
+#elif defined(_MSC_VER) && _MSC_VER >= 1400
+   fwrite(png, 1, len, f);
+   fclose(f);
+#else
+   SDL_WriteIO(f, png, len);
+   SDL_CloseIO(f);
+#endif
    STBIW_FREE(png);
    return 1;
 }

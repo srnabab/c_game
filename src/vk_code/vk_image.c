@@ -70,18 +70,18 @@ VkResult createImageViews(VkDevice * pDevice, VkImage ** ppImages, uint32_t imag
 {
     VkResult result = VK_SUCCESS;
 
-    VkImageViewCreateInfo * imageViewCreatInfo = (VkImageViewCreateInfo *)malloc(imageCount * sizeof(VkImageViewCreateInfo));
+    VkImageViewCreateInfo * imageViewCreatInfo = (VkImageViewCreateInfo *)SDL_malloc(imageCount * sizeof(VkImageViewCreateInfo));
 
     //printf("pImageview: %p\n", pSwapchainImageView);
     //printf("imageview: %p\n", *pSwapchainImageView);
-    *ppImageView = (VkImageView *)calloc(imageCount, sizeof(VkImageView));
+    *ppImageView = (VkImageView *)SDL_calloc(imageCount, sizeof(VkImageView));
 
     for (uint32_t i = 0;i < imageCount;i++)
     {
         result |= createImageView(pDevice, &(*ppImages)[i], format, aspectFlags, &(*ppImageView)[i]);
     }
 
-    free(imageViewCreatInfo);
+    SDL_free(imageViewCreatInfo);
     //printf("swapchainImageView created\n");
 
     return result;

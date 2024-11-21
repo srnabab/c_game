@@ -1,5 +1,6 @@
 #include "music.h"
 #include "stack.h"
+#include "file.h"
 
 static MusicPack musics[MAX_SONG];
 static uint8_t songs = 0;
@@ -16,7 +17,7 @@ static uint8_t findSong(char * name)
             continue;
         }
 
-        if (strcmp(musics[i].name, name) == 0)
+        if (SDL_strcmp(musics[i].name, name) == 0)
         {
             return i;
         }
@@ -31,11 +32,6 @@ bool loadMusic(char * fileName, char * reName)
     {
         return false;
     }
-    
-    char filePath[100];
-    strcpy(filePath, __argv[0]);
-    strcat(filePath, "Audio\\");
-    strcat(filePath, fileName);
 
     uint8_t index;
     if (isEmpty(stack))
@@ -48,7 +44,7 @@ bool loadMusic(char * fileName, char * reName)
         stack.popFn(&stack, &index);
     }
 
-    musics[index].music = Mix_LoadMUS(filePath);
+    musics[index].music = Mix_LoadMUS(getPath(BackgroundMusic1));
     if (musics[index].music == NULL)
     {
         return false;

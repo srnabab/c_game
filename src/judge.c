@@ -20,42 +20,42 @@ void resultVulkan(VkResult result, FuncCode code, uint32_t num, ...)
         if (code == queuePresentF)
         {
             recreateSwapchain(&recreateSwap);
-            //printf("VK_SUBOPTIMAL_KHR(queuePresent)\n");
+            //SDL_Log("VK_SUBOPTIMAL_KHR(queuePresent)\n");
         }
         else if (code == acquireNextImageF)
         {
-            printf("VK_SUBOPTIMAL_KHR(acquireNext)\n");
+            logMessage("VK_SUBOPTIMAL_KHR(acquireNext)");
         }
         break;
 
         case VK_ERROR_OUT_OF_DATE_KHR:
         if (code == acquireNextImageF)
         {
-            //printf("VK_ERROR_OUT_OF_DATE_KHR(acquireNExt)\n");
+            //SDL_Log("VK_ERROR_OUT_OF_DATE_KHR(acquireNExt)\n");
             recreateSwapchain(&recreateSwap);
         }
         if (code == queuePresentF)
         {
             recreateSwapchain(&recreateSwap);
-            //printf("VK_ERROR_OUT_OF_DATE_KHR(queuePresent)\n");
+            //SDL_Log("VK_ERROR_OUT_OF_DATE_KHR(queuePresent)\n");
         }
         break;
 
         case VK_ERROR_SURFACE_LOST_KHR:
         if (code == acquireNextImageF)
         {
-            printf("VK_ERROR_SURFACE_LOST_KHR(acquireNExt)\n");
+            logMessage("VK_ERROR_SURFACE_LOST_KHR(acquireNExt)");
             recreateSwapchain(&recreateSwap);
         }
         if (code == queuePresentF)
         {
             recreateSwapchain(&recreateSwap);
-            printf("VK_ERROR_SURFACE_LOST_KHR(queuePresent)\n");
+            logMessage("VK_ERROR_SURFACE_LOST_KHR(queuePresent)");
         }
         break;
 
         default:
-        printf("result: %d\n", result);
+        logMessage("result: %d", result);
         clean = true;
         if (num > 0)
         {
@@ -63,187 +63,187 @@ void resultVulkan(VkResult result, FuncCode code, uint32_t num, ...)
             va_start(ap, num);
             for (uint32_t i = 0;i < num;i++)
             {
-                free(va_arg(ap, void *));
-                printf("freed(%u)\n", i);
+                SDL_free(va_arg(ap, void *));
+                logMessage("freed(%u)", i);
             }
             va_end(ap);
         }
         switch(code)
         {
             case vulkanVersionF:
-            fprintf(stderr, "\ncan't detect vulkan support\n");
+            logMessage("\ncan't detect vulkan support");
             goto end;
 
             case createInstanceF:
-            fprintf(stderr, "\ncreate instance error\n");
+            logMessage("\ncreate instance error");
             goto end;
 
             case createSurfaceF:
-            fprintf(stderr, "\ncreate surface error\n");
+            logMessage("\ncreate surface error");
             goto end;
 
             case pickPhysicalDeviceF:
-            fprintf(stderr, "\npick physical device error\n");
+            logMessage("\npick physical device error");
             goto end;
 
             case findQueueFamiliesF:
-            fprintf(stderr, "\nget SurfaceSupport error\n");
+            logMessage("\nget SurfaceSupport error");
             goto end;
 
             case checkDeviceExtensionSupportF:
-            fprintf(stderr, "\nenumerate device extension properties error\n");
+            logMessage("\nenumerate device extension properties error");
             goto end;
 
             case createLogicalDeviceF:
-            fprintf(stderr, "\ncreate logical device failed\n");
+            logMessage("\ncreate logical device failed");
             goto end;
 
             case getSurfaceFormatsF:
-            fprintf(stderr, "\nget surface format failed\n");
+            logMessage("\nget surface format failed");
             goto end;
 
             case getPresentModesF:
-            fprintf(stderr, "\nget present modes failed\n");
+            logMessage("\nget present modes failed");
             goto end;
 
             case getSurfaceCapabilitiesF:
-            fprintf(stderr, "\nget surface capabilitues failed\n");
+            logMessage("\nget surface capabilitues failed");
             goto end;
 
             case createSwapchainF:
-            fprintf(stderr, "\ncreate swapchain failed\n");
+            logMessage("\ncreate swapchain failed");
             goto end;
 
             case getSwapchainNumberF:
-            fprintf(stderr, "\nget swapchain number failed\n");
+            logMessage("\nget swapchain number failed");
             goto end;
 
             case createSwapchainImageF:
-            fprintf(stderr, "\ncreate swapchain image failed\n");
+            logMessage("\ncreate swapchain image failed");
             goto end;
 
             case createSwapchainImageViewsF:
-            fprintf(stderr, "\ncreate image view failed\n");
+            logMessage("\ncreate image view failed");
             goto end;
 
             case createShaderModuleF:
-            fprintf(stderr, "\nshaderModule created failed\n");
+            logMessage("\nshaderModule created failed");
             goto end;
 
             case createDescriptorSetLayoutF:
-            fprintf(stderr, "\ncreate descriptoy set layout failed\n");
+            logMessage("\ncreate descriptoy set layout failed");
             goto end;
 
             case createPipelineLayoutF:
-            fprintf(stderr, "\ncreate pipeline layout failed\n");
+            logMessage("\ncreate pipeline layout failed");
             goto end;
 
             case createRenderPassF:
-            fprintf(stderr, "\ncreate render pass failed\n");
+            logMessage("\ncreate render pass failed");
             goto end;
 
             case createGraphicsPipelineF:
-            fprintf(stderr, "\ncreate graphic pipeline failed\n");
+            logMessage("\ncreate graphic pipeline failed");
             goto end;
 
             case createCommandPoolF:
-            fprintf(stderr, "\ncreate command pool failed\n");
+            logMessage("\ncreate command pool failed");
             goto end;
 
             case createDepthResouresF:
-            fprintf(stderr, "\ncreate depth resoures failed\n");
+            logMessage("\ncreate depth resoures failed");
             goto end;
 
             case createFrameBufferF:
-            fprintf(stderr, "\ncreate frame buffer failed\n");
+            logMessage("\ncreate frame buffer failed");
             goto end;
 
             case createTextureImageF:
-            fprintf(stderr, "\ncreate texture image failed\n");
+            logMessage("\ncreate texture image failed");
             goto end;
 
             case createTextureImageViewF:
-            fprintf(stderr, "\ncreate texture image view failed\n");
+            logMessage("\ncreate texture image view failed");
             goto end;
 
             case createTextureSamplerF:
-            fprintf(stderr, "\ncreate texture sampler failed\n");
+            logMessage("\ncreate texture sampler failed");
             goto end;
 
             case createVertexBufferF:
-            fprintf(stderr, "\ncreate vertex buffer failed\n");
+            logMessage("\ncreate vertex buffer failed");
             goto end;
 
             case createIndexBufferF:
-            fprintf(stderr, "\ncreate index buffer failed\n");
+            logMessage("\ncreate index buffer failed");
             goto end;
 
             case createUniformBuffersF:
-            fprintf(stderr, "\ncreate uniform buffers failed\n");
+            logMessage("\ncreate uniform buffers failed");
             goto end;
 
             case createDescriptorPoolF:
-            fprintf(stderr, "\ncreate descriptor poo l failed\n");
+            logMessage("\ncreate descriptor poo l failed");
             goto end;
 
             case createDescriptorSetsF:
-            fprintf(stderr, "\ncreate descriptor sets failed\n");
+            logMessage("\ncreate descriptor sets failed");
             goto end;
 
             case createCommandbufferF:
-            fprintf(stderr, "\ncreate command buffer failed\n");
+            logMessage("\ncreate command buffer failed");
             goto end;
 
             case createSemaphoreF:
-            fprintf(stderr, "\ncreate semaphore failed\n");
+            logMessage("\ncreate semaphore failed");
             goto end;
 
             case createFenceF:
-            fprintf(stderr, "\ncreate fence failed\n");
+            logMessage("\ncreate fence failed");
             goto end;
 
             case initializeMovingBufferF:
-            fprintf(stderr, "\ninitialize moving buffer failed\n");
+            logMessage("\ninitialize moving buffer failed");
             goto end;
 
             case recordCommandBufferF:
-            fprintf(stderr, "\nrecord command buffer failed\n");
+            logMessage("\nrecord command buffer failed");
             goto end;
 
             case drawFrameF:
-            fprintf(stderr, "\ndraw error\n");
+            logMessage("\ndraw error");
             goto end;
 
             case waitForFencesF:
-            fprintf(stderr, "\nwait for fences failed\n");
+            logMessage("\nwait for fences failed");
             goto end;
 
             case resetFencesF:
-            fprintf(stderr, "\nreset fences failed\n");
+            logMessage("\nreset fences failed");
             goto end;
 
             case acquireNextImageF:
-            fprintf(stderr, "\nacquire next images failed\n");
+            logMessage("\nacquire next images failed");
             goto end;
 
             case resetCommandBufferF:
-            fprintf(stderr, "\nreset command buffer failed\n");
+            logMessage("\nreset command buffer failed");
             goto end;
 
             case endCommandBufferF:
-            fprintf(stderr, "\nend command buffer failed\n");
+            logMessage("\nend command buffer failed");
             goto end;
 
             case queueSumbitF:
-            fprintf(stderr, "\nqueue submit failed\n");
+            logMessage("\nqueue submit failed");
             goto end;
 
             case queuePresentF:
-            fprintf(stderr, "\nqueue present failed\n");
+            logMessage("\nqueue present failed");
             goto end;
 
             default:
-            fprintf(stderr, "\nunprocessed value\n");
+            logMessage("\nunprocessed value");
         }
     }
 

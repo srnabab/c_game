@@ -183,15 +183,15 @@ int process_input(void * arg)
                 if (key == SDLK_Q)
                 {
                     scale = true;
+                    // logMessage("scale: %d", scale);
                 }
-                logMessage("scale: %d", scale);
             }
             if (key == SDLK_T)
             {
                 textLine++;
                 textDisplay = true;
                 logMessage("textline: %u", textLine);
-                pushMessage(SDL_MESSAGEBOX_INFORMATION, "text line", "textline: %u\n", textLine);
+                // pushMessage(SDL_MESSAGEBOX_INFORMATION, "text line", "textline: %u\n", textLine);
             }
             if (key == SDLK_RIGHT)
             {
@@ -323,7 +323,7 @@ int process_input(void * arg)
 
 static int test(void * arg)
 {
-    printf("test test: %d\n", *((int *)arg));
+    SDL_Log("test test: %d\n", *((int *)arg));
     return 0;
 }
 
@@ -347,22 +347,22 @@ int update(void * arg)
     float delta_time = 0.0f;
     uint64_t totalTimeNs = 0;
     float totalTime = 0.0f;
-    bool first = true;
+    // bool first = true;
     // float timer = 0.0f;
     // uint64_t timerCount = 0;
     // float loadingTime = 0.0f;
 
-    printf("update init\n");
+    SDL_Log("update init\n");
     while (game_is_running)
     {
         SDL_WaitSemaphore(main_semaphore1);
 
-        if (first)
-        {
-            pushMessage(SDL_MESSAGEBOX_INFORMATION, "test", "first frame\n");
-            last_frame_time = SDL_GetPerformanceCounter();
-            first = false;
-        }
+        // if (first)
+        // {
+        //     pushMessage(SDL_MESSAGEBOX_INFORMATION, "test", "first frame\n");
+        //     last_frame_time = SDL_GetPerformanceCounter();
+        //     first = false;
+        // }
 
         // Get delta_time factor converted to seconds to be used to update objects
         uint64_t tempTime = SDL_GetPerformanceCounter();
@@ -378,9 +378,9 @@ int update(void * arg)
         if (!Mix_PlayingMusic() && (scene == 0))
         {
             playMusic("test");
-            pushMessage(SDL_MESSAGEBOX_INFORMATION, "music", "music start\n");
+            // pushMessage(SDL_MESSAGEBOX_INFORMATION, "music", "music start\n");
             Mix_VolumeMusic(0);
-            pushMessage(SDL_MESSAGEBOX_INFORMATION, "music", "music muted\n");
+            // pushMessage(SDL_MESSAGEBOX_INFORMATION, "music", "music muted\n");
             scene++;
         }
 
@@ -498,7 +498,7 @@ int update(void * arg)
 
             ballStack.pushFn(&ballStack, &x);
 
-            //printf("indices count: %u\n", indiceCount);
+            //SDL_Log("indices count: %u\n", indiceCount);
             //*allInOne.ppIndices = (uint16_t *)realloc(*allInOne.ppIndices, indiceCount * sizeof(uint16_t));
             int index = indiceCount;
             int serial = count;
@@ -513,7 +513,7 @@ int update(void * arg)
         }
 
         //updateUniformBuffer(*allInOne.pCurrentFrame, allInOne.pExtent2D, allInOne.pGraphicUbo, allInOne.pppGraphicUniformBufferMapped, *allInOne.pCamera_X, *allInOne.pCamera_Y, allInOne.pComputeUbo, allInOne.pppComputeUniformBufferMapped, delta_time);   
-        //printf("time: %.2f\n", time);
+        //SDL_Log("time: %.2f\n", time);
 
         glm_mat4_identity(pGraphicUbo->model);
         //glm_rotate(pUbo->model, time * glm_rad(90.0f), (vec3){0.0f, 0.0f, 1.0f});
@@ -574,7 +574,7 @@ int update(void * arg)
 // Render function to draw game objects in the SDL window
 int render(void * arg) 
 {
-    printf("render init\n");
+    SDL_Log("render init\n");
     uint32_t render_frame = 0;
     while (game_is_running)
     {
@@ -593,7 +593,7 @@ static bool control_done = 0;
 
 int signal_trans(void * arg)
 {
-    printf("signal init\n");
+    SDL_Log("signal init\n");
     while (game_is_running)
     {
         if (update_done && draw_done)
@@ -630,10 +630,10 @@ int flow_control(void * arg)
             SDL_SignalSemaphore(main_semaphore1);
             SDL_SignalSemaphore(main_semaphore2);
             //SDL_BroadcastCondition(main_cond);
-            //printf("main signal\n");
+            //SDL_Log("main signal\n");
             
             SDL_UnlockMutex(sdl_mutex);
-            //printf("unlock(%d)\n", code);
+            //SDL_Log("unlock(%d)\n", code);
 
         if (pause)
         {
@@ -650,10 +650,10 @@ int flow_control(void * arg)
 // Function to destroy SDL window and renderer
 void destroy_window(void) 
 {
-    destroyLog();
     deInitTimerSystem();
     deInitMusicManagement();
     deInitPopWindow();
+    destroyLog();
     SDL_DestroyCondition(done_cond);
     SDL_DestroyCondition(pause_condition);
     SDL_DestroyMutex(pause_mutex);

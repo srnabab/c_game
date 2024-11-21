@@ -30,9 +30,9 @@ CGLM_INLINE void glm_scale_self(Vertex ** ppVertices, float scale, uint32_t pict
 
     float actural_scale = scale - 1.0f;
 
-    float half_width_scaled = (fabsf((*ppVertices)[index].pos[0] - (*ppVertices)[index + 1].pos[0]) / 2) * actural_scale;
+    float half_width_scaled = (SDL_fabsf((*ppVertices)[index].pos[0] - (*ppVertices)[index + 1].pos[0]) / 2) * actural_scale;
     logMessage("x1: %f, x2: %f", (*ppVertices)[index].pos[0], (*ppVertices)[index + 1].pos[0]);
-    float half_height_scaled = (fabsf((*ppVertices)[index].pos[1] - (*ppVertices)[index + 3].pos[1]) / 2) * actural_scale;
+    float half_height_scaled = (SDL_fabsf((*ppVertices)[index].pos[1] - (*ppVertices)[index + 3].pos[1]) / 2) * actural_scale;
 
     (*ppVertices)[index].pos[1] -= half_height_scaled;
     (*ppVertices)[index + 1].pos[1] -= half_height_scaled;

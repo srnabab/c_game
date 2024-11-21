@@ -2,47 +2,50 @@
 #include "log.h"
 #include "file.h"
 #include "textureG.h"
+#include "SDL3/SDL_stdinc.h"
+#include "SDL3/SDL_log.h"
+#include "SDL3/SDL_iostream.h"
 #include <unistr.h>
 
 static Hash textHash[HASH_SIZE * 2];
 
 bool initTextSystem(void)
 {
-    FILE * fp;
+    SDL_IOStream * fp;
     int failed = 0;
 
-    if ((fp = fopen(getPath(TextHashTable), "rb")) == NULL)
+    if ((fp = SDL_IOFromFile(getPath(TextHashTable), "rb")) == NULL)
     {
         textureGenerate(getPath(TextFont), getPath(TextHashTable), getPath(TextPng), 1, 60, &failed);
         if (failed)
         {
             logMessage("font error(%d)", failed);
         }
-        fp = fopen(getPath(TextHashTable), "rb");
+        fp = SDL_IOFromFile(getPath(TextHashTable), "rb");
         if (fp == NULL)
         {
             return false;
         }
     }
 
-    fread(textHash, sizeof(Hash), HASH_SIZE * 2, fp);
-    fclose(fp);
+    SDL_ReadIO(fp, textHash, sizeof(Hash) * HASH_SIZE * 2);
+    SDL_CloseIO(fp);
     
-    if ((fp = fopen(getPath(EmojiHashTable), "rb")) == NULL)
+    if ((fp = SDL_IOFromFile(getPath(EmojiHashTable), "rb")) == NULL)
     {
         int code = textureGenerate(getPath(EmojiFont), getPath(EmojiHashTable), getPath(EmojiPng), 4, 132, &failed);
-        printf("%d\n", code);
+        SDL_Log("%d\n", code);
         if (failed)
         {
             logMessage("font error(%d)", failed);
         }
-        fp = fopen(getPath(EmojiHashTable), "rb");
+        fp = SDL_IOFromFile(getPath(EmojiHashTable), "rb");
         if (fp == NULL)
         {
             return false;
         }
     }
-    fclose(fp);
+    SDL_CloseIO(fp);
     // for (int x = 0;x < 2;x++)
     // for (int i = 0;i < 5000;i++)
     // {
@@ -56,7 +59,7 @@ vec2 UVs[MAX_CHARACTERS][FOUR_POINT];
 
 void getTextUV(char * text, uint32_t * textLen)
 {
-    size_t u8Len = strlen(text);
+    size_t u8Len = SDL_strlen(text);
     unistring_uint32_t * u32Result;
     size_t u32Len;
     u32Result = u8_to_u32((unistring_uint8_t*)text, u8Len, NULL, &u32Len);

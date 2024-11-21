@@ -9,14 +9,14 @@ void findQueueFamilies(VkPhysicalDevice * pPhysicalDevice, VkSurfaceKHR * pSurfa
 
     uint32_t queueFamilyCount = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(*pPhysicalDevice, &queueFamilyCount, VK_NULL_HANDLE);
-    logMessage("queueFamilyCount: %u\n", queueFamilyCount);
+    logMessage("queueFamilyCount: %u", queueFamilyCount);
 
-    VkQueueFamilyProperties * queueFamily = (VkQueueFamilyProperties *)malloc(queueFamilyCount * sizeof(VkQueueFamilyProperties));
+    VkQueueFamilyProperties * queueFamily = (VkQueueFamilyProperties *)SDL_malloc(queueFamilyCount * sizeof(VkQueueFamilyProperties));
     vkGetPhysicalDeviceQueueFamilyProperties(*pPhysicalDevice, &queueFamilyCount, queueFamily);
 
     for (uint32_t i = 0;i < queueFamilyCount;i++)
     {
-        logMessage("queueFlags: %d\n", queueFamily[i].queueFlags);
+        logMessage("queueFlags: %d", queueFamily[i].queueFlags);
     }
     bool ok1, ok2, ok3;
     ok1 = ok2 = ok3 = false;
@@ -54,7 +54,7 @@ void findQueueFamilies(VkPhysicalDevice * pPhysicalDevice, VkSurfaceKHR * pSurfa
     //printf("graphicsFamily:: %u\n", pQueueFamilyIndices->graphicsFamily);
     //printf("presentFamily: %u\n", pQueueFamilyIndices->presentFamily);
 
-    free(queueFamily);
+    SDL_free(queueFamily);
 }
 bool isDeviceSuitable(VkPhysicalDevice * pPhysicalDevice)
 {
@@ -73,7 +73,7 @@ bool checkDeviceExtensionSupport(VkPhysicalDevice * pPhysicalDevice)
     resultVulkan(vkEnumerateDeviceExtensionProperties(*pPhysicalDevice, VK_NULL_HANDLE, &extensionCount, VK_NULL_HANDLE), code, 0);
     //printf("extensionCount: %u\n", extensionCount);
 
-    VkExtensionProperties * availableExtension = (VkExtensionProperties *)malloc(extensionCount * sizeof(VkExtensionProperties));
+    VkExtensionProperties * availableExtension = (VkExtensionProperties *)SDL_malloc(extensionCount * sizeof(VkExtensionProperties));
     resultVulkan(vkEnumerateDeviceExtensionProperties(*pPhysicalDevice, VK_NULL_HANDLE, &extensionCount, availableExtension), code, 1, availableExtension);
 
     bool support = false;
@@ -83,9 +83,9 @@ bool checkDeviceExtensionSupport(VkPhysicalDevice * pPhysicalDevice)
         for (uint32_t i = 0;i < extensionCount;i++)
         {
             //printf("%s\n", availableExtension[i].extensionName);
-            if (!strcmp(deviceExtensions[q], availableExtension[i].extensionName))
+            if (!SDL_strcmp(deviceExtensions[q], availableExtension[i].extensionName))
             {
-                logMessage("extension %s supported\n", deviceExtensions[q]);
+                logMessage("extension %s supported", deviceExtensions[q]);
                 support = true;
                 break;
             }
@@ -94,7 +94,7 @@ bool checkDeviceExtensionSupport(VkPhysicalDevice * pPhysicalDevice)
             return support;
     }
 
-    free(availableExtension);
+    SDL_free(availableExtension);
 
     return support;
 }

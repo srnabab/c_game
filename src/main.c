@@ -24,9 +24,9 @@ uint64_t last_frame_time = 0;
 
 bool input_end = false;
 // Main function
-int main(int argc, char* args[]) 
+int main(int argc, char* argv[]) 
 {
-    initFileSystem();
+    initFileSystem(argc, argv);
     initLog();
     game_is_running = initWindow();
     logMessage("game_is_running: %d", game_is_running);
@@ -46,11 +46,11 @@ int main(int argc, char* args[])
         {
             SDL_WaitThread(sdl_pid_control, NULL);
             SDL_WaitThread(sdl_pid_signal, NULL);
-            printf("signal end\n");
+            SDL_Log("signal end\n");
             SDL_WaitThread(sdl_pid_update, NULL);
-            printf("update end\n");
+            SDL_Log("update end\n");
             SDL_WaitThread(sdl_pid_draw, NULL);
-            printf("draw end\n");
+            SDL_Log("draw end\n");
 
             cleanup(FuncCodeMax);
         }

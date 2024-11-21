@@ -97,25 +97,25 @@ static uint32_t boxCount = 1;
 void createCircle(float x, float y)
 {
     boxCount++;
-    bodyDefs = (b2BodyDef *)realloc(bodyDefs, boxCount * sizeof(b2BodyDef));
+    bodyDefs = (b2BodyDef *)SDL_realloc(bodyDefs, boxCount * sizeof(b2BodyDef));
     int index = boxCount - 1;
     bodyDefs[index] = b2DefaultBodyDef();
     bodyDefs[index].type = b2_dynamicBody;
     bodyDefs[index].position = (b2Vec2){x, y};
 
-    bodyIds = (b2BodyId *)realloc(bodyIds, boxCount * sizeof(b2BodyId));
+    bodyIds = (b2BodyId *)SDL_realloc(bodyIds, boxCount * sizeof(b2BodyId));
     bodyIds[index] = b2CreateBody(worldId, &bodyDefs[index]);
 
-    dynamicBoxs = (b2Circle *)realloc(dynamicBoxs, boxCount * sizeof(b2Circle));
+    dynamicBoxs = (b2Circle *)SDL_realloc(dynamicBoxs, boxCount * sizeof(b2Circle));
     dynamicBoxs[index].center = (b2Vec2){0.0f, 0.0f};
     dynamicBoxs[index].radius = 8.0f;
 
-    shapeDefs = (b2ShapeDef *)realloc(shapeDefs, boxCount * sizeof(b2ShapeDef));
+    shapeDefs = (b2ShapeDef *)SDL_realloc(shapeDefs, boxCount * sizeof(b2ShapeDef));
     shapeDefs[index] = b2DefaultShapeDef();
     shapeDefs[index].density = 1.0f;
     shapeDefs[index].friction = 0.3f;
 
-    shapeIds = (b2ShapeId *)realloc(shapeIds, boxCount * sizeof(b2ShapeId));
+    shapeIds = (b2ShapeId *)SDL_realloc(shapeIds, boxCount * sizeof(b2ShapeId));
     shapeIds[index] = b2CreateCircleShape(bodyIds[index], &shapeDefs[index], &dynamicBoxs[index]);
 }
 static bool stepDone = true;

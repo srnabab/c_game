@@ -70,7 +70,7 @@ void pushMessage(SDL_MessageBoxFlags flags, const char * title, char *fmt, ...)
     char message[255];
     va_list arg;
     va_start(arg, fmt);
-    vsprintf(message, fmt, arg);
+    SDL_vsnprintf(message, 255, fmt, arg);
     va_end(arg);
 
     insertMessage(flags, title, message);

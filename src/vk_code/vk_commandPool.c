@@ -17,7 +17,7 @@ void createCommandbuffer(VkDevice * pDevice, VkCommandPool * pCommandPool, VkCom
 {
     FuncCode code = createCommandbufferF;
 
-    *pCommandBuffer = (VkCommandBuffer *)malloc(MAX_FRAMES_IN_FLIGHT * sizeof(VkCommandBuffer));
+    *pCommandBuffer = (VkCommandBuffer *)SDL_malloc(MAX_FRAMES_IN_FLIGHT * sizeof(VkCommandBuffer));
 
     VkCommandBufferAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;

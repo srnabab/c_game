@@ -39,9 +39,9 @@ def generate_code(input_file, output_file_h, output_file_c):
             
             # 生成代码
             if i == 0:
-                function_lines.append(f'    if ((strcmp(buffer, "[{keyword}]") == 0))')
+                function_lines.append(f'    if ((SDL_strcmp(buffer, "[{keyword}]") == 0))')
             else:
-                function_lines.append(f'    else if ((strcmp(buffer, "[{keyword}]") == 0))')
+                function_lines.append(f'    else if ((SDL_strcmp(buffer, "[{keyword}]") == 0))')
             function_lines.append("    {")
             function_lines.append(f'        return {keyword};')
             function_lines.append("    }")
@@ -59,7 +59,7 @@ def generate_code(input_file, output_file_h, output_file_c):
     # 保存生成的代码到输出文件
     with open(output_file_c, "w") as f:
         f.write("#include \"file/path_compare.h\"\n\n")
-        f.write("#include <string.h>\n")
+        f.write("#include \"SDL3/SDL_stdinc.h\"\n")
         f.write("PathType pathCompare(char * buffer)\n{\n")
         for line in function_lines:
             f.write(line + "\n")

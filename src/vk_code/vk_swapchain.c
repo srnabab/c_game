@@ -14,7 +14,7 @@ void getSurfaceFormats(VkPhysicalDevice * pDevice, VkSurfaceKHR * pSurface, VkSu
         //printf("surfaceFormatsCount: %u\n", surfaceFormatCount);
     }
 
-    VkSurfaceFormatKHR * surfaceFormat = (VkSurfaceFormatKHR *)malloc(surfaceFormatCount * sizeof(VkSurfaceFormatKHR));
+    VkSurfaceFormatKHR * surfaceFormat = (VkSurfaceFormatKHR *)SDL_malloc(surfaceFormatCount * sizeof(VkSurfaceFormatKHR));
     if (surfaceFormatCount != 0)
     {
         resultVulkan(vkGetPhysicalDeviceSurfaceFormatsKHR(*pDevice, *pSurface, &surfaceFormatCount, surfaceFormat), code, 1, surfaceFormat);
@@ -34,7 +34,7 @@ void getSurfaceFormats(VkPhysicalDevice * pDevice, VkSurfaceKHR * pSurface, VkSu
     if (!selected)
         *pSurfaceFormat = surfaceFormat[0];
 
-    free(surfaceFormat);
+    SDL_free(surfaceFormat);
 }
 void getPresentModes(VkPhysicalDevice * pDevice, VkSurfaceKHR * pSurface, VkPresentModeKHR * pPresentMode)
 {
@@ -46,7 +46,7 @@ void getPresentModes(VkPhysicalDevice * pDevice, VkSurfaceKHR * pSurface, VkPres
         //printf("presentModeCount: %u\n ", presentModeCount);
     }
 
-    VkPresentModeKHR * presentModes = (VkPresentModeKHR *)malloc(presentModeCount * sizeof(VkPresentModeKHR));
+    VkPresentModeKHR * presentModes = (VkPresentModeKHR *)SDL_malloc(presentModeCount * sizeof(VkPresentModeKHR));
     if (presentModeCount != 0) 
     {
         resultVulkan(vkGetPhysicalDeviceSurfacePresentModesKHR(*pDevice, *pSurface, &presentModeCount, presentModes), code, 1, presentModes);
@@ -63,7 +63,7 @@ void getPresentModes(VkPhysicalDevice * pDevice, VkSurfaceKHR * pSurface, VkPres
         *pPresentMode = VK_PRESENT_MODE_FIFO_KHR;
     }
 
-    free(presentModes);
+    SDL_free(presentModes);
 }
 void getSurfaceCapabilities(VkPhysicalDevice * pPhysicalDevice, VkSurfaceKHR * pSurface, VkSurfaceCapabilitiesKHR * pSurfaceCapabilities)
 {
@@ -147,10 +147,10 @@ void createSwapchainImage(VkDevice * pDevice, VkSwapchainKHR * pSwapchain, uint3
     FuncCode code = createSwapchainImageF;
     if (*pSwapchainImages != NULL)
     {
-        free(*pSwapchainImages);
+        SDL_free(*pSwapchainImages);
         *pSwapchainImages = VK_NULL_HANDLE;
     }
-    *pSwapchainImages = (VkImage *)malloc(imageCount * sizeof(VkImage));
+    *pSwapchainImages = (VkImage *)SDL_malloc(imageCount * sizeof(VkImage));
     resultVulkan(vkGetSwapchainImagesKHR(*pDevice, *pSwapchain, &imageCount, *pSwapchainImages), code, 0);
 }
 void createSwapchainImageView(VkDevice * pDevice, VkImage ** ppImages, uint32_t imageCount, VkFormat format, VkImageAspectFlags aspectFlags, VkImageView ** ppImageView)

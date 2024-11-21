@@ -4,7 +4,7 @@ void addDescriptorSetLayout(VkDevice * pDevice, uint32_t bindingCount, VkDescrip
 {
     // FuncCode code = createDescriptorSetLayoutF;
 
-    *ppDescriptorSetLayout = (VkDescriptorSetLayout *)realloc(*ppDescriptorSetLayout, (set + 1) * sizeof(VkDescriptorSetLayout));
+    *ppDescriptorSetLayout = (VkDescriptorSetLayout *)SDL_realloc(*ppDescriptorSetLayout, (set + 1) * sizeof(VkDescriptorSetLayout));
 
     VkDescriptorSetLayoutCreateInfo layoutInfo = {};
     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -19,7 +19,7 @@ void setDescriptorSetLayoutBinding(VkDescriptorType descriptorType, VkShaderStag
 {
     (*pBindingCount)++;
 
-    (*ppDescriptorSetLayoutBinding) = (VkDescriptorSetLayoutBinding *)realloc(*ppDescriptorSetLayoutBinding, *pBindingCount * sizeof(VkDescriptorSetLayoutBinding));
+    (*ppDescriptorSetLayoutBinding) = (VkDescriptorSetLayoutBinding *)SDL_realloc(*ppDescriptorSetLayoutBinding, *pBindingCount * sizeof(VkDescriptorSetLayoutBinding));
 
     uint32_t index = *pBindingCount - 1;
     (*ppDescriptorSetLayoutBinding)[index].binding = binding;
@@ -28,7 +28,7 @@ void setDescriptorSetLayoutBinding(VkDescriptorType descriptorType, VkShaderStag
     (*ppDescriptorSetLayoutBinding)[index].stageFlags = stage;
     (*ppDescriptorSetLayoutBinding)[index].pImmutableSamplers = VK_NULL_HANDLE;
 
-    logMessage("binding: %u\n", binding);
+    logMessage("binding: %u", binding);
 }
 void createDescriptorPool(VkDevice * pDevice, uint32_t poolSizeCount, VkDescriptorPoolSize * pPoolSizes, uint32_t maxSets, VkDescriptorPool * pDescriptorPool)
 {
@@ -47,7 +47,7 @@ void createDescriptorPool(VkDevice * pDevice, uint32_t poolSizeCount, VkDescript
 void setDescriptorPoolSize(VkDescriptorType type, uint32_t descriptorCount, uint32_t * pPoolCount, VkDescriptorPoolSize ** ppPoolSize)
 {
     (*pPoolCount)++;
-    (*ppPoolSize) = (VkDescriptorPoolSize *)realloc(*ppPoolSize, *pPoolCount * sizeof(VkDescriptorPoolSize));
+    (*ppPoolSize) = (VkDescriptorPoolSize *)SDL_realloc(*ppPoolSize, *pPoolCount * sizeof(VkDescriptorPoolSize));
 
     uint32_t index = *pPoolCount - 1;
     (*ppPoolSize)[index].type = type;
@@ -67,12 +67,12 @@ void createGraphicDescriptorSets(VkDevice * pDevice, VkBuffer ** ppUniformBuffer
 {
     FuncCode code = createDescriptorSetsF;
 
-    VkDescriptorSetLayout * layouts = (VkDescriptorSetLayout *)malloc(MAX_FRAMES_IN_FLIGHT * sizeof(VkDescriptorSetLayout));
+    VkDescriptorSetLayout * layouts = (VkDescriptorSetLayout *)SDL_malloc(MAX_FRAMES_IN_FLIGHT * sizeof(VkDescriptorSetLayout));
     for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
     {
         layouts[i] = *pDescriptorLayout;
     }
-    *ppDescriptorSets = (VkDescriptorSet *)calloc(MAX_FRAMES_IN_FLIGHT ,sizeof(VkDescriptorSet));
+    *ppDescriptorSets = (VkDescriptorSet *)SDL_calloc(MAX_FRAMES_IN_FLIGHT ,sizeof(VkDescriptorSet));
 
     VkDescriptorSetAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -128,12 +128,12 @@ void createGraphicDescriptorSets(VkDevice * pDevice, VkBuffer ** ppUniformBuffer
 }
 void createParticleDescriptorSets(VkDevice * pDevice, VkBuffer ** ppUniformBuffers, VkDescriptorSetLayout * pDescriptorLayout, VkDescriptorPool * pDescriptorPool, VkDescriptorSet ** ppDescriptorSets)
 {
-    VkDescriptorSetLayout * layouts = (VkDescriptorSetLayout *)malloc(MAX_FRAMES_IN_FLIGHT * sizeof(VkDescriptorSetLayout));
+    VkDescriptorSetLayout * layouts = (VkDescriptorSetLayout *)SDL_malloc(MAX_FRAMES_IN_FLIGHT * sizeof(VkDescriptorSetLayout));
     for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
     {
         layouts[i] = *pDescriptorLayout;
     }
-    *ppDescriptorSets = (VkDescriptorSet *)calloc(MAX_FRAMES_IN_FLIGHT, sizeof(VkDescriptorSet));
+    *ppDescriptorSets = (VkDescriptorSet *)SDL_calloc(MAX_FRAMES_IN_FLIGHT, sizeof(VkDescriptorSet));
 
     VkDescriptorSetAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -142,7 +142,7 @@ void createParticleDescriptorSets(VkDevice * pDevice, VkBuffer ** ppUniformBuffe
     allocInfo.descriptorPool = *pDescriptorPool;
     allocInfo.pSetLayouts = layouts;
 
-    logMessage("allocate descriptor sets: %d\n", vkAllocateDescriptorSets(*pDevice, &allocInfo, *ppDescriptorSets));
+    logMessage("allocate descriptor sets: %d", vkAllocateDescriptorSets(*pDevice, &allocInfo, *ppDescriptorSets));
 
     for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
     {
@@ -170,12 +170,12 @@ void createParticleDescriptorSets(VkDevice * pDevice, VkBuffer ** ppUniformBuffe
 }
 void createComputeDescriptorSets(VkDevice * pDevice, VkBuffer ** ppUniformBuffers, VkBuffer ** ppShaderStorageBuffers, VkDescriptorSetLayout * pDescriptorLayout, VkDescriptorPool * pDescriptorPool, VkDescriptorSet ** ppDescriptorSets)
 {
-    VkDescriptorSetLayout * layouts = (VkDescriptorSetLayout *)malloc(3 * sizeof(VkDescriptorSetLayout));
+    VkDescriptorSetLayout * layouts = (VkDescriptorSetLayout *)SDL_malloc(3 * sizeof(VkDescriptorSetLayout));
     for (int i = 0;i < 3;i++)
     {
         layouts[i] = *pDescriptorLayout;
     }
-    *ppDescriptorSets = (VkDescriptorSet *)calloc(2, sizeof(VkDescriptorSet));
+    *ppDescriptorSets = (VkDescriptorSet *)SDL_calloc(2, sizeof(VkDescriptorSet));
 
     VkDescriptorSetAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -184,7 +184,7 @@ void createComputeDescriptorSets(VkDevice * pDevice, VkBuffer ** ppUniformBuffer
     allocInfo.descriptorPool = *pDescriptorPool;
     allocInfo.pSetLayouts = layouts;
 
-    logMessage("allocate descriptor sets: %d\n", vkAllocateDescriptorSets(*pDevice, &allocInfo, *ppDescriptorSets));
+    logMessage("allocate descriptor sets: %d", vkAllocateDescriptorSets(*pDevice, &allocInfo, *ppDescriptorSets));
 
     for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
     {

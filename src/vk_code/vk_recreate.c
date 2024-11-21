@@ -72,15 +72,15 @@ void recreateSwapchain(Recreate * pRecreate)
     resultVulkan(vkDeviceWaitIdle(*pDevice), code, 0);
     //printf("wait done\n");
     
-    printf("ppSwaapchainFramebuffer: %p\n", pRecreate->ppSwapchainFramebuffer);
+    SDL_Log("ppSwaapchainFramebuffer: %p\n", pRecreate->ppSwapchainFramebuffer);
     destroyedFrameBuffer(pDevice, *pRecreate->imageCount, *pRecreate->ppSwapchainFramebuffer);
-    free(*pRecreate->ppSwapchainFramebuffer);
+    SDL_free(*pRecreate->ppSwapchainFramebuffer);
     *pRecreate->ppSwapchainFramebuffer = VK_NULL_HANDLE;
 
     destroyImageViews(pDevice, *pRecreate->ppSwapchainImageViews, *pRecreate->imageCount);
-    free(*pRecreate->ppSwapchainImageViews);
+    SDL_free(*pRecreate->ppSwapchainImageViews);
     *pRecreate->ppSwapchainImageViews = VK_NULL_HANDLE;
-    free(*pRecreate->ppSwapchainImages);
+    SDL_free(*pRecreate->ppSwapchainImages);
     *pRecreate->ppSwapchainImages = VK_NULL_HANDLE;
 
     vkDestroyImageView(*pDevice, *pRecreate->pDepthImageView, VK_NULL_HANDLE);
@@ -105,9 +105,9 @@ void recreateSwapchain(Recreate * pRecreate)
     createSwapchainImage(pDevice, pRecreate->pSwapchain, *pRecreate->imageCount, pRecreate->ppSwapchainImages);
     createImageViews(pDevice, pRecreate->ppSwapchainImages, *pRecreate->imageCount, pRecreate->swapchainFormat, VK_IMAGE_ASPECT_COLOR_BIT, pRecreate->ppSwapchainImageViews);
     createDepthResoures(pPhysicalDevice, pDevice, pRecreate->pExtent2D, pRecreate->pSwapchainCommandPool, pRecreate->pGraphicQueue, pRecreate->pDepthImage, pRecreate->pDepthImageMem, pRecreate->pDepthImageView);
-    printf("depth resoures created\n");
+    SDL_Log("depth resoures created\n");
     createFrameBuffer(pDevice, pRecreate->pExtent2D, *pRecreate->imageCount, *pRecreate->ppSwapchainImageViews, pRecreate->pDepthImageView, pRecreate->pRenderPass, pRecreate->ppSwapchainFramebuffer);
-    printf("swapchain framebuffer created\n");
+    SDL_Log("swapchain framebuffer created\n");
 
     //fix_ratio(pRecreate->ppVertices, *pRecreate->pOldExtent2D, *pRecreate->pExtent2D, 0);
     //fix_ratio(pRecreate->ppVertices, *pRecreate->pOldExtent2D, *pRecreate->pExtent2D, 1);
@@ -115,5 +115,5 @@ void recreateSwapchain(Recreate * pRecreate)
 
     //reInitializePosition(64, 64, *pRecreate->pExtent2D, pRecreate->ppVertices, 0);
     
-    printf("recreate swapchain\n");
+    SDL_Log("recreate swapchain\n");
 }

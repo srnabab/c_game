@@ -1,6 +1,10 @@
 #include "file/file.h"
 #include "log.h"
 #include "std_c.h"
+#include "SDL3/SDL_stdinc.h"
+#include "SDL3/SDL_iostream.h"
+#include "SDL3/SDL_log.h"
+#include "SDL_complement.h"
 
 uint8_t log_print = 0;
 uint8_t log_txt = 0;
@@ -8,17 +12,17 @@ uint8_t log_txt = 0;
 extern bool logOutEnabled;
 extern bool logEnabled;
 
-static bool setArgments(void)
+static bool setArgments(int argc, char * argv[])
 {
-    for (int i = 1;i < __argc;i++)
+    for (int i = 1;i < argc;i++)
     {
-        if (strcmp(__argv[i], "-Log-print") == 0)
+        if (SDL_strcmp(argv[i], "-Log-print") == 0)
         {
             logEnabled = true;
             logOutEnabled = false;
             log_print = i;
         }
-        else if (strcmp(__argv[i], "-Log-txt") == 0)
+        else if (SDL_strcmp(argv[i], "-Log-txt") == 0)
         {
             logEnabled = true;
             logOutEnabled = true;
@@ -31,24 +35,17 @@ static bool setArgments(void)
     }
     return true;
 }
-static bool changeArgv_0(void)
-{
-    char * slash = strrchr(__argv[0], '\\');
-
-    if (slash == NULL) return false;
-
-    *(slash + 1) = '\0';
-
-    //printf("root directory: %s\n", __argv[0]);
-    return true;
-}
 
 static char PathTemp[MAX_FILES][MAX_PATHLEN];
 static const char (*Path)[MAX_PATHLEN] = NULL;
-static bool initPath(void)
+static bool initPath(char * argv)
 {
     char pathFilePath[MAX_PATHLEN];
-    strcpy(pathFilePath, __argv[0]);
+    SDL_strlcpy(pathFilePath, argv, 255);
+
+    char * slash = SDL_strrchr(pathFilePath, '\\');
+    if (slash == NULL) return false;
+    *(slash + 1) = '\0';
 
     memset(PathTemp, 0, sizeof(PathTemp));
     for (int i = 0;i < MAX_FILES;i++)
@@ -56,39 +53,39 @@ static bool initPath(void)
         memcpy(PathTemp[i], pathFilePath, MAX_PATHLEN);
     }
 
-    strcat(pathFilePath, "\\Path");
-    FILE * fp = NULL;
-    if ((fp = fopen(pathFilePath, "r")) == NULL)
+    SDL_strlcat(pathFilePath, "\\Path", 255);
+    SDL_IOStream * io  = NULL;
+    if ((io = SDL_IOFromFile(pathFilePath, "r")) == NULL)
     {
         return false;
     }
-    char buffer[256];
+    char buffer[255];
     int fileCount = 0;
-    while (fgets(buffer, MAX_PATHLEN, fp) != NULL)
+    while (SDL_IOgets(buffer, MAX_PATHLEN, io) != NULL)
     {
-        buffer[strcspn(buffer, "\n")] = '\0';
+        buffer[SDL_strcspn(buffer, "\r")] = '\0';
         PathType type = None;
         type = pathCompare(buffer);
 
         if (type)
         {
-            fgets(buffer, MAX_PATHLEN, fp);
-            buffer[strcspn(buffer, "\n")] = '\0';
-            strcat(PathTemp[type], buffer);
-            puts(PathTemp[type]);
-            fgets(buffer, MAX_PATHLEN, fp);
+            SDL_IOgets(buffer, MAX_PATHLEN, io);
+            buffer[SDL_strcspn(buffer, "\r")] = '\0';
+            SDL_strlcat(PathTemp[type], buffer, 255);
+            SDL_Log(PathTemp[type]);
+            SDL_IOgets(buffer, MAX_PATHLEN, io);
             fileCount++;
         }
+        memset(buffer, 0, MAX_PATHLEN);
     }
-    fclose(fp);
+    SDL_CloseIO(io);
     Path = (const char (*)[MAX_PATHLEN])PathTemp;
     return true;
 }
-int initFileSystem(void)
+int initFileSystem(int argc, char * argv[])
 {
-    if (!changeArgv_0()) return -1;
-    if (!setArgments()) return -2;
-    if (!initPath()) return -3;
+    if (!setArgments(argc, argv)) return -2;
+    if (!initPath(argv[0])) return -3;
 
     return 0;
 }

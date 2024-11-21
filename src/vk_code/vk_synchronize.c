@@ -4,7 +4,7 @@ void createSemaphore(VkDevice * pDevice, VkSemaphore ** pSemaphore)
 {
     FuncCode code = createSemaphoreF;
 
-    *pSemaphore = (VkSemaphore *)malloc(MAX_FRAMES_IN_FLIGHT * sizeof(VkSemaphore));
+    *pSemaphore = (VkSemaphore *)SDL_malloc(MAX_FRAMES_IN_FLIGHT * sizeof(VkSemaphore));
 
     VkSemaphoreCreateInfo semaphoreCreateInfo = {
         VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
@@ -20,7 +20,7 @@ void createFence(VkDevice * pDevice, VkFence ** pFence)
 {
     FuncCode code = createFenceF;
 
-    *pFence = (VkFence *)malloc(MAX_FRAMES_IN_FLIGHT * sizeof(VkFence));
+    *pFence = (VkFence *)SDL_malloc(MAX_FRAMES_IN_FLIGHT * sizeof(VkFence));
 
     VkFenceCreateInfo fenceCreateInfo = {
         VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,

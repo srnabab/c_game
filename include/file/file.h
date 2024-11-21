@@ -6,7 +6,7 @@
 #define MAX_PATHLEN 255
 #define MAX_FILES 65535
 
-int initFileSystem(void);
+int initFileSystem(int argc, char * argv[]);
 const char * getPath(PathType type);
 
 #endif

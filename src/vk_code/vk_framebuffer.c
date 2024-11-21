@@ -4,8 +4,8 @@ void createFrameBuffer(VkDevice * pDevice, VkExtent2D * pExtent2D, uint32_t imag
 {
     FuncCode code = createFrameBufferF;
 
-    *pSwapchainFramebuffer = (VkFramebuffer *)calloc(imageCount, sizeof(VkFramebuffer));
-    printf("framebuffer width: %u, height: %u\n", pExtent2D->width, pExtent2D->height);
+    *pSwapchainFramebuffer = (VkFramebuffer *)SDL_calloc(imageCount, sizeof(VkFramebuffer));
+    SDL_Log("framebuffer width: %u, height: %u\n", pExtent2D->width, pExtent2D->height);
 
     for (uint32_t i = 0;i < imageCount;i++)
     {

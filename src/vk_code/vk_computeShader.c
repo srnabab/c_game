@@ -8,8 +8,8 @@ void createShaderStorageBuffers(VkPhysicalDevice * pPhysicalDevice, VkDevice * p
 
     initializeParticles(ppParticles, extent2D);
 
-    *ppShaderStorageBuffers = (VkBuffer *)malloc(MAX_FRAMES_IN_FLIGHT * sizeof(VkBuffer));
-    *ppShaderStorageBuffersMem = (VkDeviceMemory *)malloc(MAX_FRAMES_IN_FLIGHT * sizeof(VkDeviceMemory));
+    *ppShaderStorageBuffers = (VkBuffer *)SDL_malloc(MAX_FRAMES_IN_FLIGHT * sizeof(VkBuffer));
+    *ppShaderStorageBuffersMem = (VkDeviceMemory *)SDL_malloc(MAX_FRAMES_IN_FLIGHT * sizeof(VkDeviceMemory));
 
     VkBuffer stagingBuffer = VK_NULL_HANDLE;
     VkDeviceMemory stagingBufferMemory = VK_NULL_HANDLE;
@@ -38,7 +38,7 @@ float randomFloat(void)
 }
 void initializeParticles(Particle ** ppParticles, VkExtent2D extent2D)
 {
-    *ppParticles = (Particle *)malloc(PARTICLE_COUNT * sizeof(Particle));
+    *ppParticles = (Particle *)SDL_malloc(PARTICLE_COUNT * sizeof(Particle));
     srand((uint32_t)time(NULL));
 
     for (int i = 0;i < PARTICLE_COUNT;i++)

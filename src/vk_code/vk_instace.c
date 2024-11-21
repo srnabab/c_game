@@ -11,7 +11,7 @@ static bool extensionSupportedCheck(uint32_t sdlExtensionCount, const char * con
     {
         for (uint32_t q = 0;q < extensionCount;q++)
         {
-            if (strcmp(sdlExtensions[i], pExtensionProperties[q].extensionName) == 0)
+            if (SDL_strcmp(sdlExtensions[i], pExtensionProperties[q].extensionName) == 0)
             {
                 count++;
                 break;
@@ -21,7 +21,7 @@ static bool extensionSupportedCheck(uint32_t sdlExtensionCount, const char * con
     //printf("count: %u\n", count);
     if (count != sdlExtensionCount)
     {
-        fprintf(stderr, "extension not supported\n");
+        logMessage("extension not supported");
         return true;
     }
 
@@ -47,7 +47,7 @@ void createInstance(VkInstance * pInstance)
     if (!checkValidationLayerSupport(layersCount, validationLayers))
     {
         layersCount = 0;
-        fprintf(stderr, "validation layers error\n");
+        logMessage("validation layers error");
     }
 
     uint32_t sdlExtensionCount = 0;
@@ -57,7 +57,7 @@ void createInstance(VkInstance * pInstance)
     uint32_t extensionCount = 0;
     resultVulkan(vkEnumerateInstanceExtensionProperties(VK_NULL_HANDLE, &extensionCount, VK_NULL_HANDLE), code, 0);
 
-    VkExtensionProperties * extensionsProperties = (VkExtensionProperties *)malloc(extensionCount * sizeof(VkExtensionProperties));
+    VkExtensionProperties * extensionsProperties = (VkExtensionProperties *)SDL_malloc(extensionCount * sizeof(VkExtensionProperties));
     resultVulkan(vkEnumerateInstanceExtensionProperties(VK_NULL_HANDLE, &extensionCount, extensionsProperties), code, 2, sdlExtensions, extensionsProperties);
 
     //printf("sdlExtensionNumber: %u\n", sdlExtensionCount);
@@ -77,7 +77,7 @@ void createInstance(VkInstance * pInstance)
 
     resultVulkan(vkCreateInstance(&createInfo, VK_NULL_HANDLE, pInstance), code, 0);
 
-    free(extensionsProperties);
+    SDL_free(extensionsProperties);
 
     logMessage("instance created");
 }
@@ -86,7 +86,7 @@ bool checkValidationLayerSupport(uint32_t pCount, const char ** pLayers)
     uint32_t layerCount = 0;
     vkEnumerateInstanceLayerProperties(&layerCount, VK_NULL_HANDLE);
 
-    VkLayerProperties * avaliableLayers = (VkLayerProperties *)malloc(layerCount * sizeof(VkLayerProperties));
+    VkLayerProperties * avaliableLayers = (VkLayerProperties *)SDL_malloc(layerCount * sizeof(VkLayerProperties));
     vkEnumerateInstanceLayerProperties(&layerCount, avaliableLayers);
 
     for (uint32_t i = 0;i < pCount;i++)
@@ -94,7 +94,7 @@ bool checkValidationLayerSupport(uint32_t pCount, const char ** pLayers)
         bool layerFound = false;
         for (uint32_t q = 0;q < layerCount;q++)
         {
-            if (!strcmp(pLayers[i], avaliableLayers[q].layerName))
+            if (!SDL_strcmp(pLayers[i], avaliableLayers[q].layerName))
             {
                 layerFound = true;
                 break;
@@ -103,11 +103,11 @@ bool checkValidationLayerSupport(uint32_t pCount, const char ** pLayers)
 
         if (!layerFound)
         {
-            free(avaliableLayers);
+            SDL_free(avaliableLayers);
             return false;
         }
     }
     
-    free(avaliableLayers);
+    SDL_free(avaliableLayers);
     return true;
 }

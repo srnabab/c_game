@@ -7,9 +7,9 @@ void createUniformBuffers(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice
 
     VkDeviceSize bufferSize = sizeof(UniformBufferObject);
 
-    *ppUniformBuffers = (VkBuffer *)malloc(MAX_FRAMES_IN_FLIGHT * sizeof(VkBuffer));
-    *ppUniformBuffersMem = (VkDeviceMemory *)malloc(MAX_FRAMES_IN_FLIGHT * sizeof(VkDeviceMemory));
-    *pppUniformBuffersMapped = (void **)malloc(MAX_FRAMES_IN_FLIGHT * sizeof(void*));
+    *ppUniformBuffers = (VkBuffer *)SDL_malloc(MAX_FRAMES_IN_FLIGHT * sizeof(VkBuffer));
+    *ppUniformBuffersMem = (VkDeviceMemory *)SDL_malloc(MAX_FRAMES_IN_FLIGHT * sizeof(VkDeviceMemory));
+    *pppUniformBuffersMapped = (void **)SDL_malloc(MAX_FRAMES_IN_FLIGHT * sizeof(void*));
 
     for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
     {

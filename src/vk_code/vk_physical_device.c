@@ -8,10 +8,10 @@ void pickPhysicalDevice(VkInstance * pInstance, VkPhysicalDevice * pPhysicalDevi
 
     if (deviceCount == 0)
     {
-        fprintf(stderr, "failed to find GPUs with Vulkan support\n");
+        logMessage("failed to find GPUs with Vulkan support");
     }
 
-    VkPhysicalDevice * devices = (VkPhysicalDevice *)malloc(deviceCount * sizeof(VkPhysicalDevice));
+    VkPhysicalDevice * devices = (VkPhysicalDevice *)SDL_malloc(deviceCount * sizeof(VkPhysicalDevice));
     resultVulkan(vkEnumeratePhysicalDevices(*pInstance, &deviceCount, devices), code, 1, devices);
 
 	VkPhysicalDevice device = devices[getBestPhysicalDeviceIndex(devices, deviceCount)];
@@ -20,7 +20,7 @@ void pickPhysicalDevice(VkInstance * pInstance, VkPhysicalDevice * pPhysicalDevi
 
 	if (deviceFeatures.geometryShader)
 	{
-		free(devices);
+		SDL_free(devices);
 		//printf("devive picked\n");
 		*pPhysicalDevice = device;
 	}
@@ -35,17 +35,17 @@ uint64_t getPhysicalDeviceTotalMemory(VkPhysicalDeviceMemoryProperties *pPhysica
 			physicalDeviceTotalMemory += pPhysicalDeviceMemoryProperties->memoryHeaps[i].size;
 		}
 	}
-	logMessage("device memory: %llu\n", physicalDeviceTotalMemory);
+	logMessage("device memory: %llu", physicalDeviceTotalMemory);
 	return physicalDeviceTotalMemory;
 }
 uint32_t getBestPhysicalDeviceIndex(VkPhysicalDevice *pPhysicalDevices, uint32_t physicalDeviceNumber)
 {
-	VkPhysicalDeviceProperties *physicalDeviceProperties = (VkPhysicalDeviceProperties *)malloc(physicalDeviceNumber * sizeof(VkPhysicalDeviceProperties));
-	VkPhysicalDeviceMemoryProperties *physicalDeviceMemoryProperties = (VkPhysicalDeviceMemoryProperties *)malloc(physicalDeviceNumber * sizeof(VkPhysicalDeviceMemoryProperties));
+	VkPhysicalDeviceProperties *physicalDeviceProperties = (VkPhysicalDeviceProperties *)SDL_malloc(physicalDeviceNumber * sizeof(VkPhysicalDeviceProperties));
+	VkPhysicalDeviceMemoryProperties *physicalDeviceMemoryProperties = (VkPhysicalDeviceMemoryProperties *)SDL_malloc(physicalDeviceNumber * sizeof(VkPhysicalDeviceMemoryProperties));
 
 	uint32_t discreteGPUNumber = 0, integratedGPUNumber = 0;
-	uint32_t *discreteGPUIndices = (uint32_t *)malloc(physicalDeviceNumber * sizeof(uint32_t));
-	uint32_t *integratedGPUIndices = (uint32_t *)malloc(physicalDeviceNumber * sizeof(uint32_t));
+	uint32_t *discreteGPUIndices = (uint32_t *)SDL_malloc(physicalDeviceNumber * sizeof(uint32_t));
+	uint32_t *integratedGPUIndices = (uint32_t *)SDL_malloc(physicalDeviceNumber * sizeof(uint32_t));
 
 	for(uint32_t i = 0; i < physicalDeviceNumber; i++)
 	{
@@ -74,7 +74,7 @@ uint32_t getBestPhysicalDeviceIndex(VkPhysicalDevice *pPhysicalDevices, uint32_t
 		char pipelineCacheUUID[VK_UUID_SIZE * 2];
 		for (unsigned j = 0;j < VK_UUID_SIZE;j++)
 		{
-			sprintf(pipelineCacheUUID + 2 * j, "%x", physicalDeviceProperties[i].pipelineCacheUUID[j]);
+			SDL_snprintf(pipelineCacheUUID + 2 * j, 255, "%x", physicalDeviceProperties[i].pipelineCacheUUID[j]);
 		}
 		logMessage(pipelineCacheUUID);
 
@@ -116,10 +116,10 @@ uint32_t getBestPhysicalDeviceIndex(VkPhysicalDevice *pPhysicalDevices, uint32_t
 		}
 	}
 
-	free(discreteGPUIndices);
-	free(integratedGPUIndices);
-	free(physicalDeviceMemoryProperties);
-	free(physicalDeviceProperties);
+	SDL_free(discreteGPUIndices);
+	SDL_free(integratedGPUIndices);
+	SDL_free(physicalDeviceMemoryProperties);
+	SDL_free(physicalDeviceProperties);
 
 	return bestPhysicalDeviceIndex;
 }

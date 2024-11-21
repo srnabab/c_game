@@ -1,4 +1,5 @@
 #include "stack.h"
+#include "SDL3/SDL_stdinc.h"
 #include <stdlib.h>
 #include <stdint.h>
 
@@ -287,67 +288,67 @@ bool initStack(EmptyStack * stack, DataType type, void * data, Push pushFn, Pop 
     switch (type)
     {
         case i8:
-        stack->data = (int8_t *)malloc(128 * sizeof(int8_t));
+        stack->data = (int8_t *)SDL_malloc(128 * sizeof(int8_t));
         stack->pushFn = push_i8;
         stack->popFn = pop_i8;
         break;
 
         case i16:
-        stack->data = (int16_t *)malloc(128 * sizeof(int8_t));
+        stack->data = (int16_t *)SDL_malloc(128 * sizeof(int8_t));
         stack->pushFn = push_i16;
         stack->popFn = pop_i16;
         break;
 
         case i32:
-        stack->data = (int32_t *)malloc(128 * sizeof(int32_t));
+        stack->data = (int32_t *)SDL_malloc(128 * sizeof(int32_t));
         stack->pushFn = push_i32;
         stack->popFn = pop_i32;
         break;
 
         case i64:
-        stack->data = (int64_t *)malloc(128 * sizeof(int8_t));
+        stack->data = (int64_t *)SDL_malloc(128 * sizeof(int8_t));
         stack->pushFn = push_i64;
         stack->popFn = pop_i64;
         break;
 
         case u8:
-        stack->data = (uint8_t *)malloc(128 * sizeof(int8_t));
+        stack->data = (uint8_t *)SDL_malloc(128 * sizeof(int8_t));
         stack->pushFn = push_u8;
         stack->popFn = pop_u8;
         break;
 
         case u16:
-        stack->data = (uint8_t *)malloc(128 * sizeof(int8_t));
+        stack->data = (uint8_t *)SDL_malloc(128 * sizeof(int8_t));
         stack->pushFn = push_u16;
         stack->popFn = pop_u16;
         break;
 
         case u32:
-        stack->data = (uint8_t *)malloc(128 * sizeof(int8_t));
+        stack->data = (uint8_t *)SDL_malloc(128 * sizeof(int8_t));
         stack->pushFn = push_u32;
         stack->popFn = pop_u32;
         break;
 
         case u64:
-        stack->data = (uint8_t *)malloc(128 * sizeof(int8_t));
+        stack->data = (uint8_t *)SDL_malloc(128 * sizeof(int8_t));
         stack->pushFn = push_u64;
         stack->popFn = pop_u64;
         break;
 
         case f32:
-        stack->data = (float *)malloc(128 * sizeof(int8_t));
+        stack->data = (float *)SDL_malloc(128 * sizeof(int8_t));
         stack->pushFn = push_f32;
         stack->popFn = pop_f32;
         break;
 
         case d64:
-        stack->data = (double *)malloc(128 * sizeof(int8_t));
+        stack->data = (double *)SDL_malloc(128 * sizeof(int8_t));
         stack->pushFn = push_d64;
         stack->popFn = pop_d64;
         break;
 
         case b1:
-        stack->data = (bool *)malloc(128 * sizeof(int8_t));
+        stack->data = (bool *)SDL_malloc(128 * sizeof(int8_t));
         stack->pushFn = push_b1;
         stack->popFn = pop_b1;
         break;
@@ -378,7 +379,7 @@ bool isFull(EmptyStack stack)
 }
 bool deInitStack(EmptyStack * stack)
 {
-    free(stack->data);
+    SDL_free(stack->data);
     stack->top = -1;
     stack->popFn = NULL;
     stack->pushFn = NULL;

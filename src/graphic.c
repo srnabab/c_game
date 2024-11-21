@@ -21,7 +21,7 @@ bool initWindow(void)
         int temp = SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "", "Error initializing SDL.\n", NULL);
         if (!temp)
         {
-            fprintf(stderr, "Error show messagebox\n");
+            logMessage("Error show messagebox\n");
             return false;
         }
         return false;
@@ -35,11 +35,11 @@ bool initWindow(void)
     uint32_t iconWidth, iconHeight;
     iconWidth = iconHeight = 0;         
     uint8_t iconChannel;
-    png_bytep iconPixels = readPNG(IconPng, &iconWidth, &iconHeight, &iconChannel);
+    void * iconPixels = readPNG(IconPng, &iconWidth, &iconHeight, &iconChannel);
     SDL_Surface * iconSurface = SDL_CreateSurfaceFrom(iconWidth, iconHeight, SDL_PIXELFORMAT_RGBA32, iconPixels, iconWidth * iconChannel);
     if (iconSurface == NULL)
     {
-        free(iconPixels);
+        SDL_free(iconPixels);
         return false;
     }
 
@@ -47,7 +47,7 @@ bool initWindow(void)
         return false;
 
     SDL_DestroySurface(iconSurface);
-    free(iconPixels);
+    SDL_free(iconPixels);
     //glfwTerminate();
 
     return true;
@@ -471,7 +471,7 @@ void initVulkan(void)
     
     createTextureSampler(&physicalDevice, &device, &textureSampler);
 
-    vertices = (Vertex *)calloc(BALLCOUNT * 4 + 100 * 4, sizeof(Vertex));
+    vertices = (Vertex *)SDL_calloc(BALLCOUNT * 4 + 100 * 4, sizeof(Vertex));
     vertices[0] = (Vertex){{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}};
     vertices[1] = (Vertex){{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}};
     vertices[2] = (Vertex){{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}};
@@ -492,7 +492,7 @@ void initVulkan(void)
 
     createVertexBuffer(&physicalDevice, &device, &vertexBuffer, &vertexBufferMem, &vertexBufferMemMapped, vertices, BALLCOUNT * 4 + 100 * 4);
 
-    indices_v = (uint16_t *)calloc(BALLCOUNT * 6 + 100 * 6, sizeof(uint16_t));
+    indices_v = (uint16_t *)SDL_calloc(BALLCOUNT * 6 + 100 * 6, sizeof(uint16_t));
     indices_v[0] = 0; indices_v[1] = 1; indices_v[2] = 2; indices_v[3] = 2; indices_v[4] = 3; indices_v[5] = 0;
     //indices_v[6] = 4; indices_v[7] = 5; indices_v[8] = 6; indices_v[9] = 6; indices_v[10] = 7; indices_v[11] = 4;
     indicesCount = 6;
@@ -589,53 +589,53 @@ void cleanup(FuncCode code)
         {
             vkDestroyFence(device, computeInFlightFences[i], VK_NULL_HANDLE);
         }
-        free(computeInFlightFences);
+        SDL_free(computeInFlightFences);
         logMessage("compute in flight fences destroyed");
 
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
         {
             vkDestroyFence(device, inFlightFence[i], VK_NULL_HANDLE);
         }
-        free(inFlightFence);
+        SDL_free(inFlightFence);
         logMessage("in flight fence destroyed");
 
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
         {
             vkDestroySemaphore(device, computeFinishedSemaphore[i], VK_NULL_HANDLE);
         }
-        free(computeFinishedSemaphore);
+        SDL_free(computeFinishedSemaphore);
         logMessage("compute finished semaphore destroyed");
 
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
         {
             vkDestroySemaphore(device, renderFinishedSemaphore[i], VK_NULL_HANDLE);
         }
-        free(renderFinishedSemaphore);
+        SDL_free(renderFinishedSemaphore);
         logMessage("render finished semaphore destroyed");
 
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
         {
             vkDestroySemaphore(device, imageAvailableSemaphore[i], VK_NULL_HANDLE);
         }
-        free(imageAvailableSemaphore);
+        SDL_free(imageAvailableSemaphore);
         logMessage("image available semaphore destroyed");
 
-        free(computeCommandBuufer);
+        SDL_free(computeCommandBuufer);
         logMessage("compute command buffer freed");
 
-        free(commandBuffer);
+        SDL_free(commandBuffer);
         logMessage("command buffer freed");
 
         vkDestroyDescriptorPool(device, computeDescriptorPool, VK_NULL_HANDLE);
-        free(computeDescriptorPoolSize);
+        SDL_free(computeDescriptorPoolSize);
         logMessage("compute descriptro pool destroyed");
 
         vkDestroyDescriptorPool(device, particleDescriptorPool, VK_NULL_HANDLE);
-        free(particleDescriptorPoolSize);
+        SDL_free(particleDescriptorPoolSize);
         logMessage("particle descriptor pool destroyed");
 
         vkDestroyDescriptorPool(device, graphicDescriptorPool, VK_NULL_HANDLE);
-        free(graphicDescriptorPoolSize);
+        SDL_free(graphicDescriptorPoolSize);
         logMessage("graphic descriptor pool destroyed");
 
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
@@ -643,29 +643,29 @@ void cleanup(FuncCode code)
             vkUnmapMemory(device, computeUniformBuffersmemory[i]);
             vkDestroyBuffer(device, computeUniformBuffers[i], VK_NULL_HANDLE);
         }
-        free(computeUniformBuffers);
+        SDL_free(computeUniformBuffers);
         logMessage("compute uniform buffers destroyed");
 
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
         {
             vkFreeMemory(device, computeUniformBuffersmemory[i], VK_NULL_HANDLE);
         }
-        free(computeUniformBuffersmemory);
-        free(computeUniformBufferMapped);
+        SDL_free(computeUniformBuffersmemory);
+        SDL_free(computeUniformBufferMapped);
         logMessage("compute uniform buffer memory freed");
 
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
         {
             vkDestroyBuffer(device, shaderStorageBuffers[i], VK_NULL_HANDLE);
         }
-        free(shaderStorageBuffers);
+        SDL_free(shaderStorageBuffers);
         logMessage("shader storage buffer destroyed");
 
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
         {
             vkFreeMemory(device, shaderStorageBuffersMem[i], VK_NULL_HANDLE);
         }
-        free(shaderStorageBuffersMem);
+        SDL_free(shaderStorageBuffersMem);
         logMessage("shader storage buffer memory freed");
 
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
@@ -673,21 +673,21 @@ void cleanup(FuncCode code)
             vkUnmapMemory(device, graphicUniformBuffersMemory[i]);
             vkDestroyBuffer(device, graphicUniformBuffers[i], VK_NULL_HANDLE);
         }
-        free(graphicUniformBuffers);
+        SDL_free(graphicUniformBuffers);
         logMessage("graphic uniform buffer destroyed");
 
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
         {
             vkFreeMemory(device, graphicUniformBuffersMemory[i], VK_NULL_HANDLE);
         }
-        free(graphicUniformBuffersMemory);
-        free(graphicUniformBufferMapped);
+        SDL_free(graphicUniformBuffersMemory);
+        SDL_free(graphicUniformBufferMapped);
         logMessage("graphic uniform buffer memory freed");
 
         vkUnmapMemory(device, indexBufferMem);
 
         vkDestroyBuffer(device, indexBuffer, VK_NULL_HANDLE);
-        free(indices_v);
+        SDL_free(indices_v);
         logMessage("index buffer destroyed");
 
         vkFreeMemory(device, indexBufferMem, VK_NULL_HANDLE);
@@ -696,7 +696,7 @@ void cleanup(FuncCode code)
         vkUnmapMemory(device, vertexBufferMem);
 
         vkDestroyBuffer(device, vertexBuffer, VK_NULL_HANDLE);
-        free(vertices);
+        SDL_free(vertices);
         logMessage("vertex buffer destroyed");
 
         vkFreeMemory(device, vertexBufferMem, VK_NULL_HANDLE);
@@ -733,7 +733,7 @@ void cleanup(FuncCode code)
         logMessage("texture image memory freed");
 
         destroyedFrameBuffer(&device, imageCount, swapchainFramebuffer);
-        free(swapchainFramebuffer);
+        SDL_free(swapchainFramebuffer);
         logMessage("framebuffer destroyed");
 
         vkDestroyImageView(device, depthImageView, VK_NULL_HANDLE);
@@ -773,39 +773,39 @@ void cleanup(FuncCode code)
         logMessage("graphic pipeline layout destroyed");
 
         vkDestroyDescriptorSetLayout(device, *computeDescriptorSetLayout, VK_NULL_HANDLE);
-        free(computeDescriptorSetLayout);
-        free(computeBindings);
+        SDL_free(computeDescriptorSetLayout);
+        SDL_free(computeBindings);
         logMessage("compute descriptor set layout destroyed");
 
         vkDestroyDescriptorSetLayout(device, *particleDescriptorSetLayout, VK_NULL_HANDLE);
-        free(particleDescriptorSetLayout);
-        free(particleBindings);
+        SDL_free(particleDescriptorSetLayout);
+        SDL_free(particleBindings);
         logMessage("particle descriptoe set layout destroyed");
 
         vkDestroyDescriptorSetLayout(device, *graphicDescriptorSetLayout, VK_NULL_HANDLE);
-        free(graphicDescriptorSetLayout);
-        free(graphicBindings);
+        SDL_free(graphicDescriptorSetLayout);
+        SDL_free(graphicBindings);
         logMessage("graphic descriptor set layout destroyed");
 
         vkDestroyShaderModule(device, compShaderCode, VK_NULL_HANDLE);
-        free(computeShaderStageCreateInfo);
+        SDL_free(computeShaderStageCreateInfo);
         logMessage("compute shader stage create info destroyed");
 
         vkDestroyShaderModule(device, particleFragmentShaderCode, VK_NULL_HANDLE);
         vkDestroyShaderModule(device, particleVertexShaderCode, VK_NULL_HANDLE);
-        free(particleShaderStageCreateInfo);
+        SDL_free(particleShaderStageCreateInfo);
         logMessage("particle shader stage create info destroyed");
 
         vkDestroyShaderModule(device, fragShaderCode, VK_NULL_HANDLE);
         vkDestroyShaderModule(device, vertShaderCode, VK_NULL_HANDLE);
-        free(graphciShaderStageCreateInfo);
+        SDL_free(graphciShaderStageCreateInfo);
         logMessage("shaderCode destroyed");
 
         destroyImageViews(&device, swapchainImageViews, imageCount);
-        free(swapchainImageViews);
+        SDL_free(swapchainImageViews);
         logMessage("swapchain image views destroyed");
 
-        free(swapchainImages);
+        SDL_free(swapchainImages);
         logMessage("swapchainImages freed");
 
         vkDestroySwapchainKHR(device, swapchain, VK_NULL_HANDLE);

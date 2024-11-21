@@ -18,6 +18,7 @@ typedef enum _PathType
     EmojiFont,
     EmojiHashTable,
     EmojiPng,
+    BackgroundMusic1,
     PathPath,
     RootPath,
     LogPath,

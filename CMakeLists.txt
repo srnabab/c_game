@@ -35,6 +35,7 @@ add_executable(game ${SRC_ROOT}/main.c
                     ${SRC_ROOT}/timer.c
                     ${SRC_ROOT}/text.c
                     ${SRC_ROOT}/pop_window.c
+                    ${SRC_ROOT}/SDL_complement.c
                     ${SRC_ROOT}/vk_code/vk_instace.c 
                     ${SRC_ROOT}/vk_code/vk_surface.c
                     ${SRC_ROOT}/vk_code/vk_physical_device.c 
@@ -63,16 +64,17 @@ target_include_directories(game PUBLIC ${INCLUDE_ROOT}
                             "${INCLUDE_ROOT}/cglm"
                             "${INCLUDE_ROOT}/vk_code_h"
                             "${INCLUDE_ROOT}/GLFW"
-                            "${INCLUDE_ROOT}/libpng"
+                            # "${INCLUDE_ROOT}/libpng"
                             "${INCLUDE_ROOT}/SDL3"
                             "${INCLUDE_ROOT}/SDL3_mixer"
+                            "${INCLUDE_ROOT}/SDL3_image"
                             "${INCLUDE_ROOT}/vulkan"
                             "${INCLUDE_ROOT}/vk_video"
                             "${INCLUDE_ROOT}/zlib"
                             "${INCLUDE_ROOT}/textureG"
                             "${INCLUDE_ROOT}/file")
 
-target_link_libraries(game z SDL3 SDL3_mixer libpng box2d unistring "C:/D/c_game/lib/vulkan/vulkan-1.lib" textureG)
+target_link_libraries(game z SDL3 SDL3_mixer SDL3_image box2d unistring "C:/D/c_game/lib/vulkan/vulkan-1.lib" textureG)
 
 # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mwindows")
 
