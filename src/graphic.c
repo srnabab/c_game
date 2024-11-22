@@ -583,8 +583,21 @@ void cleanup(FuncCode code)
 {
     logMessage("\nclean up");
 
-        vkDeviceWaitIdle(device);
+    vkDeviceWaitIdle(device);
 
+    switch (code)
+    {
+        case FuncCodeMax:
+        case recreateSwapchainF:
+        case queuePresentF:
+        case queueSumbitF:
+        case endCommandBufferF:
+        case resetCommandBufferF:
+        case acquireNextImageF:
+        case resetFencesF:
+        case waitForFencesF:
+        case drawFrameF:
+        case recordCommandBufferF:
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
         {
             vkDestroyFence(device, computeInFlightFences[i], VK_NULL_HANDLE);
@@ -594,18 +607,22 @@ void cleanup(FuncCode code)
 
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
         {
-            vkDestroyFence(device, inFlightFence[i], VK_NULL_HANDLE);
-        }
-        SDL_free(inFlightFence);
-        logMessage("in flight fence destroyed");
-
-        for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
-        {
             vkDestroySemaphore(device, computeFinishedSemaphore[i], VK_NULL_HANDLE);
         }
         SDL_free(computeFinishedSemaphore);
         logMessage("compute finished semaphore destroyed");
+        /*fall through*/
 
+        case createFenceF:
+        for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
+        {
+            vkDestroyFence(device, inFlightFence[i], VK_NULL_HANDLE);
+        }
+        SDL_free(inFlightFence);
+        logMessage("in flight fence destroyed");
+        /*fall through*/
+
+        case createSemaphoreF:
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
         {
             vkDestroySemaphore(device, renderFinishedSemaphore[i], VK_NULL_HANDLE);
@@ -622,7 +639,9 @@ void cleanup(FuncCode code)
 
         SDL_free(computeCommandBuufer);
         logMessage("compute command buffer freed");
+        /*fall through*/
 
+        case createCommandbufferF:
         SDL_free(commandBuffer);
         logMessage("command buffer freed");
 
@@ -633,7 +652,9 @@ void cleanup(FuncCode code)
         vkDestroyDescriptorPool(device, particleDescriptorPool, VK_NULL_HANDLE);
         SDL_free(particleDescriptorPoolSize);
         logMessage("particle descriptor pool destroyed");
+        /*fall through*/
 
+        case createDescriptorPoolF:
         vkDestroyDescriptorPool(device, graphicDescriptorPool, VK_NULL_HANDLE);
         SDL_free(graphicDescriptorPoolSize);
         logMessage("graphic descriptor pool destroyed");
@@ -667,7 +688,9 @@ void cleanup(FuncCode code)
         }
         SDL_free(shaderStorageBuffersMem);
         logMessage("shader storage buffer memory freed");
+        /*fall through*/
 
+        case createUniformBuffersF:
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
         {
             vkUnmapMemory(device, graphicUniformBuffersMemory[i]);
@@ -683,7 +706,9 @@ void cleanup(FuncCode code)
         SDL_free(graphicUniformBuffersMemory);
         SDL_free(graphicUniformBufferMapped);
         logMessage("graphic uniform buffer memory freed");
+        /*fall through*/
 
+        case createIndexBufferF:
         vkUnmapMemory(device, indexBufferMem);
 
         vkDestroyBuffer(device, indexBuffer, VK_NULL_HANDLE);
@@ -692,7 +717,9 @@ void cleanup(FuncCode code)
 
         vkFreeMemory(device, indexBufferMem, VK_NULL_HANDLE);
         logMessage("index buffer memory freed");
+        /*fall through*/
 
+        case createVertexBufferF:
         vkUnmapMemory(device, vertexBufferMem);
 
         vkDestroyBuffer(device, vertexBuffer, VK_NULL_HANDLE);
@@ -701,13 +728,19 @@ void cleanup(FuncCode code)
 
         vkFreeMemory(device, vertexBufferMem, VK_NULL_HANDLE);
         logMessage("vertex buffer memory freed");
+        /*fall through*/
 
+        case createTextureSamplerF:
         vkDestroySampler(device, textureSampler, VK_NULL_HANDLE);
         logMessage("texture sampler detroyed");
+        /*fall through*/
 
+        case createTextureImageViewF:
         vkDestroyImageView(device, textureImageView, VK_NULL_HANDLE);
         logMessage("texture image view destroyed");
+        /*fall through*/
 
+        case createTextureImageF:
         vkDestroyImage(device, texturesImage, VK_NULL_HANDLE);
         logMessage("texture image destroyed");
 
@@ -731,11 +764,15 @@ void cleanup(FuncCode code)
 
         vkFreeMemory(device, textImageMem, VK_NULL_HANDLE);
         logMessage("texture image memory freed");
+        /*fall through*/
 
+        case createFrameBufferF:
         destroyedFrameBuffer(&device, imageCount, swapchainFramebuffer);
         SDL_free(swapchainFramebuffer);
         logMessage("framebuffer destroyed");
+        /*fall through*/
 
+        case createDepthResouresF:
         vkDestroyImageView(device, depthImageView, VK_NULL_HANDLE);
         logMessage("depth image view destroyed");
 
@@ -747,7 +784,9 @@ void cleanup(FuncCode code)
         
         vkDestroyCommandPool(device, computeCommandPool, VK_NULL_HANDLE);
         logMessage("compute commandpool destroyed");
+        /*fall through*/
 
+        case createCommandPoolF:
         vkDestroyCommandPool(device, swapchainCommandPool, VK_NULL_HANDLE);
         logMessage("commandpool destroyed");
 
@@ -756,10 +795,14 @@ void cleanup(FuncCode code)
 
         vkDestroyPipeline(device, particlePipeline, VK_NULL_HANDLE);
         logMessage("particle pipeline destroyed");
+        /*fall through*/
 
+        case createGraphicsPipelineF:
         vkDestroyPipeline(device, graphicPipeline, VK_NULL_HANDLE);
         logMessage("graphic pipelne destroyed");
+        /*fall through*/
 
+        case createRenderPassF:
         vkDestroyRenderPass(device, renderPass, VK_NULL_HANDLE);
         logMessage("renderPass destroyed");
 
@@ -768,7 +811,9 @@ void cleanup(FuncCode code)
 
         vkDestroyPipelineLayout(device, particlePipelineLayout, VK_NULL_HANDLE);
         logMessage("particle pipeline layout destroyed");
+        /*fall through*/
 
+        case createPipelineLayoutF:
         vkDestroyPipelineLayout(device, graphicPipelineLayout, VK_NULL_HANDLE);
         logMessage("graphic pipeline layout destroyed");
 
@@ -781,7 +826,9 @@ void cleanup(FuncCode code)
         SDL_free(particleDescriptorSetLayout);
         SDL_free(particleBindings);
         logMessage("particle descriptoe set layout destroyed");
+        /*fall through*/
 
+        case createDescriptorSetLayoutF:
         vkDestroyDescriptorSetLayout(device, *graphicDescriptorSetLayout, VK_NULL_HANDLE);
         SDL_free(graphicDescriptorSetLayout);
         SDL_free(graphicBindings);
@@ -795,35 +842,50 @@ void cleanup(FuncCode code)
         vkDestroyShaderModule(device, particleVertexShaderCode, VK_NULL_HANDLE);
         SDL_free(particleShaderStageCreateInfo);
         logMessage("particle shader stage create info destroyed");
+        /*fall through*/
 
+        case createShaderModuleF:
         vkDestroyShaderModule(device, fragShaderCode, VK_NULL_HANDLE);
         vkDestroyShaderModule(device, vertShaderCode, VK_NULL_HANDLE);
         SDL_free(graphciShaderStageCreateInfo);
         logMessage("shaderCode destroyed");
+        /*fall through*/
 
+        case createSwapchainImageViewsF:
         destroyImageViews(&device, swapchainImageViews, imageCount);
         SDL_free(swapchainImageViews);
         logMessage("swapchain image views destroyed");
+        /*fall through*/
 
+        case createSwapchainImageF:
         SDL_free(swapchainImages);
         logMessage("swapchainImages freed");
+        /*fall through*/
 
+        case createSwapchainF:
         vkDestroySwapchainKHR(device, swapchain, VK_NULL_HANDLE);
         logMessage("swapchain destroyed");
+        /*fall through*/
 
+        case createLogicalDeviceF:
         vkDestroyDevice(device, VK_NULL_HANDLE);
         logMessage("device destroyed");
+        /*fall through*/
 
-        //free(indices);
-        logMessage("indices freed");
-
+        case createSurfaceF:
         vkDestroySurfaceKHR(instance, surface, VK_NULL_HANDLE);
         logMessage("surface destroyed");
+        /*fall through*/
 
+        case createInstanceF:
         vkDestroyInstance(instance, VK_NULL_HANDLE);
         logMessage("instance destroyed");
 
         SDL_DestroyWindow(window);
         input_end = true;
         logMessage("window destroyed");
+        /*fall through*/
+
+        default:
+    }
 }

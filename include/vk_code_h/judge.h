@@ -39,7 +39,6 @@ typedef enum _FuncCode {
     createCommandbufferF,
     createSemaphoreF,
     createFenceF,
-    initializeMovingBufferF,
     recordCommandBufferF,
     drawFrameF,
     waitForFencesF,

@@ -79,7 +79,7 @@ target_link_libraries(game z SDL3 SDL3_mixer SDL3_image box2d unistring "C:/D/c_
 # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mwindows")
 
 target_compile_options(game PUBLIC -O0 -Wall)
-# target_compile_options(game PUBLIC -Wall -Wextra)
+# target_compile_options(game PUBLIC -O0 -Wall -Wextra)
 # target_compile_options(game PUBLIC -O2 -Wall)
 
 add_dependencies(${PROJECT_NAME} GenerateCode)

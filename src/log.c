@@ -123,7 +123,7 @@ int putMessage_file(void * arg)
                     {
                         digits[i] = 0;
                     }
-                    for (int i = 0;i < SDL_strcspn(buffer, ".") - 7;i++)
+                    for (int i = 0;i < (int)SDL_strcspn(buffer, ".") - 7;i++)
                     {
                         digits[i] = buffer[7 + i];
                     }

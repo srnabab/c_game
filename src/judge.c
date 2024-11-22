@@ -202,10 +202,6 @@ void resultVulkan(VkResult result, FuncCode code, uint32_t num, ...)
             logMessage("\ncreate fence failed");
             goto end;
 
-            case initializeMovingBufferF:
-            logMessage("\ninitialize moving buffer failed");
-            goto end;
-
             case recordCommandBufferF:
             logMessage("\nrecord command buffer failed");
             goto end;
