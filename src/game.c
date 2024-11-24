@@ -131,13 +131,19 @@ int process_input(void * arg)
         pause_signal_send = true;
     }
 
+    const bool * keyState = SDL_GetKeyboardState(NULL);
+    if (keyState[SDL_SCANCODE_A])
+    {
+        pictureMove[2] = true;
+    }
+
     SDL_Event event;
 
     while(SDL_PollEvent(&event))
     {   
         SDL_Keycode key = event.key.key;
         // logMessage("pressed Key:%u", pressedKey);
-        // logMessage("preKeyState: %u, keyState: %u, key: %s(%u)", preKeyState, event.type, SDL_GetKeyName(key));
+        logMessage("preKeyState: %u, keyState: %u, key: %s(%u)", preKeyState, event.type, SDL_GetKeyName(key), key);
         if (event.type == SDL_EVENT_WINDOW_MINIMIZED)
         {
             pause = (pause + 1) % 2;
@@ -317,6 +323,8 @@ int process_input(void * arg)
         }
         preKeyState = event.type;
     }
+
+    SDL_PumpEvents();
 
     return 0;
 }

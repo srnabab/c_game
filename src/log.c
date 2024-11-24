@@ -27,59 +27,13 @@ static SDL_IOStream * log_file = NULL;
 bool logOutEnabled = 0;
 bool logEnabled = 0;
 
-void initLog(void)
-{
-    if (!logEnabled)
-        return;
-
-    if ((log_file = SDL_IOFromFile(getPath(LogPath), "a")) == NULL)
-    {
-        SDL_Log("open log file failed: %s\n", getPath(LogPath));
-        return;
-    }
-
-    log_mutex = SDL_CreateMutex();
-    print_mutex = SDL_CreateMutex();
-    log_semaphore = SDL_CreateSemaphore(0);
-    //logOutEnabled = false;
-
-    if (logOutEnabled)
-    {
-        log_thread = SDL_CreateThread(&putMessage_file, "log", NULL);
-    }
-    else
-    {
-        log_thread = SDL_CreateThread(&putMessage_print, "log", NULL);
-    }
-    // message = (char **)SDL_malloc(MAX_MESSAGE_STORAGE * sizeof(char *));
-    // for (uint32_t i = 0;i < MAX_MESSAGE_STORAGE;i++)
-    // {
-    //     message[i] = (char *)SDL_calloc(MAX_MESSAGE_SIZE, sizeof(char));
-    // }
-}
-void logMessage(char * format, ...)
-{
-    if (!logEnabled)
-        return;
-    
-    va_list arg;
-
-    va_start(arg, format);
-    SDL_LockMutex(log_mutex);
-    messageCount++;
-    SDL_vsnprintf(message[messageCount % MAX_MESSAGE_STORAGE], MAX_MESSAGE_SIZE, format, arg);
-    SDL_UnlockMutex(log_mutex);
-    SDL_SignalSemaphore(log_semaphore);
-
-    va_end(arg);
-}
 static char * getCurrentTime(char * buffer, SDL_DateTime dateTime)
 {
     memset(buffer, 0, 255);
     SDL_snprintf(buffer, 255, "--%04d-%02d-%02d %02d:%02d:%02d\n", dateTime.year, dateTime.month, dateTime.day, dateTime.hour, dateTime.minute, dateTime.second);
     return buffer;
 }
-int putMessage_file(void * arg)
+static int putMessage_file(void * arg)
 {
     char timeBuffer[255];
     SDL_Time ticks;
@@ -184,7 +138,7 @@ int putMessage_file(void * arg)
 
     return 0;
 }
-int putMessage_print(void * arg)
+static int putMessage_print(void * arg)
 {
     SDL_CloseIO(log_file);
     while(1)
@@ -202,6 +156,52 @@ int putMessage_print(void * arg)
         SDL_UnlockMutex(print_mutex);
     }
     return 0;
+}
+void initLog(void)
+{
+    if (!logEnabled)
+        return;
+
+    if ((log_file = SDL_IOFromFile(getPath(LogPath), "a")) == NULL)
+    {
+        SDL_Log("open log file failed: %s\n", getPath(LogPath));
+        return;
+    }
+
+    log_mutex = SDL_CreateMutex();
+    print_mutex = SDL_CreateMutex();
+    log_semaphore = SDL_CreateSemaphore(0);
+    //logOutEnabled = false;
+
+    if (logOutEnabled)
+    {
+        log_thread = SDL_CreateThread(&putMessage_file, "log", NULL);
+    }
+    else
+    {
+        log_thread = SDL_CreateThread(&putMessage_print, "log", NULL);
+    }
+    // message = (char **)SDL_malloc(MAX_MESSAGE_STORAGE * sizeof(char *));
+    // for (uint32_t i = 0;i < MAX_MESSAGE_STORAGE;i++)
+    // {
+    //     message[i] = (char *)SDL_calloc(MAX_MESSAGE_SIZE, sizeof(char));
+    // }
+}
+void logMessage(char * format, ...)
+{
+    if (!logEnabled)
+        return;
+    
+    va_list arg;
+
+    va_start(arg, format);
+    SDL_LockMutex(log_mutex);
+    messageCount++;
+    SDL_vsnprintf(message[messageCount % MAX_MESSAGE_STORAGE], MAX_MESSAGE_SIZE, format, arg);
+    SDL_UnlockMutex(log_mutex);
+    SDL_SignalSemaphore(log_semaphore);
+
+    va_end(arg);
 }
 void destroyLog(void)
 {

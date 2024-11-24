@@ -2,14 +2,14 @@
 #include <freetype/freetype.h>
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
+#include "textureG/stb_image_write.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 
-#include "textureG.h"
+#include "textureG/textureG.h"
 
 // static void create_hash_cuckoo(Hash ** hash)
 // {

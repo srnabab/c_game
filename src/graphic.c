@@ -363,9 +363,29 @@ void initVulkan(void)
 
     findQueueFamilies(&physicalDevice, &surface, &indices);
     createLogicalDevice(&physicalDevice, indices, &device);
-    createGraphicsQueue(&device, indices.graphicsFamily, &graphicQueue);
-    createPresentQueue(&device, indices.presentFamily, &presentQueue);
-    createComputeQueue(&device, indices.computeFamily, &computeQueue);
+
+    createGraphicsQueue(&device, indices.graphicsFamily.familyIndice, &graphicQueue);
+    createPresentQueue(&device, indices.presentFamily.familyIndice, &presentQueue);
+    createComputeQueue(&device, indices.computeFamily.familyIndice, &computeQueue);
+
+
+    
+
+    VmaAllocatorCreateInfo allocatorInfo = {};
+    allocatorInfo.physicalDevice = physicalDevice;
+    allocatorInfo.device = device;
+    allocatorInfo.instance = instance;
+
+    VmaAllocator allocator;
+    VkResult result = vmaCreateAllocator(&allocatorInfo, &allocator);
+    if (result != VK_SUCCESS) {
+        fprintf(stderr, "Failed to create VMA allocator\n");
+        // exit(EXIT_FAILURE);
+    }
+
+    vmaDestroyAllocator(allocator);
+
+    
 
     getSurfaceFormats(&physicalDevice, &surface, &surfaceFormat);
     getPresentModes(&physicalDevice, &surface, &presentMode);
@@ -442,9 +462,9 @@ void initVulkan(void)
     createDescriptorPool(&device, computePoolSizeCount, computeDescriptorPoolSize, 3, &computeDescriptorPool);
 
 
-    createCommandPool(&device, indices.graphicsFamily, &swapchainCommandPool);
+    createCommandPool(&device, indices.graphicsFamily.familyIndice, &swapchainCommandPool);
 
-    createCommandPool(&device, indices.computeFamily, &computeCommandPool);
+    createCommandPool(&device, indices.computeFamily.familyIndice, &computeCommandPool);
 
     createDepthResoures(&physicalDevice, &device, &extent2D, &swapchainCommandPool, &graphicQueue, &depthImage, &depthImageMemory, &depthImageView);
 

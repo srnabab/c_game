@@ -5,6 +5,8 @@
 #include "std_c.h"
 #include "vulkan.h"
 
+#include "vma/vk_mem_alloc.h"
+
 #include "judge.h"
 #include "constants.h"
 #include "vk_struct.h"

@@ -43,8 +43,8 @@ static void newSwapchain(VkDevice * pDevice, VkSurfaceCapabilitiesKHR * pSurface
     createInfo.clipped = VK_TRUE;
     createInfo.oldSwapchain = oldSwapchain;
 
-    uint32_t queueFamilyIndices[2] = {indices.graphicsFamily, indices.presentFamily};
-    if (indices.graphicsFamily != indices.presentFamily) 
+    uint32_t queueFamilyIndices[3] = {indices.graphicsFamily.familyIndice, indices.presentFamily.familyIndice, indices.computeFamily.familyIndice};
+    if (indices.graphicsFamily.familyIndice != indices.presentFamily.familyIndice) 
     {
         createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
         createInfo.queueFamilyIndexCount = 2;

@@ -5,10 +5,16 @@
 #ifndef VK_STRUCT_H
 #define VK_STRUCT_H
 
+typedef struct _QueueFamily
+{
+    uint32_t familyIndice;
+    uint32_t queueCount;
+} QueueFamily;
+
 typedef struct _QueueFamilyIndices{
-    uint32_t graphicsFamily;
-    uint32_t presentFamily;
-    uint32_t computeFamily;
+    QueueFamily graphicsFamily;
+    QueueFamily presentFamily;
+    QueueFamily computeFamily;
 }QueueFamilyIndices;
 
 //same as layout in vertex shader code
