@@ -58,6 +58,7 @@ add_executable(game ${SRC_ROOT}/main.c
                     ${SRC_ROOT}/vk_code/vk_instace.c 
                     ${SRC_ROOT}/vk_code/vk_surface.c
                     ${SRC_ROOT}/vk_code/vk_device.c 
+                    ${SRC_ROOT}/vk_code/vk_alloc_func.c
                     ${SRC_ROOT}/vk_code/vk_queue.c
                     ${SRC_ROOT}/vk_code/vk_swapchain.c 
                     ${SRC_ROOT}/vk_code/vk_commandPool.c

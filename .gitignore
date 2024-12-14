@@ -14,6 +14,8 @@ out/
 run/
 test/
 vulkan_info.txt
+vulkan_info2.txt
 shader.bat
 move_lib.lnk
 move_lib.ps1
+.VSCodeCounter/

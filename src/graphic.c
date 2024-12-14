@@ -66,6 +66,9 @@ static VkQueue presentQueue = VK_NULL_HANDLE;
 
 static VkQueue computeQueue = VK_NULL_HANDLE;
 
+static VkAllocationCallbacks SDL_allocationCallBacks = {};
+static VmaAllocator vmaAllocator = NULL;
+
 static VkSurfaceFormatKHR surfaceFormat = {};
 static VkPresentModeKHR presentMode = 0;
 static VkSurfaceCapabilitiesKHR surfaceCapabilities = {};
@@ -372,18 +375,31 @@ void initVulkan(void)
     
 
     VmaAllocatorCreateInfo allocatorInfo = {};
+    allocatorInfo.flags = 0;
     allocatorInfo.physicalDevice = physicalDevice;
     allocatorInfo.device = device;
-    allocatorInfo.instance = instance;
+    allocatorInfo.preferredLargeHeapBlockSize = 0;
 
-    VmaAllocator allocator;
-    VkResult result = vmaCreateAllocator(&allocatorInfo, &allocator);
+    SDL_allocationCallBacks.pUserData = NULL;
+    SDL_allocationCallBacks.pfnAllocation = SDL_VK_allocationFunc;
+    SDL_allocationCallBacks.pfnReallocation = SDL_VK_reallocationFunc;
+    SDL_allocationCallBacks.pfnFree = SDL_VK_freeFunc;
+    SDL_allocationCallBacks.pfnInternalAllocation = NULL;
+    SDL_allocationCallBacks.pfnInternalFree = NULL;
+
+    allocatorInfo.pAllocationCallbacks = &SDL_allocationCallBacks;
+    allocatorInfo.pDeviceMemoryCallbacks = NULL;
+    allocatorInfo.pHeapSizeLimit = NULL;
+    allocatorInfo.pVulkanFunctions = NULL;
+    allocatorInfo.instance = instance;
+    allocatorInfo.pTypeExternalMemoryHandleTypes = NULL;
+
+    VkResult result = vmaCreateAllocator(&allocatorInfo, &vmaAllocator);
     if (result != VK_SUCCESS) {
         fprintf(stderr, "Failed to create VMA allocator\n");
         // exit(EXIT_FAILURE);
     }
 
-    vmaDestroyAllocator(allocator);
 
     
 
@@ -880,6 +896,7 @@ void cleanup(FuncCode code)
         case createSwapchainImageF:
         SDL_free(swapchainImages);
         logMessage("swapchainImages freed");
+        vmaDestroyAllocator(vmaAllocator);
         /*fall through*/
 
         case createSwapchainF:
