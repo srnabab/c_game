@@ -41,7 +41,7 @@ bool loadMusic(char * fileName, char * reName)
     }
     else
     {
-        stack.popFn(&stack, &index);
+        index = *(uint8_t*)(stack.popFn(&stack));
     }
 
     musics[index].music = Mix_LoadMUS(getPath(BackgroundMusic1));

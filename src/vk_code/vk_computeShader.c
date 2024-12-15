@@ -11,11 +11,11 @@ void createShaderStorageBuffers(VkPhysicalDevice * pPhysicalDevice, VkDevice * p
     *ppShaderStorageBuffers = (VkBuffer *)SDL_malloc(MAX_FRAMES_IN_FLIGHT * sizeof(VkBuffer));
     *ppShaderStorageBuffersMem = (VkDeviceMemory *)SDL_malloc(MAX_FRAMES_IN_FLIGHT * sizeof(VkDeviceMemory));
 
-    VkBuffer stagingBuffer = VK_NULL_HANDLE;
-    VkDeviceMemory stagingBufferMemory = VK_NULL_HANDLE;
+    VkBuffer stagingBuffer = NULL;
+    VkDeviceMemory stagingBufferMemory = NULL;
     createBuffer(pPhysicalDevice, pDevice, &stagingBuffer, &stagingBufferMemory, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-    void * data = VK_NULL_HANDLE;
+    void * data = NULL;
     vkMapMemory(*pDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
     memcpy(data, *ppParticles, bufferSize);
     vkUnmapMemory(*pDevice, stagingBufferMemory);
@@ -29,8 +29,8 @@ void createShaderStorageBuffers(VkPhysicalDevice * pPhysicalDevice, VkDevice * p
         //printf("result1: %d, result2: %d\n", result1, result2);
     }
 
-    vkDestroyBuffer(*pDevice, stagingBuffer, VK_NULL_HANDLE);
-    vkFreeMemory(*pDevice, stagingBufferMemory, VK_NULL_HANDLE);
+    vkDestroyBuffer(*pDevice, stagingBuffer, NULL);
+    vkFreeMemory(*pDevice, stagingBufferMemory, NULL);
 }
 float randomFloat(void)
 {

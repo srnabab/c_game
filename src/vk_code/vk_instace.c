@@ -56,7 +56,7 @@ static bool * extensionSupportedCheck_Optional(uint32_t neededExtensionCount, ch
 static bool checkValidationLayerSupport(uint32_t pCount, const char ** pLayers)
 {
     uint32_t layerCount = 0;
-    vkEnumerateInstanceLayerProperties(&layerCount, VK_NULL_HANDLE);
+    vkEnumerateInstanceLayerProperties(&layerCount, NULL);
 
     VkLayerProperties * avaliableLayers = (VkLayerProperties *)SDL_malloc(layerCount * sizeof(VkLayerProperties));
     vkEnumerateInstanceLayerProperties(&layerCount, avaliableLayers);
@@ -107,7 +107,7 @@ void createInstance(VkInstance * pInstance)
 
     VkApplicationInfo appInfo = {};
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    appInfo.pNext = VK_NULL_HANDLE;
+    appInfo.pNext = NULL;
     appInfo.pApplicationName = APP_NAME;
     appInfo.applicationVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);
     appInfo.pEngineName = ENGINE_NAME;
@@ -130,7 +130,7 @@ void createInstance(VkInstance * pInstance)
     }
 
     uint32_t extensionCount = 0;
-    resultVulkan(vkEnumerateInstanceExtensionProperties(VK_NULL_HANDLE, &extensionCount, VK_NULL_HANDLE), code, 0);
+    resultVulkan(vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, NULL), code, 0);
 
     VkExtensionProperties * extensionsProperties = (VkExtensionProperties *)SDL_malloc(extensionCount * sizeof(VkExtensionProperties));
     if (extensionsProperties == NULL)
@@ -138,7 +138,7 @@ void createInstance(VkInstance * pInstance)
         pushMessage(SDL_MESSAGEBOX_ERROR, "Error", "alloc memory failed (VkExtensionProperties)");
         cleanup(code);
     }
-    resultVulkan(vkEnumerateInstanceExtensionProperties(VK_NULL_HANDLE, &extensionCount, extensionsProperties), code, 1, extensionsProperties);
+    resultVulkan(vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, extensionsProperties), code, 1, extensionsProperties);
 
     uint32_t requiredExtensionCount = 0;
 
@@ -193,7 +193,7 @@ void createInstance(VkInstance * pInstance)
 
     VkInstanceCreateInfo createInfo;
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    createInfo.pNext = VK_NULL_HANDLE;
+    createInfo.pNext = NULL;
     createInfo.flags = 0;
     createInfo.pApplicationInfo = &appInfo;
     createInfo.enabledLayerCount = layersCount;
@@ -201,7 +201,7 @@ void createInstance(VkInstance * pInstance)
     createInfo.enabledExtensionCount = requiredExtensionCount;
     createInfo.ppEnabledExtensionNames = (const char * const *)requiredExtension;
 
-    resultVulkan(vkCreateInstance(&createInfo, VK_NULL_HANDLE, pInstance), code, 1, requiredExtension);
+    resultVulkan(vkCreateInstance(&createInfo, NULL, pInstance), code, 1, requiredExtension);
 
     SDL_free(requiredExtension);
 

@@ -13,7 +13,7 @@ void createUniformBuffers(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice
 
     for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
     {
-        (*pppUniformBuffersMapped)[i] = VK_NULL_HANDLE;
+        (*pppUniformBuffersMapped)[i] = NULL;
 
         resultVulkan(createBuffer(pPhysicalDevice, pDevice, &(*ppUniformBuffers)[i], &(*ppUniformBuffersMem)[i], bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT),
         code, 3, *ppUniformBuffers, *ppUniformBuffersMem, *pppUniformBuffersMapped);

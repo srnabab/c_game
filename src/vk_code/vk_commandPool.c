@@ -6,11 +6,11 @@ void createCommandPool(VkDevice * pDevice, uint32_t graphicsFamilyIndice, VkComm
 
     VkCommandPoolCreateInfo commandPoolCreateInfo = {};
     commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    commandPoolCreateInfo.pNext = VK_NULL_HANDLE;
+    commandPoolCreateInfo.pNext = NULL;
     commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     commandPoolCreateInfo.queueFamilyIndex = graphicsFamilyIndice;
 
-    resultVulkan(vkCreateCommandPool(*pDevice, &commandPoolCreateInfo, VK_NULL_HANDLE, pCommandPool), code, 0);
+    resultVulkan(vkCreateCommandPool(*pDevice, &commandPoolCreateInfo, NULL, pCommandPool), code, 0);
     //printf("command pool created\n");
 } 
 void createCommandbuffer(VkDevice * pDevice, VkCommandPool * pCommandPool, VkCommandBuffer ** pCommandBuffer)
@@ -21,7 +21,7 @@ void createCommandbuffer(VkDevice * pDevice, VkCommandPool * pCommandPool, VkCom
 
     VkCommandBufferAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    allocInfo.pNext = VK_NULL_HANDLE;
+    allocInfo.pNext = NULL;
     allocInfo.commandPool = *pCommandPool;
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     allocInfo.commandBufferCount = MAX_FRAMES_IN_FLIGHT;

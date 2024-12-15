@@ -14,18 +14,18 @@ static void newSwapchain(VkDevice * pDevice, VkSurfaceCapabilitiesKHR * pSurface
     if (pSurfaceCapabilities->maxImageCount > 0 && imageCount > pSurfaceCapabilities->maxImageCount)
         imageCount = pSurfaceCapabilities->maxImageCount;
         
-    if (*pSwapchain == VK_NULL_HANDLE)
+    if (*pSwapchain == NULL)
     {
         //printf("imageCount: %u\n", imageCount);
     }
 
     VkSwapchainKHR oldSwapchain = *pSwapchain;
 
-    *pSwapchain = VK_NULL_HANDLE;
+    *pSwapchain = NULL;
 
     VkSwapchainCreateInfoKHR createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    createInfo.pNext = VK_NULL_HANDLE;
+    createInfo.pNext = NULL;
     createInfo.flags = 0;
     createInfo.surface = *pSurface;
     createInfo.minImageCount = imageCount;
@@ -36,7 +36,7 @@ static void newSwapchain(VkDevice * pDevice, VkSurfaceCapabilitiesKHR * pSurface
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     createInfo.imageSharingMode = 0;
     createInfo.queueFamilyIndexCount = 0;
-    createInfo.pQueueFamilyIndices = VK_NULL_HANDLE;
+    createInfo.pQueueFamilyIndices = NULL;
     createInfo.preTransform = (*pSurfaceCapabilities).currentTransform;
     createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
     createInfo.presentMode = *pPresentMode;
@@ -54,13 +54,13 @@ static void newSwapchain(VkDevice * pDevice, VkSurfaceCapabilitiesKHR * pSurface
     {
         createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
         createInfo.queueFamilyIndexCount = 0; // Optional
-        createInfo.pQueueFamilyIndices = VK_NULL_HANDLE; // Optional
+        createInfo.pQueueFamilyIndices = NULL; // Optional
     }
 
     //resultVulkan(
-        vkCreateSwapchainKHR(*pDevice, &createInfo, VK_NULL_HANDLE, pSwapchain);//, code, 0);
+        vkCreateSwapchainKHR(*pDevice, &createInfo, NULL, pSwapchain);//, code, 0);
     
-    vkDestroySwapchainKHR(*pDevice, oldSwapchain, VK_NULL_HANDLE);
+    vkDestroySwapchainKHR(*pDevice, oldSwapchain, NULL);
 }
 void recreateSwapchain(Recreate * pRecreate)
 {
@@ -75,20 +75,20 @@ void recreateSwapchain(Recreate * pRecreate)
     SDL_Log("ppSwaapchainFramebuffer: %p\n", pRecreate->ppSwapchainFramebuffer);
     destroyedFrameBuffer(pDevice, *pRecreate->imageCount, *pRecreate->ppSwapchainFramebuffer);
     SDL_free(*pRecreate->ppSwapchainFramebuffer);
-    *pRecreate->ppSwapchainFramebuffer = VK_NULL_HANDLE;
+    *pRecreate->ppSwapchainFramebuffer = NULL;
 
     destroyImageViews(pDevice, *pRecreate->ppSwapchainImageViews, *pRecreate->imageCount);
     SDL_free(*pRecreate->ppSwapchainImageViews);
-    *pRecreate->ppSwapchainImageViews = VK_NULL_HANDLE;
+    *pRecreate->ppSwapchainImageViews = NULL;
     SDL_free(*pRecreate->ppSwapchainImages);
-    *pRecreate->ppSwapchainImages = VK_NULL_HANDLE;
+    *pRecreate->ppSwapchainImages = NULL;
 
-    vkDestroyImageView(*pDevice, *pRecreate->pDepthImageView, VK_NULL_HANDLE);
-    *pRecreate->pDepthImageView = VK_NULL_HANDLE;
-    vkDestroyImage(*pDevice, *pRecreate->pDepthImage, VK_NULL_HANDLE);
-    *pRecreate->pDepthImage = VK_NULL_HANDLE;
-    vkFreeMemory(*pDevice, *pRecreate->pDepthImageMem, VK_NULL_HANDLE);
-    *pRecreate->pDepthImageMem = VK_NULL_HANDLE;
+    vkDestroyImageView(*pDevice, *pRecreate->pDepthImageView, NULL);
+    *pRecreate->pDepthImageView = NULL;
+    vkDestroyImage(*pDevice, *pRecreate->pDepthImage, NULL);
+    *pRecreate->pDepthImage = NULL;
+    vkFreeMemory(*pDevice, *pRecreate->pDepthImageMem, NULL);
+    *pRecreate->pDepthImageMem = NULL;
     
     //cleanupSwapchain(pRecreate->pDevice, *pRecreate->ImageCount, *pRecreate->pSwapchainFramebuffer, *pRecreate->pSwapchainImageViews, pRecreate->pSwapchain);
     //printf("imageCOunt: %u\n", *pRecreate->ImageCount);

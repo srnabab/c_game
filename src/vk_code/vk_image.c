@@ -7,7 +7,7 @@ VkResult createImage(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, uin
 
     VkImageCreateInfo imageInfo = {};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    imageInfo.pNext = VK_NULL_HANDLE;
+    imageInfo.pNext = NULL;
     imageInfo.flags = 0;
     imageInfo.imageType = VK_IMAGE_TYPE_2D;
     imageInfo.format = format;
@@ -21,10 +21,10 @@ VkResult createImage(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, uin
     imageInfo.usage = usage;
     imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     imageInfo.queueFamilyIndexCount = 0;
-    imageInfo.pQueueFamilyIndices = VK_NULL_HANDLE;
+    imageInfo.pQueueFamilyIndices = NULL;
     imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-    result |= vkCreateImage(*pDevice, &imageInfo, VK_NULL_HANDLE, pImage);
+    result |= vkCreateImage(*pDevice, &imageInfo, NULL, pImage);
 
     VkMemoryRequirements memRequirements;
     vkGetImageMemoryRequirements(*pDevice, *pImage, &memRequirements);
@@ -34,7 +34,7 @@ VkResult createImage(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, uin
     allocInfo.allocationSize = memRequirements.size;
     allocInfo.memoryTypeIndex = findMemoryType(pPhysicalDevice, memRequirements.memoryTypeBits, properties);
 
-    result |= vkAllocateMemory(*pDevice, &allocInfo, VK_NULL_HANDLE, pImageMem);
+    result |= vkAllocateMemory(*pDevice, &allocInfo, NULL, pImageMem);
 
     result |= vkBindImageMemory(*pDevice, *pImage, *pImageMem, 0);
 
@@ -47,7 +47,7 @@ VkResult createImageView(VkDevice * pDevice, VkImage * pImage, VkFormat format, 
     VkImageViewCreateInfo viewInfo = {};
 
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    viewInfo.pNext = VK_NULL_HANDLE;
+    viewInfo.pNext = NULL;
     viewInfo.flags = 0;
     viewInfo.image = *pImage;
     viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
@@ -62,7 +62,7 @@ VkResult createImageView(VkDevice * pDevice, VkImage * pImage, VkFormat format, 
     viewInfo.subresourceRange.baseArrayLayer = 0;
     viewInfo.subresourceRange.layerCount = 1;
 
-    result |= vkCreateImageView(*pDevice, &viewInfo, VK_NULL_HANDLE, pImageView);
+    result |= vkCreateImageView(*pDevice, &viewInfo, NULL, pImageView);
 
     return result;
 }
@@ -90,19 +90,19 @@ void destroyImageViews(VkDevice * pDevice, VkImageView * pImageView, uint32_t im
 {
     for (uint32_t i = 0;i < imageCount;i++)
     {
-        vkDestroyImageView(*pDevice, pImageView[i], VK_NULL_HANDLE);
+        vkDestroyImageView(*pDevice, pImageView[i], NULL);
     }
 }
 VkResult transitionImageLayout(VkDevice * pDevice, VkCommandPool * pCommandPool, VkQueue * pGraphcisQueue, VkImage * pImage, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
 {
     VkResult result  = VK_SUCCESS;
 
-    VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
+    VkCommandBuffer commandBuffer = NULL;
     result |= beginSingleTimeCommands(pDevice, pCommandPool, &commandBuffer);
 
     VkImageMemoryBarrier barrier = {};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-    barrier.pNext = VK_NULL_HANDLE;
+    barrier.pNext = NULL;
     barrier.srcAccessMask = 0; // TODO
     barrier.dstAccessMask = 0; // TODO
     barrier.oldLayout = oldLayout;
@@ -153,7 +153,7 @@ VkResult transitionImageLayout(VkDevice * pDevice, VkCommandPool * pCommandPool,
         destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
     }
 
-    vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, VK_NULL_HANDLE, 0, VK_NULL_HANDLE, 1, &barrier);
+    vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, NULL, 0, NULL, 1, &barrier);
 
     result |= endSingleTimeCommands(pDevice, pCommandPool, pGraphcisQueue, &commandBuffer);
 

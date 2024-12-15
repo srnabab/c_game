@@ -22,14 +22,14 @@ void createShaderModule(VkDevice * pDevice, PathType type, VkShaderModule * pSha
 
     VkShaderModuleCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    createInfo.pNext = VK_NULL_HANDLE;
+    createInfo.pNext = NULL;
     createInfo.flags = 0;
     createInfo.codeSize = fileSize;
     createInfo.pCode = (const uint32_t *)shaderCode;
 
     SDL_CloseIO(shaderFile);
 
-    resultVulkan(vkCreateShaderModule(*pDevice, &createInfo, VK_NULL_HANDLE, pShaderModule), code, 1, shaderCode);
+    resultVulkan(vkCreateShaderModule(*pDevice, &createInfo, NULL, pShaderModule), code, 1, shaderCode);
 
     SDL_free(shaderCode);
 
@@ -39,12 +39,12 @@ void addShaderStageCreateInfo(VkShaderModule * pShaderModule, VkPipelineStageFla
 {
     VkPipelineShaderStageCreateInfo shaderStageCreateInfo = {};
     shaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    shaderStageCreateInfo.pNext = VK_NULL_HANDLE;
+    shaderStageCreateInfo.pNext = NULL;
     shaderStageCreateInfo.flags = 0;
     shaderStageCreateInfo.stage = stage;
     shaderStageCreateInfo.module = *pShaderModule;
     shaderStageCreateInfo.pName = "main";
-    shaderStageCreateInfo.pSpecializationInfo = VK_NULL_HANDLE;
+    shaderStageCreateInfo.pSpecializationInfo = NULL;
 
     (*pShaderCount)++;
     //printf("shader count: %u\n", *pShaderCount);
@@ -57,21 +57,21 @@ void configureShaderStageCreateInfo(VkShaderModule * vertShaderModule, VkShaderM
 {
     VkPipelineShaderStageCreateInfo vertShaderStageCreateInfo = {};
     vertShaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    vertShaderStageCreateInfo.pNext = VK_NULL_HANDLE;
+    vertShaderStageCreateInfo.pNext = NULL;
     vertShaderStageCreateInfo.flags = 0;
     vertShaderStageCreateInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
     vertShaderStageCreateInfo.module = *vertShaderModule;
     vertShaderStageCreateInfo.pName = "main";
-    vertShaderStageCreateInfo.pSpecializationInfo = VK_NULL_HANDLE;
+    vertShaderStageCreateInfo.pSpecializationInfo = NULL;
 
     VkPipelineShaderStageCreateInfo fragShaderStageCreateInfo = {};
     fragShaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    fragShaderStageCreateInfo.pNext = VK_NULL_HANDLE;
+    fragShaderStageCreateInfo.pNext = NULL;
     fragShaderStageCreateInfo.flags = 0;
     fragShaderStageCreateInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
     fragShaderStageCreateInfo.module = *fragShaderModule;
     fragShaderStageCreateInfo.pName = "main";
-    fragShaderStageCreateInfo.pSpecializationInfo = VK_NULL_HANDLE;
+    fragShaderStageCreateInfo.pSpecializationInfo = NULL;
 
     *pPipelineShaderStageCreateInfo = (VkPipelineShaderStageCreateInfo *)malloc(2 * sizeof(VkPipelineShaderStageCreateInfo));
     (*pPipelineShaderStageCreateInfo)[0] = vertShaderStageCreateInfo;

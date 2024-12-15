@@ -19,3 +19,4 @@ shader.bat
 move_lib.lnk
 move_lib.ps1
 .VSCodeCounter/
+examples/

@@ -105,3 +105,5 @@ target_compile_options(game PUBLIC -O0 -Wall)
 add_dependencies(${PROJECT_NAME} GenerateCode ShaderCompile MoveLib)
 
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/run)
+
+add_subdirectory(test)

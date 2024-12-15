@@ -6,14 +6,13 @@ void createSemaphore(VkDevice * pDevice, VkSemaphore ** pSemaphore)
 
     *pSemaphore = (VkSemaphore *)SDL_malloc(MAX_FRAMES_IN_FLIGHT * sizeof(VkSemaphore));
 
-    VkSemaphoreCreateInfo semaphoreCreateInfo = {
-        VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
-        VK_NULL_HANDLE,
-        0
-    };
+    VkSemaphoreCreateInfo semaphoreCreateInfo = {};
+    semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+    semaphoreCreateInfo.pNext = NULL;
+    semaphoreCreateInfo.flags = 0;
 
     for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
-        resultVulkan(vkCreateSemaphore(*pDevice, &semaphoreCreateInfo, VK_NULL_HANDLE, &((*pSemaphore)[i])), code, 0);
+        resultVulkan(vkCreateSemaphore(*pDevice, &semaphoreCreateInfo, NULL, &((*pSemaphore)[i])), code, 0);
     //printf("semaphor created\n");
 }
 void createFence(VkDevice * pDevice, VkFence ** pFence)
@@ -22,13 +21,12 @@ void createFence(VkDevice * pDevice, VkFence ** pFence)
 
     *pFence = (VkFence *)SDL_malloc(MAX_FRAMES_IN_FLIGHT * sizeof(VkFence));
 
-    VkFenceCreateInfo fenceCreateInfo = {
-        VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-        VK_NULL_HANDLE,
-        VK_FENCE_CREATE_SIGNALED_BIT
-    };
+    VkFenceCreateInfo fenceCreateInfo = {};
+    fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    fenceCreateInfo.pNext = NULL;
+    fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
     for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
-        resultVulkan(vkCreateFence(*pDevice, &fenceCreateInfo, VK_NULL_HANDLE, &((*pFence)[i])), code, 0);
+        resultVulkan(vkCreateFence(*pDevice, &fenceCreateInfo, NULL, &((*pFence)[i])), code, 0);
     //printf("fence created\n");
 }

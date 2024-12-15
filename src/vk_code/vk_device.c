@@ -4,7 +4,7 @@ void pickPhysicalDevice(VkInstance * pInstance, VkPhysicalDevice * pPhysicalDevi
 {
 	FuncCode code = pickPhysicalDeviceF;
     uint32_t deviceCount = 0;
-    resultVulkan(vkEnumeratePhysicalDevices(*pInstance, &deviceCount, VK_NULL_HANDLE), code, 0);
+    resultVulkan(vkEnumeratePhysicalDevices(*pInstance, &deviceCount, NULL), code, 0);
 
     if (deviceCount == 0)
     {
@@ -208,7 +208,7 @@ static uint32_t configureQueueCreateInfo(VkDeviceQueueCreateInfo * pCreateInfo, 
             for (int i = 1;i < 3;i++)
             {
                 pCreateInfo[i].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-                pCreateInfo[i].pNext = VK_NULL_HANDLE;
+                pCreateInfo[i].pNext = NULL;
                 pCreateInfo[i].flags = 0;
                 pCreateInfo[i].queueFamilyIndex = indices[i].familyIndice;
                 pCreateInfo[i].queueCount = indices[i].queueCount;
@@ -222,7 +222,7 @@ static uint32_t configureQueueCreateInfo(VkDeviceQueueCreateInfo * pCreateInfo, 
             for (int i = 0;i < 2;i++)
             {
                 pCreateInfo[i].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-                pCreateInfo[i].pNext = VK_NULL_HANDLE;
+                pCreateInfo[i].pNext = NULL;
                 pCreateInfo[i].flags = 0;
                 pCreateInfo[i].queueFamilyIndex = indices[i].familyIndice;
                 pCreateInfo[i].queueCount = indices[i].queueCount;
@@ -236,7 +236,7 @@ static uint32_t configureQueueCreateInfo(VkDeviceQueueCreateInfo * pCreateInfo, 
             for (int i = 0;i < 3;i += 2)
             {
                 pCreateInfo[i].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-                pCreateInfo[i].pNext = VK_NULL_HANDLE;
+                pCreateInfo[i].pNext = NULL;
                 pCreateInfo[i].flags = 0;
                 pCreateInfo[i].queueFamilyIndex = indices[i].familyIndice;
                 pCreateInfo[i].queueCount = indices[i].queueCount;
@@ -250,7 +250,7 @@ static uint32_t configureQueueCreateInfo(VkDeviceQueueCreateInfo * pCreateInfo, 
             for (int i = 0;i < 3;i++)
             {
                 pCreateInfo[i].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-                pCreateInfo[i].pNext = VK_NULL_HANDLE;
+                pCreateInfo[i].pNext = NULL;
                 pCreateInfo[i].flags = 0;
                 pCreateInfo[i].queueFamilyIndex = indices[i].familyIndice;
                 pCreateInfo[i].queueCount = indices[i].queueCount;
@@ -264,7 +264,7 @@ static uint32_t configureQueueCreateInfo(VkDeviceQueueCreateInfo * pCreateInfo, 
     if (queueFamilyCount == 0)
     {
         pCreateInfo[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        pCreateInfo[0].pNext = VK_NULL_HANDLE;
+        pCreateInfo[0].pNext = NULL;
         pCreateInfo[0].flags = 0;
         pCreateInfo[0].queueFamilyIndex = indices[0].familyIndice;
         pCreateInfo[0].queueCount = indices[0].queueCount;
@@ -349,7 +349,7 @@ void createLogicalDevice(VkPhysicalDevice * pPhysicalDevice, QueueFamilyIndices 
 
     VkDeviceCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    createInfo.pNext = VK_NULL_HANDLE;
+    createInfo.pNext = NULL;
     createInfo.flags = 0;
     createInfo.queueCreateInfoCount = queueFamilyCount;
     createInfo.pQueueCreateInfos = queueCreateInfo;
@@ -359,7 +359,7 @@ void createLogicalDevice(VkPhysicalDevice * pPhysicalDevice, QueueFamilyIndices 
     createInfo.ppEnabledExtensionNames = (const char* const *)enabledExtension;
     createInfo.pEnabledFeatures = &deviceFeatures;
 
-    resultVulkan(vkCreateDevice(*pPhysicalDevice, &createInfo, VK_NULL_HANDLE, pDevice), code, 0);
+    resultVulkan(vkCreateDevice(*pPhysicalDevice, &createInfo, NULL, pDevice), code, 0);
 
     SDL_free(enabledExtension);
     //printf("logical device created\n");

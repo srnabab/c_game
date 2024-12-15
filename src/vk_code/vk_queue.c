@@ -5,7 +5,7 @@ void findQueueFamilies(VkPhysicalDevice * pPhysicalDevice, VkSurfaceKHR * pSurfa
     FuncCode code = findQueueFamiliesF;
 
     uint32_t queueFamilyCount = 0;
-    vkGetPhysicalDeviceQueueFamilyProperties(*pPhysicalDevice, &queueFamilyCount, VK_NULL_HANDLE);
+    vkGetPhysicalDeviceQueueFamilyProperties(*pPhysicalDevice, &queueFamilyCount, NULL);
     logMessage("queueFamilyCount: %u", queueFamilyCount);
 
     VkQueueFamilyProperties * queueFamily = (VkQueueFamilyProperties *)SDL_malloc(queueFamilyCount * sizeof(VkQueueFamilyProperties));

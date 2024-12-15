@@ -11,12 +11,11 @@ void recordCommandBuffer(VK_ALL * pAllInOne, uint32_t imageIndex)
     FuncCode code = recordCommandBufferF;
     uint32_t * pCurrentFrame = pAllInOne->pCurrentFrame;
 
-    VkCommandBufferBeginInfo beginInfo = {
-        VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-        VK_NULL_HANDLE,
-        0,
-        VK_NULL_HANDLE
-    };
+    VkCommandBufferBeginInfo beginInfo = {};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    beginInfo.pNext = NULL;
+    beginInfo.flags = 0;
+    beginInfo.pInheritanceInfo = NULL;
 
     resultVulkan(vkBeginCommandBuffer((*pAllInOne->ppCommandBuffer)[*pCurrentFrame], &beginInfo), code, 0);
     //printf("record command buffer begin\n");
@@ -30,7 +29,7 @@ void recordCommandBuffer(VK_ALL * pAllInOne, uint32_t imageIndex)
 
     VkRenderPassBeginInfo renderBeginInfo = {};
     renderBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderBeginInfo.pNext = VK_NULL_HANDLE;
+    renderBeginInfo.pNext = NULL;
     renderBeginInfo.renderPass = *pAllInOne->pRenderPass;
     renderBeginInfo.framebuffer = (*pAllInOne->ppSwapchainFramebuffer)[imageIndex];
     renderBeginInfo.renderArea = renderArea;
@@ -67,7 +66,7 @@ void recordCommandBuffer(VK_ALL * pAllInOne, uint32_t imageIndex)
     vkCmdBindVertexBuffers((*pAllInOne->ppCommandBuffer)[*pCurrentFrame], 0, 1, &(*pAllInOne->ppShaderStorageBuffers)[*pCurrentFrame], offsets);
 
     vkCmdBindDescriptorSets((*pAllInOne->ppCommandBuffer)[*pCurrentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *pAllInOne->pParticlePipelineLayout, 0,
-    1, &(*pAllInOne->ppParticleDescriptorSets)[*pCurrentFrame], 0, VK_NULL_HANDLE);
+    1, &(*pAllInOne->ppParticleDescriptorSets)[*pCurrentFrame], 0, NULL);
 
     vkCmdDraw((*pAllInOne->ppCommandBuffer)[*pCurrentFrame], PARTICLE_COUNT, 1, 0, 0);
 
@@ -83,7 +82,7 @@ void recordCommandBuffer(VK_ALL * pAllInOne, uint32_t imageIndex)
     vkCmdBindIndexBuffer((*pAllInOne->ppCommandBuffer)[*pCurrentFrame], *pAllInOne->pIndexBuffer, 0, VK_INDEX_TYPE_UINT16);
 
     vkCmdBindDescriptorSets((*pAllInOne->ppCommandBuffer)[*pCurrentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *pAllInOne->pGraphicPipelineLayout, 0,
-    1, &(*pAllInOne->ppGraphicDescriptorSets)[*pCurrentFrame], 0, VK_NULL_HANDLE);
+    1, &(*pAllInOne->ppGraphicDescriptorSets)[*pCurrentFrame], 0, NULL);
 
     //vkCmdDraw((*pAllInOne->ppCommandBuffer)[*pCurrentFrame], PARTICLE_COUNT, 1, 0, 0);
 
@@ -97,16 +96,16 @@ void recordComputeCommandBuffer(VK_ALL * pAllInOne)
 
     VkCommandBufferBeginInfo beginInfo = {
         VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-        VK_NULL_HANDLE,
+        NULL,
         0,
-        VK_NULL_HANDLE
+        NULL
     };
     
     vkBeginCommandBuffer((*pAllInOne->ppComputeCommandBuffer)[*pCurrentFrame], &beginInfo);
 
     vkCmdBindPipeline((*pAllInOne->ppComputeCommandBuffer)[*pCurrentFrame], VK_PIPELINE_BIND_POINT_COMPUTE, *pAllInOne->pComputePipeline);
 
-    vkCmdBindDescriptorSets((*pAllInOne->ppComputeCommandBuffer)[*pCurrentFrame], VK_PIPELINE_BIND_POINT_COMPUTE, *pAllInOne->pComputePipelineLayout, 0, 1, &(*pAllInOne->ppComputeDescriptorSets)[*pCurrentFrame], 0, VK_NULL_HANDLE);
+    vkCmdBindDescriptorSets((*pAllInOne->ppComputeCommandBuffer)[*pCurrentFrame], VK_PIPELINE_BIND_POINT_COMPUTE, *pAllInOne->pComputePipelineLayout, 0, 1, &(*pAllInOne->ppComputeDescriptorSets)[*pCurrentFrame], 0, NULL);
 
     vkCmdDispatch((*pAllInOne->ppComputeCommandBuffer)[*pCurrentFrame], PARTICLE_COUNT / 256, 1, 1);
 }
@@ -129,10 +128,10 @@ void drawFrame(VK_ALL * pAllInOne)
 
     VkSubmitInfo computeSubmitInfo = {};
     computeSubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    computeSubmitInfo.pNext = VK_NULL_HANDLE;
+    computeSubmitInfo.pNext = NULL;
     computeSubmitInfo.waitSemaphoreCount = 0;
-    computeSubmitInfo.pWaitSemaphores = VK_NULL_HANDLE;
-    computeSubmitInfo.pWaitDstStageMask = VK_NULL_HANDLE;
+    computeSubmitInfo.pWaitSemaphores = NULL;
+    computeSubmitInfo.pWaitDstStageMask = NULL;
     computeSubmitInfo.commandBufferCount = 1;
     computeSubmitInfo.pCommandBuffers = &(*pAllInOne->ppComputeCommandBuffer)[*pCurrentFrame];
     computeSubmitInfo.signalSemaphoreCount = 1;
@@ -143,7 +142,7 @@ void drawFrame(VK_ALL * pAllInOne)
     vkWaitForFences(*pAllInOne->pDevice, 1, &(*pAllInOne->ppInFlightFence)[*pCurrentFrame], VK_TRUE, UINT64_MAX);
 
     uint32_t imageIndex;
-    resultVulkan(vkAcquireNextImageKHR(*pAllInOne->pDevice, *pAllInOne->pSwapchain, UINT64_MAX, (*pAllInOne->ppImageAvailableSemaphore)[*pCurrentFrame], VK_NULL_HANDLE, &imageIndex), acquireNextImageF, 0);
+    resultVulkan(vkAcquireNextImageKHR(*pAllInOne->pDevice, *pAllInOne->pSwapchain, UINT64_MAX, (*pAllInOne->ppImageAvailableSemaphore)[*pCurrentFrame], NULL, &imageIndex), acquireNextImageF, 0);
     //printf("acquire next image index\n"); 
 
     resultVulkan(vkResetFences(*pAllInOne->pDevice, 1, &(*pAllInOne->ppInFlightFence)[*pCurrentFrame]), resetFencesF, 0);
@@ -163,7 +162,7 @@ void drawFrame(VK_ALL * pAllInOne)
 
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo.pNext = VK_NULL_HANDLE;
+    submitInfo.pNext = NULL;
     submitInfo.waitSemaphoreCount = 2;
     submitInfo.pWaitSemaphores = waitSemaphore;
     submitInfo.pWaitDstStageMask = waitStage;
@@ -176,13 +175,13 @@ void drawFrame(VK_ALL * pAllInOne)
 
     VkPresentInfoKHR presentInfo = {};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-    presentInfo.pNext = VK_NULL_HANDLE;
+    presentInfo.pNext = NULL;
     presentInfo.waitSemaphoreCount = 1;
     presentInfo.pWaitSemaphores = &(*pAllInOne->ppRenderFinishedSemaphore)[*pCurrentFrame];
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = pAllInOne->pSwapchain;
     presentInfo.pImageIndices = &imageIndex;
-    presentInfo.pResults = VK_NULL_HANDLE;
+    presentInfo.pResults = NULL;
 
     resultVulkan(vkQueuePresentKHR(*pAllInOne->pPresentQueue, &presentInfo), queuePresentF, 0);
     //printf("present queue\n");

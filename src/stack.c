@@ -5,8 +5,7 @@
 
 static bool push_i8(EmptyStack * stack, void * data)
 {
-    if (isFull(*stack))
-        return false;
+    if (isFull(*stack)) return false;
     
     stack->top++;
 
@@ -14,24 +13,17 @@ static bool push_i8(EmptyStack * stack, void * data)
 
     return true;
 }
-static bool pop_i8(EmptyStack * stack, void * data)
+static void* pop_i8(EmptyStack * stack)
 {
-    if (isEmpty(*stack))
-    {
-        *(int8_t*)data = (int8_t)-1;
-        return false;
-    }
+    if (isEmpty(*stack)) return NULL;
 
     stack->top--;
 
-    *(int8_t*)data = ((int8_t *)stack->data)[stack->top + 1];
-
-    return false;
+    return (void*)&((int8_t *)stack->data)[stack->top + 1];
 }
 static bool push_i16(EmptyStack * stack, void * data)
 {
-    if (isFull(*stack))
-        return false;
+    if (isFull(*stack)) return false;
     
     stack->top++;
 
@@ -39,24 +31,17 @@ static bool push_i16(EmptyStack * stack, void * data)
 
     return true;
 }
-static bool pop_i16(EmptyStack * stack, void * data)
+static void* pop_i16(EmptyStack * stack)
 {
-    if (isEmpty(*stack))
-    {
-        *(int16_t*)data = (int16_t)-1;
-        return false;
-    }
+    if (isEmpty(*stack)) return NULL;
 
     stack->top--;
 
-    *(int16_t*)data = ((int16_t *)stack->data)[stack->top + 1];
-
-    return false;
+    return (void*)&((int16_t *)stack->data)[stack->top + 1];
 }
 static bool push_i32(EmptyStack * stack, void * data)
 {
-    if (isFull(*stack))
-        return false;
+    if (isFull(*stack)) return false;
     
     stack->top++;
 
@@ -64,24 +49,17 @@ static bool push_i32(EmptyStack * stack, void * data)
 
     return true;
 }
-static bool pop_i32(EmptyStack * stack, void * data)
+static void* pop_i32(EmptyStack * stack)
 {
-    if (isEmpty(*stack))
-    {
-        *(int32_t*)data = (int32_t)-1;
-        return false;
-    }
+    if (isEmpty(*stack)) return NULL;
 
     stack->top--;
 
-    *(int32_t*)data = ((int32_t *)stack->data)[stack->top + 1];
-
-    return false;
+    return (void*)&((int32_t *)stack->data)[stack->top + 1];
 }
 static bool push_i64(EmptyStack * stack, void * data)
 {
-    if (isFull(*stack))
-        return false;
+    if (isFull(*stack)) return false;
     
     stack->top++;
 
@@ -89,19 +67,13 @@ static bool push_i64(EmptyStack * stack, void * data)
 
     return true;
 }
-static bool pop_i64(EmptyStack * stack, void * data)
+static void* pop_i64(EmptyStack * stack)
 {
-    if (isEmpty(*stack))
-    {
-        *(int64_t*)data = (int64_t)-1;
-        return false;
-    }
+    if (isEmpty(*stack)) return NULL;
 
     stack->top--;
 
-    *(int64_t*)data = ((int64_t *)stack->data)[stack->top + 1];
-
-    return false;
+    return (void*)&((int64_t *)stack->data)[stack->top + 1];
 }
 static bool push_u8(EmptyStack * stack, void * data)
 {
@@ -114,19 +86,13 @@ static bool push_u8(EmptyStack * stack, void * data)
 
     return true;
 }
-static bool pop_u8(EmptyStack * stack, void * data)
+static void* pop_u8(EmptyStack * stack)
 {
-    if (isEmpty(*stack))
-    {
-        *(uint8_t*)data = (uint8_t)-1;
-        return false;
-    }
+    if (isEmpty(*stack)) return NULL;
 
     stack->top--;
 
-    *(uint8_t*)data = ((uint8_t *)stack->data)[stack->top + 1];
-
-    return false;
+    return (void*)&((uint8_t *)stack->data)[stack->top + 1];
 }
 static bool push_u16(EmptyStack * stack, void * data)
 {
@@ -139,24 +105,17 @@ static bool push_u16(EmptyStack * stack, void * data)
 
     return true;
 }
-static bool pop_u16(EmptyStack * stack, void * data)
+static void* pop_u16(EmptyStack * stack)
 {
-    if (isEmpty(*stack))
-    {
-        *(uint16_t*)data = (uint16_t)-1;
-        return false;
-    }
+    if (isEmpty(*stack)) return NULL;
 
     stack->top--;
 
-    *(uint16_t*)data = ((uint16_t *)stack->data)[stack->top + 1];
-
-    return false;
+    return (void*)&((uint16_t *)stack->data)[stack->top + 1];
 }
 static bool push_u32(EmptyStack * stack, void * data)
 {
-    if (isFull(*stack))
-        return false;
+    if (isFull(*stack)) return false;
     
     stack->top++;
 
@@ -164,24 +123,17 @@ static bool push_u32(EmptyStack * stack, void * data)
 
     return true;
 }
-static bool pop_u32(EmptyStack * stack, void * data)
+static void* pop_u32(EmptyStack * stack)
 {
-    if (isEmpty(*stack))
-    {
-        *(uint32_t*)data = (uint32_t)-1;
-        return false;
-    }
+    if (isEmpty(*stack)) return NULL;
 
     stack->top--;
 
-    *(uint32_t*)data = ((uint32_t *)stack->data)[stack->top + 1];
-
-    return false;
+    return (void*)&((uint32_t *)stack->data)[stack->top + 1];
 }
 static bool push_u64(EmptyStack * stack, void * data)
 {
-    if (isFull(*stack))
-        return false;
+    if (isFull(*stack)) return false;
     
     stack->top++;
 
@@ -189,24 +141,17 @@ static bool push_u64(EmptyStack * stack, void * data)
 
     return true;
 }
-static bool pop_u64(EmptyStack * stack, void * data)
+static void* pop_u64(EmptyStack * stack)
 {
-    if (isEmpty(*stack))
-    {
-        *(uint64_t*)data = (uint64_t)-1;
-        return false;
-    }
+    if (isEmpty(*stack)) return NULL;
 
     stack->top--;
 
-    *(uint64_t*)data = ((uint64_t *)stack->data)[stack->top + 1];
-
-    return false;
+    return (void*)&((uint64_t *)stack->data)[stack->top + 1];
 }
 static bool push_f32(EmptyStack * stack, void * data)
 {
-    if (isFull(*stack))
-        return false;
+    if (isFull(*stack)) return false;
     
     stack->top++;
 
@@ -214,24 +159,17 @@ static bool push_f32(EmptyStack * stack, void * data)
 
     return true;
 }
-static bool pop_f32(EmptyStack * stack, void * data)
+static void* pop_f32(EmptyStack * stack)
 {
-    if (isEmpty(*stack))
-    {
-        *(float*)data = (float)-1;
-        return false;
-    }
+    if (isEmpty(*stack)) return NULL;
 
     stack->top--;
 
-    *(float*)data = ((float *)stack->data)[stack->top + 1];
-
-    return false;
+    return (void*)&((float *)stack->data)[stack->top + 1];
 }
 static bool push_d64(EmptyStack * stack, void * data)
 {
-    if (isFull(*stack))
-        return false;
+    if (isFull(*stack)) return false;
     
     stack->top++;
 
@@ -239,24 +177,17 @@ static bool push_d64(EmptyStack * stack, void * data)
 
     return true;
 }
-static bool pop_d64(EmptyStack * stack, void * data)
+static void* pop_d64(EmptyStack * stack)
 {
-    if (isEmpty(*stack))
-    {
-        *(double*)data = (double)-1;
-        return false;
-    }
+    if (isEmpty(*stack)) return NULL;
 
     stack->top--;
 
-    *(double*)data = ((double *)stack->data)[stack->top + 1];
-
-    return false;
+    return (void*)&((double *)stack->data)[stack->top + 1];
 }
 static bool push_b1(EmptyStack * stack, void * data)
 {
-    if (isFull(*stack))
-        return false;
+    if (isFull(*stack)) return false;
     
     stack->top++;
 
@@ -264,19 +195,13 @@ static bool push_b1(EmptyStack * stack, void * data)
 
     return true;
 }
-static bool pop_b1(EmptyStack * stack, void * data)
+static void* pop_b1(EmptyStack * stack)
 {
-    if (isEmpty(*stack))
-    {
-        *(bool*)data = (bool)-1;
-        return false;
-    }
+    if (isEmpty(*stack)) return NULL;
 
     stack->top--;
 
-    *(bool*)data = ((bool *)stack->data)[stack->top + 1];
-
-    return false;
+    return (void*)&((bool *)stack->data)[stack->top + 1];
 }
 
 bool initStack(EmptyStack * stack, DataType type, void * data, Push pushFn, Pop popFn)
@@ -361,7 +286,7 @@ bool initStack(EmptyStack * stack, DataType type, void * data, Push pushFn, Pop 
     }
     stack->type = type;
 
-    return false;
+    return true;
 }
 bool isEmpty(EmptyStack stack)
 {

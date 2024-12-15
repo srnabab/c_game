@@ -125,8 +125,7 @@ void updateCircle(VkExtent2D * pExtent2D, Vertex ** ppVertices)
     {
         while (ballStack.top != -1)
         {
-            int32_t temp;
-            ballStack.popFn(&ballStack, &temp);
+            int32_t temp = *(int32_t*)(ballStack.popFn(&ballStack));
             createCircle(temp + 8, 288);
         }
         for (uint32_t i = 1;i < boxCount;i++)

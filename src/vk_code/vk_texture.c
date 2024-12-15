@@ -32,8 +32,8 @@ void createTextureImage(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, 
     
     SDL_free(pixels);
 
-    vkDestroyBuffer(*pDevice, stagingBuffer, VK_NULL_HANDLE);
-    vkFreeMemory(*pDevice, stagingBufferMemory, VK_NULL_HANDLE);
+    vkDestroyBuffer(*pDevice, stagingBuffer, NULL);
+    vkFreeMemory(*pDevice, stagingBufferMemory, NULL);
 }
 unsigned char * readPNG(PathType type, uint32_t * pWidth, uint32_t * pHeight, uint8_t * pChannel)
 {
@@ -58,7 +58,7 @@ VkResult copyBufferToImage(VkDevice * pDevice, VkCommandPool * pCommandPool, VkQ
 {
     VkResult result = VK_SUCCESS;
 
-    VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
+    VkCommandBuffer commandBuffer = NULL;
     result |= beginSingleTimeCommands(pDevice, pCommandPool, &commandBuffer);
 
     VkBufferImageCopy region = {};
@@ -99,7 +99,7 @@ void createTextureSampler(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice
 
     VkSamplerCreateInfo samplerInfo = {};
     samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-    samplerInfo.pNext = VK_NULL_HANDLE;
+    samplerInfo.pNext = NULL;
     samplerInfo.flags = 0;
     samplerInfo.magFilter = VK_FILTER_LINEAR;
     samplerInfo.minFilter = VK_FILTER_LINEAR;
@@ -117,7 +117,7 @@ void createTextureSampler(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice
     samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
     samplerInfo.unnormalizedCoordinates = VK_FALSE;
 
-    resultVulkan(vkCreateSampler(*pDevice, &samplerInfo, VK_NULL_HANDLE, pTextureSampler), code, 0);
+    resultVulkan(vkCreateSampler(*pDevice, &samplerInfo, NULL, pTextureSampler), code, 0);
 }
 void loadTexture()
 {

@@ -16,7 +16,7 @@ typedef enum _DataType
 struct _EmptyStack;
 
 typedef bool (*Push)(struct _EmptyStack * stack, void * data);
-typedef bool (*Pop)(struct _EmptyStack * stack, void * data);
+typedef void* (*Pop)(struct _EmptyStack * stack);
 
 typedef struct _EmptyStack
 {

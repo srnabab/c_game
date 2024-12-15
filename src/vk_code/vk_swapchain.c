@@ -8,8 +8,8 @@ void getSurfaceFormats(VkPhysicalDevice * pDevice, VkSurfaceKHR * pSurface, VkSu
 {
     FuncCode code = getSurfaceFormatsF;
     uint32_t surfaceFormatCount = 0;
-    resultVulkan(vkGetPhysicalDeviceSurfaceFormatsKHR(*pDevice, *pSurface, &surfaceFormatCount, VK_NULL_HANDLE), code, 0);
-    if (pSurfaceFormat == VK_NULL_HANDLE)
+    resultVulkan(vkGetPhysicalDeviceSurfaceFormatsKHR(*pDevice, *pSurface, &surfaceFormatCount, NULL), code, 0);
+    if (pSurfaceFormat == NULL)
     {
         //printf("surfaceFormatsCount: %u\n", surfaceFormatCount);
     }
@@ -40,8 +40,8 @@ void getPresentModes(VkPhysicalDevice * pDevice, VkSurfaceKHR * pSurface, VkPres
 {
     FuncCode code = getPresentModesF;
     uint32_t presentModeCount;
-    resultVulkan(vkGetPhysicalDeviceSurfacePresentModesKHR(*pDevice, *pSurface, &presentModeCount, VK_NULL_HANDLE), code, 0);
-    if (pPresentMode == VK_NULL_HANDLE)
+    resultVulkan(vkGetPhysicalDeviceSurfacePresentModesKHR(*pDevice, *pSurface, &presentModeCount, NULL), code, 0);
+    if (pPresentMode == NULL)
     {
         //printf("presentModeCount: %u\n ", presentModeCount);
     }
@@ -96,14 +96,14 @@ void createSwapchain(VkDevice * pDevice, VkSurfaceKHR * pSurface, VkSurfaceForma
     if (pSurfaceCapabilities->maxImageCount > 0 && imageCount > pSurfaceCapabilities->maxImageCount)
         imageCount = pSurfaceCapabilities->maxImageCount;
         
-    if (*pSwapchain == VK_NULL_HANDLE)
+    if (*pSwapchain == NULL)
     {
         //printf("imageCount: %u\n", imageCount);
     }
 
     VkSwapchainCreateInfoKHR createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    createInfo.pNext = VK_NULL_HANDLE;
+    createInfo.pNext = NULL;
     createInfo.flags = 0;
     createInfo.surface = *pSurface;
     createInfo.minImageCount = imageCount;
@@ -114,12 +114,12 @@ void createSwapchain(VkDevice * pDevice, VkSurfaceKHR * pSurface, VkSurfaceForma
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
     createInfo.imageSharingMode = 0;
     createInfo.queueFamilyIndexCount = 0;
-    createInfo.pQueueFamilyIndices = VK_NULL_HANDLE;
+    createInfo.pQueueFamilyIndices = NULL;
     createInfo.preTransform = (*pSurfaceCapabilities).currentTransform;
     createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
     createInfo.presentMode = *pPresentMode;
     createInfo.clipped = VK_TRUE;
-    createInfo.oldSwapchain = VK_NULL_HANDLE;
+    createInfo.oldSwapchain = NULL;
 
     uint32_t queueFamilyIndices[3] = {indices.graphicsFamily.familyIndice, indices.presentFamily.familyIndice, indices.computeFamily.familyIndice};
     if (indices.graphicsFamily.familyIndice != indices.presentFamily.familyIndice) 
@@ -132,15 +132,15 @@ void createSwapchain(VkDevice * pDevice, VkSurfaceKHR * pSurface, VkSurfaceForma
     {
         createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
         createInfo.queueFamilyIndexCount = 0; // Optional
-        createInfo.pQueueFamilyIndices = VK_NULL_HANDLE; // Optional
+        createInfo.pQueueFamilyIndices = NULL; // Optional
     }
 
-    resultVulkan(vkCreateSwapchainKHR(*pDevice, &createInfo, VK_NULL_HANDLE, pSwapchain), code, 0);
+    resultVulkan(vkCreateSwapchainKHR(*pDevice, &createInfo, NULL, pSwapchain), code, 0);
 }
 void getSwapchainNumber(VkDevice * pDevice, VkSwapchainKHR * pSwapchain, uint32_t * pImageCount)
 {
     FuncCode code = getSwapchainNumberF;
-    resultVulkan(vkGetSwapchainImagesKHR(*pDevice, *pSwapchain, pImageCount, VK_NULL_HANDLE), code, 0);
+    resultVulkan(vkGetSwapchainImagesKHR(*pDevice, *pSwapchain, pImageCount, NULL), code, 0);
 }
 void createSwapchainImage(VkDevice * pDevice, VkSwapchainKHR * pSwapchain, uint32_t imageCount, VkImage ** pSwapchainImages)
 {
@@ -148,7 +148,7 @@ void createSwapchainImage(VkDevice * pDevice, VkSwapchainKHR * pSwapchain, uint3
     if (*pSwapchainImages != NULL)
     {
         SDL_free(*pSwapchainImages);
-        *pSwapchainImages = VK_NULL_HANDLE;
+        *pSwapchainImages = NULL;
     }
     *pSwapchainImages = (VkImage *)SDL_malloc(imageCount * sizeof(VkImage));
     resultVulkan(vkGetSwapchainImagesKHR(*pDevice, *pSwapchain, &imageCount, *pSwapchainImages), code, 0);
