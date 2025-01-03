@@ -1,4 +1,4 @@
-add_library(VMA SHARED ${SRC_ROOT}/vma/vma_usage.cpp
+add_library(VMA STATIC ${SRC_ROOT}/vma/vma_usage.cpp
                 ${INCLUDE_ROOT}/vma/vk_mem_alloc.h)
 
 target_include_directories(VMA PRIVATE ${INCLUDE_ROOT})

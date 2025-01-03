@@ -9,5 +9,6 @@
 #include <string.h>
 #include <stdarg.h>
 #include <stddef.h>
+#include <stdalign.h>
 
 #endif //std_c.h

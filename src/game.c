@@ -277,22 +277,22 @@ int process_input(void * arg)
             {
                 cameraMove[1] = true;
             }
-            if (key == SDLK_A)
-            {
-                pictureMove[2] = true;
-            }
-            if (key == SDLK_D)
-            {
-                pictureMove[3] = true;
-            }
-            if (key == SDLK_W)
-            {
-                pictureMove[0] = true;
-            }
-            if (key == SDLK_S)
-            {
-                pictureMove[1] = true;
-            }
+            // if (key == SDLK_A)
+            // {
+            //     pictureMove[2] = true;
+            // }
+            // if (key == SDLK_D)
+            // {
+            //     pictureMove[3] = true;
+            // }
+            // if (key == SDLK_W)
+            // {
+            //     pictureMove[0] = true;
+            // }
+            // if (key == SDLK_S)
+            // {
+            //     pictureMove[1] = true;
+            // }
         }
 
         switch (event.type)

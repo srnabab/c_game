@@ -1,11 +1,9 @@
 #include "vk_uniform.h"
 #include "vk_buffer.h"
 
-void createUniformBuffers(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkBuffer ** ppUniformBuffers, VkDeviceMemory ** ppUniformBuffersMem, void *** pppUniformBuffersMapped)
+void createUniformBuffers(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkBuffer ** ppUniformBuffers, VkDeviceMemory ** ppUniformBuffersMem, void *** pppUniformBuffersMapped, VkDeviceSize bufferSize)
 {
     FuncCode code = createUniformBuffersF;
-
-    VkDeviceSize bufferSize = sizeof(UniformBufferObject);
 
     *ppUniformBuffers = (VkBuffer *)SDL_malloc(MAX_FRAMES_IN_FLIGHT * sizeof(VkBuffer));
     *ppUniformBuffersMem = (VkDeviceMemory *)SDL_malloc(MAX_FRAMES_IN_FLIGHT * sizeof(VkDeviceMemory));

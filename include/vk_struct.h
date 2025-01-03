@@ -34,7 +34,8 @@ typedef struct _UniformBufferObject
 
 typedef struct _ComputeUniformBufferObject
 {
-    float deltaTime;
+    float deltaTime;//4 bytes
+    char align[50];
 }ComputeUniformBufferObject;
 
 typedef struct _Particle
@@ -143,7 +144,7 @@ typedef struct _VK_ALL
 
     VkBuffer ** ppShaderStorageBuffers;
 
-    ComputeUniformBufferObject * pComputeUbo;
+    struct _ComputeUniformBufferObject * pComputeUbo;
 
     void *** pppComputeUniformBufferMapped;
 

@@ -94,6 +94,12 @@ target_include_directories(game PUBLIC ${INCLUDE_ROOT}
                             "${INCLUDE_ROOT}/textureG"
                             "${INCLUDE_ROOT}/file")
 
+# set(SDL_INCLUDE_DIR PATH "C:/D/c_game/include/SDL3")
+# set
+# set(SDL_LIBRARY PATH "C:/D/c_game/lib/sdl3")
+# find_package(SDL REQUIRED)
+# find_package(SDL_mixer REQUIRED)
+
 target_link_libraries(game z SDL3 SDL3_mixer SDL3_image box2d unistring "C:/D/game_c_template_aw/lib/vulkan/vulkan-1.lib" textureG VMA)
 
 # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mwindows")

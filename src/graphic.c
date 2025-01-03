@@ -400,6 +400,32 @@ void initVulkan(void)
         // exit(EXIT_FAILURE);
     }
 
+    VkBufferCreateInfo bufferInfo = {};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.pNext = NULL;
+    bufferInfo.flags = 0;
+    bufferInfo.size = 556400;
+    bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+    bufferInfo.sharingMode = 0;
+    bufferInfo.queueFamilyIndexCount = 0;
+    bufferInfo.pQueueFamilyIndices = NULL;
+
+    VmaAllocationCreateInfo allocInfo = {};
+    allocInfo.flags = 0;
+    allocInfo.usage = VMA_MEMORY_USAGE_AUTO;
+    allocInfo.requiredFlags = 0;
+    allocInfo.preferredFlags = 0;
+    allocInfo.memoryTypeBits = 0;
+    allocInfo.pool = NULL;
+    allocInfo.pUserData = NULL;
+    allocInfo.priority = 0;
+
+    VkBuffer largeBuffer = NULL;
+    VmaAllocation largeBufferAllocation = NULL;
+
+    vmaCreateBuffer(vmaAllocator, &bufferInfo, &allocInfo, &largeBuffer, &largeBufferAllocation, NULL);
+
+    vmaDestroyBuffer(vmaAllocator, largeBuffer, largeBufferAllocation);
 
     
 
@@ -489,15 +515,15 @@ void initVulkan(void)
     createTextureImage(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, CirclePng, VK_FORMAT_R8G8B8A8_SRGB, &texturesImage, &textureImageMem);
     createTextureImageView(&device, &texturesImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, &textureImageView);
 
-    /*loadingImage = (VkImage*)malloc(8 * sizeof(VkImage));
-    loadingImageView = (VkImageView*)malloc(8 * sizeof(VkImageView));
-    loadingImageMem = (VkDeviceMemory*)malloc(8 * sizeof(VkDeviceMemory));
-    for (int i = 0;i < 8;i++)
-    {
-        char loadingPicPath[100];
-        strcpy(loadingPicPath, "Textures\\loading1\\loading");
-        char tempIndex = i + 49;
-        char * tempPath = strcat(strncat(loadingPicPath, &tempIndex, 1), ".png");*/
+    // loadingImage = (VkImage*)malloc(8 * sizeof(VkImage));
+    // loadingImageView = (VkImageView*)malloc(8 * sizeof(VkImageView));
+    // loadingImageMem = (VkDeviceMemory*)malloc(8 * sizeof(VkDeviceMemory));
+    // for (int i = 0;i < 8;i++)
+    // {
+    //     char loadingPicPath[100];
+    //     strcpy(loadingPicPath, "Textures\\loading1\\loading");
+    //     char tempIndex = i + 49;
+    //     char * tempPath = strcat(strncat(loadingPicPath, &tempIndex, 1), ".png");
     createTextureImage(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, LoadingPng, VK_FORMAT_R8G8B8A8_SRGB, &loadingImage, &loadingImageMem);
     createTextureImageView(&device, &loadingImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, &loadingImageView);
     //}
@@ -574,9 +600,9 @@ void initVulkan(void)
 
     //initializeMovingBuffer(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, &movingStagingBuffer, &movingStagingMemory, &movingBufferMapped, vertices, verticesCount);
 
-    createUniformBuffers(&physicalDevice, &device, &graphicUniformBuffers, &graphicUniformBuffersMemory, &graphicUniformBufferMapped);
+    createUniformBuffers(&physicalDevice, &device, &graphicUniformBuffers, &graphicUniformBuffersMemory, &graphicUniformBufferMapped, sizeof(UniformBufferObject));
 
-    createUniformBuffers(&physicalDevice, &device, &computeUniformBuffers, &computeUniformBuffersmemory, &computeUniformBufferMapped);
+    createUniformBuffers(&physicalDevice, &device, &computeUniformBuffers, &computeUniformBuffersmemory, &computeUniformBufferMapped, sizeof(ComputeUniformBufferObject));
 
     createShaderStorageBuffers(&physicalDevice, &device, &swapchainCommandPool, &computeQueue, extent2D, &shaderStorageBuffers, &shaderStorageBuffersMem, &particles);
 

@@ -20,8 +20,21 @@ ThreadSem world;
 
 EmptyStack ballStack;
 
+static void * box2d_SDL_Alloc(unsigned int size, int alignment)
+{
+    return SDL_aligned_alloc(alignment, size);
+}
+static void box2d_SDL_Free(void * memory)
+{
+    SDL_aligned_free(memory);
+}
+
 void initWorld(void)
 {
+    b2AllocFcn * allocFcn = box2d_SDL_Alloc;
+    b2FreeFcn * freeFcn = box2d_SDL_Free;
+    b2SetAllocator(allocFcn, freeFcn);
+
     worldDef = b2DefaultWorldDef();
     worldDef.gravity = (b2Vec2){0.0f, -100.0f};
     worldDef.restitutionThreshold = 0.5f;
@@ -151,6 +164,12 @@ int stepWorld(void * arg)
 uint32_t getBoxCount(void)
 {
     return boxCount;
+}
+bool updateSize(float scale)
+{
+    
+
+    return true;
 }
 void cleanWorld(void)
 {
