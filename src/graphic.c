@@ -8,6 +8,12 @@ SDL_Window * window = NULL;
 uint32_t width = 800;
 uint32_t height = 600;
 
+const uint32_t logical_width = 800;
+const uint32_t logical_height = 600;
+
+float physicalCoffectX = 1.0f;
+float physicalCoffectY = 1.0f;
+
 bool initWindow(void)
 {
     /*initialize sdl
@@ -30,6 +36,10 @@ bool initWindow(void)
     window = SDL_CreateWindow("Vulkan", width, height, SDL_WINDOW_VULKAN | SDL_WINDOW_HIGH_PIXEL_DENSITY);
     if (window == NULL)
         return false;
+
+    physicalCoffectX = (float)width / logical_width;
+    physicalCoffectY = (float)height / logical_height;
+
     logMessage("window initialized");
 
     uint32_t iconWidth, iconHeight;

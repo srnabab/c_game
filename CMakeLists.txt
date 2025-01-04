@@ -50,6 +50,7 @@ add_executable(game ${SRC_ROOT}/main.c
                     ${SRC_ROOT}/log.c
                     ${SRC_ROOT}/music.c
                     ${SRC_ROOT}/world.c
+                    ${SRC_ROOT}/list.c
                     ${SRC_ROOT}/stack.c
                     ${SRC_ROOT}/timer.c
                     ${SRC_ROOT}/text.c

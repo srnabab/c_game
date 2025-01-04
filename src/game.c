@@ -114,6 +114,12 @@ static uint32_t ballCount = 2;
 static uint32_t textLine = 0;
 static bool textDisplay = false;
 
+extern uint32_t logical_width;
+extern uint32_t logical_height;
+
+extern float physicalCoffectX;
+extern float physicalCoffectY;
+
 // Function to poll SDL events and process keyboard input
 int process_input(void * arg)
 {
@@ -247,9 +253,14 @@ int process_input(void * arg)
                 //SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
                 recreateSwap.pOldExtent2D->width = allInOne.pExtent2D->width;
                 recreateSwap.pOldExtent2D->height = allInOne.pExtent2D->height;
-                allInOne.pExtent2D->width = 1600;
-                allInOne.pExtent2D->height = 900;
+                allInOne.pExtent2D->width = 2000;
+                allInOne.pExtent2D->height = 1500;
+                
                 SDL_SetWindowSize(window, allInOne.pExtent2D->width, allInOne.pExtent2D->height);
+
+                physicalCoffectX = (float)allInOne.pExtent2D->width / logical_width;
+                physicalCoffectY = (float)allInOne.pExtent2D->height / logical_height;
+                
                 logMessage("sdl width: %u, height: %u", allInOne.pExtent2D->width, allInOne.pExtent2D->height);
             }
             if (key == SDLK_PAUSE)
@@ -427,7 +438,7 @@ int update(void * arg)
         {
             if (leftButtonClickedTimes > 17)
             {
-                leftButtonEnabled = false;
+                // leftButtonEnabled = false;
             }
         }
 
@@ -455,34 +466,34 @@ int update(void * arg)
             *pCamera_X -= 0.2f * delta_time;
         }
 
-        SDL_LockMutex(sdl_mutex_2);
-        /*if (pictureMove[0])
-        {
-            *allInOne.pPictureY += 200 * delta_time;
-            //logMessage("y: %f, enabled: %d, delta time: %lf, last_frame_time: %lu ----%s", *allInOne.pPictureY, pictureMove[0], delta_time, last_frame_time, timeNow);
-        }
-        if (pictureMove[1])
-        {
-            *allInOne.pPictureY -= 200 * delta_time;
-        }
-        if (pictureMove[2])
-        {
-            *allInOne.pPictureX -= 200 * delta_time;
-        }
-        if (pictureMove[3])
-        {
-            *allInOne.pPictureX += 200 * delta_time;
-        }
-        if (scale)
-        {
-            glm_scale_self(allInOne.ppVertices, 2.0f, 1);
-        }*/
-        if (pictureMove[0] | pictureMove[1] | pictureMove[2] | pictureMove[3] | scale)
-        {
-            updatePosition(*allInOne.pPictureX, *allInOne.pPictureY, allInOne.pExtent2D, allInOne.ppVertices, 1);
-            scale = false;
-        }
-        SDL_UnlockMutex(sdl_mutex_2);
+        // SDL_LockMutex(sdl_mutex_2);
+        // if (pictureMove[0])
+        // {
+        //     *allInOne.pPictureY += 200 * delta_time;
+        //     //logMessage("y: %f, enabled: %d, delta time: %lf, last_frame_time: %lu ----%s", *allInOne.pPictureY, pictureMove[0], delta_time, last_frame_time, timeNow);
+        // }
+        // if (pictureMove[1])
+        // {
+        //     *allInOne.pPictureY -= 200 * delta_time;
+        // }
+        // if (pictureMove[2])
+        // {
+        //     *allInOne.pPictureX -= 200 * delta_time;
+        // }
+        // if (pictureMove[3])
+        // {
+        //     *allInOne.pPictureX += 200 * delta_time;
+        // }
+        // if (scale)
+        // {
+        //     glm_scale_self(allInOne.ppVertices, 2.0f, 1);
+        // }
+        // if (pictureMove[0] | pictureMove[1] | pictureMove[2] | pictureMove[3] | scale)
+        // {
+        //     updatePosition(*allInOne.pPictureX, *allInOne.pPictureY, allInOne.pExtent2D, allInOne.ppVertices, 1);
+        //     scale = false;
+        // }
+        // SDL_UnlockMutex(sdl_mutex_2);
 
         uint32_t count = *allInOne.pVerticesCount;
         // size_t bufferSize = sizeof(Vertex) * count;
@@ -501,7 +512,8 @@ int update(void * arg)
                 x *= -1;
             }
             SDL_LockMutex(sdl_mutex_2);
-            positionInitialize(x, 280, 16, 16, *allInOne.pExtent2D, allInOne.ppVertices, count / 4);
+            // float averagePhysicalCoffect = (physicalCoffectX + physicalCoffectY) / 2.0f;
+            positionInitialize(x * physicalCoffectX, 280 * physicalCoffectY, 16 * physicalCoffectY, 16 * physicalCoffectY, *allInOne.pExtent2D, allInOne.ppVertices, count / 4);
             SDL_UnlockMutex(sdl_mutex_2);
 
             ballStack.pushFn(&ballStack, &x);

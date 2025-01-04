@@ -20,6 +20,9 @@ ThreadSem world;
 
 EmptyStack ballStack;
 
+extern float physicalCoffectX;
+extern float physicalCoffectY;
+
 static void * box2d_SDL_Alloc(unsigned int size, int alignment)
 {
     return SDL_aligned_alloc(alignment, size);
@@ -29,6 +32,11 @@ static void box2d_SDL_Free(void * memory)
     SDL_aligned_free(memory);
 }
 
+static bool IdCompare(void * a, void * b)
+{
+    return false;
+}
+
 void initWorld(void)
 {
     b2AllocFcn * allocFcn = box2d_SDL_Alloc;
@@ -36,40 +44,40 @@ void initWorld(void)
     b2SetAllocator(allocFcn, freeFcn);
 
     worldDef = b2DefaultWorldDef();
-    worldDef.gravity = (b2Vec2){0.0f, -100.0f};
+    worldDef.gravity = (b2Vec2){0.0f, -100.0f * SCALE_FACTOR};
     worldDef.restitutionThreshold = 0.5f;
 
     worldId = b2CreateWorld(&worldDef);
     
     groundBodyDef[0] = b2DefaultBodyDef();
     groundBodyDef[0].type = b2_staticBody;
-    groundBodyDef[0].position = (b2Vec2){0.0f, -300.0f};
+    groundBodyDef[0].position = (b2Vec2){0.0f, -300.0f * SCALE_FACTOR};
 
     groundId[0] = b2CreateBody(worldId, &groundBodyDef[0]);
 
-    groundBox[0] = b2MakeBox(2000.0f, 10.0f);
+    groundBox[0] = b2MakeBox(2000.0f * SCALE_FACTOR, 10.0f * SCALE_FACTOR);
 
     groundShapeDef[0] = b2DefaultShapeDef();
     groundShapeId[0] = b2CreatePolygonShape(groundId[0], &groundShapeDef[0], &groundBox[0]);
 
     groundBodyDef[1] = b2DefaultBodyDef();
     groundBodyDef[1].type = b2_staticBody;
-    groundBodyDef[1].position = (b2Vec2){-300.0f, -150.0f};
+    groundBodyDef[1].position = (b2Vec2){-300.0f * SCALE_FACTOR, -150.0f * SCALE_FACTOR};
 
     groundId[1] = b2CreateBody(worldId, &groundBodyDef[1]);
 
-    groundBox[1] = b2MakeBox(10.0f, 240.0f);
+    groundBox[1] = b2MakeBox(10.0f * SCALE_FACTOR, 240.0f * SCALE_FACTOR);
 
     groundShapeDef[1] = b2DefaultShapeDef();
     groundShapeId[1] = b2CreatePolygonShape(groundId[1], &groundShapeDef[1], &groundBox[1]);
 
     groundBodyDef[2] = b2DefaultBodyDef();
     groundBodyDef[2].type = b2_staticBody;
-    groundBodyDef[2].position = (b2Vec2){300.0f, -150.0f};
+    groundBodyDef[2].position = (b2Vec2){300.0f * SCALE_FACTOR, -150.0f * SCALE_FACTOR};
 
     groundId[2] = b2CreateBody(worldId, &groundBodyDef[2]);
 
-    groundBox[2] = b2MakeBox(10.0f, 240.0f);
+    groundBox[2] = b2MakeBox(10.0f * SCALE_FACTOR, 240.0f * SCALE_FACTOR);
 
     groundShapeDef[2] = b2DefaultShapeDef();
     groundShapeId[2] = b2CreatePolygonShape(groundId[2], &groundShapeDef[2], &groundBox[2]);
@@ -114,14 +122,14 @@ void createCircle(float x, float y)
     int index = boxCount - 1;
     bodyDefs[index] = b2DefaultBodyDef();
     bodyDefs[index].type = b2_dynamicBody;
-    bodyDefs[index].position = (b2Vec2){x, y};
+    bodyDefs[index].position = (b2Vec2){x * SCALE_FACTOR, y * SCALE_FACTOR};
 
     bodyIds = (b2BodyId *)SDL_realloc(bodyIds, boxCount * sizeof(b2BodyId));
     bodyIds[index] = b2CreateBody(worldId, &bodyDefs[index]);
 
     dynamicBoxs = (b2Circle *)SDL_realloc(dynamicBoxs, boxCount * sizeof(b2Circle));
     dynamicBoxs[index].center = (b2Vec2){0.0f, 0.0f};
-    dynamicBoxs[index].radius = 8.0f;
+    dynamicBoxs[index].radius = 8.0f * SCALE_FACTOR;
 
     shapeDefs = (b2ShapeDef *)SDL_realloc(shapeDefs, boxCount * sizeof(b2ShapeDef));
     shapeDefs[index] = b2DefaultShapeDef();
@@ -136,6 +144,7 @@ void updateCircle(VkExtent2D * pExtent2D, Vertex ** ppVertices)
 {
     if (stepDone)
     {
+        // float averagePhysicalCoffect = (physicalCoffectX + physicalCoffectY) / 2.0f;
         while (ballStack.top != -1)
         {
             int32_t temp = *(int32_t*)(ballStack.popFn(&ballStack));
@@ -144,7 +153,7 @@ void updateCircle(VkExtent2D * pExtent2D, Vertex ** ppVertices)
         for (uint32_t i = 1;i < boxCount;i++)
         {
             b2Vec2 position = b2Body_GetPosition(bodyIds[i]);
-            updatePosition(position.x - 24.0f, position.y - 24.0f, pExtent2D, ppVertices, i);
+            updatePosition((position.x * SCALE_FACTOR_INV - 24.0f) * physicalCoffectY, (position.y * SCALE_FACTOR_INV - 24.0f) * physicalCoffectY, pExtent2D, ppVertices, i);
         }
         stepDone = false;
         SDL_SignalSemaphore(worldSemaphore);
@@ -156,6 +165,10 @@ int stepWorld(void * arg)
     while (game_is_running)
     {
         SDL_WaitSemaphore(worldSemaphore);
+        // if (boxCount > 2)
+        // {
+        //     b2Body_SetTransform(bodyIds[1], (b2Vec2){-700.0f * SCALE_FACTOR, -300.0f * SCALE_FACTOR}, b2Rot_identity);
+        // }
         b2World_Step(worldId, timeStep, subStepCount);
         stepDone = true;
     }
@@ -167,7 +180,10 @@ uint32_t getBoxCount(void)
 }
 bool updateSize(float scale)
 {
-    
+    if (stepDone)
+    {
+        
+    }
 
     return true;
 }
