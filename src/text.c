@@ -14,14 +14,14 @@ bool initTextSystem(void)
     SDL_IOStream * fp;
     int failed = 0;
 
-    if ((fp = SDL_IOFromFile(getPath(TextHashTable), "rb")) == NULL)
+    if ((fp = SDL_IOFromFile(getPath(Font1HashTable), "rb")) == NULL)
     {
-        textureGenerate(getPath(TextFont), getPath(TextHashTable), getPath(TextPng), 1, 60, &failed);
+        textureGenerate(getPath(Font1), getPath(Font1HashTable), getPath(Font1Png), 1, 60, &failed);
         if (failed)
         {
             logMessage("font error(%d)", failed);
         }
-        fp = SDL_IOFromFile(getPath(TextHashTable), "rb");
+        fp = SDL_IOFromFile(getPath(Font1HashTable), "rb");
         if (fp == NULL)
         {
             return false;

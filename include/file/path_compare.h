@@ -4,16 +4,16 @@
 typedef enum _PathType
 {
     None,
-    TextFont,
-    TextHashTable,
-    TextPng,
+    Font1,
+    Font1HashTable,
+    Font1Png,
     TriangleVertexShader,
     TriangleFragmentShader,
     ParticleVertexShader,
     ParticleFragmentShader,
     ParticleComputeShader,
     IconPng,
-    LoadingPng,
+    Loading1Png,
     CirclePng,
     EmojiFont,
     EmojiHashTable,
@@ -22,6 +22,11 @@ typedef enum _PathType
     PathPath,
     RootPath,
     LogPath,
+    CustomePath1,
+    CustomePath2,
+    CustomePath3,
+    CustomePath4,
+    CustomePath5,
 } PathType;
 
 PathType pathCompare(char * buffer);

@@ -63,6 +63,7 @@ static bool initPath(char * argv)
     int fileCount = 0;
     while (SDL_IOgets(buffer, MAX_PATHLEN, io) != NULL)
     {
+        if (buffer[0] == '\r' || buffer[0] == '\n') continue;
         buffer[SDL_strcspn(buffer, "\r")] = '\0';
         PathType type = None;
         type = pathCompare(buffer);
@@ -73,7 +74,6 @@ static bool initPath(char * argv)
             buffer[SDL_strcspn(buffer, "\r")] = '\0';
             SDL_strlcat(PathTemp[type], buffer, 255);
             SDL_Log(PathTemp[type]);
-            SDL_IOgets(buffer, MAX_PATHLEN, io);
             fileCount++;
         }
         memset(buffer, 0, MAX_PATHLEN);

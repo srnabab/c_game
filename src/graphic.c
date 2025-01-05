@@ -549,11 +549,11 @@ void initVulkan(void)
     //     strcpy(loadingPicPath, "Textures\\loading1\\loading");
     //     char tempIndex = i + 49;
     //     char * tempPath = strcat(strncat(loadingPicPath, &tempIndex, 1), ".png");
-    createTextureImage(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, LoadingPng, VK_FORMAT_R8G8B8A8_SRGB, &loadingImage, &loadingImageMem);
+    createTextureImage(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, Loading1Png, VK_FORMAT_R8G8B8A8_SRGB, &loadingImage, &loadingImageMem);
     createTextureImageView(&device, &loadingImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, &loadingImageView);
     //}
 
-    createTextureImage(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, TextPng, VK_FORMAT_R8_UNORM, &textImage, &textImageMem);
+    createTextureImage(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, Font1Png, VK_FORMAT_R8_UNORM, &textImage, &textImageMem);
     createTextureImageView(&device, &textImage, VK_FORMAT_R8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, &textImageView);
     
     createTextureSampler(&physicalDevice, &device, &textureSampler);

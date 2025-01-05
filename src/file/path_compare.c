@@ -3,17 +3,17 @@
 #include "SDL3/SDL_stdinc.h"
 PathType pathCompare(char * buffer)
 {
-    if ((SDL_strcmp(buffer, "[TextFont]") == 0))
+    if ((SDL_strcmp(buffer, "[Font1]") == 0))
     {
-        return TextFont;
+        return Font1;
     }
-    else if ((SDL_strcmp(buffer, "[TextHashTable]") == 0))
+    else if ((SDL_strcmp(buffer, "[Font1HashTable]") == 0))
     {
-        return TextHashTable;
+        return Font1HashTable;
     }
-    else if ((SDL_strcmp(buffer, "[TextPng]") == 0))
+    else if ((SDL_strcmp(buffer, "[Font1Png]") == 0))
     {
-        return TextPng;
+        return Font1Png;
     }
     else if ((SDL_strcmp(buffer, "[TriangleVertexShader]") == 0))
     {
@@ -39,9 +39,9 @@ PathType pathCompare(char * buffer)
     {
         return IconPng;
     }
-    else if ((SDL_strcmp(buffer, "[LoadingPng]") == 0))
+    else if ((SDL_strcmp(buffer, "[Loading1Png]") == 0))
     {
-        return LoadingPng;
+        return Loading1Png;
     }
     else if ((SDL_strcmp(buffer, "[CirclePng]") == 0))
     {
@@ -74,6 +74,26 @@ PathType pathCompare(char * buffer)
     else if ((SDL_strcmp(buffer, "[LogPath]") == 0))
     {
         return LogPath;
+    }
+    else if ((SDL_strcmp(buffer, "[CustomePath1]") == 0))
+    {
+        return CustomePath1;
+    }
+    else if ((SDL_strcmp(buffer, "[CustomePath2]") == 0))
+    {
+        return CustomePath2;
+    }
+    else if ((SDL_strcmp(buffer, "[CustomePath3]") == 0))
+    {
+        return CustomePath3;
+    }
+    else if ((SDL_strcmp(buffer, "[CustomePath4]") == 0))
+    {
+        return CustomePath4;
+    }
+    else if ((SDL_strcmp(buffer, "[CustomePath5]") == 0))
+    {
+        return CustomePath5;
     }
 
     return None;
