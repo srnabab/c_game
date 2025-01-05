@@ -16,7 +16,7 @@
 extern SDL_Thread * sdl_pid_update, * sdl_pid_draw, * sdl_pid_signal, * sdl_pid_control;
 
 //extern SDL_Condition * main_cond;
-extern SDL_Condition * done_cond;
+// extern SDL_Condition * done_cond;
 
 uint64_t frequency;
 
@@ -52,7 +52,7 @@ void setup(void)
 
     SDL_StopTextInput(window);
     
-    done_cond = SDL_CreateCondition();
+    // done_cond = SDL_CreateCondition();
 
     sdl_mutex = SDL_CreateMutex();
     sdl_mutex_2 = SDL_CreateMutex();
@@ -90,7 +90,7 @@ void setup(void)
     initMusicManagement();
     loadMusic("10test.wav", "test");
 
-    sdl_pid_control = SDL_CreateThread(&flow_control, "control", NULL);
+    // sdl_pid_control = SDL_CreateThread(&flow_control, "control", NULL);
     //SDL_Delay(1000);
     sdl_pid_update = SDL_CreateThread(&update, "update", NULL);
     sdl_pid_draw = SDL_CreateThread(&render, "render", NULL);
@@ -637,8 +637,6 @@ int render(void * arg)
     return 0;
 }
 
-static bool control_done = 0;
-
 int signal_trans(void * arg)
 {
     SDL_Log("signal init\n");
@@ -646,7 +644,10 @@ int signal_trans(void * arg)
     {
         if (update_done && draw_done)
         {
-            SDL_SignalCondition(done_cond);
+            // SDL_SignalCondition(done_cond);
+            update_done = draw_done = false;
+            SDL_SignalSemaphore(main_semaphore1);
+            SDL_SignalSemaphore(main_semaphore2);
         }
         if (!pause && pause_signal_send)
         {
@@ -655,45 +656,49 @@ int signal_trans(void * arg)
             logMessage("pause end signal");
         }
     }
+    int i = 0;
     while (!game_is_running)
     {
         SDL_BroadcastCondition(pause_condition);
-        SDL_SignalCondition(done_cond);
-        if (control_done)
+        // SDL_SignalCondition(done_cond);
+        if (i == 500)
             break;
+        i++;
     }
     return 0;
 }
 
-int flow_control(void * arg)
-{
-    while (game_is_running)
-    {
-        SDL_LockMutex(sdl_mutex);
-        if (game_is_running)
-        {
-            SDL_WaitConditionTimeout(done_cond, sdl_mutex, -1);
-        }
-            update_done = draw_done = false;
-            SDL_SignalSemaphore(main_semaphore1);
-            SDL_SignalSemaphore(main_semaphore2);
-            //SDL_BroadcastCondition(main_cond);
-            //SDL_Log("main signal\n");
-            
-            SDL_UnlockMutex(sdl_mutex);
-            //SDL_Log("unlock(%d)\n", code);
+// int flow_control(void * arg)
+// {
+//     while (game_is_running)
+//     {
+//         SDL_LockMutex(sdl_mutex);
+//         if (game_is_running)
+//         {
+//             SDL_WaitConditionTimeout(done_cond, sdl_mutex, -1);
+//         }
 
-        if (pause)
-        {
-            SDL_LockMutex(pause_mutex);
-            SDL_WaitCondition(pause_condition, pause_mutex);
-            last_frame_time = SDL_GetPerformanceCounter();
-            SDL_UnlockMutex(pause_mutex);
-        }
-    }
-    control_done = true;
-    return 0;
-}
+//         update_done = draw_done = false;
+//         SDL_SignalSemaphore(main_semaphore1);
+//         SDL_SignalSemaphore(main_semaphore2);
+//         //SDL_BroadcastCondition(main_cond);
+//         //SDL_Log("main signal\n");
+        
+//         SDL_UnlockMutex(sdl_mutex);
+//         //SDL_Log("unlock(%d)\n", code);
+
+//         if (pause)
+//         {
+//             SDL_LockMutex(pause_mutex);
+//             SDL_WaitCondition(pause_condition, pause_mutex);
+//             last_frame_time = SDL_GetPerformanceCounter();
+//             SDL_UnlockMutex(pause_mutex);
+//         }
+//         SDL_DelayNS(666667);
+//     }
+//     control_done = true;
+//     return 0;
+// }
 
 // Function to destroy SDL window and renderer
 void destroy_window(void) 
@@ -702,7 +707,7 @@ void destroy_window(void)
     deInitMusicManagement();
     deInitPopWindow();
     destroyLog();
-    SDL_DestroyCondition(done_cond);
+    // SDL_DestroyCondition(done_cond);
     SDL_DestroyCondition(pause_condition);
     SDL_DestroyMutex(pause_mutex);
     SDL_DestroyMutex(sdl_mutex);

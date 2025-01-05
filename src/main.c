@@ -9,9 +9,9 @@ bool game_is_running = false;
 SDL_Thread * sdl_pid_update = NULL;
 SDL_Thread * sdl_pid_draw = NULL;
 SDL_Thread * sdl_pid_signal = NULL;
-SDL_Thread * sdl_pid_control = NULL;
+// SDL_Thread * sdl_pid_control = NULL;
 
-SDL_Condition * done_cond = NULL;
+// SDL_Condition * done_cond = NULL;
 
 SDL_Mutex * sdl_mutex = NULL;
 
@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
 
         if (!game_is_running)
         {
-            SDL_WaitThread(sdl_pid_control, NULL);
+            // SDL_WaitThread(sdl_pid_control, NULL);
             SDL_WaitThread(sdl_pid_signal, NULL);
             SDL_Log("signal end\n");
             SDL_WaitThread(sdl_pid_update, NULL);
@@ -61,8 +61,6 @@ int main(int argc, char* argv[])
     //SDL_BroadcastCondition(main_cond);
     
     destroy_window();
-
-    //getchar();
 
     return 0;
 }
