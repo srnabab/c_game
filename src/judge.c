@@ -24,7 +24,7 @@ void resultVulkan(VkResult result, FuncCode code, uint32_t num, ...)
         }
         else if (code == acquireNextImageF)
         {
-            logMessage("VK_SUBOPTIMAL_KHR(acquireNext)");
+            // logMessage("VK_SUBOPTIMAL_KHR(acquireNext)");
         }
         break;
 

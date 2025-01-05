@@ -1,5 +1,6 @@
 #include "std_c.h"
 #include "timer.h"
+#include "log.h"
 #include "SDL3/SDL.h"
 
 typedef struct _Timer
@@ -66,6 +67,10 @@ static bool addTimer(uint64_t nano, int id, int repeat)
 }
 static Timer * findTimer(int id)
 {
+    if (id == 129)
+    {
+        logMessage("here");
+    }
     for (int i = 0;i < 128;i++)
     {
         if (id == timerS[i].id)
@@ -81,6 +86,10 @@ bool intervalIsDone(uint64_t nano, int * id, int repeat)
     if (*id)
     {
         Timer * tempTimer = findTimer(*id);
+        if (tempTimer == NULL)
+        {
+            return false;
+        }
 
         SDL_LockMutex(timerMutex);
         if (tempTimer->done)
@@ -137,6 +146,16 @@ bool deleteTimeSet(int *id)
 
     return true;
 }
+static bool deleteTimeSetIn(int *id)
+{
+    Timer * tempTimer = findTimer(*id);
+
+    memset(tempTimer, 0, sizeof(Timer));
+
+    *id = 0;
+
+    return true;
+}
 void accumlateTime(uint64_t nano)
 {
     SDL_LockMutex(timerMutex);
@@ -148,6 +167,10 @@ void accumlateTime(uint64_t nano)
             {
                 timerS[i].accumulated += nano;
             }
+            if (timerS[i].repeat == 0)
+            {
+                deleteTimeSetIn(&timerS[i].id);
+            }
 
             if (timerS[i].accumulated >= timerS[i].nanoSecond)
             {
@@ -155,7 +178,9 @@ void accumlateTime(uint64_t nano)
                 timerS[i].done = true;
 
                 if (timerS[i].repeat > 0)
+                {
                     timerS[i].repeat--;
+                }
             }
         }
     }

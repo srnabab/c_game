@@ -32,11 +32,6 @@ static void box2d_SDL_Free(void * memory)
     SDL_aligned_free(memory);
 }
 
-static bool IdCompare(void * a, void * b)
-{
-    return false;
-}
-
 void initWorld(void)
 {
     b2AllocFcn * allocFcn = box2d_SDL_Alloc;
@@ -129,7 +124,7 @@ void createCircle(float x, float y)
 
     dynamicBoxs = (b2Circle *)SDL_realloc(dynamicBoxs, boxCount * sizeof(b2Circle));
     dynamicBoxs[index].center = (b2Vec2){0.0f, 0.0f};
-    dynamicBoxs[index].radius = 8.0f * SCALE_FACTOR;
+    dynamicBoxs[index].radius = 7.7f * SCALE_FACTOR;
 
     shapeDefs = (b2ShapeDef *)SDL_realloc(shapeDefs, boxCount * sizeof(b2ShapeDef));
     shapeDefs[index] = b2DefaultShapeDef();
@@ -177,15 +172,6 @@ int stepWorld(void * arg)
 uint32_t getBoxCount(void)
 {
     return boxCount;
-}
-bool updateSize(float scale)
-{
-    if (stepDone)
-    {
-        
-    }
-
-    return true;
 }
 void cleanWorld(void)
 {

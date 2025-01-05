@@ -3,6 +3,7 @@
 
 //declare a sdl window
 SDL_Window * window = NULL;
+SDL_DisplayID displayId = 0;
 
 //window's width and height
 uint32_t width = 800;
@@ -36,6 +37,20 @@ bool initWindow(void)
     window = SDL_CreateWindow("Vulkan", width, height, SDL_WINDOW_VULKAN | SDL_WINDOW_HIGH_PIXEL_DENSITY);
     if (window == NULL)
         return false;
+    
+    int count = 0;
+    SDL_DisplayID * displays = SDL_GetDisplays(&count);
+    for (int i = 0;i < count;i++)
+    {
+        logMessage("display id:%u, name:%s", displays[i], SDL_GetDisplayName(displays[i]));
+    }
+    displayId = displays[0];
+    SDL_DisplayMode ** modes = NULL;
+    modes = SDL_GetFullscreenDisplayModes(displayId, &count);
+    for (int i = 0;i < count;i++)
+    {
+        logMessage("id %u format: %u: %u x %u, %uHz", modes[i]->displayID, modes[i]->format, modes[i]->w, modes[i]->h, modes[i]->refresh_rate);
+    }
 
     physicalCoffectX = (float)width / logical_width;
     physicalCoffectY = (float)height / logical_height;

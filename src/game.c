@@ -35,6 +35,7 @@ extern uint64_t last_frame_time;
 double testNum = 0.0f;
 
 extern SDL_Window * window;
+extern SDL_DisplayID displayId;
 extern VK_ALL allInOne;
 extern Recreate recreateSwap;
 
@@ -152,16 +153,17 @@ int process_input(void * arg)
         logMessage("preKeyState: %u, keyState: %u, key: %s(%u)", preKeyState, event.type, SDL_GetKeyName(key), key);
         if (event.type == SDL_EVENT_WINDOW_MINIMIZED)
         {
-            pause = (pause + 1) % 2;
-            pause_signal_send = true;
-            continue;
+            // pause = (pause + 1) % 2;
+            // pause_signal_send = true;
+            // continue;
         }
 
         if (event.type == SDL_EVENT_WINDOW_RESTORED)
         {
-            pause = (pause + 1) % 2;
-            pause_signal_send = true;
-            continue;
+            // pause = (pause + 1) % 2;
+            // pause_signal_send = true;
+            // continue;
+            SDL_RaiseWindow(window);
         }
 
         if (event.type == SDL_EVENT_MOUSE_MOTION)
@@ -253,8 +255,8 @@ int process_input(void * arg)
                 //SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
                 recreateSwap.pOldExtent2D->width = allInOne.pExtent2D->width;
                 recreateSwap.pOldExtent2D->height = allInOne.pExtent2D->height;
-                allInOne.pExtent2D->width = 2000;
-                allInOne.pExtent2D->height = 1500;
+                allInOne.pExtent2D->width = 1600;
+                allInOne.pExtent2D->height = 900;
                 
                 SDL_SetWindowSize(window, allInOne.pExtent2D->width, allInOne.pExtent2D->height);
 
@@ -262,6 +264,36 @@ int process_input(void * arg)
                 physicalCoffectY = (float)allInOne.pExtent2D->height / logical_height;
                 
                 logMessage("sdl width: %u, height: %u", allInOne.pExtent2D->width, allInOne.pExtent2D->height);
+            }
+            if (key == SDLK_F10)
+            {
+                logMessage("F10");
+
+                // SDL_DisplayMode mode;
+                // SDL_DisplayID displayId;
+                // SDL_GetFullscreenDisplayModes();
+                SDL_DisplayMode displayMode = {0};
+                // pause = (pause + 1) % 2;
+                // pause_signal_send = true;
+                SDL_GetClosestFullscreenDisplayMode(displayId, allInOne.pExtent2D->width, allInOne.pExtent2D->height, 0, false, &displayMode);
+                SDL_SetWindowFullscreen(window, 1);
+                SDL_SetWindowFullscreenMode(window, &displayMode);
+                SDL_RaiseWindow(window);
+
+                logMessage("fullscreen");
+            }
+            if (key == SDLK_F9)
+            {
+                logMessage("F9");
+
+                SDL_SetWindowFullscreen(window, 0);
+                recreateSwap.pOldExtent2D->width = allInOne.pExtent2D->width;
+                recreateSwap.pOldExtent2D->height = allInOne.pExtent2D->height;
+                
+                SDL_SetWindowSize(window, allInOne.pExtent2D->width, allInOne.pExtent2D->height);
+                SDL_RaiseWindow(window);
+
+                logMessage("windowed");
             }
             if (key == SDLK_PAUSE)
             {
@@ -422,23 +454,19 @@ int update(void * arg)
             textDisplay = false;
         }
 
-        static int id_1s = 0;
-        if (intervalIsDone(u32_s_to_ns(1), &id_1s, -1))
+        static int id_click = 0;
+        if (leftButtonClickedTimes)
         {
-            //logMessage("1.0s");
-            leftButtonEnabled = true;
-
-            SDL_LockMutex(sdl_mutex_2);
-
-            leftButtonClickedTimes = 0;
-
-            SDL_UnlockMutex(sdl_mutex_2);
-        }
-        else
-        {
-            if (leftButtonClickedTimes > 17)
+            leftButtonEnabled = false;
+            if (intervalIsDone(f32_ms_to_ns(58.8), &id_click, 1))
             {
-                // leftButtonEnabled = false;
+                SDL_LockMutex(sdl_mutex_2);
+
+                leftButtonClickedTimes = 0;
+                leftButtonEnabled = true;
+                id_click = 0;
+
+                SDL_UnlockMutex(sdl_mutex_2);
             }
         }
 
