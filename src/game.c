@@ -16,9 +16,6 @@
 
 extern SDL_Thread * sdl_pid_update, * sdl_pid_draw, * sdl_pid_signal, * sdl_pid_control;
 
-//extern SDL_Condition * main_cond;
-// extern SDL_Condition * done_cond;
-
 uint64_t frequency;
 
 extern SDL_Mutex * sdl_mutex;
@@ -49,12 +46,9 @@ static SDL_MessageBoxData * boxData;
 // Setup function that runs once at the beginning of our program
 void setup(void) 
 {
-    //main_cond = SDL_CreateCondition();
     frequency = SDL_GetPerformanceFrequency();
 
     SDL_StopTextInput(window);
-    
-    // done_cond = SDL_CreateCondition();
 
     sdl_mutex = SDL_CreateMutex();
     sdl_mutex_2 = SDL_CreateMutex();
@@ -93,8 +87,6 @@ void setup(void)
     initMusicManagement();
     loadMusic("10test.wav", "test");
 
-    // sdl_pid_control = SDL_CreateThread(&flow_control, "control", NULL);
-    //SDL_Delay(1000);
     sdl_pid_update = SDL_CreateThread(&update, "update", NULL);
     sdl_pid_draw = SDL_CreateThread(&render, "render", NULL);
     sdl_pid_signal = SDL_CreateThread(&signal_trans, "signal", NULL);
@@ -139,8 +131,9 @@ int process_input(void * arg)
     {
         scene = Pause_Scene;
         preScene = First_Scene;
-        // pause_signal_send = true;
+        
         popWindow();
+
         scene = First_Scene;
         preScene = Pause_Scene;
         SDL_SignalSemaphore(main_semaphore1);
@@ -163,16 +156,11 @@ int process_input(void * arg)
         logMessage("preKeyState: %u, keyState: %u, key: %s(%u)", preKeyState, event.type, SDL_GetKeyName(key), key);
         if (event.type == SDL_EVENT_WINDOW_MINIMIZED)
         {
-            // pause = (pause + 1) % 2;
-            // pause_signal_send = true;
-            // continue;
+            ;
         }
 
         if (event.type == SDL_EVENT_WINDOW_RESTORED)
         {
-            // pause = (pause + 1) % 2;
-            // pause_signal_send = true;
-            // continue;
             SDL_RaiseWindow(window);
         }
 
@@ -250,7 +238,7 @@ int process_input(void * arg)
                 pictureMove[1] = false;
             }
         }
-        
+
         if (event.type == SDL_EVENT_KEY_DOWN)
         {
             if (key == SDLK_ESCAPE)
@@ -262,7 +250,6 @@ int process_input(void * arg)
             }
             if (key == SDLK_F11)
             {
-                //SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
                 recreateSwap.pOldExtent2D->width = allInOne.pExtent2D->width;
                 recreateSwap.pOldExtent2D->height = allInOne.pExtent2D->height;
                 allInOne.pExtent2D->width = 1600;
@@ -279,12 +266,8 @@ int process_input(void * arg)
             {
                 logMessage("F10");
 
-                // SDL_DisplayMode mode;
-                // SDL_DisplayID displayId;
-                // SDL_GetFullscreenDisplayModes();
                 SDL_DisplayMode displayMode = {0};
-                // pause = (pause + 1) % 2;
-                // pause_signal_send = true;
+                
                 SDL_GetClosestFullscreenDisplayMode(displayId, allInOne.pExtent2D->width, allInOne.pExtent2D->height, 0, false, &displayMode);
                 SDL_SetWindowFullscreen(window, 1);
                 SDL_SetWindowFullscreenMode(window, &displayMode);
@@ -410,7 +393,7 @@ int update(void * arg)
     UniformBufferObject * pGraphicUbo = allInOne.pGraphicUbo;
     float * pCamera_X = allInOne.pCamera_X;
     float * pCamera_Y = allInOne.pCamera_Y;
-    // uint32_t currentFrame = *allInOne.pCurrentFrame;
+    
     bool playedMusic = false;
 
     // float accumulator = 0.0f;
@@ -439,14 +422,7 @@ int update(void * arg)
         totalTimeNs += delta_time_ns;
         delta_time = delta_time_ns / ((float)S_TO_NS);
         totalTime = totalTimeNs / ((float)S_TO_NS);
-
-        // if (first)
-        // {
-        //     pushMessage(SDL_MESSAGEBOX_INFORMATION, "test", "first frame\n");
-        //     last_frame_time = SDL_GetPerformanceCounter();
-        //     first = false;
-        // }
-
+        
         // Get delta_time factor converted to seconds to be used to update objects
         if (scene == First_Scene)
         {
@@ -617,30 +593,19 @@ int update(void * arg)
             memcpy(*allInOne.ppVertexBufferMemMapped, *allInOne.ppVertices, 2100 * 4 * sizeof(Vertex));
             memcpy(*allInOne.ppIndexBufferMemMapped, *allInOne.ppIndices, 2100 * 6 * sizeof(uint16_t));
             
-            /*memcpy(*allInOne.ppVertexBufferMemMapped + BALLCOUNT * 4 * sizeof(Vertex), *allInOne.ppVertices + BALLCOUNT * 4 * sizeof(Vertex), 400 * sizeof(Vertex));
-            memcpy(*allInOne.ppIndexBufferMemMapped + BALLCOUNT * 6 * sizeof(uint16_t), *allInOne.ppIndices + BALLCOUNT * 6 * sizeof(uint16_t), 600 * sizeof(uint16_t));*/
-
             memcpy((*allInOne.pppGraphicUniformBufferMapped)[*allInOne.pCurrentFrame], pGraphicUbo, sizeof(UniformBufferObject));
 
             memcpy((*allInOne.pppComputeUniformBufferMapped)[*allInOne.pCurrentFrame], allInOne.pComputeUbo, sizeof(ComputeUniformBufferObject));
 
             allInOne.pImageRotate->rotation = totalTime * glm_rad(580.0f);
-                // loadingTime -= 0.075f;
-                //logMessage("loading index: %d", allInOne.pImageIndex->index);
+            
 
             SDL_UnlockMutex(sdl_mutex_2);
 
             //logMessage("test: %lf", testNum);
             //logMessage("delta time:%f", delta_time);
             update_frame++;
-
-            // if (pause)
-            // {
-            //     SDL_LockMutex(pause_mutex);
-            //     SDL_WaitCondition(pause_condition, pause_mutex);
-            //     last_frame_time = SDL_GetPerformanceCounter();
-            //     SDL_UnlockMutex(pause_mutex);
-            // }
+            
             update_done = true;
         }
         else if (scene == Pause_Scene)
@@ -691,59 +656,13 @@ int signal_trans(void * arg)
             SDL_SignalSemaphore(main_semaphore1);
             SDL_SignalSemaphore(main_semaphore2);
         }
-        // if (!pause && pause_signal_send)
-        // {
-        //     // SDL_BroadcastCondition(pause_condition);
-        //     SDL_SignalCondition(pause_condition);
-        //     pause_signal_send = false;
-        //     logMessage("pause end signal");
-        // }
+
         SDL_WaitSemaphore(signal_semaphore);
         SDL_WaitSemaphore(signal_semaphore);
     }
-    // int i = 0;
-    // while (!game_is_running)
-    // {
-    //     SDL_BroadcastCondition(pause_condition);
-    //     // SDL_SignalCondition(done_cond);
-    //     if (i == 500)
-    //         break;
-    //     i++;
-    // }
+
     return 0;
 }
-
-// int flow_control(void * arg)
-// {
-//     while (game_is_running)
-//     {
-//         SDL_LockMutex(sdl_mutex);
-//         if (game_is_running)
-//         {
-//             SDL_WaitConditionTimeout(done_cond, sdl_mutex, -1);
-//         }
-
-//         update_done = draw_done = false;
-//         SDL_SignalSemaphore(main_semaphore1);
-//         SDL_SignalSemaphore(main_semaphore2);
-//         //SDL_BroadcastCondition(main_cond);
-//         //SDL_Log("main signal\n");
-        
-//         SDL_UnlockMutex(sdl_mutex);
-//         //SDL_Log("unlock(%d)\n", code);
-
-//         if (pause)
-//         {
-//             SDL_LockMutex(pause_mutex);
-//             SDL_WaitCondition(pause_condition, pause_mutex);
-//             last_frame_time = SDL_GetPerformanceCounter();
-//             SDL_UnlockMutex(pause_mutex);
-//         }
-//         SDL_DelayNS(666667);
-//     }
-//     control_done = true;
-//     return 0;
-// }
 
 // Function to destroy SDL window and renderer
 void destroy_window(void) 
