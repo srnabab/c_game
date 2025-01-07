@@ -3,6 +3,7 @@
 #include "game.h"
 #include "graphic.h"
 #include "file.h"
+#include "world.h"
 
 bool game_is_running = false;
 
@@ -60,6 +61,7 @@ int main(int argc, char* argv[])
     }
     //SDL_BroadcastCondition(main_cond);
     
+    cleanWorld();
     destroy_window();
 
     return 0;
