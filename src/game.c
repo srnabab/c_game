@@ -671,7 +671,6 @@ void destroy_window(void)
     deInitMusicManagement();
     deInitPopWindow();
     destroyLog();
-    // SDL_DestroyCondition(done_cond);
     SDL_DestroyCondition(pause_condition);
     SDL_DestroyMutex(pause_mutex);
     SDL_DestroyMutex(sdl_mutex);

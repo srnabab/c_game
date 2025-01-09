@@ -7,6 +7,7 @@
 #define MAX_FILES 65535
 
 int initFileSystem(int argc, char * argv[]);
+const char * getRootPath(void);
 const char * getPath(PathType type);
 
 #endif

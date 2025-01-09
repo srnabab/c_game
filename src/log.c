@@ -96,7 +96,7 @@ static int putMessage_file(void * arg)
 
             SDL_CloseIO(log_file);
             char tempbuffer[255];
-            SDL_strlcpy(tempbuffer, getPath(RootPath), 255);
+            SDL_strlcpy(tempbuffer, getRootPath(), 255);
             SDL_strlcat(tempbuffer, buffer, 255);
             log_file = SDL_IOFromFile(tempbuffer, "w");
             fileOpenCount = 0;

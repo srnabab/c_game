@@ -67,10 +67,6 @@ PathType pathCompare(char * buffer)
     {
         return PathPath;
     }
-    else if ((SDL_strcmp(buffer, "[RootPath]") == 0))
-    {
-        return RootPath;
-    }
     else if ((SDL_strcmp(buffer, "[LogPath]") == 0))
     {
         return LogPath;

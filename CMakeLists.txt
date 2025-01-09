@@ -4,7 +4,8 @@ project(game VERSION 0.1.0 LANGUAGES C CXX)
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_STANDARD_REQUIRED TRUE)
 
-set(CMAKE_SYSTEM_NAME Windows)
+# set(CMAKE_SYSTEM_NAME Windows)
+# set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_SYSTEM_PROCESSOR x86_64)
 
 set(INCLUDE_ROOT "${CMAKE_SOURCE_DIR}/include")
@@ -24,6 +25,7 @@ add_custom_target(GenerateCode DEPENDS ${SRC_ROOT}file/generated_function.c ${IN
 
 add_subdirectory(src/texture_generate)
 add_subdirectory(src/vma)
+add_subdirectory(src/contentManager)
 
 message(STATUS "Include directories for MyExecutable: ${INCLUDE_ROOT}")
 message(STATUS "Src directories for MyExecutable: ${SRC_ROOT}")
@@ -93,7 +95,8 @@ target_include_directories(game PUBLIC ${INCLUDE_ROOT}
                             "${INCLUDE_ROOT}/vk_video"
                             "${INCLUDE_ROOT}/zlib"
                             "${INCLUDE_ROOT}/textureG"
-                            "${INCLUDE_ROOT}/file")
+                            "${INCLUDE_ROOT}/file"
+                            "${INCLUDE_ROOT}/contentManager")
 
 # set(SDL_INCLUDE_DIR PATH "C:/D/c_game/include/SDL3")
 # set
@@ -101,7 +104,7 @@ target_include_directories(game PUBLIC ${INCLUDE_ROOT}
 # find_package(SDL REQUIRED)
 # find_package(SDL_mixer REQUIRED)
 
-target_link_libraries(game z SDL3 SDL3_mixer SDL3_image box2d unistring "C:/D/game_c_template_aw/lib/vulkan/vulkan-1.lib" textureG VMA)
+target_link_libraries(game z SDL3 SDL3_mixer SDL3_image box2d unistring "C:/D/c_game/lib/vulkan/vulkan-1.lib" textureG VMA)
 
 # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mwindows")
 
