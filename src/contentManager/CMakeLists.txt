@@ -1,4 +1,5 @@
-add_executable(ContentManager content_manager.c)
+add_executable(ContentManager content_manager.c
+                            ${SRC_ROOT}/sqlite3_alloc_func.c)
 
 message(STATUS "Current source dir: ${CMAKE_CURRENT_SOURCE_DIR}" )
 

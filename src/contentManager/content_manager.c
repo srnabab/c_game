@@ -1,51 +1,67 @@
 #include "contentManager/content_manager.h"
-#include "SDL3/SDL_stdinc.h"
+#include "sqlite3/sqlite3_alloc_func.h"
 #include "SDL3/SDL_filesystem.h"
 #include "SDL3/SDL_log.h"
 #include "SDL3/SDL_timer.h"
 #include "sqlite3/sqlite3.h"
 
-static int PathBeginLocation = 0;
+typedef struct _DB_Path
+{
+    sqlite3 * db;
+    char * A_path;
+    uint16_t R_Begin;
+    uint16_t LenGetId;
+} DB_Path;
 
 #define MAX_ROW 1024
+
+static int PathBeginLocation = 0;
 static bool existInDatabase[MAX_ROW];
 
 // the returned text should be freed by SDL_Free()
-// const char * chooseTableName(const char * tableName, char * SQLstatement)
-// {
-//     char * SQL = (char *)SDL_calloc(100 + SDL_strlen(SQLstatement), 1);
-//     SDL_strlcpy(SQL, SQLstatement);
-//     SDL_snprintf(SQL, 100 + SDL_strlen(SQLstatement), SQL, tableName);
+const char * setStatementByName(const char * tableName, char * SQLstatement)
+{
+    char * SQL = (char *)SDL_calloc(100 + SDL_strlen(SQLstatement), 1);
+    SDL_Log(tableName);
+    SDL_Log(SQLstatement);
+    SDL_snprintf(SQL, 100 + SDL_strlen(SQLstatement), SQLstatement, tableName);
+    SDL_Log(SQL);
 
-//     return SQL;
-// }
-void initDatabase(const char *databasePath, sqlite3 ** db)
+    return SQL;
+}
+
+void initDatabase(const char *databasePath, const char * tableName, sqlite3 ** db)
 {
     if (sqlite3_open(databasePath, db) != SQLITE_OK)
     {
         SDL_Log("failed to open database %s\n", sqlite3_errmsg(*db));
+        return;
     }
 
-    const char *createTableSQL = "CREATE TABLE IF NOT EXISTS ContentPath (\
+    const char *createTableSQL = setStatementByName(tableName, "CREATE TABLE IF NOT EXISTS %s (\
                                 ID INTEGER PRIMARY KEY AUTOINCREMENT, \
                                 Name TEXT NOT NULL UNIQUE, \
                                 ModifiedTime INTERGER,\
+                                TYPE INTERGER,\
                                 ParentID INTEGER, \
-                                FOREIGN KEY (ParentID) REFERENCES DirectoryTree(ID));";
+                                FOREIGN KEY (ParentID) REFERENCES DirectoryTree(ID));");
 
     if (sqlite3_exec(*db, createTableSQL, NULL, NULL, NULL) != SQLITE_OK) 
     {
         SDL_Log("Failed to create table: %s\n", sqlite3_errmsg(*db));
-        // SDL_free(createTableSQL);
+        SDL_free((void*)createTableSQL);
         sqlite3_close(*db);
+        return;
     }
 
-    // SDL_free(createTableSQL);
+    SDL_free((void*)createTableSQL);
+
+    return;
 }
-void insertNode(sqlite3 *db, const char *name, int parentID, int64_t timeStamp) 
+void insertNode(sqlite3 *db, const char *name, int parentID, int64_t timeStamp, int type) 
 {
-    static const char *insertSQL = "INSERT INTO ContentPath (Name, ParentID, ModifiedTime) VALUES (?, ?, ?);";
-    static const char *insertSQL_ID = "INSERT INTO ContentPath (ID, Name, ParentID, ModifiedTime) VALUES (?, ?, ?, ?);";
+    static const char *insertSQL = "INSERT INTO ContentPath (Name, ParentID, ModifiedTime, TYPE) VALUES (?, ?, ?, ?);";
+    static const char *insertSQL_ID = "INSERT INTO ContentPath (ID, Name, ParentID, ModifiedTime, TYPE) VALUES (?, ?, ?, ?, ?);";
     static const char *findMinestIDSQL = "SELECT t1.ID + 1 AS first_unused_id \
                                         FROM ( \
                                         SELECT ID \
@@ -79,6 +95,7 @@ void insertNode(sqlite3 *db, const char *name, int parentID, int64_t timeStamp)
     else
     {
         SDL_Log("Failed to execute statement: %s\n", sqlite3_errmsg(db));
+        return;
     }
     sqlite3_finalize(stmt);
 
@@ -93,10 +110,12 @@ void insertNode(sqlite3 *db, const char *name, int parentID, int64_t timeStamp)
         sqlite3_bind_text(stmt, 1, name, -1, SQLITE_STATIC);
         sqlite3_bind_int(stmt, 2, parentID);
         sqlite3_bind_int64(stmt, 3, timeStamp) ;
+        sqlite3_bind_int(stmt, 4, type);
 
         if (sqlite3_step(stmt) != SQLITE_DONE) 
         {
             SDL_Log("Failed to execute statement: %s\n", sqlite3_errmsg(db));
+            return;
         }
         sqlite3_finalize(stmt);
     }
@@ -112,13 +131,17 @@ void insertNode(sqlite3 *db, const char *name, int parentID, int64_t timeStamp)
         sqlite3_bind_text(stmt, 2, name, -1, SQLITE_STATIC);
         sqlite3_bind_int(stmt, 3, parentID);
         sqlite3_bind_int64(stmt, 4, timeStamp);
+        sqlite3_bind_int(stmt, 5, type);
 
         if (sqlite3_step(stmt) != SQLITE_DONE) 
         {
             SDL_Log("Failed to execute statement: %s\n", sqlite3_errmsg(db));
+            return;
         }
         sqlite3_finalize(stmt);
     }
+
+    return;
 }
 int getID(sqlite3 *db, const char * name)
 {
@@ -128,7 +151,7 @@ int getID(sqlite3 *db, const char * name)
     if (sqlite3_prepare_v2(db, findSQL, -1, &stmt, NULL) != SQLITE_OK) 
     {
         SDL_Log("Failed to prepare statement: %s\n", sqlite3_errmsg(db));
-        return -3;
+        return -1;
     }
 
     sqlite3_bind_text(stmt, 1, name, -1, SQLITE_STATIC);
@@ -144,13 +167,14 @@ int getID(sqlite3 *db, const char * name)
     else
     {
         SDL_Log("Failed to execute statement: %s\n", sqlite3_errmsg(db));
-        rc = -2;
+        rc = -1;
     }
 
     sqlite3_finalize(stmt);
 
     return rc;
 }
+
 int getParentID(sqlite3 *db, const int ID)
 {
     static const char *findSQL = "SELECT ParentID FROM ContentPath WHERE ID = ?;";
@@ -159,7 +183,7 @@ int getParentID(sqlite3 *db, const int ID)
     if (sqlite3_prepare_v2(db, findSQL, -1, &stmt, NULL) != SQLITE_OK) 
     {
         SDL_Log("Failed to prepare statement: %s\n", sqlite3_errmsg(db));
-        return -3;
+        return -1;
     }
 
     sqlite3_bind_int(stmt, 1, ID);
@@ -175,7 +199,7 @@ int getParentID(sqlite3 *db, const int ID)
     else
     {
         SDL_Log("Failed to execute statement: %s\n", sqlite3_errmsg(db));
-        rc = -2;
+        rc = -1;
     }
 
     sqlite3_finalize(stmt);
@@ -219,7 +243,7 @@ void updateModifyTime(sqlite3 * db, int64_t timeStamp, const int ID)
     if (sqlite3_prepare_v2(db, SQL, -1, &stmt, NULL) != SQLITE_OK) 
     {
         SDL_Log("Failed to prepare statement: %s\n", sqlite3_errmsg(db));
-        // return;
+        return;
     }
 
     sqlite3_bind_int64(stmt, 1, timeStamp);
@@ -228,8 +252,11 @@ void updateModifyTime(sqlite3 * db, int64_t timeStamp, const int ID)
     if (sqlite3_step(stmt) != SQLITE_DONE) 
     {
         SDL_Log("Failed to execute statement: %s\n", sqlite3_errmsg(db));
+        return;
     }
     sqlite3_finalize(stmt);
+
+    return;
 }
 void updateParentID(sqlite3 * db, int parentID, int ID)
 {
@@ -239,7 +266,7 @@ void updateParentID(sqlite3 * db, int parentID, int ID)
     if (sqlite3_prepare_v2(db, SQL, -1, &stmt, NULL) != SQLITE_OK) 
     {
         SDL_Log("Failed to prepare statement: %s\n", sqlite3_errmsg(db));
-        // return;
+        return;
     }
 
     sqlite3_bind_int64(stmt, 1, parentID);
@@ -248,16 +275,12 @@ void updateParentID(sqlite3 * db, int parentID, int ID)
     if (sqlite3_step(stmt) != SQLITE_DONE) 
     {
         SDL_Log("Failed to execute statement: %s\n", sqlite3_errmsg(db));
+        return;
     }
     sqlite3_finalize(stmt);
+
+    return;
 }
-typedef struct _DB_Path
-{
-    sqlite3 * db;
-    char * A_path;
-    uint16_t R_Begin;
-    uint16_t LenGetId;
-} DB_Path;
 SDL_EnumerationResult SDLCALL createFolderDatabase(void *userdata, const char *dirname, const char *fname)
 {
     if (fname != NULL)
@@ -277,7 +300,7 @@ SDL_EnumerationResult SDLCALL createFolderDatabase(void *userdata, const char *d
         SDL_Log(temp_A_Path);
         SDL_Log("type: %d, size: %llu, dirname:%s, fname:%s, begin: %u", info.type, info.size, dirname, fname, ((DB_Path*)userdata)->R_Begin);
         insertNode(((DB_Path*)userdata)->db, temp_A_Path + ((DB_Path*)userdata)->R_Begin, getID(((DB_Path*)userdata)->db, ((DB_Path*)userdata)->A_path + ((DB_Path*)userdata)->LenGetId),
-                     info.modify_time);
+                     info.modify_time, (int)info.type);
         if (info.type == SDL_PATHTYPE_DIRECTORY)
         {
             DB_Path pack = {0};
@@ -323,7 +346,7 @@ SDL_EnumerationResult SDLCALL updateFolderDatabase(void *userdata, const char *d
         if (ID < 0)
         {
             insertNode(tempDB, temp_R_Path, ParentID,
-                     info.modify_time);
+                     info.modify_time, (int)info.type);
             existInDatabase[getID(tempDB, temp_R_Path)] = true;
         }
         else if (info.modify_time > getModifyTime(tempDB, ID))
@@ -370,7 +393,7 @@ bool deleteRow(sqlite3 *db, const int ID)
     if (sqlite3_prepare_v2(db, SQL, -1, &stmt, NULL) != SQLITE_OK) 
     {
         SDL_Log("Failed to prepare statement: %s\n", sqlite3_errmsg(db));
-        // return;
+        return false;
     }
 
     sqlite3_bind_int(stmt, 1, ID);
@@ -378,6 +401,7 @@ bool deleteRow(sqlite3 *db, const int ID)
     if (sqlite3_step(stmt) != SQLITE_DONE) 
     {
         SDL_Log("Failed to execute statement: %s\n", sqlite3_errmsg(db));
+        return false;
     }
     sqlite3_finalize(stmt);
 
@@ -413,8 +437,20 @@ int main(int argc, char * argv[])
 {
     if (argc < 3) return -11;
 
+    sqlite3_mem_methods mem_methods = {0};
+    mem_methods.xMalloc = SDL_SQLite_malloc;
+    mem_methods.xFree = SDL_SQLite_free;
+    mem_methods.xRealloc = SDL_SQLite_realloc;
+    mem_methods.xSize = SDL_SQLite_memSize;
+    mem_methods.xRoundup = SDL_SQLite_RoundUp;
+    mem_methods.xInit = SDL_SQLite_Init;
+    mem_methods.xShutdown = SDL_SQLite_shutDown;
+    mem_methods.pAppData = NULL;
+
+    sqlite3_config(SQLITE_CONFIG_MALLOC, &mem_methods);
+
     sqlite3 * db;
-    initDatabase(argv[2], &db);
+    initDatabase(argv[2], "ContentPath", &db);
     
     DB_Path pack = {0};
 
@@ -466,12 +502,10 @@ int main(int argc, char * argv[])
     }
     else 
     {
-        insertNode(db, ContentPath + pack.R_Begin, 0, info.modify_time);
+        insertNode(db, ContentPath + pack.R_Begin, 0, info.modify_time, (int)info.type);
 
         SDL_EnumerateDirectory(ContentPath, createFolderDatabase, &pack);
     }
-
-    // SDL_Delay(5000);
 
     sqlite3_close(db);
 

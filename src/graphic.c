@@ -406,9 +406,9 @@ void initVulkan(void)
     allocatorInfo.preferredLargeHeapBlockSize = 0;
 
     SDL_allocationCallBacks.pUserData = NULL;
-    SDL_allocationCallBacks.pfnAllocation = SDL_VK_allocationFunc;
-    SDL_allocationCallBacks.pfnReallocation = SDL_VK_reallocationFunc;
-    SDL_allocationCallBacks.pfnFree = SDL_VK_freeFunc;
+    SDL_allocationCallBacks.pfnAllocation = SDL_VK_alloc;
+    SDL_allocationCallBacks.pfnReallocation = SDL_VK_realloc;
+    SDL_allocationCallBacks.pfnFree = SDL_VK_free;
     SDL_allocationCallBacks.pfnInternalAllocation = NULL;
     SDL_allocationCallBacks.pfnInternalFree = NULL;
 
