@@ -42,11 +42,7 @@ static bool setRootPath(char * programPath)
 {
     SDL_strlcpy(rootPath, programPath, 255);
 
-#if defined(_WIN32)
-    char * slash = SDL_strrchr(rootPath, '\\');
-#elif defined(__linux__)
-    char * slash = SDL_strrchr(rootPath, '/');
-#endif
+    char * slash = SDL_strrchr(rootPath, SEPRATOR_C);
     if (slash == NULL) return false;
     *(slash + 1) = '\0';
 
@@ -70,11 +66,7 @@ static bool initPath(void)
     }
     memcpy(pathFilePath, rootPath, MAX_PATHLEN);
 
-#if defined(_WIN32)
-    SDL_strlcat(pathFilePath, "\\Path", 255);
-#elif defined(__linux__)
-    SDL_strlcat(pathFilePath, "/Path", 255);
-#endif
+    SDL_strlcat(pathFilePath, SEPRATOR"Path", 255);
 
     SDL_IOStream * io  = NULL;
     if ((io = SDL_IOFromFile(pathFilePath, "r")) == NULL)
@@ -85,7 +77,6 @@ static bool initPath(void)
     int fileCount = 0;
     while (SDL_IOgets(buffer, MAX_PATHLEN, io) != NULL)
     {
-        if (buffer[0] == '\r' || buffer[0] == '\n') continue;
         buffer[SDL_strcspn(buffer, ":")] = '\0';
         PathType type = None;
         type = pathCompare(buffer);
@@ -93,11 +84,8 @@ static bool initPath(void)
         if (type)
         {
             SDL_IOgets(buffer, MAX_PATHLEN, io);
-#if defined(_WIN32)
-            buffer[SDL_strcspn(buffer, "\r")] = '\0';
-#elif defined(__linux__)
+
             buffer[SDL_strcspn(buffer, "\n")] = '\0';
-#endif
             SDL_strlcat(PathTemp[type], buffer, 255);
             SDL_Log(PathTemp[type]);
             fileCount++;

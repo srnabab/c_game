@@ -2,16 +2,41 @@
 #include "sqlite3/sqlite3_alloc_func.h"
 #include "SDL3/SDL_filesystem.h"
 #include "SDL3/SDL_log.h"
-#include "SDL3/SDL_timer.h"
+#include "SDL3/SDL_iostream.h"
+// #include "SDL3/SDL_timer.h"
 #include "sqlite3/sqlite3.h"
 
-typedef struct _DB_Path
+#if defined(SEPRATOR)
+#undef SEPRATOR
+#endif
+
+#if defined(SEPRATOR_C)
+#undef SEPRATOR_C
+#endif
+
+#if defined(_WIN32)
+#define SEPRATOR "\\"
+#define SEPRATOR_C '\\'
+#elif defined(__linux__)
+#define SEPRATOR "/"
+#define SEPRATOR_C '/'
+#endif
+
+struct _DB_Path
 {
     sqlite3 * db;
     char * A_path;
     uint16_t R_Begin;
     uint16_t LenGetId;
-} DB_Path;
+};
+typedef struct _DB_Path DB_Path;
+
+struct _Fixed_File
+{
+    char * alias;
+    char * name;
+};
+typedef struct _Fixed_File Fixed_File;
 
 #define MAX_ROW 1024
 
@@ -19,44 +44,78 @@ static int PathBeginLocation = 0;
 static bool existInDatabase[MAX_ROW];
 
 // the returned text should be freed by SDL_Free()
-const char * setStatementByName(const char * tableName, char * SQLstatement)
-{
-    char * SQL = (char *)SDL_calloc(100 + SDL_strlen(SQLstatement), 1);
-    SDL_Log(tableName);
-    SDL_Log(SQLstatement);
-    SDL_snprintf(SQL, 100 + SDL_strlen(SQLstatement), SQLstatement, tableName);
-    SDL_Log(SQL);
+// const char * setStatementByName(const char * tableName, char * SQLstatement)
+// {
+//     char * SQL = (char *)SDL_calloc(100 + SDL_strlen(SQLstatement), 1);
+//     // SDL_Log(tableName);
+//     // SDL_Log(SQLstatement);
+//     SDL_snprintf(SQL, 100 + SDL_strlen(SQLstatement), SQLstatement, tableName);
+//     // SDL_Log(SQL);
 
-    return SQL;
-}
+//     return SQL;
+// }
 
-void initDatabase(const char *databasePath, const char * tableName, sqlite3 ** db)
+void createTable(const char * tableName, sqlite3 * db)
 {
-    if (sqlite3_open(databasePath, db) != SQLITE_OK)
+    if (SDL_strcmp(tableName, "ContentPath") == 0)
     {
-        SDL_Log("failed to open database %s\n", sqlite3_errmsg(*db));
-        return;
+        const char *createTableSQL = "CREATE TABLE IF NOT EXISTS ContentPath (\
+                                    ID INTEGER PRIMARY KEY AUTOINCREMENT, \
+                                    Name TEXT NOT NULL UNIQUE, \
+                                    ModifiedTime INTERGER,\
+                                    TYPE INTERGER,\
+                                    ParentID INTEGER, \
+                                    FOREIGN KEY (ParentID) REFERENCES DirectoryTree(ID));";
+
+        if (sqlite3_exec(db, createTableSQL, NULL, NULL, NULL) != SQLITE_OK) 
+        {
+            SDL_Log("Failed to create table: %s\n", sqlite3_errmsg(db));
+            // SDL_free((void*)createTableSQL);
+            sqlite3_close(db);
+            return;
+        }
+    }
+    else if (SDL_strcmp(tableName, "AliasNamePair") == 0)
+    {
+        const char *createTableSQL = "CREATE TABLE IF NOT EXISTS AliasNamePair (\
+                                    ID INTEGER PRIMARY KEY AUTOINCREMENT, \
+                                    Alias TEXT NOT NULL UNIQUE, \
+                                    Name TEXT);";
+
+        if (sqlite3_exec(db, createTableSQL, NULL, NULL, NULL) != SQLITE_OK) 
+        {
+            SDL_Log("Failed to create table: %s\n", sqlite3_errmsg(db));
+            // SDL_free((void*)createTableSQL);
+            sqlite3_close(db);
+            return;
+        }
     }
 
-    const char *createTableSQL = setStatementByName(tableName, "CREATE TABLE IF NOT EXISTS %s (\
-                                ID INTEGER PRIMARY KEY AUTOINCREMENT, \
-                                Name TEXT NOT NULL UNIQUE, \
-                                ModifiedTime INTERGER,\
-                                TYPE INTERGER,\
-                                ParentID INTEGER, \
-                                FOREIGN KEY (ParentID) REFERENCES DirectoryTree(ID));");
-
-    if (sqlite3_exec(*db, createTableSQL, NULL, NULL, NULL) != SQLITE_OK) 
-    {
-        SDL_Log("Failed to create table: %s\n", sqlite3_errmsg(*db));
-        SDL_free((void*)createTableSQL);
-        sqlite3_close(*db);
-        return;
-    }
-
-    SDL_free((void*)createTableSQL);
+    // SDL_free((void*)createTableSQL);
 
     return;
+}
+void insertNode_2(sqlite3 *db, const char * alias, const char * name)
+{
+    static const char * insertSQL = "INSERT OR IGNORE INTO AliasNamePair (Alias, Name) VALUES (?, ?);";
+    sqlite3_stmt *stmt;
+
+    
+    if (sqlite3_prepare_v2(db, insertSQL, -1, &stmt, NULL) != SQLITE_OK) 
+    {
+        SDL_Log("Failed to prepare statement: %s\n", sqlite3_errmsg(db));
+        return;
+    }
+
+    sqlite3_bind_text(stmt, 1, alias, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, name, -1, SQLITE_STATIC);
+
+    if (sqlite3_step(stmt) != SQLITE_DONE) 
+    {
+        SDL_Log("Failed to execute statement: %s\n", sqlite3_errmsg(db));
+        return;
+    }
+    sqlite3_finalize(stmt);
 }
 void insertNode(sqlite3 *db, const char *name, int parentID, int64_t timeStamp, int type) 
 {
@@ -142,6 +201,30 @@ void insertNode(sqlite3 *db, const char *name, int parentID, int64_t timeStamp, 
     }
 
     return;
+}
+bool tableExistJudge(sqlite3 * db)
+{
+    static const char * SQL = "SELECT name \
+                            FROM sqlite_master \
+                            WHERE type='table' \
+                            AND name='AliasNamePair';";
+    sqlite3_stmt * stmt;
+
+    if (sqlite3_prepare_v2(db, SQL, -1, &stmt, NULL) != SQLITE_OK) 
+    {
+        SDL_Log("Failed to prepare statement: %s\n", sqlite3_errmsg(db));
+        return -1;
+    }
+
+    if (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+        sqlite3_finalize(stmt);
+        return true;
+    }
+    else 
+    {
+        return false;
+    }
 }
 int getID(sqlite3 *db, const char * name)
 {
@@ -235,6 +318,73 @@ int64_t getModifyTime(sqlite3 * db, const int ID)
     sqlite3_finalize(stmt);
     return timeStamp;
 }
+SDL_PathType getPathType(sqlite3 * db, const int id)
+{
+    const char * SQL = "SELECT TYPE FROM ContentPath WHERE ID = ?";
+    sqlite3_stmt * stmt;
+
+    if (sqlite3_prepare_v2(db, SQL, -1, &stmt, NULL) != SQLITE_OK) 
+    {
+        SDL_Log("Failed to prepare statement: %s\n", sqlite3_errmsg(db));
+        return -3;
+    }
+
+    sqlite3_bind_int(stmt, 1, id);
+
+    int rc = sqlite3_step(stmt);
+    if (rc == SQLITE_ROW)
+    {
+        rc = sqlite3_column_int(stmt, 0);
+    }
+    else if (rc == SQLITE_DONE)
+    {
+        rc = -1;
+    }
+    else
+    {
+        SDL_Log("Failed to execute statement: %s\n", sqlite3_errmsg(db));
+        rc = -1;
+    }
+
+    sqlite3_finalize(stmt);
+
+    return rc;
+}
+char * getName(sqlite3 * db, const int ID)
+{
+    const char * SQL = "SELECT Name FROM ContentPath WHERE ID = ?";
+    sqlite3_stmt * stmt;
+    
+
+    if (sqlite3_prepare_v2(db, SQL, -1, &stmt, NULL) != SQLITE_OK) 
+    {
+        SDL_Log("Failed to prepare statement: %s\n", sqlite3_errmsg(db));
+        return NULL;
+    }
+
+    sqlite3_bind_int(stmt, 1, ID);
+
+    int rc = sqlite3_step(stmt);
+    char * name;
+    if (rc == SQLITE_ROW)
+    {
+        const unsigned char * temp = sqlite3_column_text(stmt, 0);
+        name = (char *)SDL_malloc(strlen((const char*)temp) + 1);
+        SDL_strlcpy(name, (const char*)temp, 255);
+    }
+    else if (rc == SQLITE_DONE)
+    {
+        name = NULL;
+    }
+    else
+    {
+        SDL_Log("Failed to execute statement: %s\n", sqlite3_errmsg(db));
+        name = NULL;
+    }
+
+    sqlite3_finalize(stmt);
+    return name;
+}
 void updateModifyTime(sqlite3 * db, int64_t timeStamp, const int ID)
 {
     const char * SQL = "UPDATE ContentPath SET ModifiedTime = ? WHERE ID = ?";
@@ -289,16 +439,12 @@ SDL_EnumerationResult SDLCALL createFolderDatabase(void *userdata, const char *d
         char temp_A_Path[255];
         SDL_strlcpy(temp_A_Path, ((DB_Path*)userdata)->A_path, 255);
 
-#if defined(_WIN32)
-        SDL_strlcat(temp_A_Path, "\\", 255);
-#elif defined(__linux__)
-        SDL_strlcat(temp_A_Path, "/", 255);
-#endif
+        SDL_strlcat(temp_A_Path, SEPRATOR, 255);
 
         SDL_strlcat(temp_A_Path, fname, 255);
         SDL_GetPathInfo(temp_A_Path, &info);
-        SDL_Log(temp_A_Path);
-        SDL_Log("type: %d, size: %llu, dirname:%s, fname:%s, begin: %u", info.type, info.size, dirname, fname, ((DB_Path*)userdata)->R_Begin);
+        // SDL_Log(temp_A_Path);
+        // SDL_Log("type: %d, size: %llu, dirname:%s, fname:%s, begin: %u", info.type, info.size, dirname, fname, ((DB_Path*)userdata)->R_Begin);
         insertNode(((DB_Path*)userdata)->db, temp_A_Path + ((DB_Path*)userdata)->R_Begin, getID(((DB_Path*)userdata)->db, ((DB_Path*)userdata)->A_path + ((DB_Path*)userdata)->LenGetId),
                      info.modify_time, (int)info.type);
         if (info.type == SDL_PATHTYPE_DIRECTORY)
@@ -327,16 +473,12 @@ SDL_EnumerationResult SDLCALL updateFolderDatabase(void *userdata, const char *d
         char temp_A_Path[255];
         SDL_strlcpy(temp_A_Path, ((DB_Path*)userdata)->A_path, 255);
 
-#if defined(_WIN32)
-        SDL_strlcat(temp_A_Path, "\\", 255);
-#elif defined(__linux__)
-        SDL_strlcat(temp_A_Path, "/", 255);
-#endif
+        SDL_strlcat(temp_A_Path, SEPRATOR, 255);
 
         SDL_strlcat(temp_A_Path, fname, 255);
         SDL_GetPathInfo(temp_A_Path, &info);
-        SDL_Log(temp_A_Path);
-        SDL_Log("type: %d, size: %llu, dirname:%s, fname:%s, begin: %u", info.type, info.size, dirname, fname, ((DB_Path*)userdata)->R_Begin);
+        // SDL_Log(temp_A_Path);
+        // SDL_Log("type: %d, size: %llu, dirname:%s, fname:%s, begin: %u", info.type, info.size, dirname, fname, ((DB_Path*)userdata)->R_Begin);
 
         sqlite3 * tempDB = ((DB_Path*)userdata)->db;
         const char * temp_R_Path = temp_A_Path + ((DB_Path*)userdata)->R_Begin;
@@ -379,7 +521,7 @@ SDL_EnumerationResult SDLCALL updateFolderDatabase(void *userdata, const char *d
     }
     else if (fname == NULL)
     {
-        SDL_Log("End");
+        // SDL_Log("End");
         return SDL_ENUM_SUCCESS;
     }
 
@@ -433,10 +575,44 @@ int getRowsCount(sqlite3 * db)
     sqlite3_finalize(stmt);
     return rc;
 }
-int main(int argc, char * argv[])
+char * getPath(sqlite3 * db, const int ID)
 {
-    if (argc < 3) return -11;
+    int IDs[15];
+    IDs[14] = ID;
+    int parentID = getParentID(db, ID);
+    IDs[13] = parentID;
+    int i = 13;
+    while (parentID != 1)
+    {
+        parentID = getParentID(db, parentID);
+        IDs[--i] = parentID;
+    }
+    char *path = (char *)SDL_calloc(255, 1);
+    i++;
+    char * temp = getName(db, IDs[i]);
+    SDL_strlcat(path, temp, 255);
+    // SDL_Log(path);
+    SDL_free(temp);
+    i++;
+    for (;i < 15;i++)
+    {
+        char * temp = getName(db, IDs[i]);
+        SDL_strlcat(path, SDL_strchr(temp, SEPRATOR_C), 255);
 
+        // SDL_strlcat(path, temp, 255);
+        // SDL_Log(path);
+        SDL_free(temp);
+    }
+    // char * temp = getName(db, IDs[i]);
+    // SDL_strlcat(path, temp, 255);
+    // // SDL_snprintf(path, 255, "%s ", temp);
+    // SDL_Log(path);
+    // SDL_free(temp);
+
+    return path;
+}
+static int setSQLiteMem(void)
+{
     sqlite3_mem_methods mem_methods = {0};
     mem_methods.xMalloc = SDL_SQLite_malloc;
     mem_methods.xFree = SDL_SQLite_free;
@@ -447,23 +623,82 @@ int main(int argc, char * argv[])
     mem_methods.xShutdown = SDL_SQLite_shutDown;
     mem_methods.pAppData = NULL;
 
-    sqlite3_config(SQLITE_CONFIG_MALLOC, &mem_methods);
+    return sqlite3_config(SQLITE_CONFIG_MALLOC, &mem_methods);
+}
+static bool isShader(const char * name)
+{
+    const char * shaderSuffix[] = {
+        "frag", "vert", "comp", "tesc", "tese",
+        "rgen", "rint", "rahit", "rchit", "rmiss",
+        "rcall", "mesh", "task",
+    };
+    const int count = (int)(sizeof(shaderSuffix) / sizeof(shaderSuffix[0]));
 
-    sqlite3 * db;
-    initDatabase(argv[2], "ContentPath", &db);
+    for (int i = 0;i < count;i++) if (SDL_strcmp(name, shaderSuffix[i]) == 0) return true;
     
-    DB_Path pack = {0};
+    return false;
+}
+int main(int argc, char * argv[])
+{
+    char dataBasePath[255];
+
+    SDL_strlcpy(dataBasePath, argv[0], 255);
+
+    char * slash = SDL_strrchr(dataBasePath, SEPRATOR_C);
+    if (slash != NULL) *(slash + 1) = '\0';
+    
+    PathBeginLocation = SDL_strlen(dataBasePath);
 
     char ContentPath[255] = {0};
-    SDL_strlcpy(ContentPath, argv[1], 255);
+    SDL_strlcpy(ContentPath, dataBasePath, 255);
 
-    PathBeginLocation = SDL_strlen(ContentPath);
+    SDL_strlcat(ContentPath, "Content", 255);
+    // SDL_Log(ContentPath);
+    
+    char PathPath[255] = {0};
+    SDL_strlcpy(PathPath, dataBasePath, 255);
+
+    SDL_strlcat(PathPath, "Path", 255);
+    // SDL_Log(PathPath);
+
+    SDL_strlcat(dataBasePath, "Content.db", 255);
+    // SDL_Log(dataBasePath);
+
+    setSQLiteMem();
+
+    Fixed_File template[] = {
+        {"MainFont", "SourceHanSansSC-VF.ttf"},
+        {"EmojiFont", "OpenMoji-color-glyf_colr_0.ttf"},
+        {"Font1", ""},
+        {"FontHashTable1", ""},
+        {"FontPng1", ""},
+        {"LogPath", "log"SEPRATOR"log0.txt"},
+        {"PathPath", "Path"},
+    };
+    int templateCount = (int)(sizeof(template) / sizeof(template[0]));
+
+    sqlite3 * db;
+
+    if (sqlite3_open(dataBasePath, &db) != SQLITE_OK)
+    {
+        SDL_Log("failed to open database %s\n", sqlite3_errmsg(db));
+    }
+    if (!tableExistJudge(db))
+    {
+        createTable("AliasNamePair", db);
+        for (int i = 0;i < templateCount;i++)
+        {
+            insertNode_2(db, template[i].alias, template[i].name);
+        }
+        // SDL_Log("create AliasNamePair");
+    }
+
+    createTable("ContentPath", db);
+
+    DB_Path pack = {0};
 
     pack.R_Begin = (uint16_t)PathBeginLocation;
     pack.LenGetId = pack.R_Begin;
-
-    SDL_strlcat(ContentPath, "Content", 255);
-    SDL_Log(ContentPath);
 
     pack.db = db;
     pack.A_path = ContentPath;
@@ -475,22 +710,22 @@ int main(int argc, char * argv[])
 
     int ID = getID(db, ContentPath + pack.R_Begin);
 
+    int rowsCount = 0;
     if (ID == 1)
     {
         if (info.modify_time > getModifyTime(db, ID))
         {
             updateModifyTime(db, info.modify_time, ID);
-            SDL_Log("update");
+            // SDL_Log("update");
         }
         existInDatabase[ID] = true;
 
-        int rowsCount = getRowsCount(db);
-        SDL_Log("count: %d", rowsCount);
+        // SDL_Log("count: %d", rowsCount);
         SDL_EnumerateDirectory(ContentPath, updateFolderDatabase, &pack);
 
         rowsCount = getRowsCount(db);
         rowsCount *= 2;
-        SDL_Log("count: %d", rowsCount);
+        // SDL_Log("count: %d", rowsCount);
         for (int i = 0;i < MAX_ROW;i++)
         {
             if (!existInDatabase[i])
@@ -499,6 +734,7 @@ int main(int argc, char * argv[])
             }
             if (i > rowsCount) break;
         }
+        
     }
     else 
     {
@@ -506,6 +742,109 @@ int main(int argc, char * argv[])
 
         SDL_EnumerateDirectory(ContentPath, createFolderDatabase, &pack);
     }
+
+    rowsCount = getRowsCount(db) * 2;
+    SDL_IOStream * io = NULL;
+    io = SDL_IOFromFile(PathPath, "wb");
+    int fixedFileCount = 0;
+    int here = 0;
+    for (int i = 0;i < templateCount;i++)
+    {
+        if (*template[i].name == '\0') 
+        {
+            char alias[255];
+            SDL_snprintf(alias, 255, "[%s]:\n", template[i].alias);
+            SDL_WriteIO(io, alias, SDL_strlen(alias));
+            SDL_WriteIO(io, "\n\n", SDL_strlen("\n\n"));
+            fixedFileCount++;
+            here = i;
+        }
+    }
+    here++;
+    for (int i = here;i < templateCount;i++)
+    {
+        char alias[255];
+        SDL_snprintf(alias, 255, "[%s]:\n", template[i].alias);
+        SDL_WriteIO(io, alias, SDL_strlen(alias));
+        // SDL_Log(alias);
+        SDL_snprintf(alias, 255, "%s\n\n", template[i].name);
+        SDL_WriteIO(io, alias, SDL_strlen(alias));
+        // SDL_Log(alias);
+        fixedFileCount++;
+        here = i;
+    }
+    for (int i = 0;i < rowsCount;i++)
+    {
+        if (getPathType(db, i) == SDL_PATHTYPE_FILE)
+        {
+            char * temp = getPath(db, i);
+            // if (fixedFileCount != templateCount)
+            // {
+
+            // }
+            char alias[255];
+            bool jump = false;
+
+            SDL_strlcpy(alias, SDL_strrchr(temp, SEPRATOR_C) + 1, 255);
+            if (fixedFileCount != templateCount)
+            {
+                for (int j = 0;j < templateCount;j++)
+                {
+                    if (SDL_strcmp(alias, template[j].name) == 0)
+                    {
+                        SDL_strlcpy(alias, template[j].alias, 255);
+                        fixedFileCount++;
+                        jump = true;
+                    }
+                }
+            }
+            // SDL_Log(alias);
+            bool font = false;
+            bool shader = false;
+
+            if (!jump)
+            {
+                alias[0] = SDL_toupper(alias[0]);
+                char * ptr2 = SDL_strrchr(temp, '.');
+
+                if (ptr2 != NULL)
+                {
+                    if (SDL_strcmp(ptr2, ".spv") == 0)
+                    {
+                        *ptr2 = '\0';
+                        font = true;
+                        ptr2 = SDL_strchr(temp, '.');
+                        if (isShader(ptr2 + 1)) shader = true;
+                    }
+
+                    char * ptr;
+                    if (font) ptr = SDL_strchr(alias, '.');
+                    else ptr = SDL_strrchr(alias, '.');
+                    SDL_strlcpy(ptr, ptr2 + 1, 255);
+                    *ptr = SDL_toupper(*ptr);
+                    if (shader) SDL_strlcat(alias, "Shader", 255);
+                }
+            }
+            char test[255];
+            SDL_snprintf(test, 255, "[%s]:\n", alias);
+            // SDL_Log(test);
+            SDL_WriteIO(io, test, SDL_strlen(test));
+
+            if (shader)
+            {
+                SDL_strlcat(temp, ".spv\n", 255);
+            }
+            else
+            {
+                SDL_strlcat(temp, "\n", 255);
+            }
+            // SDL_Log(temp);
+            SDL_WriteIO(io, temp, SDL_strlen(temp));
+            SDL_WriteIO(io, "\n", SDL_strlen("\n"));
+            SDL_free(temp);
+        }
+    }
+    SDL_CloseIO(io);
 
     sqlite3_close(db);
 

@@ -85,7 +85,7 @@ void setup(void)
     initVulkan();
     initPopWindow();
     initMusicManagement();
-    loadMusic("10test.wav", "test");
+    loadMusic((char*)getPath(MainBackgroundMusic1Wav), "test");
 
     sdl_pid_update = SDL_CreateThread(&update, "update", NULL);
     sdl_pid_draw = SDL_CreateThread(&render, "render", NULL);

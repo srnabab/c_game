@@ -477,12 +477,12 @@ void initVulkan(void)
     /*unfixed code*/
 
     //graphic shader
-    createShaderModule(&device, TriangleVertexShader, &vertShaderCode);
+    createShaderModule(&device, TriangleVertShader, &vertShaderCode);
     addShaderStageCreateInfo(&vertShaderCode, VK_SHADER_STAGE_VERTEX_BIT, &graphicShaderCount, &graphciShaderStageCreateInfo);
     setDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 1, 0, &graphicBindingCount, &graphicBindings);//0
     setDescriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT, &graphicPoolSizeCount, &graphicDescriptorPoolSize);
 
-    createShaderModule(&device, TriangleFragmentShader, &fragShaderCode);
+    createShaderModule(&device, TriangleFragShader, &fragShaderCode);
     addShaderStageCreateInfo(&fragShaderCode, VK_SHADER_STAGE_FRAGMENT_BIT, &graphicShaderCount, &graphciShaderStageCreateInfo);
     setDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 3, 1, &graphicBindingCount, &graphicBindings);//1
     setDescriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_FRAMES_IN_FLIGHT * 3, &graphicPoolSizeCount, &graphicDescriptorPoolSize);
@@ -496,12 +496,12 @@ void initVulkan(void)
     createDescriptorPool(&device, graphicPoolSizeCount, graphicDescriptorPoolSize, 2, &graphicDescriptorPool);
 
     //particle shader
-    createShaderModule(&device, ParticleVertexShader, &particleVertexShaderCode);
+    createShaderModule(&device, ParticleVertShader, &particleVertexShaderCode);
     addShaderStageCreateInfo(&particleVertexShaderCode, VK_SHADER_STAGE_VERTEX_BIT, &particleShaderCount, &particleShaderStageCreateInfo);
     setDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 1, 1, &particleBindingCount, &particleBindings);//1
     setDescriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT, &particlePoolSizeCount, &particleDescriptorPoolSize);
 
-    createShaderModule(&device, ParticleFragmentShader, &particleFragmentShaderCode);
+    createShaderModule(&device, ParticleFragShader, &particleFragmentShaderCode);
     addShaderStageCreateInfo(&particleFragmentShaderCode, VK_SHADER_STAGE_FRAGMENT_BIT, &particleShaderCount, &particleShaderStageCreateInfo);
 
     addDescriptorSetLayout(&device, particleBindingCount, particleBindings, 0, &particleDescriptorSetLayout);
@@ -512,7 +512,7 @@ void initVulkan(void)
     createDescriptorPool(&device, particlePoolSizeCount, particleDescriptorPoolSize, 2, &particleDescriptorPool);
 
     //compute shader
-    createShaderModule(&device, ParticleComputeShader, &compShaderCode);
+    createShaderModule(&device, ParticleCompShader, &compShaderCode);
     addShaderStageCreateInfo(&compShaderCode, VK_SHADER_STAGE_COMPUTE_BIT, &computeShaderCount, &computeShaderStageCreateInfo);
     setDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT, 1, 0, &computeBindingCount, &computeBindings);//0
     setDescriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT, &computePoolSizeCount, &computeDescriptorPoolSize);
@@ -553,7 +553,7 @@ void initVulkan(void)
     createTextureImageView(&device, &loadingImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, &loadingImageView);
     //}
 
-    createTextureImage(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, Font1Png, VK_FORMAT_R8_UNORM, &textImage, &textImageMem);
+    createTextureImage(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, MainFontPng, VK_FORMAT_R8_UNORM, &textImage, &textImageMem);
     createTextureImageView(&device, &textImage, VK_FORMAT_R8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, &textImageView);
     
     createTextureSampler(&physicalDevice, &device, &textureSampler);

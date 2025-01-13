@@ -15,13 +15,22 @@ set(RUN_ROOT "${CMAKE_SOURCE_DIR}/run")
 
 set(PYTHON_SCRIPT ${CMAKE_SOURCE_DIR}/generate_path_compare.py)
 
+set(ENV{PATH} "C:/D/c_game/run;$ENV{PATH}")
 add_custom_command(
-    OUTPUT ${SRC_ROOT}file/generated_function.c ${INCLUDE_ROOT}/file/generated_function.h
+    OUTPUT "${RUN_ROOT}/Path"
+    COMMAND "${RUN_ROOT}/ContentManager.exe"
+    COMMENT "Generate PATH"
+    VERBATIM
+)
+add_custom_target(GeneratePath DEPENDS "${RUN_ROOT}/Path")
+
+add_custom_command(
+    OUTPUT ${SRC_ROOT}/file/generated_function.c ${INCLUDE_ROOT}/file/generated_function.h
     COMMAND python.exe ${PYTHON_SCRIPT}
     COMMENT "Running Python script to generate code..."
     VERBATIM
 )
-add_custom_target(GenerateCode DEPENDS ${SRC_ROOT}file/generated_function.c ${INCLUDE_ROOT}/file/generated_function.h)
+add_custom_target(GenerateCode DEPENDS ${SRC_ROOT}/file/generated_function.c ${INCLUDE_ROOT}/file/generated_function.h)
 
 add_subdirectory(src/texture_generate)
 add_subdirectory(src/vma)
@@ -112,7 +121,9 @@ target_compile_options(game PUBLIC -O0 -Wall)
 # target_compile_options(game PUBLIC -O0 -Wall -Wextra)
 # target_compile_options(game PUBLIC -O2 -Wall)
 
-add_dependencies(${PROJECT_NAME} GenerateCode ShaderCompile MoveLib)
+add_dependencies(GeneratePath ContentManager ShaderCompile MoveLib)
+add_dependencies(GenerateCode GeneratePath)
+add_dependencies(${PROJECT_NAME} game GenerateCode)
 
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/run)
 
