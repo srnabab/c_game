@@ -1,3 +1,4 @@
+#include "begin_code.h"
 #include <cglm/vec2.h>
 
 #ifndef TEXTUREG_H
@@ -14,11 +15,11 @@ typedef struct _HASH
     uint32_t utf32;
 } Hash;
 
-uint32_t hash_func1(uint32_t utf32);
-uint32_t hash_func2(uint32_t utf32);
+extern G_DECLSPEC G_NODISCARD uint32_t G_CALL hash_func1(uint32_t utf32);
+extern G_DECLSPEC G_NODISCARD uint32_t G_CALL hash_func2(uint32_t utf32);
 
-int find_value(Hash * hash, uint32_t utf32);
-int textureGenerate(const char* fontPath, const char* hashTablePath, const char* pngSavePath, int8_t channels, int fontSize, int* failed);
+extern G_DECLSPEC G_NODISCARD int G_CALL find_value(Hash * hash, uint32_t utf32);
+extern G_DECLSPEC int G_CALL textureGenerate(const char* fontPath, const char* hashTablePath, const char* pngSavePath, int8_t channels, int fontSize, int* failed);
 /*unused*/
 // static long getFileSize(FILE * fp)
 // {

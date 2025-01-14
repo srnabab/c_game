@@ -1,3 +1,4 @@
+#include "begin_code.h"
 #include "file/file.h"
 #include "log.h"
 #include "std_c.h"
@@ -105,9 +106,9 @@ static bool setPath(void)
     char path[512] = {0};
     
 #if defined(_WIN32)
-    SDL_snprintf(path, 512, "%s%s %s %s%s", rootPath, "ContentManager.exe", rootPath, rootPath, "Content.db");
+    SDL_snprintf(path, 512, "%s%s", rootPath, "ContentManager.exe");
 #elif defined(__linux__)
-    SDL_snprintf(path, 512, "%s%s %s %s%s", rootPath, "ContentManager", rootPath, rootPath, "Content.db");
+    SDL_snprintf(path, 512, "%s%s", rootPath, "ContentManager");
 #endif
 
 
