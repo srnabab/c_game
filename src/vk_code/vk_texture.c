@@ -1,6 +1,8 @@
-#include "vk_texture.h"
-#include "vk_image.h"
-#include "vk_buffer.h"
+#include "vk_code_h/vk_texture.h"
+#include "vk_code_h/vk_image.h"
+#include "vk_code_h/vk_buffer.h"
+#include "vk_code_h/vk_judge.h"
+#include "G_file/G_file.h"
 
 void createTextureImage(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkCommandPool * pCommandPool, VkQueue * pGraphicQueue, PathType type, VkFormat format, VkImage * pTextureImage, VkDeviceMemory * pTextureImageMem)
 {

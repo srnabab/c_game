@@ -1,5 +1,7 @@
-#include "vk_uniform.h"
-#include "vk_buffer.h"
+#include "G_constants.h"
+#include "vk_code_h/vk_uniform.h"
+#include "vk_code_h/vk_buffer.h"
+#include "vk_code_h/vk_judge.h"
 
 void createUniformBuffers(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkBuffer ** ppUniformBuffers, VkDeviceMemory ** ppUniformBuffersMem, void *** pppUniformBuffersMapped, VkDeviceSize bufferSize)
 {

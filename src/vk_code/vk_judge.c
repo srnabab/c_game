@@ -1,5 +1,5 @@
-#include "core.h"
-#include "judge.h"
+#include "G_core.h"
+#include "vk_code_h/vk_judge.h"
 #include "vulkan_code.h"
 
 extern Recreate recreateSwap;

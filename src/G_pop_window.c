@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "pop_window.h"
+#include "G_pop_window.h"
 
 extern SDL_Window * window;
 

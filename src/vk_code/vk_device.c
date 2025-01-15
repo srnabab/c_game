@@ -1,4 +1,8 @@
-#include "vk_device.h"
+#include "vk_code_h/vk_device.h"
+#include "vk_code_h/vk_judge.h"
+#include "SDL3/SDL_stdinc.h"
+#include "G_pop_window.h"
+#include "G_log.h"
 
 void pickPhysicalDevice(VkInstance * pInstance, VkPhysicalDevice * pPhysicalDevice)
 {

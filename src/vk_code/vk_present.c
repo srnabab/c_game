@@ -1,7 +1,8 @@
-#include "vk_present.h"
-#include "vk_move.h"
-#include "vk_buffer.h"
-//#include <windows.h>
+#include "G_constants.h"
+#include "vk_code_h/vk_present.h"
+#include "vk_code_h/vk_move.h"
+#include "vk_code_h/vk_buffer.h"
+#include "vk_code_h/vk_judge.h"
 
 extern bool pictureMove[4];
 extern bool scale;

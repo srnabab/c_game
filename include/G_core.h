@@ -7,16 +7,16 @@
 
 #include "vma/vk_mem_alloc.h"
 
-#include "judge.h"
-#include "constants.h"
+#include "VK_judge.h"
+#include "G_constants.h"
 #include "vk_struct.h"
 
-#include "log.h"
-#include "file.h"
+#include "G_log.h"
+#include "G_file.h"
 
 #include "struct.h"
 
-#include "stack.h"
-#include "pop_window.h"
+#include "G_stack.h"
+#include "G_pop_window.h"
 
 #endif //core.h

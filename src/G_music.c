@@ -1,6 +1,6 @@
-#include "music.h"
-#include "stack.h"
-#include "file.h"
+#include "G_music.h"
+#include "G_stack.h"
+#include "G_file.h"
 
 static MusicPack musics[MAX_SONG];
 static uint8_t songs = 0;

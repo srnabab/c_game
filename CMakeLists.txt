@@ -52,21 +52,21 @@ add_custom_target(
 )
 
 add_executable(game ${SRC_ROOT}/main.c 
-                    ${SRC_ROOT}/game.c
-                    ${SRC_ROOT}/file/file.c 
-                    ${SRC_ROOT}/file/path_compare.c
-                    ${SRC_ROOT}/graphic.c
-                    ${SRC_ROOT}/judge.c
+                    ${SRC_ROOT}/G_game.c
+                    ${SRC_ROOT}/G_file/G_file.c 
+                    ${SRC_ROOT}/G_file/path_compare.c
+                    ${SRC_ROOT}/G_graphic.c
                     ${SRC_ROOT}/version.rc
-                    ${SRC_ROOT}/log.c
-                    ${SRC_ROOT}/music.c
-                    ${SRC_ROOT}/world.c
-                    ${SRC_ROOT}/list.c
-                    ${SRC_ROOT}/stack.c
-                    ${SRC_ROOT}/timer.c
-                    ${SRC_ROOT}/text.c
-                    ${SRC_ROOT}/pop_window.c
+                    ${SRC_ROOT}/G_log.c
+                    ${SRC_ROOT}/G_music.c
+                    ${SRC_ROOT}/G_world.c
+                    ${SRC_ROOT}/G_list.c
+                    ${SRC_ROOT}/G_stack.c
+                    ${SRC_ROOT}/G_timer.c
+                    ${SRC_ROOT}/G_text.c
+                    ${SRC_ROOT}/G_pop_window.c
                     ${SRC_ROOT}/SDL_complement.c
+                    ${SRC_ROOT}/vk_code/vk_judge.c
                     ${SRC_ROOT}/vk_code/vk_instace.c 
                     ${SRC_ROOT}/vk_code/vk_surface.c
                     ${SRC_ROOT}/vk_code/vk_device.c 
@@ -104,7 +104,7 @@ target_include_directories(game PUBLIC ${INCLUDE_ROOT}
                             "${INCLUDE_ROOT}/vk_video"
                             "${INCLUDE_ROOT}/zlib"
                             "${INCLUDE_ROOT}/textureG"
-                            "${INCLUDE_ROOT}/file"
+                            "${INCLUDE_ROOT}/G_file"
                             "${INCLUDE_ROOT}/contentManager")
 
 # set(SDL_INCLUDE_DIR PATH "C:/D/c_game/include/SDL3")

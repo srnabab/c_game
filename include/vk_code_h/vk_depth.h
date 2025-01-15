@@ -1,7 +1,8 @@
-#include "core.h"
+#include "G_begin_code.h"
+#include "vulkan/vulkan.h"
 
 #ifndef VK_DEPTH_H
-#define VK_DEPTH_H
+#define VK_DEPTH_H 1
 
 void findSupportFormat(VkFormat * candiates, VkPhysicalDevice * pPhysicalDevice, VkImageTiling tiling, VkFormatFeatureFlags features, VkFormat * pFormat);
 void findDepthFormat(VkPhysicalDevice * pPhysicalDevice, VkImageTiling tiling, VkFormatFeatureFlags features, VkFormat * pFormat);

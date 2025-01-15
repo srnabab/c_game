@@ -1,7 +1,7 @@
-#include "core.h"
+#include "G_begin_code.h"
 
 #ifndef VK_VERSION_H
-#define VK_VERSION_H
+#define VK_VERSION_H 1
 
 void vulkanVersion(void);
 

@@ -153,7 +153,7 @@ LICENSE
 #include "SDL3/SDL_iostream.h"
 
 #ifndef INCLUDE_STB_IMAGE_WRITE_H
-#define INCLUDE_STB_IMAGE_WRITE_H
+#define INCLUDE_STB_IMAGE_WRITE_H 1
 
 #include <stdlib.h>
 

@@ -1,6 +1,7 @@
-#include "vk_depth.h"
-#include "vk_image.h"
-#include "judge.h"
+#include "vk_code_h/vk_depth.h"
+#include "vk_code_h/vk_image.h"
+#include "vk_code_h/vk_judge.h"
+#include "G_log.h"
 
 void findSupportFormat(VkFormat * candiates, VkPhysicalDevice * pPhysicalDevice, VkImageTiling tiling, VkFormatFeatureFlags features, VkFormat * pFormat)
 {
@@ -23,7 +24,7 @@ void findSupportFormat(VkFormat * candiates, VkPhysicalDevice * pPhysicalDevice,
     }
 
     if (*pFormat == 0)
-        SDL_Log("falied to find supported format!\n");
+        logMessage("falied to find supported format!\n");
 }
 void findDepthFormat(VkPhysicalDevice * pPhysicalDevice, VkImageTiling tiling, VkFormatFeatureFlags features, VkFormat * pFormat)
 {
@@ -36,7 +37,7 @@ void createDepthResoures(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice,
 
     VkFormat depthFormat = 0;
     findDepthFormat(pPhysicalDevice, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT, &depthFormat);
-    SDL_Log("format: %d\n", depthFormat);
+    logMessage("format: %d\n", depthFormat);
     
     resultVulkan(createImage(pPhysicalDevice, pDevice, pExtent2D->width, pExtent2D->height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, pDepthImage, pDepthImageMem), code, 0);
 

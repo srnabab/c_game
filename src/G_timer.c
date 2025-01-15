@@ -1,6 +1,6 @@
 #include "std_c.h"
-#include "timer.h"
-#include "log.h"
+#include "G_timer.h"
+#include "G_log.h"
 #include "SDL3/SDL.h"
 
 typedef struct _Timer

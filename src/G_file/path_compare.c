@@ -1,4 +1,4 @@
-#include "file/path_compare.h"
+#include "G_file/path_compare.h"
 
 #include "SDL3/SDL_stdinc.h"
 PathType pathCompare(char * buffer)

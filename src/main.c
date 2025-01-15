@@ -1,9 +1,12 @@
-#include "constants.h"
-#include "SDL3/SDL.h"
-#include "game.h"
-#include "graphic.h"
-#include "file.h"
-#include "world.h"
+#include "SDL3/SDL_thread.h"
+#include "SDL3/SDL_mutex.h"
+#include "SDL3/SDL_stdinc.h"
+#include "SDL3/SDL_timer.h"
+#include "G_file/G_file.h"
+#include "G_log.h"
+#include "G_graphic.h"
+#include "G_game.h"
+#include "G_world.h"
 
 bool game_is_running = false;
 

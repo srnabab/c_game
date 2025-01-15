@@ -1,5 +1,7 @@
-#include "vk_index.h"
-#include "vk_buffer.h"
+#include "SDL3/SDL_stdinc.h"
+#include "vk_code_h/vk_index.h"
+#include "vk_code_h/vk_buffer.h"
+#include "vk_code_h/vk_judge.h"
 
 void createIndexBuffer(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkBuffer * pIndexBuffer, VkDeviceMemory * pIndexBufferMemory, void ** pIndexBufferMemMapped, uint16_t * indices, uint32_t indicesCount)
 {

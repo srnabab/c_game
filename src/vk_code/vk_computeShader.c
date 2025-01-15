@@ -1,6 +1,7 @@
-#include "vk_computeShader.h"
-#include <time.h>
-#include "vk_buffer.h"
+#include "G_constants.h"
+#include "SDL3/SDL_stdinc.h"
+#include "vk_code_h/vk_computeShader.h"
+#include "vk_code_h/vk_buffer.h"
 
 void createShaderStorageBuffers(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkCommandPool * pCommandPool, VkQueue * pGraphicQueue, VkExtent2D extent2D, VkBuffer ** ppShaderStorageBuffers, VkDeviceMemory ** ppShaderStorageBuffersMem, Particle ** ppParticles)
 {
@@ -32,22 +33,22 @@ void createShaderStorageBuffers(VkPhysicalDevice * pPhysicalDevice, VkDevice * p
     vkDestroyBuffer(*pDevice, stagingBuffer, NULL);
     vkFreeMemory(*pDevice, stagingBufferMemory, NULL);
 }
-float randomFloat(void)
-{
-    return rand() / (float)RAND_MAX;
-}
+// float randomFloat(void)
+// {
+//     return SDL_rand() / (float)RAND_MAX;
+// }
 void initializeParticles(Particle ** ppParticles, VkExtent2D extent2D)
 {
     *ppParticles = (Particle *)SDL_malloc(PARTICLE_COUNT * sizeof(Particle));
-    srand((uint32_t)time(NULL));
+    SDL_srand(0);
 
     for (int i = 0;i < PARTICLE_COUNT;i++)
     {
-        float r = 0.25f * sqrt(randomFloat());
-        float theta = randomFloat() * 2 * M_PI;
+        float r = 0.25f * SDL_sqrtf(SDL_randf());
+        float theta = SDL_randf() * 2 * M_PI;
 
-        float x = r * cos(theta) * extent2D.height / extent2D.width;
-        float y = r * sin(theta);
+        float x = r * SDL_cosf(theta) * extent2D.height / extent2D.width;
+        float y = r * SDL_sinf(theta);
 
         vec3 xy = {x, y, 0.0f};
 
@@ -59,9 +60,9 @@ void initializeParticles(Particle ** ppParticles, VkExtent2D extent2D)
         (*ppParticles)[i].velocity[0] = xy[0] * 0.25f;
         (*ppParticles)[i].velocity[1] = xy[1] * 0.25f;
 
-        (*ppParticles)[i].color[0] = randomFloat();
-        (*ppParticles)[i].color[1] = randomFloat();
-        (*ppParticles)[i].color[2] = randomFloat();
+        (*ppParticles)[i].color[0] = SDL_randf();
+        (*ppParticles)[i].color[1] = SDL_randf();
+        (*ppParticles)[i].color[2] = SDL_randf();
         (*ppParticles)[i].color[3] = 1.0f;
     }
 }

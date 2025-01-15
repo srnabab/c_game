@@ -1,7 +1,9 @@
-#include "core.h"
+#include "G_begin_code.h"
+#include "vulkan/vulkan.h"
+#include "SDL3/SDL_stdinc.h"
 
 #ifndef VK_IMAGE_H
-#define VK_IMAGE_H
+#define VK_IMAGE_H 1
 
 VkResult createImage(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage * pImage, VkDeviceMemory * pImageMem);
 VkResult createImageView(VkDevice * pDevice, VkImage * pImage, VkFormat format, VkImageAspectFlags aspectFlags, VkImageView * pImageView);

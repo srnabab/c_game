@@ -1,4 +1,10 @@
-#include "vk_descriptorPool.h"
+#include "G_begin_code.h"
+#include "G_constants.h"
+#include "SDL3/SDL_stdinc.h"
+#include "vk_code_h/vk_descriptorPool.h"
+#include "vk_code_h/vk_judge.h"
+#include "vk_struct.h"
+#include "G_log.h"
 
 void addDescriptorSetLayout(VkDevice * pDevice, uint32_t bindingCount, VkDescriptorSetLayoutBinding * pBindings, uint32_t set, VkDescriptorSetLayout ** ppDescriptorSetLayout)
 {

@@ -1,18 +1,18 @@
-#include "game.h"
-#include "graphic.h"
+#include "G_game.h"
+#include "G_graphic.h"
 
 #include "vulkan_code.h"
 
 #include "SDL3/SDL.h"
 #include "SDL3/SDL_vulkan.h"
 
-#include "custom_math.h"
+#include "G_custom_math.h"
 
-#include "music.h"
-#include "world.h"
-#include "timer.h"
-#include "text.h"
-#include "scene.h"
+#include "G_music.h"
+#include "G_world.h"
+#include "G_timer.h"
+#include "G_text.h"
+#include "G_scene.h"
 
 extern SDL_Thread * sdl_pid_update, * sdl_pid_draw, * sdl_pid_signal, * sdl_pid_control;
 

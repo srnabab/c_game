@@ -1,5 +1,6 @@
-#include "vk_vertex.h"
-#include "vk_buffer.h"
+#include "vk_code_h/vk_vertex.h"
+#include "vk_code_h/vk_buffer.h"
+#include "vk_code_h/vk_judge.h"
 
 void createVertexBuffer(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkBuffer * pVertexBuffer, VkDeviceMemory * pVertexBufferMemory, void ** ppVertexBufferMemMapped, Vertex * vertices, uint32_t verticesCount)
 {

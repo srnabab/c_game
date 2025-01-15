@@ -1,6 +1,9 @@
-#include "vk_instance.h"
+#include "vk_code_h/vk_judge.h"
+#include "vk_code_h/vk_instance.h"
 #include "SDL3/SDL_vulkan.h"
-#include "name.h"
+#include "G_name.h"
+#include "G_pop_window.h"
+#include "G_log.h"
 
 extern SDL_Window * window;
 

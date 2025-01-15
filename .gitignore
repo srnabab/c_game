@@ -9,6 +9,7 @@ include/vk_video/
 include/vulkan/
 include/freetype/
 include/cglm/
+include/box2d/
 lib/
 out/
 run/

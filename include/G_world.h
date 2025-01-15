@@ -1,4 +1,4 @@
-#include "core.h"
+#include "G_core.h"
 
 #ifndef WORLD_H
 #define WORLD_H

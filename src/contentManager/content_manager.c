@@ -1,26 +1,9 @@
-#include "contentManager/content_manager.h"
+#include "G_begin_code.h"
 #include "sqlite3/sqlite3_alloc_func.h"
 #include "SDL3/SDL_filesystem.h"
 #include "SDL3/SDL_log.h"
 #include "SDL3/SDL_iostream.h"
-// #include "SDL3/SDL_timer.h"
 #include "sqlite3/sqlite3.h"
-
-#if defined(SEPRATOR)
-#undef SEPRATOR
-#endif
-
-#if defined(SEPRATOR_C)
-#undef SEPRATOR_C
-#endif
-
-#if defined(_WIN32)
-#define SEPRATOR "\\"
-#define SEPRATOR_C '\\'
-#elif defined(__linux__)
-#define SEPRATOR "/"
-#define SEPRATOR_C '/'
-#endif
 
 struct _DB_Path
 {

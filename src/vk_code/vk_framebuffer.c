@@ -1,11 +1,13 @@
 #include "vk_framebuffer.h"
+#include "vk_code_h/vk_judge.h"
+#include "G_log.h"
 
 void createFrameBuffer(VkDevice * pDevice, VkExtent2D * pExtent2D, uint32_t imageCount, VkImageView * pSwapchainImageView, VkImageView * pDepthImageView, VkRenderPass * pRenderPass, VkFramebuffer ** pSwapchainFramebuffer)
 {
     FuncCode code = createFrameBufferF;
 
     *pSwapchainFramebuffer = (VkFramebuffer *)SDL_calloc(imageCount, sizeof(VkFramebuffer));
-    SDL_Log("framebuffer width: %u, height: %u\n", pExtent2D->width, pExtent2D->height);
+    logMessage("framebuffer width: %u, height: %u\n", pExtent2D->width, pExtent2D->height);
 
     for (uint32_t i = 0;i < imageCount;i++)
     {

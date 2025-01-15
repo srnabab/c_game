@@ -1,5 +1,5 @@
 #include "vulkan_code.h"
-#include "graphic.h"
+#include "G_graphic.h"
 
 //declare a sdl window
 SDL_Window * window = NULL;

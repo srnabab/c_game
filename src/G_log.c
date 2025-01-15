@@ -1,8 +1,8 @@
-#include "log.h"
+#include "G_log.h"
 #include "SDL3/SDL.h"
 #include "SDL_complement.h"
 #include "std_c.h"
-#include "file.h"
+#include "G_file.h"
 #include <time.h>
 
 #define MAX_MESSAGE_STORAGE 10000

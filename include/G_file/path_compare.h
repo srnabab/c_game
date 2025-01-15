@@ -1,5 +1,7 @@
-#ifndef PATH_COMPARE_H
-#define PATH_COMPARE_H
+#include "G_begin_code.h"
+
+#ifndef G_PATH_COMPARE_H
+#define G_PATH_COMPARE_H 1
 
 typedef enum _PathType
 {
@@ -36,6 +38,6 @@ typedef enum _PathType
     TextRectangle1Png,
 } PathType;
 
-PathType pathCompare(char * buffer);
+extern PathType G_CALL pathCompare(char * buffer);
 
 #endif

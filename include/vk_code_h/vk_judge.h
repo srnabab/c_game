@@ -1,8 +1,9 @@
-#include "std_c.h"
+#include "G_begin_code.h"
+#include "SDL3/SDL_stdinc.h"
 #include "vulkan/vulkan.h"
 
-#ifndef JUDGE_H
-#define JUDGE_H
+#ifndef VK_JUDGE_H
+#define VK_JUDGE_H 1
 
 //function code, named by add a 'F' at the end of function name
 typedef enum _FuncCode {
@@ -53,8 +54,8 @@ typedef enum _FuncCode {
     FuncCodeMax
 } FuncCode;
 //base function code to clean up resources created
-void cleanup(FuncCode code);
+extern void G_CALL cleanup(FuncCode code);
 //judge VK_RESULT for vulkan
-void resultVulkan(VkResult result, FuncCode code, uint32_t num, ...);
+extern void G_CALL resultVulkan(VkResult result, FuncCode code, Uint32 num, ...);
 
 #endif //clean.h

@@ -1,8 +1,10 @@
-#include "core.h"
+#include "G_begin_code.h"
+#include "vulkan/vulkan.h"
 #include "SDL3_image/SDL_image.h"
+#include "G_file/path_compare.h"
 
 #ifndef VK_TEXTURE_H
-#define VK_TEXTURE_H
+#define VK_TEXTURE_H 1
 
 void createTextureImage(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkCommandPool * pCommandPool, VkQueue * pGraphicQueue, PathType type, VkFormat format, VkImage * pTextureImage, VkDeviceMemory * pTextureImageMem);
 void createTextureImageView(VkDevice * pDevice, VkImage * pTextureImage, VkFormat format, VkImageAspectFlags aspectFlags, VkImageView * pTextureImageView);

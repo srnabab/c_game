@@ -1,7 +1,7 @@
 #include "cglm/cglm.h"
 #include "vk_struct.h"
 #include <math.h>
-#include "log.h"
+#include "G_log.h"
 
 #ifndef CUSTOM_CGLM_H
 #define CUSTOM_CHLM_H

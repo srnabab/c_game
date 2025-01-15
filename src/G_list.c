@@ -1,4 +1,4 @@
-#include "list.h"
+#include "G_list.h"
 
 void initList(List list, bool (*compareFn)(void *, void *))
 {

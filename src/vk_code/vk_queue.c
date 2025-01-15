@@ -1,4 +1,6 @@
-#include "vk_queue.h"
+#include "vk_code_h/vk_queue.h"
+#include "vk_code_h/vk_judge.h"
+#include "G_log.h"
 
 void findQueueFamilies(VkPhysicalDevice * pPhysicalDevice, VkSurfaceKHR * pSurface, QueueFamilyIndices * pQueueFamilyIndices)
 {

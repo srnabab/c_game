@@ -1,4 +1,7 @@
 #include "vk_version.h"
+#include "vulkan/vulkan.h"
+#include "vk_code_h/vk_judge.h"
+#include "G_log.h"
 
 void vulkanVersion(void)
 {
@@ -10,5 +13,5 @@ void vulkanVersion(void)
     uint32_t minor = VK_VERSION_MINOR(apiVersion);
     uint32_t patch = VK_VERSION_PATCH(apiVersion);
 
-    SDL_Log("Vulkan API Version: %u.%u.%u\n", major, minor, patch);
+    logMessage("Vulkan API Version: %u.%u.%u\n", major, minor, patch);
 }

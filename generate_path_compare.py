@@ -4,11 +4,11 @@ import os
 input_file = "C:\\D\\c_game\\run\\Path"
 
 # 输出文件路径
-output_file_h = "C:\\D\\c_game\\include\\file\\path_compare.h"
-output_file_c = "C:\\D\\c_game\\src\\file\\path_compare.c"
+output_file_h = "C:\\D\\c_game\\include\\G_file\\path_compare.h"
+output_file_c = "C:\\D\\c_game\\src\\G_file\\path_compare.c"
 
-output_file_h_temp = "C:\\D\\c_game\\include\\file\\path_compare_temp.h"
-output_file_c_temp = "C:\\D\\c_game\\src\\file\\path_compare_temp.c"
+output_file_h_temp = "C:\\D\\c_game\\include\\G_file\\path_compare_temp.h"
+output_file_c_temp = "C:\\D\\c_game\\src\\G_file\\path_compare_temp.c"
 
 def generate_code(input_file, output_file_h, output_file_c):
     # 用于存储生成的代码
@@ -20,8 +20,9 @@ def generate_code(input_file, output_file_h, output_file_c):
     with open(input_file, "r") as f:
         lines = f.readlines()
 
-    include_lines.append("#ifndef PATH_COMPARE_H")
-    include_lines.append("#define PATH_COMPARE_H\n")
+    include_lines.append("#include \"G_begin_code.h\"\n")
+    include_lines.append("#ifndef G_PATH_COMPARE_H")
+    include_lines.append("#define G_PATH_COMPARE_H 1\n")
     include_lines.append("typedef enum _PathType\n{")
 
     # 遍历每一行生成对应的代码
@@ -53,12 +54,12 @@ def generate_code(input_file, output_file_h, output_file_c):
         for line in enum_lines:
             f.write(line + "\n")
         f.write("} PathType;\n")
-        f.write("\nPathType pathCompare(char * buffer);\n\n")
+        f.write("\nextern PathType G_CALL pathCompare(char * buffer);\n\n")
         f.write("#endif")
 
     # 保存生成的代码到输出文件
     with open(output_file_c, "w") as f:
-        f.write("#include \"file/path_compare.h\"\n\n")
+        f.write("#include \"G_file/path_compare.h\"\n\n")
         f.write("#include \"SDL3/SDL_stdinc.h\"\n")
         f.write("PathType pathCompare(char * buffer)\n{\n")
         for line in function_lines:

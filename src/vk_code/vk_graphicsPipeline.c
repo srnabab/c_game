@@ -1,4 +1,7 @@
-#include "vk_graphicsPipeline.h"
+#include "SDL3/SDL_stdinc.h"
+#include "vk_code_h/vk_graphicsPipeline.h"
+#include "vk_code_h/vk_judge.h"
+#include "vk_struct.h"
 
 void configureDynamicsState(VkPipelineDynamicStateCreateInfo * pDynamicStateCreateInfo)
 {

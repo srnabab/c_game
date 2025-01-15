@@ -1,7 +1,8 @@
-#include "core.h"
+#include "G_begin_code.h"
+#include "vulkan/vulkan.h"
 
 #ifndef VK_GRAPHICSPIPELINE_H
-#define VK_GRAPHICSPIPELINE_H
+#define VK_GRAPHICSPIPELINE_H 1
 
 void configureDynamicsState(VkPipelineDynamicStateCreateInfo * pDynamicStateCreateInfo);
 void configurePipelineVertexInputState(VkPipelineVertexInputStateCreateInfo * pPipelineVertexInputStateCreateInfo);

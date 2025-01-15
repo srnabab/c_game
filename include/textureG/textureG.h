@@ -1,8 +1,8 @@
-#include "begin_code.h"
-#include <cglm/vec2.h>
+#include "G_begin_code.h"
+#include "cglm/vec2.h"
 
 #ifndef TEXTUREG_H
-#define TEXTUREG_H
+#define TEXTUREG_H 1
 
 #define MAX_2D_SIZE 16383
 

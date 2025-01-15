@@ -1,7 +1,9 @@
-#include "core.h"
+#include "G_begin_code.h"
+#include "vulkan/vulkan.h"
+#include "vk_struct.h"
 
 #ifndef VK_PRESENT_H
-#define VK_PRESENT_H
+#define VK_PRESENT_H 1
 
 void recordCommandBuffer(VK_ALL * pAllInOne, uint32_t imageIndex);
 void recordComputeCommandBuffer(VK_ALL * pAllInOne);

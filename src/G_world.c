@@ -1,8 +1,9 @@
 #include "box2d/box2d.h"
-#include "world.h"
+#include "G_world.h"
 #include "vk_code_h/vk_present.h"
 #include "SDL3/SDL_thread.h"
 #include "SDL3/SDL_mutex.h"
+#include "G_struct.h"
 
 static b2WorldDef worldDef = {};
 static b2WorldId worldId = {};

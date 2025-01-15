@@ -1,10 +1,12 @@
-#include "vk_recreate.h"
-#include "vk_swapchain.h"
-#include "vk_image.h"
-#include "vk_framebuffer.h"
-#include "vk_depth.h"
-#include "custom_math.h"
-#include "vk_move.h"
+#include "vk_code_h/vk_recreate.h"
+#include "vk_code_h/vk_swapchain.h"
+#include "vk_code_h/vk_image.h"
+#include "vk_code_h/vk_framebuffer.h"
+#include "vk_code_h/vk_depth.h"
+#include "G_custom_math.h"
+#include "vk_code_h/vk_move.h"
+#include "vk_code_h/vk_judge.h"
+#include "vk_struct.h"
 
 static void newSwapchain(VkDevice * pDevice, VkSurfaceCapabilitiesKHR * pSurfaceCapabilities, VkSurfaceKHR * pSurface, VkSurfaceFormatKHR * pSurfaceFormat, VkExtent2D * pExtent2D, VkPresentModeKHR * pPresentMode, QueueFamilyIndices indices, VkSwapchainKHR * pSwapchain)
 {

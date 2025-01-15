@@ -1,4 +1,6 @@
 #include "vk_commandPool.h"
+#include "vk_judge.h"
+#include "G_constants.h"
 
 void createCommandPool(VkDevice * pDevice, uint32_t graphicsFamilyIndice, VkCommandPool * pCommandPool)
 {

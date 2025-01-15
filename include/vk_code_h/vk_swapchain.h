@@ -1,7 +1,9 @@
-#include "core.h"
+#include "G_begin_code.h"
+#include "vulkan/vulkan.h"
+#include "vk_struct.h"
 
 #ifndef VK_SWAPCHAIN_H
-#define VK_SWAPCHAIN_H
+#define VK_SWAPCHAIN_H 1
 
 void getSurfaceFormats(VkPhysicalDevice * pDevice, VkSurfaceKHR * pSurface, VkSurfaceFormatKHR * pSurfaceFormat);
 void getPresentModes(VkPhysicalDevice * pDevice, VkSurfaceKHR * pSurface, VkPresentModeKHR * pPresentMode);

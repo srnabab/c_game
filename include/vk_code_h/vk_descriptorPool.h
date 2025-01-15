@@ -1,7 +1,8 @@
-#include "core.h"
+#include "G_begin_code.h"
+#include "vulkan/vulkan.h"
 
 #ifndef VK_DESCRIPTORPOOL_H
-#define VK_DESCRIPTORPOOL_H
+#define VK_DESCRIPTORPOOL_H 1
 
 void addDescriptorSetLayout(VkDevice * pDevice, uint32_t bindingCount, VkDescriptorSetLayoutBinding * pBindings, uint32_t set, VkDescriptorSetLayout ** ppDescriptorSetLayout);
 void setDescriptorSetLayoutBinding(VkDescriptorType descriptorType, VkShaderStageFlags stage, uint32_t descriptorCount, uint32_t binding, uint32_t * pBindingCount, VkDescriptorSetLayoutBinding ** ppDescriptorSetLayoutBinding);
