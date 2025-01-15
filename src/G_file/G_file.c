@@ -1,4 +1,3 @@
-#include "G_begin_code.h"
 #include "G_file/G_file.h"
 #include "G_log.h"
 #include "std_c.h"

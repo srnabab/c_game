@@ -2,9 +2,12 @@
 #include <freetype/freetype.h>
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
+#define STBI_WRITE_NO_STDIO
+#define STB_IMAGE_WRITE_STATIC
 #include "textureG/stb_image_write.h"
 
 #include "SDL3/SDL_stdinc.h"
+#include "SDL3/SDL_iostream.h"
 
 #include "textureG/textureG.h"
 
@@ -87,7 +90,10 @@ int find_value(Hash * hash, uint32_t utf32)
         return -1;
     }
 }
-
+static void SDL_stb_image_write_func(void * context, void * data, int size)
+{
+    SDL_WriteIO((SDL_IOStream*)context, data, (size_t)size);
+}
 int textureGenerate(const char* fontPath, const char* hashTablePath, const char* pngSavePath, int8_t channels, int fontSize, int* failed)
 {
     if ((fontPath == NULL) || (hashTablePath == NULL) || (pngSavePath == NULL) || (fontSize <= 0))
@@ -252,13 +258,17 @@ int textureGenerate(const char* fontPath, const char* hashTablePath, const char*
         SDL_free(hash);
     }
 
-    int pngRes = stbi_write_png(pngSavePath, imageWidth * characterPerLine, imageHeight * line, channels, buffer2, imageWidth * characterPerLine * channels);
+    // int pngRes = stbi_write_png(pngSavePath, imageWidth * characterPerLine, imageHeight * line, channels, buffer2, imageWidth * characterPerLine * channels);
+    SDL_IOStream * png = SDL_IOFromFile(pngSavePath, "wb");
+    int pngRes = stbi_write_png_to_func(SDL_stb_image_write_func, (void*)png, imageWidth * characterPerLine, imageHeight * line, channels, buffer2, imageWidth * characterPerLine * channels);
+    
     if (!pngRes)
     {
         return -9;
     }
 
     SDL_free(buffer2);
+    SDL_CloseIO(png);
 
     FT_Done_Face(face);
     FT_Done_FreeType(ft);
