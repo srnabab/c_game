@@ -1,10 +1,8 @@
 #include "cglm/cglm.h"
 #include "vk_struct.h"
-#include <math.h>
-#include "G_log.h"
 
-#ifndef CUSTOM_CGLM_H
-#define CUSTOM_CHLM_H
+#ifndef G_CUSTOM_CGLM_H
+#define G_CUSTOM_CHLM_H 1
 
 CGLM_INLINE void glm_ortho_vulkan(float left, float right, float bottom, float top, float nearZ, float farZ, mat4 dest)
 {
@@ -30,8 +28,7 @@ CGLM_INLINE void glm_scale_self(Vertex ** ppVertices, float scale, uint32_t pict
 
     float actural_scale = scale - 1.0f;
 
-    float half_width_scaled = (SDL_fabsf((*ppVertices)[index].pos[0] - (*ppVertices)[index + 1].pos[0]) / 2) * actural_scale;
-    logMessage("x1: %f, x2: %f", (*ppVertices)[index].pos[0], (*ppVertices)[index + 1].pos[0]);
+    float half_width_scaled = (SDL_fabsf((*ppVertices)[index].pos[0] - (*ppVertices)[index + 1].pos[0]) / 2) * actural_scale;\
     float half_height_scaled = (SDL_fabsf((*ppVertices)[index].pos[1] - (*ppVertices)[index + 3].pos[1]) / 2) * actural_scale;
 
     (*ppVertices)[index].pos[1] -= half_height_scaled;

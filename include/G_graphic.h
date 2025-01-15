@@ -1,14 +1,9 @@
-#include "G_core.h"
+#include "SDL3/SDL_stdinc.h"
 
-#ifndef FLOW_H
-#define FLOW_H
+#ifndef G_GRAPHIC_H
+#define G_GRAPHIC_H 1
 
 bool initWindow(void);
 void initVulkan(void);
-//process draw and imput
-//void mainLoop(void);
-//for aesthetic reasons
 
-#define BALLCOUNT 2000
-
-#endif //flow.h
+#endif //G_graphic.h

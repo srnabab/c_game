@@ -1,5 +1,5 @@
 #ifndef VULKAN_CODE_H
-#define VULKAN_CODE_H
+#define VULKAN_CODE_H 1
 
 #include "vk_version.h"
 #include "vk_instance.h"

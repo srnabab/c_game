@@ -1,8 +1,8 @@
-#ifndef GAME_H
-#define GAME_H
+#ifndef G_GAME_H
+#define G_GAME_H 1
 
 // Function to poll SDL events and process keyboard input
-int process_input(void *);
+extern int process_input(void *);
 // Function to initialize our SDL window
 //bool initialize_window(void);
 // Setup function that runs once at the beginning of our program

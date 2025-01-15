@@ -1,5 +1,5 @@
 #ifndef G_BEGIN_CODE_H
-#define G_BEGIN_CODE_H
+#define G_BEGIN_CODE_H 1
 
 #ifndef SEPRATOR
 # if defined(_WIN32)

@@ -1,6 +1,6 @@
 //useful common structs, functions and headers for the others
-#ifndef CORE_H
-#define CORE_H
+#ifndef G_CORE_H
+#define G_CORE_H 1
 
 #include "std_c.h"
 #include "vulkan.h"

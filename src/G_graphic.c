@@ -1,5 +1,10 @@
+#include "G_constants.h"
+#include "G_log.h"
 #include "vulkan_code.h"
 #include "G_graphic.h"
+#include "vulkan/vulkan.h"
+#include "vma/vk_mem_alloc.h"
+#include "vk_code_h/vk_judge.h"
 
 //declare a sdl window
 SDL_Window * window = NULL;

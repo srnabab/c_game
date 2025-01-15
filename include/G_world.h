@@ -1,7 +1,8 @@
-#include "G_core.h"
+#include "vulkan/vulkan.h"
+#include "vk_struct.h"
 
 #ifndef WORLD_H
-#define WORLD_H
+#define WORLD_H 1
 
 #define SCALE_FACTOR 0.01f
 #define SCALE_FACTOR_INV (1/SCALE_FACTOR)

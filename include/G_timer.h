@@ -1,7 +1,7 @@
-#include "std_c.h"
+#include "SDL3/SDL_stdinc.h"
 
 #ifndef TIMER_H
-#define TIMER_H
+#define TIMER_H 1
 
 bool initTimerSystem(void);
 bool intervalIsDone(uint64_t nano, int * id, int repeat);

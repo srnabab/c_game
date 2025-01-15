@@ -1,9 +1,8 @@
-#include "SDL3/SDL.h"
+#include "SDL3/SDL_stdinc.h"
 #include "SDL3_mixer/SDL_mixer.h"
-#include "std_c.h"
 
 #ifndef MUSIC_H
-#define MUSIC_H
+#define MUSIC_H 1
 
 #define MAX_SONG 128
 

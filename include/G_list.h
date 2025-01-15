@@ -1,8 +1,7 @@
-#include "std_c.h"
-#include "SDL3/SDL.h"
+#include "SDL3/SDL_stdinc.h"
 
 #ifndef LIST_H
-#define LIST_H
+#define LIST_H 1
 
 typedef struct _Node
 {

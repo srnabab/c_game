@@ -1,9 +1,8 @@
-#include "vulkan.h"
-#include "std_c.h"
-#include "cglm.h"
+#include "vulkan/vulkan.h"
+#include "cglm/cglm.h"
 
 #ifndef VK_STRUCT_H
-#define VK_STRUCT_H
+#define VK_STRUCT_H 1
 
 typedef struct _QueueFamily
 {

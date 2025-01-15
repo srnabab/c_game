@@ -1,3 +1,4 @@
+#include "SDL3/SDL_log.h"
 #include "SDL3/SDL_thread.h"
 #include "SDL3/SDL_mutex.h"
 #include "SDL3/SDL_stdinc.h"
@@ -7,6 +8,8 @@
 #include "G_graphic.h"
 #include "G_game.h"
 #include "G_world.h"
+
+#include "vk_code_h/vk_judge.h"
 
 bool game_is_running = false;
 

@@ -13,6 +13,11 @@
 #include "G_timer.h"
 #include "G_text.h"
 #include "G_scene.h"
+#include "G_pop_window.h"
+#include "G_constants.h"
+#include "G_stack.h"
+#include "G_log.h"
+#include "G_file/G_file.h"
 
 extern SDL_Thread * sdl_pid_update, * sdl_pid_draw, * sdl_pid_signal, * sdl_pid_control;
 

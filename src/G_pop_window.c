@@ -1,5 +1,5 @@
-#include <stdio.h>
 #include "G_pop_window.h"
+#include "SDL3/SDL_mutex.h"
 
 extern SDL_Window * window;
 

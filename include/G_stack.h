@@ -1,8 +1,7 @@
-#include <stdio.h>
-#include <stdbool.h>
+#include "SDL3/SDL_stdinc.h"
 
 #ifndef STACK_H
-#define STACK_H
+#define STACK_H 1
 
 #define MAX_STACKS 128
 

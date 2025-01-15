@@ -1,7 +1,5 @@
-#include "std_c.h"
-
 #ifndef NAME_H
-#define NAME_H
+#define NAME_H 1
 
 #define APP_NAME "game"
 

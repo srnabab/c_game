@@ -7,6 +7,7 @@
 #include "vk_code_h/vk_move.h"
 #include "vk_code_h/vk_judge.h"
 #include "vk_struct.h"
+#include "G_log.h"
 
 static void newSwapchain(VkDevice * pDevice, VkSurfaceCapabilitiesKHR * pSurfaceCapabilities, VkSurfaceKHR * pSurface, VkSurfaceFormatKHR * pSurfaceFormat, VkExtent2D * pExtent2D, VkPresentModeKHR * pPresentMode, QueueFamilyIndices indices, VkSwapchainKHR * pSwapchain)
 {

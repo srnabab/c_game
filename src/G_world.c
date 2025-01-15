@@ -4,6 +4,7 @@
 #include "SDL3/SDL_thread.h"
 #include "SDL3/SDL_mutex.h"
 #include "G_struct.h"
+#include "G_stack.h"
 
 static b2WorldDef worldDef = {};
 static b2WorldId worldId = {};

@@ -1,3 +1,4 @@
+#include "SDL3/SDL_stdinc.h"
 #include "vk_move.h"
 #include "vk_buffer.h"
 

@@ -1,7 +1,9 @@
-#ifndef CONSTANTS_H
-#define CONSTANTS_H
+#ifndef G_CONSTANTS_H
+#define G_CONSTANTS_H 1
 
 #define PARTICLE_COUNT 8192
 #define MAX_FRAMES_IN_FLIGHT 2
+
+#define BALLCOUNT 2000
 
 #endif

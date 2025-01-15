@@ -1,7 +1,7 @@
 #include "SDL3/SDL_stdinc.h"
 
 #ifndef SDL_ALLOCATOR_H
-#define SDL_ALLOCATOR_H
+#define SDL_ALLOCATOR_H 1
 
 #define BYTE_OFFSET(ptr, offset) (((char*)(ptr) + (offset)))
 
