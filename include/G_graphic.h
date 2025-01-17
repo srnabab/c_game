@@ -3,7 +3,11 @@
 #ifndef G_GRAPHIC_H
 #define G_GRAPHIC_H 1
 
-bool initWindow(void);
-void initVulkan(void);
+#include "SDL3/SDL_begin_code.h"
+
+extern bool SDLCALL initWindow(void);
+extern void SDLCALL initVulkan(void);
+
+#include "SDL3/SDL_close_code.h"
 
 #endif //G_graphic.h

@@ -1,8 +1,12 @@
 #ifndef LOG_H
 #define LOG_H 1
 
-void initLog(void);
-void logMessage(char * format, ...);
-void destroyLog(void);
+#include "SDL3/SDL_begin_code.h"
+
+extern void SDLCALL initLog(void);
+extern void SDLCALL logMessage(char * format, ...);
+extern void SDLCALL destroyLog(void);
+
+#include "SDL3/SDL_close_code.h"
 
 #endif

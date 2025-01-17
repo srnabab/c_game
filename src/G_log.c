@@ -1,8 +1,13 @@
-#include "G_log.h"
-#include "SDL3/SDL.h"
+#include "SDL3/SDL_mutex.h"
+#include "SDL3/SDL_thread.h"
+#include "SDL3/SDL_log.h"
+#include "SDL3/SDL_time.h"
+#include "SDL3/SDL_iostream.h"
 #include "SDL_complement.h"
-#include "std_c.h"
-#include "G_file.h"
+
+#include "G_file/G_file.h"
+#include "G_log.h"
+
 #include <time.h>
 
 #define MAX_MESSAGE_STORAGE 10000
@@ -87,7 +92,7 @@ static int putMessage_file(void * arg)
                     SDL_snprintf(digits, 4, "%d", index);
                     SDL_strlcat(buffer, digits, 4);
                     SDL_strlcat(buffer, ".txt\0\0\0\0\0\0\0\0", 255);
-                    SDL_SeekIO(log_file, -length, SEEK_CUR);
+                    SDL_SeekIO(log_file, -length, SDL_IO_SEEK_CUR);
                     SDL_WriteIO(log_file, buffer, SDL_strlen(buffer));
                     break;
                 }

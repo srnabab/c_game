@@ -6,22 +6,21 @@
 #define STB_IMAGE_WRITE_STATIC
 #include "textureG/stb_image_write.h"
 
-#include "SDL3/SDL_stdinc.h"
 #include "SDL3/SDL_iostream.h"
 
 #include "textureG/textureG.h"
 
-uint32_t hash_func1(uint32_t utf32)
+Uint32 hash_func1(Uint32 utf32)
 {
     return (utf32 * 2654435761U) % HASH_SIZE;
 }
 
-uint32_t hash_func2(uint32_t utf32)
+Uint32 hash_func2(Uint32 utf32)
 {
     return (utf32 * 3344921057U) % HASH_SIZE;
 }
 
-static bool insert(Hash * hash, uint32_t utf32)
+static bool insert(Hash * hash, Uint32 utf32)
 {
     int pos1 = hash_func1(utf32);
     if (hash[pos1].utf32 == 0) 
@@ -66,21 +65,21 @@ static bool insert(Hash * hash, uint32_t utf32)
     return false;
 }
 
-static bool look_up(Hash * hash, uint32_t utf32)
+static bool look_up(Hash * hash, Uint32 utf32)
 {
     return (hash[hash_func1(utf32)].utf32 == utf32) | (hash[hash_func2(utf32) + HASH_SIZE].utf32 == utf32);
 }
 
-int find_value(Hash * hash, uint32_t utf32)
+int find_value(Hash * hash, Uint32 utf32)
 {
-    uint32_t pos1 = hash_func1(utf32);
+    Uint32 pos1 = hash_func1(utf32);
 
     if (hash[pos1].utf32 == utf32)
     {
         return pos1;
     }
     
-    uint32_t pos2 = hash_func2(utf32) + HASH_SIZE;
+    Uint32 pos2 = hash_func2(utf32) + HASH_SIZE;
     if (hash[pos2].utf32 == utf32)
     {
         return pos2;
@@ -94,7 +93,7 @@ static void SDL_stb_image_write_func(void * context, void * data, int size)
 {
     SDL_WriteIO((SDL_IOStream*)context, data, (size_t)size);
 }
-int textureGenerate(const char* fontPath, const char* hashTablePath, const char* pngSavePath, int8_t channels, int fontSize, int* failed)
+int textureGenerate(const char* fontPath, const char* hashTablePath, const char* pngSavePath, Sint8 channels, int fontSize, int* failed)
 {
     if ((fontPath == NULL) || (hashTablePath == NULL) || (pngSavePath == NULL) || (fontSize <= 0))
     {
@@ -209,8 +208,8 @@ int textureGenerate(const char* fontPath, const char* hashTablePath, const char*
         {
             for (int x = 0; x < bitmap->width; x++) 
             {
-                uint32_t bufferIndex = ((y + yOffset) * imageWidth + (x + xOffset)) * channels + i * imageWidth * imageHeight * channels;
-                uint32_t bitmapBufferIndex = (y * bitmap->width + x) * channels;
+                Uint32 bufferIndex = ((y + yOffset) * imageWidth + (x + xOffset)) * channels + i * imageWidth * imageHeight * channels;
+                Uint32 bitmapBufferIndex = (y * bitmap->width + x) * channels;
 
                 // unsigned char grayValue = bitmap->buffer[y * bitmap->width + x];
             

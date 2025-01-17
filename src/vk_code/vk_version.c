@@ -1,6 +1,6 @@
-#include "vk_version.h"
-#include "vulkan/vulkan.h"
+#include "vk_code_h/vk_version.h"
 #include "vk_code_h/vk_judge.h"
+
 #include "G_log.h"
 
 void vulkanVersion(void)

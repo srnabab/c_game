@@ -1,4 +1,3 @@
-#include "SDL3/SDL_stdinc.h"
 #include "vk_code_h/vk_index.h"
 #include "vk_code_h/vk_buffer.h"
 #include "vk_code_h/vk_judge.h"

@@ -1,17 +1,21 @@
-#include "G_begin_code.h"
+#include "SDL3/SDL_stdinc.h"
 #include "vulkan/vulkan.h"
 
 #ifndef VK_DESCRIPTORPOOL_H
 #define VK_DESCRIPTORPOOL_H 1
 
-void addDescriptorSetLayout(VkDevice * pDevice, uint32_t bindingCount, VkDescriptorSetLayoutBinding * pBindings, uint32_t set, VkDescriptorSetLayout ** ppDescriptorSetLayout);
-void setDescriptorSetLayoutBinding(VkDescriptorType descriptorType, VkShaderStageFlags stage, uint32_t descriptorCount, uint32_t binding, uint32_t * pBindingCount, VkDescriptorSetLayoutBinding ** ppDescriptorSetLayoutBinding);
-void createDescriptorPool(VkDevice * pDevice, uint32_t poolSizeCount, VkDescriptorPoolSize * pPoolSizes, uint32_t maxSets, VkDescriptorPool * pDescriptorPool);
-void setDescriptorPoolSize(VkDescriptorType type, uint32_t descriptorCount, uint32_t * pPoolCount, VkDescriptorPoolSize ** ppPoolSize);
-void modifyPoolSizeDescriptorCount(VkDescriptorType type, uint32_t addDescriptorCount, uint32_t poolCount, VkDescriptorPoolSize ** ppPoolSize);
-void createGraphicDescriptorSets(VkDevice * pDevice, VkBuffer ** ppUniformBuffers, VkDescriptorSetLayout * pDescriptorLayout, VkDescriptorPool * pDescriptorPool, VkDescriptorSet ** ppDescriptorSets, VkImageView * pTextureImageView, VkSampler * pTextureSampler);
-void createParticleDescriptorSets(VkDevice * pDevice, VkBuffer ** ppUniformBuffers, VkDescriptorSetLayout * pDescriptorLayout, VkDescriptorPool * pDescriptorPool, VkDescriptorSet ** ppDescriptorSets);
-void createComputeDescriptorSets(VkDevice * pDevice, VkBuffer ** ppUniformBuffers, VkBuffer ** ppShaderStorageBuffers, VkDescriptorSetLayout * pDescriptorLayout, VkDescriptorPool * pDescriptorPool, VkDescriptorSet ** ppDescriptorSets);
-void createDescriptorSets(VkDevice * pDevice, VkBuffer ** ppGraphicsUniformBuffers, VkBuffer ** ppComputeUniformBuffers, VkBuffer ** ppShaderStorageBuffers, VkDescriptorSetLayout * pDescriptorLayout, VkDescriptorPool * pDescriptorPool, VkDescriptorSet ** ppDescriptorSets, VkImageView * pTextureImageView, VkSampler * pTextureSampler);
+#include "SDL3/SDL_begin_code.h"
+
+extern void SDLCALL addDescriptorSetLayout(VkDevice * pDevice, Uint32 bindingCount, VkDescriptorSetLayoutBinding * pBindings, Uint32 set, VkDescriptorSetLayout ** ppDescriptorSetLayout);
+extern void SDLCALL setDescriptorSetLayoutBinding(VkDescriptorType descriptorType, VkShaderStageFlags stage, Uint32 descriptorCount, Uint32 binding, Uint32 * pBindingCount, VkDescriptorSetLayoutBinding ** ppDescriptorSetLayoutBinding);
+extern void SDLCALL createDescriptorPool(VkDevice * pDevice, Uint32 poolSizeCount, VkDescriptorPoolSize * pPoolSizes, Uint32 maxSets, VkDescriptorPool * pDescriptorPool);
+extern void SDLCALL setDescriptorPoolSize(VkDescriptorType type, Uint32 descriptorCount, Uint32 * pPoolCount, VkDescriptorPoolSize ** ppPoolSize);
+extern void SDLCALL modifyPoolSizeDescriptorCount(VkDescriptorType type, Uint32 addDescriptorCount, Uint32 poolCount, VkDescriptorPoolSize ** ppPoolSize);
+extern void SDLCALL createGraphicDescriptorSets(VkDevice * pDevice, VkBuffer ** ppUniformBuffers, VkDescriptorSetLayout * pDescriptorLayout, VkDescriptorPool * pDescriptorPool, VkDescriptorSet ** ppDescriptorSets, VkImageView * pTextureImageView, VkSampler * pTextureSampler);
+extern void SDLCALL createParticleDescriptorSets(VkDevice * pDevice, VkBuffer ** ppUniformBuffers, VkDescriptorSetLayout * pDescriptorLayout, VkDescriptorPool * pDescriptorPool, VkDescriptorSet ** ppDescriptorSets);
+extern void SDLCALL createComputeDescriptorSets(VkDevice * pDevice, VkBuffer ** ppUniformBuffers, VkBuffer ** ppShaderStorageBuffers, VkDescriptorSetLayout * pDescriptorLayout, VkDescriptorPool * pDescriptorPool, VkDescriptorSet ** ppDescriptorSets);
+extern void SDLCALL createDescriptorSets(VkDevice * pDevice, VkBuffer ** ppGraphicsUniformBuffers, VkBuffer ** ppComputeUniformBuffers, VkBuffer ** ppShaderStorageBuffers, VkDescriptorSetLayout * pDescriptorLayout, VkDescriptorPool * pDescriptorPool, VkDescriptorSet ** ppDescriptorSets, VkImageView * pTextureImageView, VkSampler * pTextureSampler);
+
+#include "SDL3/SDL_close_code.h"
 
 #endif

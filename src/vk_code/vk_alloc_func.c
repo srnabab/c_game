@@ -1,7 +1,7 @@
 #include "vk_code_h/vk_alloc_func.h"
 #include "SDL_allocator.h"
 
-void * VKAPI_PTR SDL_VK_alloc(void * pUserData, size_t size, size_t alignment, VkSystemAllocationScope allocationScope)
+void * SDL_VK_alloc(void * pUserData, size_t size, size_t alignment, VkSystemAllocationScope allocationScope)
 {
     (void)allocationScope;
     if (size == 0) return NULL;
@@ -13,7 +13,7 @@ void * VKAPI_PTR SDL_VK_alloc(void * pUserData, size_t size, size_t alignment, V
     return ptr->memory;
 }
 
-void * VKAPI_PTR SDL_VK_realloc(void * pUserData, void * pOriginal, size_t size, size_t alignment, VkSystemAllocationScope allocationScope)
+void * SDL_VK_realloc(void * pUserData, void * pOriginal, size_t size, size_t alignment, VkSystemAllocationScope allocationScope)
 {
     (void)allocationScope;
     if (size == 0)
@@ -39,7 +39,7 @@ void * VKAPI_PTR SDL_VK_realloc(void * pUserData, void * pOriginal, size_t size,
     return newBlock->memory;
 }
 
-void VKAPI_PTR SDL_VK_free(void * pUserData, void * pMemory)
+void SDL_VK_free(void * pUserData, void * pMemory)
 {
     if (pMemory) SDL_aligned_free(BYTE_OFFSET(pMemory, -sizeof(SDL_AllocatedBlock)));
 }

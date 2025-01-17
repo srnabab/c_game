@@ -1,8 +1,8 @@
 #include "SDL3/SDL_log.h"
 #include "SDL3/SDL_thread.h"
 #include "SDL3/SDL_mutex.h"
-#include "SDL3/SDL_stdinc.h"
 #include "SDL3/SDL_timer.h"
+
 #include "G_file/G_file.h"
 #include "G_log.h"
 #include "G_graphic.h"

@@ -1,12 +1,12 @@
-#include "G_begin_code.h"
 #include "G_constants.h"
-#include "SDL3/SDL_stdinc.h"
+
 #include "vk_code_h/vk_descriptorPool.h"
 #include "vk_code_h/vk_judge.h"
-#include "vk_struct.h"
+#include "vk_code_h/vk_struct.h"
+
 #include "G_log.h"
 
-void addDescriptorSetLayout(VkDevice * pDevice, uint32_t bindingCount, VkDescriptorSetLayoutBinding * pBindings, uint32_t set, VkDescriptorSetLayout ** ppDescriptorSetLayout)
+void addDescriptorSetLayout(VkDevice * pDevice, Uint32 bindingCount, VkDescriptorSetLayoutBinding * pBindings, Uint32 set, VkDescriptorSetLayout ** ppDescriptorSetLayout)
 {
     // FuncCode code = createDescriptorSetLayoutF;
 
@@ -21,13 +21,13 @@ void addDescriptorSetLayout(VkDevice * pDevice, uint32_t bindingCount, VkDescrip
 
     resultVulkan(vkCreateDescriptorSetLayout(*pDevice, &layoutInfo, NULL, &(*ppDescriptorSetLayout)[set]), createDescriptorSetLayoutF, 0);
 }
-void setDescriptorSetLayoutBinding(VkDescriptorType descriptorType, VkShaderStageFlags stage, uint32_t descriptorCount, uint32_t binding, uint32_t * pBindingCount, VkDescriptorSetLayoutBinding ** ppDescriptorSetLayoutBinding)
+void setDescriptorSetLayoutBinding(VkDescriptorType descriptorType, VkShaderStageFlags stage, Uint32 descriptorCount, Uint32 binding, Uint32 * pBindingCount, VkDescriptorSetLayoutBinding ** ppDescriptorSetLayoutBinding)
 {
     (*pBindingCount)++;
 
     (*ppDescriptorSetLayoutBinding) = (VkDescriptorSetLayoutBinding *)SDL_realloc(*ppDescriptorSetLayoutBinding, *pBindingCount * sizeof(VkDescriptorSetLayoutBinding));
 
-    uint32_t index = *pBindingCount - 1;
+    Uint32 index = *pBindingCount - 1;
     (*ppDescriptorSetLayoutBinding)[index].binding = binding;
     (*ppDescriptorSetLayoutBinding)[index].descriptorType = descriptorType;
     (*ppDescriptorSetLayoutBinding)[index].descriptorCount = descriptorCount;
@@ -36,7 +36,7 @@ void setDescriptorSetLayoutBinding(VkDescriptorType descriptorType, VkShaderStag
 
     logMessage("binding: %u", binding);
 }
-void createDescriptorPool(VkDevice * pDevice, uint32_t poolSizeCount, VkDescriptorPoolSize * pPoolSizes, uint32_t maxSets, VkDescriptorPool * pDescriptorPool)
+void createDescriptorPool(VkDevice * pDevice, Uint32 poolSizeCount, VkDescriptorPoolSize * pPoolSizes, Uint32 maxSets, VkDescriptorPool * pDescriptorPool)
 {
     FuncCode code = createDescriptorPoolF;
 
@@ -50,18 +50,18 @@ void createDescriptorPool(VkDevice * pDevice, uint32_t poolSizeCount, VkDescript
 
     resultVulkan(vkCreateDescriptorPool(*pDevice, &poolInfo, NULL, pDescriptorPool), code, 0);
 }
-void setDescriptorPoolSize(VkDescriptorType type, uint32_t descriptorCount, uint32_t * pPoolCount, VkDescriptorPoolSize ** ppPoolSize)
+void setDescriptorPoolSize(VkDescriptorType type, Uint32 descriptorCount, Uint32 * pPoolCount, VkDescriptorPoolSize ** ppPoolSize)
 {
     (*pPoolCount)++;
     (*ppPoolSize) = (VkDescriptorPoolSize *)SDL_realloc(*ppPoolSize, *pPoolCount * sizeof(VkDescriptorPoolSize));
 
-    uint32_t index = *pPoolCount - 1;
+    Uint32 index = *pPoolCount - 1;
     (*ppPoolSize)[index].type = type;
     (*ppPoolSize)[index].descriptorCount = descriptorCount;
 }
-void modifyPoolSizeDescriptorCount(VkDescriptorType type, uint32_t addDescriptorCount, uint32_t poolCount, VkDescriptorPoolSize ** ppPoolSize)
+void modifyPoolSizeDescriptorCount(VkDescriptorType type, Uint32 addDescriptorCount, Uint32 poolCount, VkDescriptorPoolSize ** ppPoolSize)
 {
-    for (uint32_t i = 0;i < poolCount;i++)
+    for (Uint32 i = 0;i < poolCount;i++)
     {
         if ((*ppPoolSize)[i].type == type)
         {
@@ -83,7 +83,7 @@ void createGraphicDescriptorSets(VkDevice * pDevice, VkBuffer ** ppUniformBuffer
     VkDescriptorSetAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.pNext = NULL;
-    allocInfo.descriptorSetCount = (uint32_t)MAX_FRAMES_IN_FLIGHT;
+    allocInfo.descriptorSetCount = (Uint32)MAX_FRAMES_IN_FLIGHT;
     allocInfo.descriptorPool = *pDescriptorPool;
     allocInfo.pSetLayouts = layouts;
 
@@ -144,7 +144,7 @@ void createParticleDescriptorSets(VkDevice * pDevice, VkBuffer ** ppUniformBuffe
     VkDescriptorSetAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.pNext = NULL;
-    allocInfo.descriptorSetCount = (uint32_t)MAX_FRAMES_IN_FLIGHT;
+    allocInfo.descriptorSetCount = (Uint32)MAX_FRAMES_IN_FLIGHT;
     allocInfo.descriptorPool = *pDescriptorPool;
     allocInfo.pSetLayouts = layouts;
 
@@ -186,7 +186,7 @@ void createComputeDescriptorSets(VkDevice * pDevice, VkBuffer ** ppUniformBuffer
     VkDescriptorSetAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.pNext = NULL;
-    allocInfo.descriptorSetCount = (uint32_t)2;
+    allocInfo.descriptorSetCount = (Uint32)2;
     allocInfo.descriptorPool = *pDescriptorPool;
     allocInfo.pSetLayouts = layouts;
 

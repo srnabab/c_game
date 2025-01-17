@@ -1,6 +1,5 @@
 #include "G_file/path_compare.h"
 
-#include "SDL3/SDL_stdinc.h"
 PathType pathCompare(char * buffer)
 {
     if ((SDL_strcmp(buffer, "[Font1]") == 0))

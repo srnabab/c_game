@@ -1,5 +1,4 @@
 #include "textureG/textureG.h"
-#include "SDL3/SDL_stdinc.h"
 #include "SDL3/SDL_log.h"
 
 int main(int argc, char * argv[])

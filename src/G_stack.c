@@ -1,7 +1,4 @@
 #include "G_stack.h"
-#include "SDL3/SDL_stdinc.h"
-#include <stdlib.h>
-#include <stdint.h>
 
 static bool push_i8(EmptyStack * stack, void * data)
 {

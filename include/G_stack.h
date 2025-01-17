@@ -3,6 +3,8 @@
 #ifndef STACK_H
 #define STACK_H 1
 
+#include "SDL3/SDL_begin_code.h"
+
 #define MAX_STACKS 128
 
 typedef enum _DataType
@@ -31,9 +33,11 @@ typedef struct _EmptyStack
  * \param pushFn custome push func , NULL form empty
  * \param popFn custome pop func , NULL form empty
 */
-bool initStack(EmptyStack * stack, DataType type, void * data, Push pushFn, Pop popFn);
-bool isEmpty(EmptyStack stack);
-bool isFull(EmptyStack stack);
-bool deInitStack(EmptyStack * stack);
+extern bool SDLCALL initStack(EmptyStack * stack, DataType type, void * data, Push pushFn, Pop popFn);
+extern bool SDLCALL isEmpty(EmptyStack stack);
+extern bool SDLCALL isFull(EmptyStack stack);
+extern bool SDLCALL deInitStack(EmptyStack * stack);
+
+#include "SDL3/SDL_close_code.h"
 
 #endif

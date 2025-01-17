@@ -1,6 +1,5 @@
-#include "SDL3/SDL_stdinc.h"
-#include "vk_move.h"
-#include "vk_buffer.h"
+#include "vk_code_h/vk_move.h"
+#include "vk_code_h/vk_buffer.h"
 
 void initializeMovingBuffer(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkBuffer * pMoveBuffer, VkDeviceMemory * pMoveBufferMemory, void ** ppMovingBufferMapped, Vertex * vertices, uint32_t verticesCount)
 {

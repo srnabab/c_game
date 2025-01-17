@@ -1,13 +1,16 @@
+#include "SDL3/SDL_stdinc.h"
 #include "vulkan/vulkan.h"
 #include "cglm/cglm.h"
 
 #ifndef VK_STRUCT_H
 #define VK_STRUCT_H 1
 
+#include "SDL3/SDL_begin_code.h"
+
 typedef struct _QueueFamily
 {
-    uint32_t familyIndice;
-    uint32_t queueCount;
+    Uint32 familyIndice;
+    Uint32 queueCount;
 } QueueFamily;
 
 typedef struct _QueueFamilyIndices{
@@ -75,7 +78,7 @@ typedef struct _Recreate
     VkSwapchainKHR * pSwapchain;
     VkCommandPool * pSwapchainCommandPool;
 
-    uint32_t * imageCount;
+    Uint32 * imageCount;
     VkImage ** ppSwapchainImages;
     VkImageView ** ppSwapchainImageViews;
 
@@ -123,13 +126,13 @@ typedef struct _VK_ALL
     
     VkBuffer * pVertexBuffer;
     Vertex ** ppVertices;
-    uint32_t * pVerticesCount;
+    Uint32 * pVerticesCount;
     VkDeviceMemory * pVertexBufferMem;
     void ** ppVertexBufferMemMapped;
 
     VkBuffer * pIndexBuffer;
-    uint16_t ** ppIndices;
-    uint32_t * pIndicesCount;
+    Uint16 ** ppIndices;
+    Uint32 * pIndicesCount;
     VkDeviceMemory * pIndexBufferMem;
     void ** ppIndexBufferMemMapped;
 
@@ -162,7 +165,7 @@ typedef struct _VK_ALL
 
     VkFence ** ppComputeInFlightFence;
 
-    uint32_t * pCurrentFrame;
+    Uint32 * pCurrentFrame;
 
     float * pCamera_X;
     float * pCamera_Y;
@@ -172,5 +175,7 @@ typedef struct _VK_ALL
 
     ImageRotate * pImageRotate;
 } VK_ALL;
+
+#include "SDL3/SDL_close_code.h"
 
 #endif

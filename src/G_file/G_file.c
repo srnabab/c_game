@@ -1,7 +1,8 @@
+#include "G_constants.h"
+
 #include "G_file/G_file.h"
 #include "G_log.h"
-#include "std_c.h"
-#include "SDL3/SDL_stdinc.h"
+
 #include "SDL3/SDL_iostream.h"
 #include "SDL3/SDL_log.h"
 #include "SDL3/SDL_thread.h"

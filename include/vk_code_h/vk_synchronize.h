@@ -1,10 +1,14 @@
-#include "G_begin_code.h"
+#include "SDL3/SDL_stdinc.h"
 #include "vulkan/vulkan.h"
 
 #ifndef VK_SYNCHRONIZE_H
 #define VK_SYNCHRONIZE_H 1
 
-void createSemaphore(VkDevice * pDevice, VkSemaphore ** pSemaphore);
-void createFence(VkDevice * pDevice, VkFence ** pFence);
+#include "SDL3/SDL_begin_code.h"
+
+extern void SDLCALL createSemaphore(VkDevice * pDevice, VkSemaphore ** pSemaphore);
+extern void SDLCALL createFence(VkDevice * pDevice, VkFence ** pFence);
+
+#include "SDL3/SDL_close_code.h"
 
 #endif

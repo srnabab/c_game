@@ -1,4 +1,4 @@
-#include "G_begin_code.h"
+#include "G_constants.h"
 #include "sqlite3/sqlite3_alloc_func.h"
 #include "SDL3/SDL_filesystem.h"
 #include "SDL3/SDL_log.h"
@@ -9,8 +9,8 @@ struct _DB_Path
 {
     sqlite3 * db;
     char * A_path;
-    uint16_t R_Begin;
-    uint16_t LenGetId;
+    Uint16 R_Begin;
+    Uint16 LenGetId;
 };
 typedef struct _DB_Path DB_Path;
 
@@ -100,7 +100,7 @@ void insertNode_2(sqlite3 *db, const char * alias, const char * name)
     }
     sqlite3_finalize(stmt);
 }
-void insertNode(sqlite3 *db, const char *name, int parentID, int64_t timeStamp, int type) 
+void insertNode(sqlite3 *db, const char *name, int parentID, Sint64 timeStamp, int type) 
 {
     static const char *insertSQL = "INSERT INTO ContentPath (Name, ParentID, ModifiedTime, TYPE) VALUES (?, ?, ?, ?);";
     static const char *insertSQL_ID = "INSERT INTO ContentPath (ID, Name, ParentID, ModifiedTime, TYPE) VALUES (?, ?, ?, ?, ?);";
@@ -272,12 +272,12 @@ int getParentID(sqlite3 *db, const int ID)
 
     return rc;
 }
-int64_t getModifyTime(sqlite3 * db, const int ID)
+Sint64 getModifyTime(sqlite3 * db, const int ID)
 {
     const char * SQL = "SELECT ModifiedTime FROM ContentPath WHERE ID = ?";
     sqlite3_stmt * stmt;
     int rc = 0;
-    int64_t timeStamp = 0;
+    Sint64 timeStamp = 0;
 
     if (sqlite3_prepare_v2(db, SQL, -1, &stmt, NULL) != SQLITE_OK) 
     {
@@ -368,7 +368,7 @@ char * getName(sqlite3 * db, const int ID)
     sqlite3_finalize(stmt);
     return name;
 }
-void updateModifyTime(sqlite3 * db, int64_t timeStamp, const int ID)
+void updateModifyTime(sqlite3 * db, Sint64 timeStamp, const int ID)
 {
     const char * SQL = "UPDATE ContentPath SET ModifiedTime = ? WHERE ID = ?";
     sqlite3_stmt * stmt;
@@ -680,7 +680,7 @@ int main(int argc, char * argv[])
 
     DB_Path pack = {0};
 
-    pack.R_Begin = (uint16_t)PathBeginLocation;
+    pack.R_Begin = (Uint16)PathBeginLocation;
     pack.LenGetId = pack.R_Begin;
 
     pack.db = db;

@@ -1,5 +1,5 @@
-#include "vk_image.h"
-#include "vk_buffer.h"
+#include "vk_code_h/vk_image.h"
+#include "vk_code_h/vk_buffer.h"
 
 VkResult createImage(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage * pImage, VkDeviceMemory * pImageMem)
 {

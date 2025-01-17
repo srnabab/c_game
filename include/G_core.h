@@ -1,4 +1,4 @@
-//useful common structs, functions and headers for the others
+//useless
 #ifndef G_CORE_H
 #define G_CORE_H 1
 

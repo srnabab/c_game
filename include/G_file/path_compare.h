@@ -1,4 +1,4 @@
-#include "G_begin_code.h"
+#include "SDL3/SDL_stdinc.h"
 
 #ifndef G_PATH_COMPARE_H
 #define G_PATH_COMPARE_H 1
@@ -38,6 +38,6 @@ typedef enum _PathType
     TextRectangle1Png,
 } PathType;
 
-extern PathType G_CALL pathCompare(char * buffer);
+extern PathType SDLCALL pathCompare(char * buffer);
 
 #endif

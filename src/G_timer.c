@@ -1,7 +1,7 @@
-#include "std_c.h"
 #include "G_timer.h"
 #include "G_log.h"
-#include "SDL3/SDL.h"
+
+#include "SDL3/SDL_mutex.h"
 
 typedef struct _Timer
 {

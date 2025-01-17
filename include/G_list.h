@@ -3,6 +3,8 @@
 #ifndef LIST_H
 #define LIST_H 1
 
+#include "SDL3/SDL_begin_code.h"
+
 typedef struct _Node
 {
     void * data;
@@ -15,10 +17,12 @@ typedef struct _List
     bool (*compareFn)(void *, void *);
 } List;
 
-void initList(List list, bool (*compareFn)(void *, void *));
-bool insertNodeEnd(List list, void * data);
-Node * searchPreNode(List list, void * data);
-bool deleteNode(List list, void * data);
-Node * toEnd(List list);
+extern void SDLCALL initList(List list, bool (*compareFn)(void *, void *));
+extern bool SDLCALL insertNodeEnd(List list, void * data);
+extern Node* SDLCALL searchPreNode(List list, void * data);
+extern bool SDLCALL deleteNode(List list, void * data);
+extern Node* SDLCALL toEnd(List list);
+
+#include "SDL3/SDL_close_code.h"
 
 #endif

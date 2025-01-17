@@ -1,10 +1,11 @@
-#include "cglm/cglm.h"
 #include "vk_struct.h"
 
 #ifndef G_CUSTOM_CGLM_H
 #define G_CUSTOM_CHLM_H 1
 
-CGLM_INLINE void glm_ortho_vulkan(float left, float right, float bottom, float top, float nearZ, float farZ, mat4 dest)
+#include "SDL3/SDL_begin_code.h"
+
+CGLM_INLINE void SDLCALL glm_ortho_vulkan(float left, float right, float bottom, float top, float nearZ, float farZ, mat4 dest)
 {
     float rl, tb, fn;
 
@@ -22,9 +23,9 @@ CGLM_INLINE void glm_ortho_vulkan(float left, float right, float bottom, float t
     dest[3][2] = (farZ + nearZ) * fn;  // 修改：适配 Vulkan 深度范围
     dest[3][3] = 1.0f;
 }
-CGLM_INLINE void glm_scale_self(Vertex ** ppVertices, float scale, uint32_t pictureSequence)
+CGLM_INLINE void SDLCALL glm_scale_self(Vertex ** ppVertices, float scale, Uint32 pictureSequence)
 {
-    uint32_t index = pictureSequence * 4;
+    Uint32 index = pictureSequence * 4;
 
     float actural_scale = scale - 1.0f;
 
@@ -41,9 +42,9 @@ CGLM_INLINE void glm_scale_self(Vertex ** ppVertices, float scale, uint32_t pict
     (*ppVertices)[index + 2].pos[0] += half_width_scaled;
     (*ppVertices)[index + 1].pos[0] += half_width_scaled;
 }
-CGLM_INLINE void fix_ratio(Vertex ** ppVertices, VkExtent2D oldExtent2D, VkExtent2D extent2D, uint32_t pictureSequence)
+CGLM_INLINE void fix_ratio(Vertex ** ppVertices, VkExtent2D oldExtent2D, VkExtent2D extent2D, Uint32 pictureSequence)
 {
-    uint32_t index = pictureSequence * 4;
+    Uint32 index = pictureSequence * 4;
 
     float scale = extent2D.width / (float)oldExtent2D.width;
 
@@ -59,5 +60,7 @@ CGLM_INLINE void fix_ratio(Vertex ** ppVertices, VkExtent2D oldExtent2D, VkExten
     (*ppVertices)[index + 3].pos[0] *= aspect_width;
     (*ppVertices)[index + 3].pos[1] *= aspect_height;
 }
+
+#include "SDL3/SDL_close_code.h"
 
 #endif

@@ -1,8 +1,10 @@
-#include "G_begin_code.h"
+#include "SDL3/SDL_stdinc.h"
 #include "cglm/vec2.h"
 
 #ifndef TEXTUREG_H
 #define TEXTUREG_H 1
+
+#include "SDL3/SDL_begin_code.h"
 
 #define MAX_2D_SIZE 16383
 
@@ -12,22 +14,15 @@
 typedef struct _HASH
 {
     vec2 uv[4];
-    uint32_t utf32;
+    Uint32 utf32;
 } Hash;
 
-extern G_DECLSPEC G_NODISCARD uint32_t G_CALL hash_func1(uint32_t utf32);
-extern G_DECLSPEC G_NODISCARD uint32_t G_CALL hash_func2(uint32_t utf32);
+extern SDL_DECLSPEC SDL_NODISCARD Uint32 SDLCALL hash_func1(Uint32 utf32);
+extern SDL_DECLSPEC SDL_NODISCARD Uint32 SDLCALL hash_func2(Uint32 utf32);
 
-extern G_DECLSPEC G_NODISCARD int G_CALL find_value(Hash * hash, uint32_t utf32);
-extern G_DECLSPEC int G_CALL textureGenerate(const char* fontPath, const char* hashTablePath, const char* pngSavePath, int8_t channels, int fontSize, int* failed);
-/*unused*/
-// static long getFileSize(FILE * fp)
-// {
-//     fseek(fp, 0, SEEK_END);
-//     long size = ftell(fp);
-//     rewind(fp);
+extern SDL_DECLSPEC SDL_NODISCARD int SDLCALL find_value(Hash * hash, Uint32 utf32);
+extern SDL_DECLSPEC int SDLCALL textureGenerate(const char* fontPath, const char* hashTablePath, const char* pngSavePath, Sint8 channels, int fontSize, int* failed);
 
-//     return size;
-// }
+#include "SDL3/SDL_close_code.h"
 
 #endif

@@ -1,13 +1,17 @@
-#include "G_begin_code.h"
+#include "SDL3/SDL_stdinc.h"
 #include "vulkan/vulkan.h"
 
 #ifndef VK_VERTEXBUFFER_H
 #define VK_VERTEXBUFFER_H 1
 
-VkResult G_CALL createBuffer(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkBuffer * pBuffer, VkDeviceMemory * pBufferMemory, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
-VkResult G_CALL beginSingleTimeCommands(VkDevice * pDevice, VkCommandPool * pCommandPool, VkCommandBuffer * pCommandBuffer);
-VkResult G_CALL endSingleTimeCommands(VkDevice * pDevice, VkCommandPool * pCommandPool, VkQueue * pGraphicsQueue, VkCommandBuffer * pCommandBuffer);
-VkResult G_CALL copyBuffer(VkBuffer * pSrcBuffer, VkBuffer * pDstBuffer, VkDeviceSize size, VkDevice * pDevice, VkCommandPool * pCommandPool, VkQueue * pGraphicQueue);
-int G_CALL findMemoryType(VkPhysicalDevice * pPhysicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties);
+#include "SDL3/SDL_begin_code.h"
+
+extern VkResult SDLCALL createBuffer(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkBuffer * pBuffer, VkDeviceMemory * pBufferMemory, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
+extern VkResult SDLCALL beginSingleTimeCommands(VkDevice * pDevice, VkCommandPool * pCommandPool, VkCommandBuffer * pCommandBuffer);
+extern VkResult SDLCALL endSingleTimeCommands(VkDevice * pDevice, VkCommandPool * pCommandPool, VkQueue * pGraphicsQueue, VkCommandBuffer * pCommandBuffer);
+extern VkResult SDLCALL copyBuffer(VkBuffer * pSrcBuffer, VkBuffer * pDstBuffer, VkDeviceSize size, VkDevice * pDevice, VkCommandPool * pCommandPool, VkQueue * pGraphicQueue);
+extern int SDLCALL findMemoryType(VkPhysicalDevice * pPhysicalDevice, Uint32 typeFilter, VkMemoryPropertyFlags properties);
+
+#include "SDL3/SDL_close_code.h"
 
 #endif

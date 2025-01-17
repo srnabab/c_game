@@ -1,6 +1,7 @@
-#include "G_core.h"
 #include "vk_code_h/vk_judge.h"
-#include "vulkan_code.h"
+#include "vk_code_h/vk_recreate.h"
+#include <stdlib.h>
+#include "G_log.h"
 
 extern Recreate recreateSwap;
 

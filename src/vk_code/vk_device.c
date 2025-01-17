@@ -1,13 +1,13 @@
 #include "vk_code_h/vk_device.h"
 #include "vk_code_h/vk_judge.h"
-#include "SDL3/SDL_stdinc.h"
+
 #include "G_pop_window.h"
 #include "G_log.h"
 
 void pickPhysicalDevice(VkInstance * pInstance, VkPhysicalDevice * pPhysicalDevice)
 {
 	FuncCode code = pickPhysicalDeviceF;
-    uint32_t deviceCount = 0;
+    Uint32 deviceCount = 0;
     resultVulkan(vkEnumeratePhysicalDevices(*pInstance, &deviceCount, NULL), code, 0);
 
     if (deviceCount == 0)
@@ -33,10 +33,10 @@ void pickPhysicalDevice(VkInstance * pInstance, VkPhysicalDevice * pPhysicalDevi
         SDL_free(devices);
     }
 }
-uint64_t getPhysicalDeviceTotalMemory(VkPhysicalDeviceMemoryProperties *pPhysicalDeviceMemoryProperties)
+Uint64 getPhysicalDeviceTotalMemory(VkPhysicalDeviceMemoryProperties *pPhysicalDeviceMemoryProperties)
 {
-	uint64_t physicalDeviceTotalMemory = 0;
-	for(uint32_t i = 0; i < pPhysicalDeviceMemoryProperties->memoryHeapCount; i++)
+	Uint64 physicalDeviceTotalMemory = 0;
+	for(Uint32 i = 0; i < pPhysicalDeviceMemoryProperties->memoryHeapCount; i++)
 	{
 		if((pPhysicalDeviceMemoryProperties->memoryHeaps[i].flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) != 0)
 		{
@@ -46,12 +46,12 @@ uint64_t getPhysicalDeviceTotalMemory(VkPhysicalDeviceMemoryProperties *pPhysica
 	logMessage("device memory: %llu", physicalDeviceTotalMemory);
 	return physicalDeviceTotalMemory;
 }
-static bool requiredExtensionSupportedCheck(uint32_t extensionCount, char ** extension, uint32_t physicalDeviceExtensionCount, VkExtensionProperties * pExtensionProperties)
+static bool requiredExtensionSupportedCheck(Uint32 extensionCount, char ** extension, Uint32 physicalDeviceExtensionCount, VkExtensionProperties * pExtensionProperties)
 {
-    uint32_t count = -1;//u32 overflow
-    for (uint32_t i = 0;i < extensionCount;i++)
+    Uint32 count = -1;//u32 overflow
+    for (Uint32 i = 0;i < extensionCount;i++)
     {
-        for (uint32_t q = 0;q < physicalDeviceExtensionCount;q++)
+        for (Uint32 q = 0;q < physicalDeviceExtensionCount;q++)
         {
             if (SDL_strcmp(extension[i], pExtensionProperties[q].extensionName) == 0)
             {
@@ -74,22 +74,22 @@ static bool requiredExtensionSupportedCheck(uint32_t extensionCount, char ** ext
 
     return true;
 }
-int getBestPhysicalDeviceIndex(VkPhysicalDevice *pPhysicalDevices, uint32_t physicalDeviceNumber)
+int getBestPhysicalDeviceIndex(VkPhysicalDevice *pPhysicalDevices, Uint32 physicalDeviceNumber)
 {
 	VkPhysicalDeviceProperties *physicalDeviceProperties = (VkPhysicalDeviceProperties *)SDL_malloc(physicalDeviceNumber * sizeof(VkPhysicalDeviceProperties));
 	VkPhysicalDeviceMemoryProperties *physicalDeviceMemoryProperties = (VkPhysicalDeviceMemoryProperties *)SDL_malloc(physicalDeviceNumber * sizeof(VkPhysicalDeviceMemoryProperties));
 
 	int index = -1;
-    uint64_t bestMemory = 0;
+    Uint64 bestMemory = 0;
 
-    const uint32_t requiredDeviceExtensionCount = 1;
+    const Uint32 requiredDeviceExtensionCount = 1;
     const char * requiredDeviceExtensions[1] = {
         "VK_KHR_swapchain",
     };
 
-	for(uint32_t i = 0; i < physicalDeviceNumber; i++)
+	for(Uint32 i = 0; i < physicalDeviceNumber; i++)
 	{
-        uint32_t physicalDeviceExtensionCount = 0;
+        Uint32 physicalDeviceExtensionCount = 0;
         vkEnumerateDeviceExtensionProperties(pPhysicalDevices[i], NULL, &physicalDeviceExtensionCount, NULL);
         VkExtensionProperties * physicalDeviceExtension = (VkExtensionProperties*)SDL_malloc(physicalDeviceExtensionCount * sizeof(VkExtensionProperties));
         vkEnumerateDeviceExtensionProperties(pPhysicalDevices[i], NULL, &physicalDeviceExtensionCount, physicalDeviceExtension);
@@ -118,7 +118,7 @@ int getBestPhysicalDeviceIndex(VkPhysicalDevice *pPhysicalDevices, uint32_t phys
             }
             else if (physicalDeviceProperties[index].deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
             {
-                uint64_t memoryTemp = getPhysicalDeviceTotalMemory(&physicalDeviceMemoryProperties[i]);
+                Uint64 memoryTemp = getPhysicalDeviceTotalMemory(&physicalDeviceMemoryProperties[i]);
                 if (bestMemory < memoryTemp)
                 {
                     index = i;
@@ -135,7 +135,7 @@ int getBestPhysicalDeviceIndex(VkPhysicalDevice *pPhysicalDevices, uint32_t phys
             }
             else if (physicalDeviceProperties[index].deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU)
             {
-                uint64_t memoryTemp = getPhysicalDeviceTotalMemory(&physicalDeviceMemoryProperties[i]);
+                Uint64 memoryTemp = getPhysicalDeviceTotalMemory(&physicalDeviceMemoryProperties[i]);
                 if (bestMemory < memoryTemp)
                 {
                     index = i;
@@ -148,10 +148,10 @@ int getBestPhysicalDeviceIndex(VkPhysicalDevice *pPhysicalDevices, uint32_t phys
             }
 		}
 
-		uint32_t apiVersion = physicalDeviceProperties[i].apiVersion;
+		Uint32 apiVersion = physicalDeviceProperties[i].apiVersion;
 		logMessage("apiVersion: %u.%u.%u", VK_API_VERSION_MAJOR(apiVersion), VK_API_VERSION_MINOR(apiVersion), VK_API_VERSION_PATCH(apiVersion));
 
-		uint32_t driverVersion = physicalDeviceProperties[i].driverVersion;
+		Uint32 driverVersion = physicalDeviceProperties[i].driverVersion;
 		logMessage("driverVersion: %u.%u", (driverVersion >> 14) & 0x3FF, driverVersion & 0x3FFF);
 
 		logMessage("vendor Id: %x", physicalDeviceProperties[i].vendorID);
@@ -181,14 +181,14 @@ int getBestPhysicalDeviceIndex(VkPhysicalDevice *pPhysicalDevices, uint32_t phys
 
 	return index;
 }
-static bool * extensionSupportedCheck_Optional(uint32_t neededExtensionCount, char ** neededExtensions, uint32_t extensionCount, VkExtensionProperties * pExtensionProperties)
+static bool * extensionSupportedCheck_Optional(Uint32 neededExtensionCount, char ** neededExtensions, Uint32 extensionCount, VkExtensionProperties * pExtensionProperties)
 {
-    uint32_t count = -1;//u32 overflow
+    Uint32 count = -1;//u32 overflow
     bool * group = (bool*)SDL_malloc(sizeof(bool) * neededExtensionCount);
-    for (uint32_t i = 0;i < neededExtensionCount;i++)
+    for (Uint32 i = 0;i < neededExtensionCount;i++)
     {
         group[i] = false;
-        for (uint32_t q = 0;q < extensionCount;q++)
+        for (Uint32 q = 0;q < extensionCount;q++)
         {
             if (SDL_strcmp(neededExtensions[i], pExtensionProperties[q].extensionName) == 0)
             {
@@ -202,9 +202,9 @@ static bool * extensionSupportedCheck_Optional(uint32_t neededExtensionCount, ch
 
     return group;
 }
-static uint32_t configureQueueCreateInfo(VkDeviceQueueCreateInfo * pCreateInfo, QueueFamily * indices, float * pQueuePriority)
+static Uint32 configureQueueCreateInfo(VkDeviceQueueCreateInfo * pCreateInfo, QueueFamily * indices, float * pQueuePriority)
 {
-    uint32_t queueFamilyCount = 0;
+    Uint32 queueFamilyCount = 0;
     if ((indices[1].familyIndice != indices[0].familyIndice) || (indices[2].familyIndice != indices[1].familyIndice))
     {
         if (indices[1].familyIndice == indices[0].familyIndice)
@@ -291,11 +291,11 @@ void createLogicalDevice(VkPhysicalDevice * pPhysicalDevice, QueueFamilyIndices 
         cleanup(code);
     }
     
-    const uint32_t requiredDeviceExtensionCount = 1;
+    const Uint32 requiredDeviceExtensionCount = 1;
     const char * requiredDeviceExtensions[1] = {
         "VK_KHR_swapchain",
     };
-    uint32_t optionalDeviceExtensionCount = 9;
+    Uint32 optionalDeviceExtensionCount = 9;
     const char * vmaExtension[9] = {
         "VK_KHR_dedicated_allocation",
         "VK_KHR_bind_memory2",
@@ -308,7 +308,7 @@ void createLogicalDevice(VkPhysicalDevice * pPhysicalDevice, QueueFamilyIndices 
         "VK_KHR_external_memory_win32",
     };
 
-    uint32_t physicalDeviceExtensionCount = 0;
+    Uint32 physicalDeviceExtensionCount = 0;
     vkEnumerateDeviceExtensionProperties(*pPhysicalDevice, NULL, &physicalDeviceExtensionCount, NULL);
     VkExtensionProperties * physicalDeviceExtension = (VkExtensionProperties*)SDL_malloc(physicalDeviceExtensionCount * sizeof(VkExtensionProperties));
     vkEnumerateDeviceExtensionProperties(*pPhysicalDevice, NULL, &physicalDeviceExtensionCount, physicalDeviceExtension);
@@ -317,7 +317,7 @@ void createLogicalDevice(VkPhysicalDevice * pPhysicalDevice, QueueFamilyIndices 
     SDL_free(physicalDeviceExtension);
     char ** enabledExtension = (char**)SDL_malloc(sizeof(char**) * (optionalDeviceExtensionCount + requiredDeviceExtensionCount));
 
-    uint32_t enabledExtensionCount = 0;
+    Uint32 enabledExtensionCount = 0;
     enabledExtension[0] = (char *)requiredDeviceExtensions[0];
     enabledExtensionCount++;
 
@@ -341,9 +341,9 @@ void createLogicalDevice(VkPhysicalDevice * pPhysicalDevice, QueueFamilyIndices 
     VkDeviceQueueCreateInfo queueCreateInfo[3];
 
     float queuePriority = 1.0f;
-    uint32_t queueFamilyCount = configureQueueCreateInfo(queueCreateInfo, indices, &queuePriority);
+    Uint32 queueFamilyCount = configureQueueCreateInfo(queueCreateInfo, indices, &queuePriority);
 
-    uint32_t layersCount = 1;
+    Uint32 layersCount = 1;
     const char * validationLayers[] = {
         "VK_LAYER_KHRONOS_validation"
     };

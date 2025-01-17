@@ -1,10 +1,8 @@
 #include "G_game.h"
 #include "G_graphic.h"
 
-#include "vulkan_code.h"
-
-#include "SDL3/SDL.h"
-#include "SDL3/SDL_vulkan.h"
+#include "vk_code_h/vk_present.h"
+#include "vk_code_h/vk_move.h"
 
 #include "G_custom_math.h"
 

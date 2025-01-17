@@ -1,8 +1,9 @@
-#include "vk_commandPool.h"
-#include "vk_judge.h"
 #include "G_constants.h"
 
-void createCommandPool(VkDevice * pDevice, uint32_t graphicsFamilyIndice, VkCommandPool * pCommandPool)
+#include "vk_code_h/vk_commandPool.h"
+#include "vk_code_h/vk_judge.h"
+
+void createCommandPool(VkDevice * pDevice, Uint32 graphicsFamilyIndice, VkCommandPool * pCommandPool)
 {
     FuncCode code = createCommandPoolF;
 

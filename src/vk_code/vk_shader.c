@@ -1,8 +1,11 @@
-#include "vk_shader.h"
-#include "vk_judge.h"
+#include "vk_code_h/vk_shader.h"
+#include "vk_code_h/vk_judge.h"
+
 #include "SDL3/SDL_iostream.h"
+
 #include "G_file/G_file.h"
 #include "G_log.h"
+
 #include <stdlib.h>
 
 void createShaderModule(VkDevice * pDevice, PathType type, VkShaderModule * pShaderModule)
