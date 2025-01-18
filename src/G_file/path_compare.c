@@ -122,6 +122,14 @@ PathType pathCompare(char * buffer)
     {
         return TextRectangle1Png;
     }
+    else if ((SDL_strcmp(buffer, "[StartFragShader]") == 0))
+    {
+        return StartFragShader;
+    }
+    else if ((SDL_strcmp(buffer, "[StartVertShader]") == 0))
+    {
+        return StartVertShader;
+    }
 
     return None;
 }

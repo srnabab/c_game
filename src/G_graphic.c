@@ -192,19 +192,40 @@ static VkFormat depthFormat = 0;
 
 static VkFramebuffer * swapchainFramebuffer = NULL;
 
-// static VkFramebuffer * particleFramebuffer = NULL;
-
+//circle.png
 static VkImage texturesImage = NULL;
 static VkDeviceMemory textureImageMem = NULL;
 static VkImageView textureImageView = NULL;
 
+//loading1.png
 static VkImage loadingImage = NULL;
 static VkDeviceMemory loadingImageMem = NULL;
 static VkImageView loadingImageView = NULL;
 
+//MainFont.png
 static VkImage textImage = NULL;
 static VkDeviceMemory textImageMem = NULL;
 static VkImageView textImageView = NULL;
+
+//start.png
+static VkImage startImage = NULL;
+static VkDeviceMemory startImageMem = NULL;
+static VkImageView startImageView = NULL;
+
+// load.png
+static VkImage loadImage = NULL;
+static VkDeviceMemory loadImageMem = NULL;
+static VkImageView loadImageView = NULL;
+
+// setting.png
+static VkImage settingImage = NULL;
+static VkDeviceMemory settingImageMem = NULL;
+static VkImageView settingImageView = NULL;
+
+// exit.png
+static VkImage exitImage = NULL;
+static VkDeviceMemory exitImageMem = NULL;
+static VkImageView exitImageView = NULL;
 
 static VkSampler textureSampler = NULL;
 
@@ -570,21 +591,23 @@ void initVulkan(void)
     createTextureImage(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, CirclePng, VK_FORMAT_R8G8B8A8_SRGB, &texturesImage, &textureImageMem);
     createTextureImageView(&device, &texturesImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, &textureImageView);
 
-    // loadingImage = (VkImage*)malloc(8 * sizeof(VkImage));
-    // loadingImageView = (VkImageView*)malloc(8 * sizeof(VkImageView));
-    // loadingImageMem = (VkDeviceMemory*)malloc(8 * sizeof(VkDeviceMemory));
-    // for (int i = 0;i < 8;i++)
-    // {
-    //     char loadingPicPath[100];
-    //     strcpy(loadingPicPath, "Textures\\loading1\\loading");
-    //     char tempIndex = i + 49;
-    //     char * tempPath = strcat(strncat(loadingPicPath, &tempIndex, 1), ".png");
     createTextureImage(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, Loading1Png, VK_FORMAT_R8G8B8A8_SRGB, &loadingImage, &loadingImageMem);
     createTextureImageView(&device, &loadingImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, &loadingImageView);
-    //}
 
     createTextureImage(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, MainFontPng, VK_FORMAT_R8_UNORM, &textImage, &textImageMem);
     createTextureImageView(&device, &textImage, VK_FORMAT_R8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, &textImageView);
+
+    // createTextureImage(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, StartPng, VK_FORMAT_R8G8B8A8_SRGB, &startImage, &startImageMem);
+    // createTextureImageView(&device, &startImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, &startImageView);
+
+    // createTextureImage(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, LoadPng, VK_FORMAT_R8G8B8A8_SRGB, &loadImage, &loadImageMem);
+    // createTextureImageView(&device, &loadImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, &loadImageView);
+
+    // createTextureImage(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, SettingPng, VK_FORMAT_R8G8B8A8_SRGB, &settingImage, &settingImageMem);
+    // createTextureImageView(&device, &settingImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, &settingImageView);
+
+    // createTextureImage(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, ExitPng, VK_FORMAT_R8G8B8A8_SRGB, &exitImage, &exitImageMem);
+    // createTextureImageView(&device, &exitImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, &exitImageView);
     
     createTextureSampler(&physicalDevice, &device, &textureSampler);
 
@@ -601,56 +624,24 @@ void initVulkan(void)
 
     verticesCount = 4;
 
-    positionInitialize(-32, -32, 64, 64, extent2D, &vertices, 0);
+    vertexInitialize(-32, -32, 64, 64, 0.0f, false, extent2D, &vertices, 0);
     vertices[0].pos[2] = 0.0f; vertices[1].pos[2] = 0.0f; vertices[2].pos[2] = 0.0f; vertices[3].pos[2] = 0.0f;
     vertices[4].pos[2] = 0.9f; vertices[5].pos[2] = 0.9f; vertices[6].pos[2] = 0.9f; vertices[7].pos[2] = 0.9f;
     vertices[8].pos[2] = 0.9f; vertices[9].pos[2] = 0.9f; vertices[10].pos[2] = 0.9f; vertices[11].pos[2] = 0.9f;
     //positionInitialize(-24, -24, 16, 16, extent2D, &vertices, 1);
 
-    createVertexBuffer(&physicalDevice, &device, &vertexBuffer, &vertexBufferMem, &vertexBufferMemMapped, vertices, BALLCOUNT * 4 + 100 * 4);
+    createVertexBuffer(&physicalDevice, &device, &vertexBuffer, &vertexBufferMem, &vertexBufferMemMapped, vertices, BALLCOUNT * 4 + MAX_CHARACTERS * 4);
 
-    indices_v = (uint16_t *)SDL_calloc(BALLCOUNT * 6 + 100 * 6, sizeof(uint16_t));
-    indices_v[0] = 0; indices_v[1] = 1; indices_v[2] = 2; indices_v[3] = 2; indices_v[4] = 3; indices_v[5] = 0;
-    //indices_v[6] = 4; indices_v[7] = 5; indices_v[8] = 6; indices_v[9] = 6; indices_v[10] = 7; indices_v[11] = 4;
+    indices_v = (uint16_t *)SDL_calloc(BALLCOUNT * 6 + MAX_CHARACTERS * 6, sizeof(uint16_t));
+    indexInitialize(indices_v, BALLCOUNT + MAX_CHARACTERS);
     indicesCount = 6;
 
-    createIndexBuffer(&physicalDevice, &device, &indexBuffer, &indexBufferMem, &indexBufferMemMapped, indices_v, BALLCOUNT * 6 + 100 * 6);
+    createIndexBuffer(&physicalDevice, &device, &indexBuffer, &indexBufferMem, &indexBufferMemMapped, indices_v, BALLCOUNT * 6 + MAX_CHARACTERS * 6);
 
-    for (int i = 0;i < 50;i++)
+
+    for (int i = 0;i < MAX_CHARACTERS;i++)
     {
-        positionInitialize(-300 + i * 24, -100, 24, 24, extent2D, &vertices, i + BALLCOUNT);
-        for (int j = 0;j < 4;j++)
-        {
-            vertices[(i + BALLCOUNT) * 4 + j].texCoord[0] = 0.0f;
-            vertices[(i + BALLCOUNT) * 4 + j].texCoord[1] = 0.0f;
-            vertices[(i + BALLCOUNT) * 4 + j].pos[2] = 0.1f;
-        }
-        int index = (i + BALLCOUNT) * 6;
-        int serial = (i + BALLCOUNT) * 4;
-        indices_v[index] = serial;
-        indices_v[index + 1] = serial + 1;
-        indices_v[index + 2] = serial + 2;
-        indices_v[index + 3] = serial + 2;
-        indices_v[index + 4] = serial + 3;
-        indices_v[index + 5] = serial;
-    }
-    for (int i = 0;i < 50;i++)
-    {
-        positionInitialize(-300 + i * 12, -114, 12, 12, extent2D, &vertices, i + BALLCOUNT + 50);
-        for (int j = 0;j < 4;j++)
-        {
-            vertices[(i + BALLCOUNT + 50) * 4 + j].texCoord[0] = 0.0f;
-            vertices[(i + BALLCOUNT + 50) * 4 + j].texCoord[1] = 0.0f;
-            vertices[(i + BALLCOUNT + 50) * 4 + j].pos[2] = 0.1f;
-        }
-        int index = (i + BALLCOUNT + 50) * 6;
-        int serial = (i + BALLCOUNT + 50) * 4;
-        indices_v[index] = serial;
-        indices_v[index + 1] = serial + 1;
-        indices_v[index + 2] = serial + 2;
-        indices_v[index + 3] = serial + 2;
-        indices_v[index + 4] = serial + 3;
-        indices_v[index + 5] = serial;
+        vertexInitialize(-300 + i * 24, -100, 24, 24, 0.1f, true, extent2D, &vertices, i + BALLCOUNT);
     }
 
     //initializeMovingBuffer(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, &movingStagingBuffer, &movingStagingMemory, &movingBufferMapped, vertices, verticesCount);

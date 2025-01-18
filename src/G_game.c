@@ -99,6 +99,7 @@ void setup(void)
 
 static bool cameraMove[4];
 bool pictureMove[4];
+static bool changeScene = false;
 
 // static bool pause = false;
 // static bool pause_signal_send = false;
@@ -132,12 +133,12 @@ int process_input(void * arg)
 
     if (willPopWindow())
     {
+        preScene = scene;
         scene = Pause_Scene;
-        preScene = First_Scene;
         
         popWindow();
 
-        scene = First_Scene;
+        scene = preScene;
         preScene = Pause_Scene;
         SDL_SignalSemaphore(main_semaphore1);
         SDL_SignalSemaphore(main_semaphore2);
@@ -155,8 +156,9 @@ int process_input(void * arg)
     while(SDL_PollEvent(&event))
     {
         SDL_Keycode key = event.key.key;
-        // logMessage("pressed Key:%u", pressedKey);
         logMessage("preKeyState: %u, keyState: %u, key: %s(%u)", preKeyState, event.type, SDL_GetKeyName(key), key);
+        // logMessage("pressed Key:%u", pressedKey);
+        
         if (event.type == SDL_EVENT_WINDOW_MINIMIZED)
         {
             ;
@@ -166,84 +168,13 @@ int process_input(void * arg)
         {
             SDL_RaiseWindow(window);
         }
-
-        if (event.type == SDL_EVENT_MOUSE_MOTION)
-        {
-            //logMessage("mouse moving: %d", event.type);
-            // logMessage("mouse: (%f, %f)", event.motion.x, event.motion.y);
-        }
-
-        if (event.type == SDL_EVENT_MOUSE_BUTTON_UP)
-        {
-            ;
-        }
-
-        if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
-        {
-            if (leftButtonEnabled && (ballCount < BALLCOUNT))
-            {
-                if (event.button.button == SDL_BUTTON_LEFT)
-                {
-                    leftButtonClickedTimes++;
-                    ballCount++;
-                    ballAdd = true;
-                }
-            }
-        }
-
-        if (event.type == SDL_EVENT_KEY_UP)
-        {
-            if (preKeyState == SDL_EVENT_KEY_DOWN)
-            {
-                if (key == SDLK_Q)
-                {
-                    scale = true;
-                    // logMessage("scale: %d", scale);
-                }
-            }
-            if (key == SDLK_T)
-            {
-                textLine++;
-                textDisplay = true;
-                logMessage("textline: %u", textLine);
-                // pushMessage(SDL_MESSAGEBOX_INFORMATION, "text line", "textline: %u\n", textLine);
-            }
-            if (key == SDLK_RIGHT)
-            {
-                cameraMove[3] = false;
-            }
-            if (key == SDLK_LEFT)
-            {
-                cameraMove[2] = false;
-            }
-            if (key == SDLK_UP)
-            {
-                cameraMove[0] = false;
-            }
-            if (key == SDLK_DOWN)
-            {
-                cameraMove[1] = false;
-            }
-            if (key == SDLK_A)
-            {
-                pictureMove[2] = false;
-            }
-            if (key == SDLK_D)
-            {
-                pictureMove[3] = false;
-            }
-            if (key == SDLK_W)
-            {
-                pictureMove[0] = false;
-            }
-            if (key == SDLK_S)
-            {
-                pictureMove[1] = false;
-            }
-        }
-
+        
         if (event.type == SDL_EVENT_KEY_DOWN)
         {
+            if (event.key.down && !event.key.repeat)
+            {
+                pressedKey++;
+            }
             if (key == SDLK_ESCAPE)
             {
                 Mix_HaltMusic();
@@ -293,63 +224,175 @@ int process_input(void * arg)
             }
             if (key == SDLK_PAUSE)
             {
-                if (scene == First_Scene) 
+                if (scene == Pause_Scene)
                 {
-                    scene = Pause_Scene;
-                    preScene = First_Scene;
-                }
-                else if (scene == Pause_Scene)
-                {
-                    scene = First_Scene;
+                    scene = preScene;
                     preScene = Pause_Scene;
                     SDL_SignalSemaphore(main_semaphore1);
                     SDL_SignalSemaphore(main_semaphore2);
                 }
+                else
+                {
+                    preScene = scene;
+                    scene = Pause_Scene;
+                }
             }
-            if (event.key.down && !event.key.repeat)
+        }
+
+        if (scene == First_Scene)
+        {
+
+            if (event.type == SDL_EVENT_MOUSE_MOTION)
             {
-                pressedKey++;
+                //logMessage("mouse moving: %d", event.type);
+                // logMessage("mouse: (%f, %f)", event.motion.x, event.motion.y);
             }
-            if (key == SDLK_RIGHT)
+
+            if (event.type == SDL_EVENT_MOUSE_BUTTON_UP)
             {
-                cameraMove[3] = true;
+                ;
             }
-            if (key == SDLK_LEFT)
+
+            if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
             {
-                cameraMove[2] = true;
+                if (changeScene)
+                {
+                    preScene = scene;
+                    scene = Menu_Scene;
+                    changeScene = false;
+                }
+                else if (leftButtonEnabled && (ballCount < BALLCOUNT))
+                {
+                    if (event.button.button == SDL_BUTTON_LEFT)
+                    {
+                        leftButtonClickedTimes++;
+                        ballCount++;
+                        ballAdd = true;
+                    }
+                }
             }
-            if (key == SDLK_UP)
+
+            if (event.type == SDL_EVENT_KEY_UP)
             {
-                cameraMove[0] = true;
+                if (preKeyState == SDL_EVENT_KEY_DOWN)
+                {
+                    // if (key == SDLK_Q)
+                    // {
+                    //     scale = true;
+                    //     // logMessage("scale: %d", scale);
+                    // }
+                }
+                if (key == SDLK_T)
+                {
+                    textLine++;
+                    textDisplay = true;
+                    logMessage("textline: %u", textLine);
+                    // pushMessage(SDL_MESSAGEBOX_INFORMATION, "text line", "textline: %u\n", textLine);
+                }
+                if (key == SDLK_RIGHT)
+                {
+                    cameraMove[3] = false;
+                }
+                if (key == SDLK_LEFT)
+                {
+                    cameraMove[2] = false;
+                }
+                if (key == SDLK_UP)
+                {
+                    cameraMove[0] = false;
+                }
+                if (key == SDLK_DOWN)
+                {
+                    cameraMove[1] = false;
+                }
+                if (key == SDLK_A)
+                {
+                    pictureMove[2] = false;
+                }
+                if (key == SDLK_D)
+                {
+                    pictureMove[3] = false;
+                }
+                if (key == SDLK_W)
+                {
+                    pictureMove[0] = false;
+                }
+                if (key == SDLK_S)
+                {
+                    pictureMove[1] = false;
+                }
+                if (key == SDLK_LCTRL)
+                {
+                    changeScene = false;
+                }
             }
-            if (key == SDLK_DOWN)
+
+            if (event.type == SDL_EVENT_KEY_DOWN)
             {
-                cameraMove[1] = true;
+                if (key == SDLK_RIGHT)
+                {
+                    cameraMove[3] = true;
+                }
+                if (key == SDLK_LEFT)
+                {
+                    cameraMove[2] = true;
+                }
+                if (key == SDLK_UP)
+                {
+                    cameraMove[0] = true;
+                }
+                if (key == SDLK_DOWN)
+                {
+                    cameraMove[1] = true;
+                }
+                if (key == SDLK_LCTRL)
+                {
+                    changeScene = true;
+                }
+                // if (key == SDLK_A)
+                // {
+                //     pictureMove[2] = true;
+                // }
+                // if (key == SDLK_D)
+                // {
+                //     pictureMove[3] = true;
+                // }
+                // if (key == SDLK_W)
+                // {
+                //     pictureMove[0] = true;
+                // }
+                // if (key == SDLK_S)
+                // {
+                //     pictureMove[1] = true;
+                // }
             }
-            // if (key == SDLK_A)
-            // {
-            //     pictureMove[2] = true;
-            // }
-            // if (key == SDLK_D)
-            // {
-            //     pictureMove[3] = true;
-            // }
-            // if (key == SDLK_W)
-            // {
-            //     pictureMove[0] = true;
-            // }
-            // if (key == SDLK_S)
-            // {
-            //     pictureMove[1] = true;
-            // }
+        }
+        else if (scene == Menu_Scene)
+        {
+            if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
+            {
+                if (changeScene)
+                {
+                    preScene = scene;
+                    scene = First_Scene;
+                    changeScene = false;
+                }
+            }
+            if (event.type == SDL_EVENT_KEY_DOWN)
+            {
+                if (key == SDLK_LCTRL)
+                {
+                    changeScene = true;
+                }
+            }
         }
 
         switch (event.type)
         {
             case SDL_EVENT_QUIT:
 
+            preScene = scene;
             scene = Pause_Scene;
-            preScene = First_Scene;
 
             SDL_ShowMessageBox(boxData, &buttonId);
 
@@ -361,7 +404,7 @@ int process_input(void * arg)
             }
             else if (buttonId == 1)
             {
-                scene = First_Scene;
+                scene = preScene;
                 preScene = Pause_Scene;
                 SDL_SignalSemaphore(main_semaphore1);
                 SDL_SignalSemaphore(main_semaphore2);
@@ -427,40 +470,12 @@ int update(void * arg)
         totalTime = totalTimeNs / ((float)S_TO_NS);
         
         // Get delta_time factor converted to seconds to be used to update objects
-        if (scene == First_Scene)
+        if (scene == Pause_Scene)
         {
-            accumlateTime(delta_time_ns);
-            // logMessage("TotalTime: %fms", totalTime);
-
-
-            if (!Mix_PlayingMusic() && !playedMusic)
-            {
-                playMusic("test");
-                // pushMessage(SDL_MESSAGEBOX_INFORMATION, "music", "music start\n");
-                Mix_VolumeMusic(0);
-                // pushMessage(SDL_MESSAGEBOX_INFORMATION, "music", "music muted\n");
-                playedMusic = true;
-            }
-
-            if (textDisplay)
-            {
-                uint32_t textLen;
-                if (textLine == 1)
-                    getTextUV("一二三", &textLen);
-                if (textLine == 2)
-                    getTextUV("哈哈哈哈哈哈哈哈哈", &textLen);
-
-                for (uint32_t i = 0;i < textLen;i++)
-                {
-                    for (int x = 0;x < 4;x++)
-                    {
-                        (*allInOne.ppVertices)[8000 + i * 4 + x].texCoord[0] = UVs[i][x][0];
-                        (*allInOne.ppVertices)[8000 + i * 4 + x].texCoord[1] = UVs[i][x][1];
-                    }
-                }
-                textDisplay = false;
-            }
-
+            recovreyPause = true;
+        }
+        else
+        {
             static int id_click = 0;
             if (leftButtonClickedTimes)
             {
@@ -476,12 +491,6 @@ int update(void * arg)
                     SDL_UnlockMutex(sdl_mutex_2);
                 }
             }
-
-            testNum += 2 * delta_time;
-
-            static int id_test = 0;
-            int test_a = -1;
-            addTimerFunc(u32_s_to_ns(1), &id_test, 10, test, &test_a);
 
             if (cameraMove[0])
             {
@@ -501,70 +510,108 @@ int update(void * arg)
                 *pCamera_X -= 0.2f * delta_time;
             }
 
-            // SDL_LockMutex(sdl_mutex_2);
-            // if (pictureMove[0])
-            // {
-            //     *allInOne.pPictureY += 200 * delta_time;
-            //     //logMessage("y: %f, enabled: %d, delta time: %lf, last_frame_time: %lu ----%s", *allInOne.pPictureY, pictureMove[0], delta_time, last_frame_time, timeNow);
-            // }
-            // if (pictureMove[1])
-            // {
-            //     *allInOne.pPictureY -= 200 * delta_time;
-            // }
-            // if (pictureMove[2])
-            // {
-            //     *allInOne.pPictureX -= 200 * delta_time;
-            // }
-            // if (pictureMove[3])
-            // {
-            //     *allInOne.pPictureX += 200 * delta_time;
-            // }
-            // if (scale)
-            // {
-            //     glm_scale_self(allInOne.ppVertices, 2.0f, 1);
-            // }
-            // if (pictureMove[0] | pictureMove[1] | pictureMove[2] | pictureMove[3] | scale)
-            // {
-            //     updatePosition(*allInOne.pPictureX, *allInOne.pPictureY, allInOne.pExtent2D, allInOne.ppVertices, 1);
-            //     scale = false;
-            // }
-            // SDL_UnlockMutex(sdl_mutex_2);
-
-            uint32_t count = *allInOne.pVerticesCount;
-            // size_t bufferSize = sizeof(Vertex) * count;
-
-            uint32_t indiceCount = *allInOne.pIndicesCount;
-            // size_t bufferSize2 = sizeof(uint16_t) * indiceCount;
-
-            if (ballAdd)
+            if (scene == First_Scene)
             {
-                *allInOne.pVerticesCount += 4;
-                *allInOne.pIndicesCount += 6;
-                //*allInOne.ppVertices = (Vertex *)realloc(*allInOne.ppVertices, count * sizeof(Vertex));
-                int x = rand() % 250;
-                if (rand() % 2)
+                if (!Mix_PlayingMusic() && !playedMusic)
                 {
-                    x *= -1;
+                    playMusic("test");
+                    Mix_VolumeMusic(0);
+                    playedMusic = true;
                 }
-                SDL_LockMutex(sdl_mutex_2);
-                // float averagePhysicalCoffect = (physicalCoffectX + physicalCoffectY) / 2.0f;
-                positionInitialize(x * physicalCoffectX, 280 * physicalCoffectY, 16 * physicalCoffectY, 16 * physicalCoffectY, *allInOne.pExtent2D, allInOne.ppVertices, count / 4);
-                SDL_UnlockMutex(sdl_mutex_2);
 
-                ballStack.pushFn(&ballStack, &x);
+                accumlateTime(delta_time_ns);
+                // logMessage("TotalTime: %fms", totalTime);
 
-                //SDL_Log("indices count: %u\n", indiceCount);
-                //*allInOne.ppIndices = (uint16_t *)realloc(*allInOne.ppIndices, indiceCount * sizeof(uint16_t));
-                int index = indiceCount;
-                int serial = count;
-                (*allInOne.ppIndices)[index] = serial;
-                (*allInOne.ppIndices)[index + 1] = serial + 1;
-                (*allInOne.ppIndices)[index + 2] = serial + 2;
-                (*allInOne.ppIndices)[index + 3] = serial + 2;
-                (*allInOne.ppIndices)[index + 4] = serial + 3;
-                (*allInOne.ppIndices)[index + 5] = serial;
+                if (textDisplay)
+                {
+                    uint32_t textLen;
+                    if (textLine == 1)
+                        getTextUV("一二三", &textLen);
+                    if (textLine == 2)
+                        getTextUV("哈哈哈哈哈哈哈哈哈", &textLen);
 
-                ballAdd = false;
+                    for (uint32_t i = 0;i < textLen;i++)
+                    {
+                        for (int x = 0;x < 4;x++)
+                        {
+                            (*allInOne.ppVertices)[8000 + i * 4 + x].texCoord[0] = UVs[i][x][0];
+                            (*allInOne.ppVertices)[8000 + i * 4 + x].texCoord[1] = UVs[i][x][1];
+                        }
+                    }
+                    textDisplay = false;
+                }
+
+                testNum += 2 * delta_time;
+
+                static int id_test = 0;
+                int test_a = -1;
+                addTimerFunc(u32_s_to_ns(1), &id_test, 10, test, &test_a);
+            
+
+                // SDL_LockMutex(sdl_mutex_2);
+                // if (pictureMove[0])
+                // {
+                //     *allInOne.pPictureY += 200 * delta_time;
+                //     //logMessage("y: %f, enabled: %d, delta time: %lf, last_frame_time: %lu ----%s", *allInOne.pPictureY, pictureMove[0], delta_time, last_frame_time, timeNow);
+                // }
+                // if (pictureMove[1])
+                // {
+                //     *allInOne.pPictureY -= 200 * delta_time;
+                // }
+                // if (pictureMove[2])
+                // {
+                //     *allInOne.pPictureX -= 200 * delta_time;
+                // }
+                // if (pictureMove[3])
+                // {
+                //     *allInOne.pPictureX += 200 * delta_time;
+                // }
+                // if (scale)
+                // {
+                //     glm_scale_self(allInOne.ppVertices, 2.0f, 1);
+                // }
+                // if (pictureMove[0] | pictureMove[1] | pictureMove[2] | pictureMove[3] | scale)
+                // {
+                //     updatePosition(*allInOne.pPictureX, *allInOne.pPictureY, allInOne.pExtent2D, allInOne.ppVertices, 1);
+                //     scale = false;
+                // }
+                // SDL_UnlockMutex(sdl_mutex_2);
+
+                uint32_t count = *allInOne.pVerticesCount;
+                // size_t bufferSize = sizeof(Vertex) * count;
+
+                // uint32_t indiceCount = *allInOne.pIndicesCount;
+                // size_t bufferSize2 = sizeof(uint16_t) * indiceCount;
+
+                if (ballAdd)
+                {
+                    *allInOne.pVerticesCount += 4;
+                    *allInOne.pIndicesCount += 6;
+                    //*allInOne.ppVertices = (Vertex *)realloc(*allInOne.ppVertices, count * sizeof(Vertex));
+                    int x = SDL_rand(250);
+                    if (SDL_rand(2))
+                    {
+                        x *= -1;
+                    }
+                    SDL_LockMutex(sdl_mutex_2);
+                    // float averagePhysicalCoffect = (physicalCoffectX + physicalCoffectY) / 2.0f;
+                    vertexInitialize(x * physicalCoffectX, 280 * physicalCoffectY, 16 * physicalCoffectY, 16 * physicalCoffectY, 0.9, false, *allInOne.pExtent2D, allInOne.ppVertices, count / 4);
+                    SDL_UnlockMutex(sdl_mutex_2);
+
+                    ballStack.pushFn(&ballStack, &x);
+
+                    //SDL_Log("indices count: %u\n", indiceCount);
+                    //*allInOne.ppIndices = (uint16_t *)realloc(*allInOne.ppIndices, indiceCount * sizeof(uint16_t));
+
+                    ballAdd = false;
+                }
+            
+                static int id_timeStep = 0;
+                while (intervalIsDone(f32_ms_to_ns(timeStep), &id_timeStep, -1))
+                {
+                    updateCircle(allInOne.pExtent2D, allInOne.ppVertices);
+                    // accumulator -= timeStep;
+                }
             }
 
             //updateUniformBuffer(*allInOne.pCurrentFrame, allInOne.pExtent2D, allInOne.pGraphicUbo, allInOne.pppGraphicUniformBufferMapped, *allInOne.pCamera_X, *allInOne.pCamera_Y, allInOne.pComputeUbo, allInOne.pppComputeUniformBufferMapped, delta_time);   
@@ -576,7 +623,7 @@ int update(void * arg)
             glm_lookat((vec3){*pCamera_X, *pCamera_Y, 1.5f}, (vec3){*pCamera_X, *pCamera_Y, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pGraphicUbo->view);
 
             float aspect = (float)allInOne.pExtent2D->width / allInOne.pExtent2D->height;
-            //logMessage("aspect : %.2f\n", aspect, timeNow);
+            
             glm_mat4_identity(pGraphicUbo->proj);
             //glm_perspective(glm_rad(45.0f), aspect, 0.1f, 10.0f, pUbo->proj);
             glm_ortho_vulkan(-aspect, aspect, -1.0f, 1.0f, 0.1f, 100.0f, pGraphicUbo->proj);
@@ -584,13 +631,6 @@ int update(void * arg)
             pGraphicUbo->proj[1][1] *= -1;
 
             allInOne.pComputeUbo->deltaTime = delta_time;
-            
-            static int id_timeStep = 0;
-            while (intervalIsDone(f32_ms_to_ns(timeStep), &id_timeStep, -1))
-            {
-                updateCircle(allInOne.pExtent2D, allInOne.ppVertices);
-                // accumulator -= timeStep;
-            }
 
             SDL_LockMutex(sdl_mutex_2);
             memcpy(*allInOne.ppVertexBufferMemMapped, *allInOne.ppVertices, 2100 * 4 * sizeof(Vertex));
@@ -611,10 +651,6 @@ int update(void * arg)
             
             update_done = true;
         }
-        else if (scene == Pause_Scene)
-        {
-            recovreyPause = true;
-        }
 
         SDL_SignalSemaphore(signal_semaphore);
     }
@@ -630,15 +666,9 @@ int render(void * arg)
     {
         SDL_WaitSemaphore(main_semaphore2);
 
-        if (scene == First_Scene)
-        {
-            drawFrame(&allInOne);
-            draw_done = true;
-        }
-        else if (scene == Pause_Scene)
-        {
+        drawFrame(scene);
+        draw_done = true;
 
-        }
         //logMessage("render frames: %d ----%s", render_frame, timeNow);
         render_frame++;
 

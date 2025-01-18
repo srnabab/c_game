@@ -6,11 +6,20 @@
 
 #include "SDL3/SDL_begin_code.h"
 
-typedef struct _ThreadSem
+struct _ThreadSem
 {
     SDL_Thread * thread;
     SDL_Semaphore * semaphore;
-} ThreadSem;
+};
+typedef struct _ThreadSem ThreadSem;
+
+struct _Location
+{
+    float x;
+    float y;
+    float d;
+};
+typedef struct _Location Location;
 
 #include "SDL3/SDL_close_code.h"
 

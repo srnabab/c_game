@@ -6,6 +6,8 @@
 
 #define BALLCOUNT 2000
 
+#define MAX_CHARACTERS 100
+
 #ifndef SEPRATOR
 # if defined(_WIN32)
 #  define SEPRATOR "\\"

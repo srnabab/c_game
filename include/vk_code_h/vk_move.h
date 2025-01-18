@@ -5,9 +5,11 @@
 
 #include "SDL3/SDL_begin_code.h"
 
-extern void SDLCALL initializeMovingBuffer(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkBuffer * pMoveBuffer, VkDeviceMemory * pMoveBufferMemory, void ** ppMovingBufferMapped, Vertex * vertices, uint32_t verticesCount);
-extern void SDLCALL positionInitialize(int x, int y, int width, int height, VkExtent2D extent2D, Vertex ** ppVertices, uint32_t pictureSequence);
-extern void SDLCALL reInitializePosition(int width, int height, VkExtent2D extent2D, Vertex ** ppVertices, uint32_t pictureSequence);
+extern void SDL_UNUSED SDLCALL initializeMovingBuffer(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkBuffer * pMoveBuffer, VkDeviceMemory * pMoveBufferMemory, void ** ppMovingBufferMapped, Vertex * vertices, uint32_t verticesCount);
+extern void SDLCALL vertexInitialize(float x, float y, float width, float height, float depth, bool setUVZero, VkExtent2D extent2D, Vertex ** ppVertices, uint32_t pictureSequence);
+extern void SDLCALL indexInitialize(Uint16 * indices, Uint32 indicesCount);
+extern void SDLCALL updatePosition(float x, float y, VkExtent2D * pExtent2D, Vertex ** ppVertices, uint32_t pictureSequence);
+extern void SDL_UNUSED SDLCALL reInitializePosition(int width, int height, VkExtent2D extent2D, Vertex ** ppVertices, uint32_t pictureSequence);
 
 #include "SDL3/SDL_close_code.h"
 

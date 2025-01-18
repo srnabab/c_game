@@ -36,6 +36,8 @@ typedef enum _PathType
     SettingPng,
     StartPng,
     TextRectangle1Png,
+    StartFragShader,
+    StartVertShader,
 } PathType;
 
 extern PathType SDLCALL pathCompare(char * buffer);
