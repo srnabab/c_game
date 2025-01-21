@@ -6,8 +6,8 @@
 typedef struct _Timer
 {
     int id;
-    uint64_t nanoSecond;
-    uint64_t accumulated;
+    Uint64 nanoSecond;
+    Uint64 accumulated;
     int repeat;
     bool done;
     int (*func)(void *);
@@ -33,24 +33,28 @@ bool initTimerSystem(void)
     return true;
 }
 
-uint64_t f32_ms_to_ns(float ms)
+Uint64 f32_ms_to_ns(float ms)
 {
-    return (uint64_t)(ms * MS_TO_NS);
+    return (Uint64)(ms * MS_TO_NS);
 }
-uint64_t u32_s_to_ns(uint32_t s)
+Uint64 f32_s_to_ns(float s)
 {
-    return (uint64_t)(s * S_TO_NS);
+    return (Uint64)(s * S_TO_NS);
 }
-uint64_t u32_min_to_ns(uint32_t min)
+Uint64 u32_s_to_ns(Uint32 s)
 {
-    return (uint64_t)(min * MIN_TO_NS);
+    return (Uint64)(s * S_TO_NS);
 }
-uint64_t u32_hour_to_ns(uint32_t hour)
+Uint64 u32_min_to_ns(Uint32 min)
 {
-    return (uint64_t)(hour * HOUR_TO_NS);
+    return (Uint64)(min * MIN_TO_NS);
+}
+Uint64 u32_hour_to_ns(Uint32 hour)
+{
+    return (Uint64)(hour * HOUR_TO_NS);
 }
 
-static bool addTimer(uint64_t nano, int id, int repeat)
+static bool addTimer(Uint64 nano, int id, int repeat)
 {
     for (int i = 0;i < 128;i++)
     {
@@ -80,7 +84,7 @@ static Timer * findTimer(int id)
     }
     return NULL;
 }
-bool intervalIsDone(uint64_t nano, int * id, int repeat)
+bool intervalIsDone(Uint64 nano, int * id, int repeat)
 {
     static int Ids = 1;
     if (*id)
@@ -115,7 +119,7 @@ bool intervalIsDone(uint64_t nano, int * id, int repeat)
     }
     return false;
 }
-bool addTimerFunc(uint64_t nano, int * id, int repeat, int (*func)(void *), void * data)
+bool addTimerFunc(Uint64 nano, int * id, int repeat, int (*func)(void *), void * data)
 {
     if (*id)
     {
@@ -156,7 +160,7 @@ static bool deleteTimeSetIn(int *id)
 
     return true;
 }
-void accumlateTime(uint64_t nano)
+void accumlateTime(Uint64 nano)
 {
     SDL_LockMutex(timerMutex);
     for (int i = 0;i < 128;i++)

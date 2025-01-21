@@ -288,7 +288,7 @@ void createLogicalDevice(VkPhysicalDevice * pPhysicalDevice, QueueFamilyIndices 
 
     if (!supportedFeatures.samplerAnisotropy)
     {
-        cleanup(code);
+        cleanVulkan(code);
     }
     
     const Uint32 requiredDeviceExtensionCount = 1;

@@ -3,6 +3,7 @@
 
 #include "vk_code_h/vk_present.h"
 #include "vk_code_h/vk_move.h"
+#include "vk_code_h/vk_judge.h"
 
 #include "G_custom_math.h"
 
@@ -14,55 +15,53 @@
 #include "G_pop_window.h"
 #include "G_constants.h"
 #include "G_stack.h"
+#define LOG_ENABLE
 #include "G_log.h"
 #include "G_file/G_file.h"
 
-extern SDL_Thread * sdl_pid_update, * sdl_pid_draw, * sdl_pid_signal, * sdl_pid_control;
+static SDL_Thread * sdl_pid_update;
+static SDL_Thread * sdl_pid_draw;
+static SDL_Thread * sdl_pid_signal;
 
-uint64_t frequency;
-
-extern SDL_Mutex * sdl_mutex;
-SDL_Mutex * sdl_mutex_2;
-
-static SDL_Mutex * pause_mutex = NULL;
-static SDL_Condition * pause_condition = NULL;
+static SDL_Mutex * sdl_mutex;
+static SDL_Mutex * sdl_mutex_2;
 
 bool update_done, draw_done = false;
 
 // Global variables
-extern bool game_is_running;
-extern uint64_t last_frame_time;
+bool game_is_running = false;
 
-double testNum = 0.0f;
+static double testNum = 0.0f;
 
 extern SDL_Window * window;
 extern SDL_DisplayID displayId;
 extern VK_ALL allInOne;
 extern Recreate recreateSwap;
 
-extern SDL_Semaphore * main_semaphore1;
-extern SDL_Semaphore * main_semaphore2;
+static SDL_Semaphore * main_semaphore1;
+static SDL_Semaphore * main_semaphore2;
 SDL_Semaphore * signal_semaphore = NULL;
 
 static SDL_MessageBoxData * boxData;
 
 // Setup function that runs once at the beginning of our program
-void setup(void) 
+void setup(int argc, char* argv[]) 
 {
-    frequency = SDL_GetPerformanceFrequency();
+    initFileSystem(argc, argv);
+
+    initLog();
+
+    game_is_running = initWindow();
+    logMessage("game_is_running: %d", game_is_running);
 
     SDL_StopTextInput(window);
 
     sdl_mutex = SDL_CreateMutex();
     sdl_mutex_2 = SDL_CreateMutex();
 
-    pause_mutex = SDL_CreateMutex();
-    pause_condition = SDL_CreateCondition();
-
     main_semaphore1 = SDL_CreateSemaphore(0);
     main_semaphore2 = SDL_CreateSemaphore(0);
     signal_semaphore = SDL_CreateSemaphore(0);
-    //main_semaphore3 = SDL_CreateSemaphore(0);
 
     static SDL_MessageBoxButtonData buttons[2] = {
         {SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "No"},
@@ -93,8 +92,6 @@ void setup(void)
     sdl_pid_update = SDL_CreateThread(&update, "update", NULL);
     sdl_pid_draw = SDL_CreateThread(&render, "render", NULL);
     sdl_pid_signal = SDL_CreateThread(&signal_trans, "signal", NULL);
-
-    last_frame_time = SDL_GetTicks();
 }
 
 static bool cameraMove[4];
@@ -109,24 +106,26 @@ bool scale = false;
 static bool ballAdd = false;
 static uint8_t leftButtonClickedTimes = 0;
 static bool leftButtonEnabled = true;
-static uint32_t ballCount = 2;
+static Uint32 ballCount = 2;
 
-static uint32_t textLine = 0;
+static Uint32 textLine = 0;
 static bool textDisplay = false;
 
-extern uint32_t logical_width;
-extern uint32_t logical_height;
+extern Uint32 logical_width;
+extern Uint32 logical_height;
 
 extern float physicalCoffectX;
 extern float physicalCoffectY;
 
+static bool sceneChanged = false;
+
 static Scene scene = First_Scene;
-static Scene preScene = First_Scene;
+static Scene preScene = Pause_Scene;
 
 // Function to poll SDL events and process keyboard input
-int process_input(void * arg)
+bool process_input(void)
 {
-    static uint32_t preKeyState = 0;
+    static Uint32 preKeyState = 0;
     static uint8_t pressedKey = 0;
     static int buttonId = 0;
     //debug_printf("\nmain loop");
@@ -156,7 +155,7 @@ int process_input(void * arg)
     while(SDL_PollEvent(&event))
     {
         SDL_Keycode key = event.key.key;
-        logMessage("preKeyState: %u, keyState: %u, key: %s(%u)", preKeyState, event.type, SDL_GetKeyName(key), key);
+        LogMessage("preKeyState: %u, keyState: %u, key: %s(%u)", preKeyState, event.type, SDL_GetKeyName(key), key);
         // logMessage("pressed Key:%u", pressedKey);
         
         if (event.type == SDL_EVENT_WINDOW_MINIMIZED)
@@ -181,6 +180,8 @@ int process_input(void * arg)
                 SDL_SignalSemaphore(main_semaphore1);
                 SDL_SignalSemaphore(main_semaphore2);
                 game_is_running = false;
+                
+                return true;
             }
             if (key == SDLK_F11)
             {
@@ -260,6 +261,7 @@ int process_input(void * arg)
                     preScene = scene;
                     scene = Menu_Scene;
                     changeScene = false;
+                    sceneChanged = true;
                 }
                 else if (leftButtonEnabled && (ballCount < BALLCOUNT))
                 {
@@ -376,6 +378,7 @@ int process_input(void * arg)
                     preScene = scene;
                     scene = First_Scene;
                     changeScene = false;
+                    sceneChanged = true;
                 }
             }
             if (event.type == SDL_EVENT_KEY_DOWN)
@@ -383,6 +386,13 @@ int process_input(void * arg)
                 if (key == SDLK_LCTRL)
                 {
                     changeScene = true;
+                }
+            }
+            if (event.type == SDL_EVENT_KEY_UP)
+            {
+                if (key == SDLK_LCTRL)
+                {
+                    changeScene = false;
                 }
             }
         }
@@ -401,6 +411,8 @@ int process_input(void * arg)
                 SDL_SignalSemaphore(main_semaphore1);
                 SDL_SignalSemaphore(main_semaphore2);
                 game_is_running = false;
+
+                return true;
             }
             else if (buttonId == 1)
             {
@@ -420,7 +432,7 @@ int process_input(void * arg)
 
     SDL_PumpEvents();
 
-    return 0;
+    return false;
 }
 
 static int test(void * arg)
@@ -435,22 +447,26 @@ extern vec2 UVs[MAX_CHARACTERS][FOUR_POINT];
 // Update function with a fixed time step
 int update(void * arg)
 {
-    uint32_t update_frame = 0;
+    Uint32 update_frame = 0;
     UniformBufferObject * pGraphicUbo = allInOne.pGraphicUbo;
     float * pCamera_X = allInOne.pCamera_X;
     float * pCamera_Y = allInOne.pCamera_Y;
     
     bool playedMusic = false;
 
-    // float accumulator = 0.0f;
-    const float timeStep = 1000.0f / 120.0f;
-
-    uint64_t delta_time_ns = 0;
+    Uint64 frequency = SDL_GetPerformanceFrequency();;
+    Uint64 delta_time_ns = 0;
     float delta_time = 0.0f;
-    uint64_t totalTimeNs = 0;
+    Uint64 totalTimeNs = 0;
     float totalTime = 0.0f;
     
     bool recovreyPause = false;
+    bool sceneCleaned = false;
+    
+    SDL_Delay(3000);
+    Uint64 last_frame_time = SDL_GetPerformanceCounter();
+    SDL_SignalSemaphore(main_semaphore1);
+    SDL_SignalSemaphore(main_semaphore2);
 
     SDL_Log("update init\n");
     while (game_is_running)
@@ -462,7 +478,7 @@ int update(void * arg)
             recovreyPause = false;
         }
 
-        uint64_t tempTime = SDL_GetPerformanceCounter();
+        Uint64 tempTime = SDL_GetPerformanceCounter();
         delta_time_ns = ((tempTime - last_frame_time) * 1000000000ULL) / frequency;
         last_frame_time = tempTime;
         totalTimeNs += delta_time_ns;
@@ -476,6 +492,18 @@ int update(void * arg)
         }
         else
         {
+            if (sceneChanged) 
+            {
+                sceneCleaned = false;
+                sceneChanged = false;
+            }
+            if (!sceneCleaned && preScene != Pause_Scene)
+            {
+                // sceneCleaned = cleanScene(preScene);
+                sceneCleaned = true;
+                logMessage("clean scene");
+            }
+
             static int id_click = 0;
             if (leftButtonClickedTimes)
             {
@@ -511,7 +539,7 @@ int update(void * arg)
             }
 
             if (scene == First_Scene)
-            {
+            {                
                 if (!Mix_PlayingMusic() && !playedMusic)
                 {
                     playMusic("test");
@@ -524,13 +552,13 @@ int update(void * arg)
 
                 if (textDisplay)
                 {
-                    uint32_t textLen;
+                    Uint32 textLen;
                     if (textLine == 1)
                         getTextUV("一二三", &textLen);
                     if (textLine == 2)
                         getTextUV("哈哈哈哈哈哈哈哈哈", &textLen);
 
-                    for (uint32_t i = 0;i < textLen;i++)
+                    for (Uint32 i = 0;i < textLen;i++)
                     {
                         for (int x = 0;x < 4;x++)
                         {
@@ -577,10 +605,10 @@ int update(void * arg)
                 // }
                 // SDL_UnlockMutex(sdl_mutex_2);
 
-                uint32_t count = *allInOne.pVerticesCount;
+                Uint32 count = *allInOne.pVerticesCount;
                 // size_t bufferSize = sizeof(Vertex) * count;
 
-                // uint32_t indiceCount = *allInOne.pIndicesCount;
+                // Uint32 indiceCount = *allInOne.pIndicesCount;
                 // size_t bufferSize2 = sizeof(uint16_t) * indiceCount;
 
                 if (ballAdd)
@@ -607,11 +635,14 @@ int update(void * arg)
                 }
             
                 static int id_timeStep = 0;
-                while (intervalIsDone(f32_ms_to_ns(timeStep), &id_timeStep, -1))
+                while (intervalIsDone(f32_s_to_ns(TIME_STEP), &id_timeStep, -1))
                 {
                     updateCircle(allInOne.pExtent2D, allInOne.ppVertices);
                     // accumulator -= timeStep;
                 }
+            }
+            else if (scene == Menu_Scene)
+            {
             }
 
             //updateUniformBuffer(*allInOne.pCurrentFrame, allInOne.pExtent2D, allInOne.pGraphicUbo, allInOne.pppGraphicUniformBufferMapped, *allInOne.pCamera_X, *allInOne.pCamera_Y, allInOne.pComputeUbo, allInOne.pppComputeUniformBufferMapped, delta_time);   
@@ -661,7 +692,7 @@ int update(void * arg)
 int render(void * arg) 
 {
     SDL_Log("render init\n");
-    uint32_t render_frame = 0;
+    Uint32 render_frame = 0;
     while (game_is_running)
     {
         SDL_WaitSemaphore(main_semaphore2);
@@ -698,17 +729,27 @@ int signal_trans(void * arg)
 }
 
 // Function to destroy SDL window and renderer
-void destroy_window(void) 
+void destroy(void) 
 {
+    SDL_WaitThread(sdl_pid_signal, NULL);
+    SDL_Log("signal end\n");
+    SDL_WaitThread(sdl_pid_update, NULL);
+    SDL_Log("update end\n");
+    SDL_WaitThread(sdl_pid_draw, NULL);
+    SDL_Log("draw end\n");
+
+    cleanVulkan(FuncCodeMax);
+    
+    cleanWorld();
+
     deInitTimerSystem();
     deInitMusicManagement();
     deInitPopWindow();
     destroyLog();
-    SDL_DestroyCondition(pause_condition);
-    SDL_DestroyMutex(pause_mutex);
     SDL_DestroyMutex(sdl_mutex);
     SDL_DestroyMutex(sdl_mutex_2);
     SDL_DestroySemaphore(main_semaphore1);
     SDL_DestroySemaphore(main_semaphore2);
     SDL_Quit();
+    exit(0);
 }

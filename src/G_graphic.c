@@ -387,6 +387,7 @@ static inline void initializeAllInOne(void)
     allInOne.pIndexBufferMem = &indexBufferMem;
     allInOne.ppIndexBufferMemMapped = &indexBufferMemMapped;
 
+    allInOne.ppGraphicUniformBuffer = &graphicUniformBuffers;
     allInOne.pppGraphicUniformBufferMapped = &graphicUniformBufferMapped;
 
     allInOne.pGraphicUbo = &ubo;

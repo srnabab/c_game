@@ -55,7 +55,7 @@ typedef enum _FuncCode {
     FuncCodeMax
 } FuncCode;
 //base function code to clean up resources created
-extern void SDLCALL cleanup(FuncCode code);
+extern void SDLCALL cleanVulkan(FuncCode code);
 //judge VK_RESULT for vulkan
 extern void SDLCALL resultVulkan(VkResult result, FuncCode code, Uint32 num, ...);
 

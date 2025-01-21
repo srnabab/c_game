@@ -65,6 +65,7 @@ add_executable(game ${SRC_ROOT}/main.c
                     ${SRC_ROOT}/G_timer.c
                     ${SRC_ROOT}/G_text.c
                     ${SRC_ROOT}/G_pop_window.c
+                    ${SRC_ROOT}/G_scene.c
                     ${SRC_ROOT}/SDL_complement.c
                     ${SRC_ROOT}/vk_code/vk_judge.c
                     ${SRC_ROOT}/vk_code/vk_instace.c 
