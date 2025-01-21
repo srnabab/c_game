@@ -16,7 +16,7 @@ void createShaderModule(VkDevice * pDevice, PathType type, VkShaderModule * pSha
     if ((shaderFile = SDL_IOFromFile(getPath(type), "rb+")) == NULL)
     {
         logMessage("open file %s failed", getPath(type));
-        cleanup(createShaderModuleF);
+        cleanVulkan(createShaderModuleF);
         exit(code + 1000);
     }
 

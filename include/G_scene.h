@@ -1,3 +1,5 @@
+#include "SDL3/SDL_stdinc.h"
+
 #ifndef SCENE_H
 #define SCENE_H 1
 
@@ -17,6 +19,9 @@ struct _Scene_Pack
     const char* backgroundMusic;
 };
 typedef struct _Scene_Pack Scene_Pack;
+
+extern bool SDLCALL cleanScene(Scene preScene);
+extern bool SDLCALL loadScene(Scene scene);
 
 #include "SDL3/SDL_close_code.h"
 

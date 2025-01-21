@@ -97,10 +97,6 @@ void initWorld(void)
     world.thread = worldThread;
     world.semaphore = worldSemaphore;
 }
-
-float timeStep = 1.0f / 120.0f;
-float subStepCount = 4;
-
 static b2BodyDef * bodyDefs = NULL;
 static b2BodyId * bodyIds = NULL;
 
@@ -166,7 +162,7 @@ int stepWorld(void * arg)
         // {
         //     b2Body_SetTransform(bodyIds[1], (b2Vec2){-700.0f * SCALE_FACTOR, -300.0f * SCALE_FACTOR}, b2Rot_identity);
         // }
-        b2World_Step(worldId, timeStep, subStepCount);
+        b2World_Step(worldId, TIME_STEP, SUB_STEP_COUNT);
         stepDone = true;
     }
     return 0;

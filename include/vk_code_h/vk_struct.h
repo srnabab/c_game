@@ -136,6 +136,9 @@ typedef struct _VK_ALL
     VkDeviceMemory * pIndexBufferMem;
     void ** ppIndexBufferMemMapped;
 
+    VkSampler * pTextureSampler;
+
+    VkBuffer ** ppGraphicUniformBuffer;
     void *** pppGraphicUniformBufferMapped;
 
     UniformBufferObject * pGraphicUbo;

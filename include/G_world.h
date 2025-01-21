@@ -8,13 +8,16 @@
 #define SCALE_FACTOR 0.01f
 #define SCALE_FACTOR_INV (1/SCALE_FACTOR)
 
-void initWorld(void);
-void createCircle(float x, float y);
-void updateCircle(VkExtent2D * pExtent2D, Vertex ** ppVertices);
-uint32_t getBoxCount(void);
-void cleanWorld(void);
-void destroyFloor(void);
-int stepWorld(void * arg);
+#define TIME_STEP (1.0f / 120.0f)
+#define SUB_STEP_COUNT 4
+
+extern void SDLCALL initWorld(void);
+extern void SDLCALL createCircle(float x, float y);
+extern void SDLCALL updateCircle(VkExtent2D * pExtent2D, Vertex ** ppVertices);
+extern uint32_t SDLCALL getBoxCount(void);
+extern void SDLCALL cleanWorld(void);
+extern void SDLCALL destroyFloor(void);
+extern int SDLCALL stepWorld(void * arg);
 
 #include "SDL3/SDL_close_code.h"
 

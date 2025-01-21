@@ -1,20 +1,17 @@
 #include "vk_code_h/vk_judge.h"
 #include "vk_code_h/vk_recreate.h"
+
 #include <stdlib.h>
 #include "G_log.h"
 
 extern Recreate recreateSwap;
-
-static bool initialize = false;
+extern bool game_is_running;
 
 void resultVulkan(VkResult result, FuncCode code, uint32_t num, ...)
 {
-    bool clean = false;
     switch (result)
     {
         case VK_SUCCESS:
-        if (code == initializedF)
-            initialize = true;
         break;
 
         case VK_SUBOPTIMAL_KHR:
@@ -57,7 +54,6 @@ void resultVulkan(VkResult result, FuncCode code, uint32_t num, ...)
 
         default:
         logMessage("result: %d", result);
-        clean = true;
         if (num > 0)
         {
             va_list ap;
@@ -244,10 +240,10 @@ void resultVulkan(VkResult result, FuncCode code, uint32_t num, ...)
         }
     }
 
-    end:
-    if (clean)
+    if (0)
     {
-        cleanup(code);
-        exit(code + 1000);
+end:
+        cleanVulkan(code);
+        game_is_running = false;
     }
 }
