@@ -8,34 +8,21 @@
 #include "SDL3/SDL_thread.h"
 #include "SDL_complement.h"
 
-uint8_t log_print = 0;
-uint8_t log_txt = 0;
-
-extern bool logOutEnabled;
-extern bool logEnabled;
-
-static bool setArgments(int argc, char * argv[])
+static Uint8 setArgments(int argc, char * argv[])
 {
+    Uint8 log = 0x0;
     for (int i = 1;i < argc;i++)
     {
         if (SDL_strcmp(argv[i], "-Log-print") == 0)
         {
-            logEnabled = true;
-            logOutEnabled = false;
-            log_print = i;
+            log |= LOG_ENABLED;
         }
         else if (SDL_strcmp(argv[i], "-Log-txt") == 0)
         {
-            logEnabled = true;
-            logOutEnabled = true;
-            log_txt = i;
-        }
-        else
-        {
-            logEnabled = false;
+            log |= (LOG_ENABLED | LOG_TXT);
         }
     }
-    return true;
+    return log;
 }
 static char rootPath[255];
 
@@ -125,10 +112,13 @@ int initFileSystem(int argc, char * argv[])
 {
     if (!setRootPath(argv[0])) return -1;
     if (!setPath()) return -2;
-    if (!setArgments(argc, argv)) return -3;
+    Uint8 place1 = 0x0; 
+    Uint8 place2 = 0x0;
+    Uint8 place3 = 0x0;
+    Uint8 log = setArgments(argc, argv);
     if (!initPath()) return -4;
 
-    return 0;
+    return (place1 << 24) | (place2 << 16) | (place3 << 8) | log;
 }
 const char * getPath(PathType type)
 {

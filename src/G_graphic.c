@@ -82,8 +82,8 @@ bool initWindow(void)
         logMessage("id %u format: %u: %u x %u, %uHz", modes[i]->displayID, modes[i]->format, modes[i]->w, modes[i]->h, modes[i]->refresh_rate);
     }
 
-    physicalCoffectX = (float)width / logical_width;
-    physicalCoffectY = (float)height / logical_height;
+    physicalCoffectX = (float)width / LOGICAL_WIDTH;
+    physicalCoffectY = (float)height / LOGICAL_HEIGHT;
 
     logMessage("window initialized");
 

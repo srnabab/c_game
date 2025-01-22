@@ -7,9 +7,6 @@
 
 #include "G_log.h"
 
-extern bool pictureMove[4];
-extern bool scale;
-
 extern VK_ALL allInOne;
 
 static void recordCommandBuffer_FirstScene(uint32_t imageIndex)

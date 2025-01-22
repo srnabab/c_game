@@ -29,8 +29,7 @@ static SDL_Thread * log_thread = NULL;
 
 static SDL_IOStream * log_file = NULL;
 
-bool logOutEnabled = 0;
-bool logEnabled = 0;
+static bool disabled = false;
 
 static char * getCurrentTime(char * buffer, SDL_DateTime dateTime)
 {
@@ -162,9 +161,9 @@ static int putMessage_print(void * arg)
     }
     return 0;
 }
-void initLog(void)
+void initLog(Uint8 log)
 {
-    if (!logEnabled)
+    if (!(log & LOG_ENABLED))
         return;
 
     if ((log_file = SDL_IOFromFile(getPath(LogPath), "a")) == NULL)
@@ -176,25 +175,19 @@ void initLog(void)
     log_mutex = SDL_CreateMutex();
     print_mutex = SDL_CreateMutex();
     log_semaphore = SDL_CreateSemaphore(0);
-    //logOutEnabled = false;
 
-    if (logOutEnabled)
+    if (log & LOG_TXT)
     {
-        log_thread = SDL_CreateThread(&putMessage_file, "log", NULL);
+        log_thread = SDL_CreateThread(&putMessage_file, "log_txt", NULL);
     }
     else
     {
-        log_thread = SDL_CreateThread(&putMessage_print, "log", NULL);
+        log_thread = SDL_CreateThread(&putMessage_print, "log_print", NULL);
     }
-    // message = (char **)SDL_malloc(MAX_MESSAGE_STORAGE * sizeof(char *));
-    // for (uint32_t i = 0;i < MAX_MESSAGE_STORAGE;i++)
-    // {
-    //     message[i] = (char *)SDL_calloc(MAX_MESSAGE_SIZE, sizeof(char));
-    // }
 }
 void logMessage(char * format, ...)
 {
-    if (!logEnabled)
+    if (disabled)
         return;
     
     va_list arg;

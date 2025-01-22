@@ -47,9 +47,9 @@ static SDL_MessageBoxData * boxData;
 // Setup function that runs once at the beginning of our program
 void setup(int argc, char* argv[]) 
 {
-    initFileSystem(argc, argv);
+    int arg = initFileSystem(argc, argv);
 
-    initLog();
+    initLog(arg);
 
     game_is_running = initWindow();
     logMessage("game_is_running: %d", game_is_running);
@@ -95,13 +95,15 @@ void setup(int argc, char* argv[])
 }
 
 static bool cameraMove[4];
-bool pictureMove[4];
+//delete needed
+static bool pictureMove[4];
 static bool changeScene = false;
 
 // static bool pause = false;
 // static bool pause_signal_send = false;
 
-bool scale = false;
+//delete needed
+static bool scale = false;
 
 static bool ballAdd = false;
 static uint8_t leftButtonClickedTimes = 0;
@@ -110,9 +112,6 @@ static Uint32 ballCount = 2;
 
 static Uint32 textLine = 0;
 static bool textDisplay = false;
-
-extern Uint32 logical_width;
-extern Uint32 logical_height;
 
 extern float physicalCoffectX;
 extern float physicalCoffectY;
@@ -128,7 +127,6 @@ bool process_input(void)
     static Uint32 preKeyState = 0;
     static uint8_t pressedKey = 0;
     static int buttonId = 0;
-    //debug_printf("\nmain loop");
 
     if (willPopWindow())
     {
@@ -141,7 +139,6 @@ bool process_input(void)
         preScene = Pause_Scene;
         SDL_SignalSemaphore(main_semaphore1);
         SDL_SignalSemaphore(main_semaphore2);
-        // pause_signal_send = true;
     }
 
     const bool * keyState = SDL_GetKeyboardState(NULL);
@@ -192,8 +189,8 @@ bool process_input(void)
                 
                 SDL_SetWindowSize(window, allInOne.pExtent2D->width, allInOne.pExtent2D->height);
 
-                physicalCoffectX = (float)allInOne.pExtent2D->width / logical_width;
-                physicalCoffectY = (float)allInOne.pExtent2D->height / logical_height;
+                physicalCoffectX = (float)allInOne.pExtent2D->width / LOGICAL_WIDTH;
+                physicalCoffectY = (float)allInOne.pExtent2D->height / LOGICAL_HEIGHT;
                 
                 logMessage("sdl width: %u, height: %u", allInOne.pExtent2D->width, allInOne.pExtent2D->height);
             }
@@ -431,6 +428,8 @@ bool process_input(void)
     }
 
     SDL_PumpEvents();
+
+    if (!game_is_running) return true;
 
     return false;
 }

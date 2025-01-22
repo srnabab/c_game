@@ -240,10 +240,10 @@ void resultVulkan(VkResult result, FuncCode code, uint32_t num, ...)
         }
     }
 
+// Quick Quit Needed
     if (0)
     {
 end:
-        cleanVulkan(code);
         game_is_running = false;
     }
 }

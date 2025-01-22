@@ -24,4 +24,7 @@
 # endif
 #endif
 
+#define LOGICAL_WIDTH 800
+#define LOGICAL_HEIGHT 600
+
 #endif

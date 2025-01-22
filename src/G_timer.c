@@ -14,13 +14,6 @@ typedef struct _Timer
     void * data;
 } Timer;
 
-// typedef struct _TimerList
-// {
-//     Timer * node;
-//     Timer * next;
-// } TimerList;
-
-// static TimerList * root = NULL;
 static Timer timerS[128];
 static SDL_Mutex * timerMutex = NULL;
 
