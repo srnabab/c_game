@@ -39,9 +39,6 @@ SDL_DisplayID displayId = 0;
 uint32_t width = 800;
 uint32_t height = 600;
 
-const uint32_t logical_width = 800;
-const uint32_t logical_height = 600;
-
 float physicalCoffectX = 1.0f;
 float physicalCoffectY = 1.0f;
 
@@ -207,26 +204,6 @@ static VkImage textImage = NULL;
 static VkDeviceMemory textImageMem = NULL;
 static VkImageView textImageView = NULL;
 
-//start.png
-static VkImage startImage = NULL;
-static VkDeviceMemory startImageMem = NULL;
-static VkImageView startImageView = NULL;
-
-// load.png
-static VkImage loadImage = NULL;
-static VkDeviceMemory loadImageMem = NULL;
-static VkImageView loadImageView = NULL;
-
-// setting.png
-static VkImage settingImage = NULL;
-static VkDeviceMemory settingImageMem = NULL;
-static VkImageView settingImageView = NULL;
-
-// exit.png
-static VkImage exitImage = NULL;
-static VkDeviceMemory exitImageMem = NULL;
-static VkImageView exitImageView = NULL;
-
 static VkSampler textureSampler = NULL;
 
 static VkBuffer vertexBuffer = NULL;
@@ -352,7 +329,6 @@ static inline void initializeAllInOne(void)
 
     allInOne.pGraphicQueue = &graphicQueue;
     allInOne.pPresentQueue = &presentQueue;
-
     allInOne.pComputeQueue = &computeQueue;
 
     allInOne.pExtent2D = &extent2D;
@@ -386,6 +362,8 @@ static inline void initializeAllInOne(void)
     allInOne.pIndicesCount = &indicesCount;
     allInOne.pIndexBufferMem = &indexBufferMem;
     allInOne.ppIndexBufferMemMapped = &indexBufferMemMapped;
+
+    allInOne.pTextureSampler = &textureSampler;
 
     allInOne.ppGraphicUniformBuffer = &graphicUniformBuffers;
     allInOne.pppGraphicUniformBufferMapped = &graphicUniformBufferMapped;
@@ -597,18 +575,6 @@ void initVulkan(void)
 
     createTextureImage(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, MainFontPng, VK_FORMAT_R8_UNORM, &textImage, &textImageMem);
     createTextureImageView(&device, &textImage, VK_FORMAT_R8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, &textImageView);
-
-    // createTextureImage(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, StartPng, VK_FORMAT_R8G8B8A8_SRGB, &startImage, &startImageMem);
-    // createTextureImageView(&device, &startImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, &startImageView);
-
-    // createTextureImage(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, LoadPng, VK_FORMAT_R8G8B8A8_SRGB, &loadImage, &loadImageMem);
-    // createTextureImageView(&device, &loadImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, &loadImageView);
-
-    // createTextureImage(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, SettingPng, VK_FORMAT_R8G8B8A8_SRGB, &settingImage, &settingImageMem);
-    // createTextureImageView(&device, &settingImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, &settingImageView);
-
-    // createTextureImage(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, ExitPng, VK_FORMAT_R8G8B8A8_SRGB, &exitImage, &exitImageMem);
-    // createTextureImageView(&device, &exitImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, &exitImageView);
     
     createTextureSampler(&physicalDevice, &device, &textureSampler);
 
@@ -645,7 +611,7 @@ void initVulkan(void)
         vertexInitialize(-300 + i * 24, -100, 24, 24, 0.1f, true, extent2D, &vertices, i + BALLCOUNT);
     }
 
-    //initializeMovingBuffer(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, &movingStagingBuffer, &movingStagingMemory, &movingBufferMapped, vertices, verticesCount);
+    // initializeMovingBuffer(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, &movingStagingBuffer, &movingStagingMemory, &movingBufferMapped, vertices, verticesCount);
 
     createUniformBuffers(&physicalDevice, &device, &graphicUniformBuffers, &graphicUniformBuffersMemory, &graphicUniformBufferMapped, sizeof(UniformBufferObject));
 
@@ -686,9 +652,7 @@ void initVulkan(void)
     resultVulkan(VK_SUCCESS, initializedF, 0);
 }
 
-extern bool input_end;
-
-void cleanup(FuncCode code)
+void cleanVulkan(FuncCode code)
 {
     logMessage("\nclean up");
 
@@ -992,7 +956,6 @@ void cleanup(FuncCode code)
         logMessage("instance destroyed");
 
         SDL_DestroyWindow(window);
-        input_end = true;
         logMessage("window destroyed");
         /*fall through*/
 
