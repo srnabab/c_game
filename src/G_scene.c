@@ -18,10 +18,11 @@ bool loadScene(Scene scene)
         break;
         
         case Menu_Scene:
-        // updateGraphicDescriptorSets(allInOne.pDevice, allInOne.ppGraphicUniformBuffer, allInOne.ppGraphicDescriptorSets, 4, , );
         break;
         
         case Pause_Scene:
         break;
     }
+
+    return true;
 }

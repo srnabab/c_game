@@ -58,53 +58,28 @@ typedef struct _ImageRotate
     float rotation;
 } ImageRotate;
 
-typedef struct _Recreate
+typedef struct _VK_ALL
 {
-    DevicePack DevicePack;
+    VkPhysicalDevice * pPhysicalDevice;
+
+    VkDevice * pDevice;
 
     VkSurfaceCapabilitiesKHR * pSurfaceCapabilities;
     VkSurfaceFormatKHR * pSurfaceFormat;
     VkPresentModeKHR * pPresentMode;
 
     VkSurfaceKHR * pSurface;
-    VkExtent2D * pOldExtent2D;
-    VkExtent2D * pExtent2D;
-    Vertex ** ppVertices;
-
-    QueueFamilyIndices * pIndices;
-    VkQueue * pGraphicQueue;
     
-    VkFormat swapchainFormat;
-    VkSwapchainKHR * pSwapchain;
-    VkCommandPool * pSwapchainCommandPool;
-
-    Uint32 * imageCount;
-    VkImage ** ppSwapchainImages;
-    VkImageView ** ppSwapchainImageViews;
-
-    VkImageView ** ppSwapchainImageViews2;
-
-    VkFramebuffer ** ppSwapchainFramebuffer;
-
-    VkImage * pDepthImage;
-    VkImageView * pDepthImageView;
-    VkDeviceMemory * pDepthImageMem;
-
-    VkRenderPass * pRenderPass;
-
-}Recreate;
-
-typedef struct _VK_ALL
-{
-    VkPhysicalDevice * pPhysicalDevice;
-
-    VkDevice * pDevice;
+    QueueFamilyIndices * pQueueFamilyIndices;
     VkQueue * pGraphicQueue;
     VkQueue * pPresentQueue;
-
     VkQueue * pComputeQueue;
 
     VkExtent2D * pExtent2D;
+    VkExtent2D * pOldExtent2D;
+    Uint32 * imageCount;
+
+    VkFormat swapchainFormat;
     VkSwapchainKHR * pSwapchain;
 
     VkPipelineLayout * pGraphicPipelineLayout;
@@ -121,9 +96,15 @@ typedef struct _VK_ALL
 
     VkPipeline * pComputePipeline;
 
+    VkImage ** ppSwapchainImages;
+    VkImageView ** ppSwapchainImageViews;
     VkFramebuffer ** ppSwapchainFramebuffer;
     VkCommandPool * pSwapchainCommandPool;
     
+    VkImage * pDepthImage;
+    VkImageView * pDepthImageView;
+    VkDeviceMemory * pDepthImageMem;
+
     VkBuffer * pVertexBuffer;
     Vertex ** ppVertices;
     Uint32 * pVerticesCount;

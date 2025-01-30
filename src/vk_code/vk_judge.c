@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include "G_log.h"
 
-extern Recreate recreateSwap;
 extern bool game_is_running;
 
 void resultVulkan(VkResult result, FuncCode code, uint32_t num, ...)
@@ -17,7 +16,7 @@ void resultVulkan(VkResult result, FuncCode code, uint32_t num, ...)
         case VK_SUBOPTIMAL_KHR:
         if (code == queuePresentF)
         {
-            recreateSwapchain(&recreateSwap);
+            recreateSwapchain();
             //SDL_Log("VK_SUBOPTIMAL_KHR(queuePresent)\n");
         }
         else if (code == acquireNextImageF)
@@ -30,11 +29,11 @@ void resultVulkan(VkResult result, FuncCode code, uint32_t num, ...)
         if (code == acquireNextImageF)
         {
             //SDL_Log("VK_ERROR_OUT_OF_DATE_KHR(acquireNExt)\n");
-            recreateSwapchain(&recreateSwap);
+            recreateSwapchain();
         }
         if (code == queuePresentF)
         {
-            recreateSwapchain(&recreateSwap);
+            recreateSwapchain();
             //SDL_Log("VK_ERROR_OUT_OF_DATE_KHR(queuePresent)\n");
         }
         break;
@@ -43,11 +42,11 @@ void resultVulkan(VkResult result, FuncCode code, uint32_t num, ...)
         if (code == acquireNextImageF)
         {
             logMessage("VK_ERROR_SURFACE_LOST_KHR(acquireNExt)");
-            recreateSwapchain(&recreateSwap);
+            recreateSwapchain();
         }
         if (code == queuePresentF)
         {
-            recreateSwapchain(&recreateSwap);
+            recreateSwapchain();
             logMessage("VK_ERROR_SURFACE_LOST_KHR(queuePresent)");
         }
         break;

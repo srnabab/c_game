@@ -282,56 +282,31 @@ static Particle * particles = NULL;
 
 static ImageRotate pictureImageRotate = {0.0f};
 
-Recreate recreateSwap = {};
-
 //store all compoents for initialize vulkan in a struct
 VK_ALL allInOne = {};
 
-
-static inline void initializeRecreate(void)
-{
-    recreateSwap.DevicePack.pDevice = &device;
-    recreateSwap.DevicePack.pPhysicalDevice = &physicalDevice;
-
-    recreateSwap.pSurfaceCapabilities = &surfaceCapabilities;
-    recreateSwap.pSurfaceFormat = &surfaceFormat;
-    recreateSwap.pPresentMode = &presentMode;
-
-    recreateSwap.pSurface = &surface;
-    recreateSwap.pOldExtent2D = &oldExtent2D;
-    recreateSwap.pExtent2D = &extent2D;
-    recreateSwap.ppVertices = &vertices;
-
-    recreateSwap.pIndices = &indices;
-    recreateSwap.pGraphicQueue = &graphicQueue;
-
-    recreateSwap.swapchainFormat = swapchainFormat;
-    recreateSwap.pSwapchain = &swapchain;
-    recreateSwap.pSwapchainCommandPool = &swapchainCommandPool;
-
-    recreateSwap.imageCount = &imageCount;
-    recreateSwap.ppSwapchainImages = &swapchainImages;
-    recreateSwap.ppSwapchainImageViews = &swapchainImageViews;
-    
-    recreateSwap.ppSwapchainFramebuffer = &swapchainFramebuffer;
-
-    recreateSwap.pDepthImage = &depthImage;
-    recreateSwap.pDepthImageView = &depthImageView;
-    recreateSwap.pDepthImageMem = &depthImageMemory;
-
-    recreateSwap.pRenderPass = &renderPass;
-}
 static inline void initializeAllInOne(void)
 {
     allInOne.pPhysicalDevice = &physicalDevice;
 
     allInOne.pDevice = &device;
 
+    allInOne.pSurfaceCapabilities = &surfaceCapabilities;
+    allInOne.pSurfaceFormat = &surfaceFormat;
+    allInOne.pPresentMode = &presentMode;
+
+    allInOne.pSurface = &surface;
+
+    allInOne.pQueueFamilyIndices = &indices;
     allInOne.pGraphicQueue = &graphicQueue;
     allInOne.pPresentQueue = &presentQueue;
     allInOne.pComputeQueue = &computeQueue;
 
     allInOne.pExtent2D = &extent2D;
+    allInOne.pOldExtent2D = &oldExtent2D;
+    allInOne.imageCount = &imageCount;
+
+    allInOne.swapchainFormat = swapchainFormat;
     allInOne.pSwapchain = &swapchain;
 
     allInOne.pGraphicPipelineLayout = &graphicPipelineLayout;
@@ -348,8 +323,14 @@ static inline void initializeAllInOne(void)
 
     allInOne.pComputePipeline = &computePipeline;
 
+    allInOne.ppSwapchainImages = &swapchainImages;
+    allInOne.ppSwapchainImageViews = &swapchainImageViews;
     allInOne.ppSwapchainFramebuffer = &swapchainFramebuffer;
     allInOne.pSwapchainCommandPool = &swapchainCommandPool;
+    
+    allInOne.pDepthImage = &depthImage;
+    allInOne.pDepthImageView = &depthImageView;
+    allInOne.pDepthImageMem = &depthImageMemory;
 
     allInOne.pVertexBuffer = &vertexBuffer;
     allInOne.ppVertices = &vertices;
@@ -647,7 +628,7 @@ void initVulkan(void)
 
     initializeAllInOne();
 
-    initializeRecreate();
+    // initializeRecreate();
 
     resultVulkan(VK_SUCCESS, initializedF, 0);
 }

@@ -5,7 +5,7 @@
 
 #include "SDL3/SDL_begin_code.h"
 
-extern void SDLCALL recreateSwapchain(Recreate * pAllInOne);
+extern void SDLCALL recreateSwapchain(void);
 
 #include "SDL3/SDL_close_code.h"
 

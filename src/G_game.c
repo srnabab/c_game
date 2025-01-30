@@ -36,7 +36,6 @@ static double testNum = 0.0f;
 extern SDL_Window * window;
 extern SDL_DisplayID displayId;
 extern VK_ALL allInOne;
-extern Recreate recreateSwap;
 
 static SDL_Semaphore * main_semaphore1;
 static SDL_Semaphore * main_semaphore2;
@@ -182,8 +181,8 @@ bool process_input(void)
             }
             if (key == SDLK_F11)
             {
-                recreateSwap.pOldExtent2D->width = allInOne.pExtent2D->width;
-                recreateSwap.pOldExtent2D->height = allInOne.pExtent2D->height;
+                allInOne.pOldExtent2D->width = allInOne.pExtent2D->width;
+                allInOne.pOldExtent2D->height = allInOne.pExtent2D->height;
                 allInOne.pExtent2D->width = 1600;
                 allInOne.pExtent2D->height = 900;
                 
@@ -212,8 +211,8 @@ bool process_input(void)
                 logMessage("F9");
 
                 SDL_SetWindowFullscreen(window, 0);
-                recreateSwap.pOldExtent2D->width = allInOne.pExtent2D->width;
-                recreateSwap.pOldExtent2D->height = allInOne.pExtent2D->height;
+                allInOne.pOldExtent2D->width = allInOne.pExtent2D->width;
+                allInOne.pOldExtent2D->height = allInOne.pExtent2D->height;
                 
                 SDL_SetWindowSize(window, allInOne.pExtent2D->width, allInOne.pExtent2D->height);
                 SDL_RaiseWindow(window);

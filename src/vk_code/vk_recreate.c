@@ -10,6 +10,8 @@
 #include "G_custom_math.h"
 #include "G_log.h"
 
+extern VK_ALL allInOne;
+
 static void newSwapchain(VkDevice * pDevice, VkSurfaceCapabilitiesKHR * pSurfaceCapabilities, VkSurfaceKHR * pSurface, VkSurfaceFormatKHR * pSurfaceFormat, VkExtent2D * pExtent2D, VkPresentModeKHR * pPresentMode, QueueFamilyIndices indices, VkSwapchainKHR * pSwapchain)
 {
     // FuncCode code = createSwapchainF;
@@ -66,58 +68,58 @@ static void newSwapchain(VkDevice * pDevice, VkSurfaceCapabilitiesKHR * pSurface
     
     vkDestroySwapchainKHR(*pDevice, oldSwapchain, NULL);
 }
-void recreateSwapchain(Recreate * pRecreate)
+void recreateSwapchain()
 {
     FuncCode code = recreateSwapchainF; 
-    VkDevice * pDevice = pRecreate->DevicePack.pDevice;
-    VkPhysicalDevice * pPhysicalDevice = pRecreate->DevicePack.pPhysicalDevice;
+    VkDevice * pDevice = allInOne.pDevice;
+    VkPhysicalDevice * pPhysicalDevice = allInOne.pPhysicalDevice;
     //printf("wait\n");
-    //printf("pDevice: %p\n", pRecreate->pDevice);
+    //printf("pDevice: %p\n", allInOne.pDevice);
     resultVulkan(vkDeviceWaitIdle(*pDevice), code, 0);
     //printf("wait done\n");
     
-    // SDL_Log("ppSwaapchainFramebuffer: %p\n", pRecreate->ppSwapchainFramebuffer);
-    destroyedFrameBuffer(pDevice, *pRecreate->imageCount, *pRecreate->ppSwapchainFramebuffer);
-    SDL_free(*pRecreate->ppSwapchainFramebuffer);
-    *pRecreate->ppSwapchainFramebuffer = NULL;
+    // SDL_Log("ppSwaapchainFramebuffer: %p\n", allInOne.ppSwapchainFramebuffer);
+    destroyedFrameBuffer(pDevice, *allInOne.imageCount, *allInOne.ppSwapchainFramebuffer);
+    SDL_free(*allInOne.ppSwapchainFramebuffer);
+    *allInOne.ppSwapchainFramebuffer = NULL;
 
-    destroyImageViews(pDevice, *pRecreate->ppSwapchainImageViews, *pRecreate->imageCount);
-    SDL_free(*pRecreate->ppSwapchainImageViews);
-    *pRecreate->ppSwapchainImageViews = NULL;
-    SDL_free(*pRecreate->ppSwapchainImages);
-    *pRecreate->ppSwapchainImages = NULL;
+    destroyImageViews(pDevice, *allInOne.ppSwapchainImageViews, *allInOne.imageCount);
+    SDL_free(*allInOne.ppSwapchainImageViews);
+    *allInOne.ppSwapchainImageViews = NULL;
+    SDL_free(*allInOne.ppSwapchainImages);
+    *allInOne.ppSwapchainImages = NULL;
 
-    vkDestroyImageView(*pDevice, *pRecreate->pDepthImageView, NULL);
-    *pRecreate->pDepthImageView = NULL;
-    vkDestroyImage(*pDevice, *pRecreate->pDepthImage, NULL);
-    *pRecreate->pDepthImage = NULL;
-    vkFreeMemory(*pDevice, *pRecreate->pDepthImageMem, NULL);
-    *pRecreate->pDepthImageMem = NULL;
+    vkDestroyImageView(*pDevice, *allInOne.pDepthImageView, NULL);
+    *allInOne.pDepthImageView = NULL;
+    vkDestroyImage(*pDevice, *allInOne.pDepthImage, NULL);
+    *allInOne.pDepthImage = NULL;
+    vkFreeMemory(*pDevice, *allInOne.pDepthImageMem, NULL);
+    *allInOne.pDepthImageMem = NULL;
     
-    //cleanupSwapchain(pRecreate->pDevice, *pRecreate->ImageCount, *pRecreate->pSwapchainFramebuffer, *pRecreate->pSwapchainImageViews, pRecreate->pSwapchain);
-    //printf("imageCOunt: %u\n", *pRecreate->ImageCount);
+    //cleanupSwapchain(allInOne.pDevice, *allInOne.ImageCount, *allInOne.pSwapchainFramebuffer, *allInOne.pSwapchainImageViews, allInOne.pSwapchain);
+    //printf("imageCOunt: %u\n", *allInOne.ImageCount);
 
-    getSurfaceCapabilities(pPhysicalDevice, pRecreate->pSurface, pRecreate->pSurfaceCapabilities);
-    getSurfaceFormats(pPhysicalDevice, pRecreate->pSurface, pRecreate->pSurfaceFormat);
-    //chooseSwapExtent(pPhysicalDevice, pRecreate->pSurface, pRecreate->pSurfaceCapabilities, pRecreate->pExtent2D);
+    getSurfaceCapabilities(pPhysicalDevice, allInOne.pSurface, allInOne.pSurfaceCapabilities);
+    getSurfaceFormats(pPhysicalDevice, allInOne.pSurface, allInOne.pSurfaceFormat);
+    //chooseSwapExtent(pPhysicalDevice, allInOne.pSurface, allInOne.pSurfaceCapabilities, allInOne.pExtent2D);
 
-    newSwapchain(pDevice, pRecreate->pSurfaceCapabilities, pRecreate->pSurface, pRecreate->pSurfaceFormat, pRecreate->pExtent2D, pRecreate->pPresentMode, *pRecreate->pIndices, pRecreate->pSwapchain);
+    newSwapchain(pDevice, allInOne.pSurfaceCapabilities, allInOne.pSurface, allInOne.pSurfaceFormat, allInOne.pExtent2D, allInOne.pPresentMode, *allInOne.pQueueFamilyIndices, allInOne.pSwapchain);
     
-    getSwapchainNumber(pDevice, pRecreate->pSwapchain, pRecreate->imageCount);
-    //printf("imageCOunt: %u\n", *pRecreate->ImageCount);
+    getSwapchainNumber(pDevice, allInOne.pSwapchain, allInOne.imageCount);
+    //printf("imageCOunt: %u\n", *allInOne.ImageCount);
 
-    createSwapchainImage(pDevice, pRecreate->pSwapchain, *pRecreate->imageCount, pRecreate->ppSwapchainImages);
-    createImageViews(pDevice, pRecreate->ppSwapchainImages, *pRecreate->imageCount, pRecreate->swapchainFormat, VK_IMAGE_ASPECT_COLOR_BIT, pRecreate->ppSwapchainImageViews);
-    createDepthResoures(pPhysicalDevice, pDevice, pRecreate->pExtent2D, pRecreate->pSwapchainCommandPool, pRecreate->pGraphicQueue, pRecreate->pDepthImage, pRecreate->pDepthImageMem, pRecreate->pDepthImageView);
+    createSwapchainImage(pDevice, allInOne.pSwapchain, *allInOne.imageCount, allInOne.ppSwapchainImages);
+    createImageViews(pDevice, allInOne.ppSwapchainImages, *allInOne.imageCount, allInOne.swapchainFormat, VK_IMAGE_ASPECT_COLOR_BIT, allInOne.ppSwapchainImageViews);
+    createDepthResoures(pPhysicalDevice, pDevice, allInOne.pExtent2D, allInOne.pSwapchainCommandPool, allInOne.pGraphicQueue, allInOne.pDepthImage, allInOne.pDepthImageMem, allInOne.pDepthImageView);
     // SDL_Log("depth resoures created\n");
-    createFrameBuffer(pDevice, pRecreate->pExtent2D, *pRecreate->imageCount, *pRecreate->ppSwapchainImageViews, pRecreate->pDepthImageView, pRecreate->pRenderPass, pRecreate->ppSwapchainFramebuffer);
+    createFrameBuffer(pDevice, allInOne.pExtent2D, *allInOne.imageCount, *allInOne.ppSwapchainImageViews, allInOne.pDepthImageView, allInOne.pRenderPass, allInOne.ppSwapchainFramebuffer);
     // SDL_Log("swapchain framebuffer created\n");
 
-    //fix_ratio(pRecreate->ppVertices, *pRecreate->pOldExtent2D, *pRecreate->pExtent2D, 0);
-    //fix_ratio(pRecreate->ppVertices, *pRecreate->pOldExtent2D, *pRecreate->pExtent2D, 1);
+    //fix_ratio(allInOne.ppVertices, *allInOne.pOldExtent2D, *allInOne.pExtent2D, 0);
+    //fix_ratio(allInOne.ppVertices, *allInOne.pOldExtent2D, *allInOne.pExtent2D, 1);
     //fix_ratio(pR)
 
-    //reInitializePosition(64, 64, *pRecreate->pExtent2D, pRecreate->ppVertices, 0);
+    //reInitializePosition(64, 64, *allInOne.pExtent2D, allInOne.ppVertices, 0);
     
     logMessage("recreate swapchain");
 }
