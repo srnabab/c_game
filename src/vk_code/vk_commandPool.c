@@ -2,6 +2,9 @@
 
 #include "vk_code_h/vk_commandPool.h"
 #include "vk_code_h/vk_judge.h"
+#include "vk_code_h/vk_struct.h"
+
+extern VK_ALL allInOne;
 
 void createCommandPool(VkDevice * pDevice, Uint32 graphicsFamilyIndice, VkCommandPool * pCommandPool)
 {
@@ -13,7 +16,7 @@ void createCommandPool(VkDevice * pDevice, Uint32 graphicsFamilyIndice, VkComman
     commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     commandPoolCreateInfo.queueFamilyIndex = graphicsFamilyIndice;
 
-    resultVulkan(vkCreateCommandPool(*pDevice, &commandPoolCreateInfo, NULL, pCommandPool), code, 0);
+    resultVulkan(vkCreateCommandPool(*pDevice, &commandPoolCreateInfo, allInOne.pAllocationCallbacks, pCommandPool), code, 0);
     //printf("command pool created\n");
 } 
 void createCommandbuffer(VkDevice * pDevice, VkCommandPool * pCommandPool, VkCommandBuffer ** pCommandBuffer)

@@ -5,7 +5,7 @@
 
 #include "SDL3/SDL_begin_code.h"
 
-extern void SDLCALL createInstance(VkInstance * pInstance);
+extern void SDLCALL createInstance(void);
 
 #include "SDL3/SDL_close_code.h"
 

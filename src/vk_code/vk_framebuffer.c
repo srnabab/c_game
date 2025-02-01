@@ -1,7 +1,10 @@
 #include "vk_code_h/vk_framebuffer.h"
 #include "vk_code_h/vk_judge.h"
+#include "vk_code_h/vk_struct.h"
 
 #include "G_log.h"
+
+extern VK_ALL allInOne;
 
 void createFrameBuffer(VkDevice * pDevice, VkExtent2D * pExtent2D, uint32_t imageCount, VkImageView * pSwapchainImageView, VkImageView * pDepthImageView, VkRenderPass * pRenderPass, VkFramebuffer ** pSwapchainFramebuffer)
 {
@@ -25,7 +28,7 @@ void createFrameBuffer(VkDevice * pDevice, VkExtent2D * pExtent2D, uint32_t imag
         framebufferInfo.height = pExtent2D->height;
         framebufferInfo.layers = 1;
 
-        resultVulkan(vkCreateFramebuffer(*pDevice, &framebufferInfo, NULL, &((*pSwapchainFramebuffer)[i])), code, 0);
+        resultVulkan(vkCreateFramebuffer(*pDevice, &framebufferInfo, allInOne.pAllocationCallbacks, &((*pSwapchainFramebuffer)[i])), code, 0);
     }
 
     //printf("swapchain framebuffer created\n");
@@ -34,6 +37,6 @@ void destroyedFrameBuffer(VkDevice * pDevice, uint32_t imageCount, VkFramebuffer
 {
     for (uint32_t i = 0;i < imageCount;i++)
     {
-        vkDestroyFramebuffer(*pDevice, pSwapchainFramebuffer[i], NULL);
+        vkDestroyFramebuffer(*pDevice, pSwapchainFramebuffer[i], allInOne.pAllocationCallbacks);
     }
 } 

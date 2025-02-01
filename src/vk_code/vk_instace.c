@@ -1,4 +1,5 @@
 #include "vk_code_h/vk_judge.h"
+#include "vk_code_h/vk_struct.h"
 #include "vk_code_h/vk_instance.h"
 
 #include "SDL3/SDL_vulkan.h"
@@ -7,7 +8,7 @@
 #include "G_pop_window.h"
 #include "G_log.h"
 
-extern SDL_Window * window;
+extern VK_ALL allInOne;
 
 static bool extensionSupportedCheck_Must(uint32_t neededExtensionCount, char ** neededExtensions, uint32_t extensionCount, VkExtensionProperties * pExtensionProperties)
 {
@@ -106,7 +107,7 @@ static void setOptionalExtensions(uint32_t extensionCount, const char ** extensi
     }
     OptionalExtensionCount += extensionCount;
 }
-void createInstance(VkInstance * pInstance)
+void createInstance(void)
 {
     FuncCode code = createInstanceF;
 
@@ -206,7 +207,7 @@ void createInstance(VkInstance * pInstance)
     createInfo.enabledExtensionCount = requiredExtensionCount;
     createInfo.ppEnabledExtensionNames = (const char * const *)requiredExtension;
 
-    resultVulkan(vkCreateInstance(&createInfo, NULL, pInstance), code, 1, requiredExtension);
+    resultVulkan(vkCreateInstance(&createInfo, allInOne.pAllocationCallbacks, allInOne.pInstance), code, 1, requiredExtension);
 
     SDL_free(requiredExtension);
 

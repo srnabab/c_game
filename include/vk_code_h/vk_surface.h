@@ -6,7 +6,7 @@
 
 #include "SDL3/SDL_begin_code.h"
 
-extern void SDLCALL createSurface(SDL_Window * pWindow, VkInstance * pInstance, VkSurfaceKHR * pSurface);
+extern void SDLCALL createSurface(SDL_Window * pWindow);
 
 #include "SDL3/SDL_close_code.h"
 

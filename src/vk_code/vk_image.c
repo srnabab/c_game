@@ -1,5 +1,8 @@
 #include "vk_code_h/vk_image.h"
 #include "vk_code_h/vk_buffer.h"
+#include "vk_code_h/vk_struct.h"
+
+extern VK_ALL allInOne;
 
 VkResult createImage(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage * pImage, VkDeviceMemory * pImageMem)
 {
@@ -24,7 +27,7 @@ VkResult createImage(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, uin
     imageInfo.pQueueFamilyIndices = NULL;
     imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-    result |= vkCreateImage(*pDevice, &imageInfo, NULL, pImage);
+    result |= vkCreateImage(*pDevice, &imageInfo, allInOne.pAllocationCallbacks, pImage);
 
     VkMemoryRequirements memRequirements;
     vkGetImageMemoryRequirements(*pDevice, *pImage, &memRequirements);
@@ -34,7 +37,7 @@ VkResult createImage(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, uin
     allocInfo.allocationSize = memRequirements.size;
     allocInfo.memoryTypeIndex = findMemoryType(pPhysicalDevice, memRequirements.memoryTypeBits, properties);
 
-    result |= vkAllocateMemory(*pDevice, &allocInfo, NULL, pImageMem);
+    result |= vkAllocateMemory(*pDevice, &allocInfo, allInOne.pAllocationCallbacks, pImageMem);
 
     result |= vkBindImageMemory(*pDevice, *pImage, *pImageMem, 0);
 
@@ -62,7 +65,7 @@ VkResult createImageView(VkDevice * pDevice, VkImage * pImage, VkFormat format, 
     viewInfo.subresourceRange.baseArrayLayer = 0;
     viewInfo.subresourceRange.layerCount = 1;
 
-    result |= vkCreateImageView(*pDevice, &viewInfo, NULL, pImageView);
+    result |= vkCreateImageView(*pDevice, &viewInfo, allInOne.pAllocationCallbacks, pImageView);
 
     return result;
 }
@@ -90,7 +93,7 @@ void destroyImageViews(VkDevice * pDevice, VkImageView * pImageView, uint32_t im
 {
     for (uint32_t i = 0;i < imageCount;i++)
     {
-        vkDestroyImageView(*pDevice, pImageView[i], NULL);
+        vkDestroyImageView(*pDevice, pImageView[i], allInOne.pAllocationCallbacks);
     }
 }
 VkResult transitionImageLayout(VkDevice * pDevice, VkCommandPool * pCommandPool, VkQueue * pGraphcisQueue, VkImage * pImage, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)

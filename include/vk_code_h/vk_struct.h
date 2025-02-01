@@ -47,12 +47,6 @@ typedef struct _Particle
     vec4 color;
 }Particle;
 
-typedef struct _DevicePack
-{
-    VkDevice * pDevice;
-    VkPhysicalDevice * pPhysicalDevice;
-}DevicePack;
-
 typedef struct _ImageRotate
 {
     float rotation;
@@ -60,6 +54,10 @@ typedef struct _ImageRotate
 
 typedef struct _VK_ALL
 {
+    VkAllocationCallbacks * pAllocationCallbacks;
+
+    VkInstance * pInstance;
+
     VkPhysicalDevice * pPhysicalDevice;
 
     VkDevice * pDevice;
@@ -75,11 +73,12 @@ typedef struct _VK_ALL
     VkQueue * pPresentQueue;
     VkQueue * pComputeQueue;
 
+    VkFormat * pDepthFormat;
+
     VkExtent2D * pExtent2D;
     VkExtent2D * pOldExtent2D;
-    Uint32 * imageCount;
+    Uint32 * pImageCount;
 
-    VkFormat swapchainFormat;
     VkSwapchainKHR * pSwapchain;
 
     VkPipelineLayout * pGraphicPipelineLayout;

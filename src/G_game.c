@@ -39,7 +39,7 @@ extern VK_ALL allInOne;
 
 static SDL_Semaphore * main_semaphore1;
 static SDL_Semaphore * main_semaphore2;
-SDL_Semaphore * signal_semaphore = NULL;
+static SDL_Semaphore * signal_semaphore = NULL;
 
 static SDL_MessageBoxData * boxData;
 
@@ -175,6 +175,9 @@ bool process_input(void)
                 Mix_HaltMusic();
                 SDL_SignalSemaphore(main_semaphore1);
                 SDL_SignalSemaphore(main_semaphore2);
+                SDL_SignalSemaphore(signal_semaphore);
+                SDL_SignalSemaphore(signal_semaphore);
+                SDL_SignalSemaphore(signal_semaphore);
                 game_is_running = false;
                 
                 return true;
@@ -462,6 +465,7 @@ int update(void * arg)
     bool sceneCleaned = false;
     
     SDL_Delay(3000);
+
     Uint64 last_frame_time = SDL_GetPerformanceCounter();
     SDL_SignalSemaphore(main_semaphore1);
     SDL_SignalSemaphore(main_semaphore2);

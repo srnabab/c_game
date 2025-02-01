@@ -1,4 +1,5 @@
 #include "vk_code_h/vk_shader.h"
+#include "vk_code_h/vk_struct.h"
 #include "vk_code_h/vk_judge.h"
 
 #include "SDL3/SDL_iostream.h"
@@ -7,6 +8,8 @@
 #include "G_log.h"
 
 #include <stdlib.h>
+
+extern VK_ALL allInOne;
 
 void createShaderModule(VkDevice * pDevice, PathType type, VkShaderModule * pShaderModule)
 {
@@ -37,7 +40,7 @@ void createShaderModule(VkDevice * pDevice, PathType type, VkShaderModule * pSha
 
     SDL_CloseIO(shaderFile);
 
-    resultVulkan(vkCreateShaderModule(*pDevice, &createInfo, NULL, pShaderModule), code, 1, shaderCode);
+    resultVulkan(vkCreateShaderModule(*pDevice, &createInfo, allInOne.pAllocationCallbacks, pShaderModule), code, 1, shaderCode);
 
     SDL_free(shaderCode);
 

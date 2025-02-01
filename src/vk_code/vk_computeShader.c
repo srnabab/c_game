@@ -3,6 +3,8 @@
 #include "vk_code_h/vk_computeShader.h"
 #include "vk_code_h/vk_buffer.h"
 
+extern VK_ALL allInOne;
+
 void createShaderStorageBuffers(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkCommandPool * pCommandPool, VkQueue * pGraphicQueue, VkExtent2D extent2D, VkBuffer ** ppShaderStorageBuffers, VkDeviceMemory ** ppShaderStorageBuffersMem, Particle ** ppParticles)
 {
     VkDeviceSize bufferSize = sizeof(Particle) * PARTICLE_COUNT;
@@ -30,8 +32,8 @@ void createShaderStorageBuffers(VkPhysicalDevice * pPhysicalDevice, VkDevice * p
         //printf("result1: %d, result2: %d\n", result1, result2);
     }
 
-    vkDestroyBuffer(*pDevice, stagingBuffer, NULL);
-    vkFreeMemory(*pDevice, stagingBufferMemory, NULL);
+    vkDestroyBuffer(*pDevice, stagingBuffer, allInOne.pAllocationCallbacks);
+    vkFreeMemory(*pDevice, stagingBufferMemory, allInOne.pAllocationCallbacks);
 }
 // float randomFloat(void)
 // {

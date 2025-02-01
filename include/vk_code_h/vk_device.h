@@ -5,10 +5,8 @@
 
 #include "SDL3/SDL_begin_code.h"
 
-extern void SDLCALL pickPhysicalDevice(VkInstance * pInstance, VkPhysicalDevice * pPhysicalDevice);
-extern Uint64 SDLCALL getPhysicalDeviceTotalMemory(VkPhysicalDeviceMemoryProperties *pPhysicalDeviceMemoryProperties);
-extern int SDLCALL getBestPhysicalDeviceIndex(VkPhysicalDevice *pPhysicalDevices, Uint32 physicalDeviceNumber);
-extern void SDLCALL createLogicalDevice(VkPhysicalDevice * pPhysicalDevice, QueueFamilyIndices indice, VkDevice * pDevice);
+extern void SDLCALL pickPhysicalDevice(void);
+extern void SDLCALL createLogicalDevice(void);
 
 #include "SDL3/SDL_close_code.h"
 

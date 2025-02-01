@@ -2,6 +2,9 @@
 
 #include "vk_code_h/vk_synchronize.h"
 #include "vk_code_h/vk_judge.h"
+#include "vk_code_h/vk_struct.h"
+
+extern VK_ALL allInOne;
 
 void createSemaphore(VkDevice * pDevice, VkSemaphore ** pSemaphore)
 {
@@ -15,7 +18,7 @@ void createSemaphore(VkDevice * pDevice, VkSemaphore ** pSemaphore)
     semaphoreCreateInfo.flags = 0;
 
     for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
-        resultVulkan(vkCreateSemaphore(*pDevice, &semaphoreCreateInfo, NULL, &((*pSemaphore)[i])), code, 0);
+        resultVulkan(vkCreateSemaphore(*pDevice, &semaphoreCreateInfo, allInOne.pAllocationCallbacks, &((*pSemaphore)[i])), code, 0);
     //printf("semaphor created\n");
 }
 void createFence(VkDevice * pDevice, VkFence ** pFence)
@@ -30,6 +33,6 @@ void createFence(VkDevice * pDevice, VkFence ** pFence)
     fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
     for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
-        resultVulkan(vkCreateFence(*pDevice, &fenceCreateInfo, NULL, &((*pFence)[i])), code, 0);
+        resultVulkan(vkCreateFence(*pDevice, &fenceCreateInfo, allInOne.pAllocationCallbacks, &((*pFence)[i])), code, 0);
     //printf("fence created\n");
 }

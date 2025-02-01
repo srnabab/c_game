@@ -1,12 +1,15 @@
 #include "vk_code_h/vk_surface.h"
+#include "vk_code_h/vk_struct.h"
 #include "vk_code_h/vk_judge.h"
 
 #include "SDL3/SDL_vulkan.h"
 
-void createSurface(SDL_Window * pWindow, VkInstance * pInstance, VkSurfaceKHR * pSurface)
+extern VK_ALL allInOne;
+
+void createSurface(SDL_Window * pWindow)
 {
     FuncCode code = createSurfaceF;
-    resultVulkan(!SDL_Vulkan_CreateSurface(pWindow, *pInstance, NULL, pSurface), code, 0);
+    resultVulkan(!SDL_Vulkan_CreateSurface(pWindow, *allInOne.pInstance, allInOne.pAllocationCallbacks, allInOne.pSurface), code, 0);
 
     //printf("surface created\n");
 }

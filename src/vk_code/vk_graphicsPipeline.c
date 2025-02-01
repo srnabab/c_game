@@ -2,6 +2,8 @@
 #include "vk_code_h/vk_judge.h"
 #include "vk_code_h/vk_struct.h"
 
+extern VK_ALL allInOne;
+
 void configureDynamicsState(VkPipelineDynamicStateCreateInfo * pDynamicStateCreateInfo)
 {
     uint32_t dynamicCount = 2;
@@ -177,16 +179,16 @@ void createPipelineLayout(VkDevice * pDevice, uint32_t setLayoutCount, VkDescrip
     pipelineLayoutCreateInfo.pushConstantRangeCount = pushConstantRangeCount;
     pipelineLayoutCreateInfo.pPushConstantRanges = pPushConstantRange;
 
-    resultVulkan(vkCreatePipelineLayout(*pDevice, &pipelineLayoutCreateInfo, NULL, pPipelineLayout), code, 0);
+    resultVulkan(vkCreatePipelineLayout(*pDevice, &pipelineLayoutCreateInfo, allInOne.pAllocationCallbacks, pPipelineLayout), code, 0);
 
     //printf("pipeLayout created\n");
 }
-void createRenderPass(VkDevice * pDevice, VkFormat * pFormat, VkFormat * pDepthFormat, VkRenderPass * pRenderPass)
+void createRenderPass(void)
 {
     FuncCode code = createRenderPassF;
     VkAttachmentDescription colorAttachment = {};
     colorAttachment.flags = 0;
-    colorAttachment.format = *pFormat;
+    colorAttachment.format = allInOne.pSurfaceFormat->format;
     colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
     colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -201,7 +203,7 @@ void createRenderPass(VkDevice * pDevice, VkFormat * pFormat, VkFormat * pDepthF
 
     VkAttachmentDescription depthAttachment = {};
     depthAttachment.flags = 0;
-    depthAttachment.format = *pDepthFormat;
+    depthAttachment.format = *allInOne.pDepthFormat;
     depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
     depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -248,7 +250,7 @@ void createRenderPass(VkDevice * pDevice, VkFormat * pFormat, VkFormat * pDepthF
     renderPassCreateInfo.dependencyCount = 1;
     renderPassCreateInfo.pDependencies = &dependency;
 
-    resultVulkan(vkCreateRenderPass(*pDevice, &renderPassCreateInfo, NULL, pRenderPass), code, 0);
+    resultVulkan(vkCreateRenderPass(*allInOne.pDevice, &renderPassCreateInfo, allInOne.pAllocationCallbacks, allInOne.pRenderPass), code, 0);
 
     //printf("renderPass created\n");
 }
@@ -304,7 +306,7 @@ void createGraphicsPipeline(VkDevice * pDevice, VkExtent2D * pExtent2D, uint32_t
     pipelineCreateInfo.basePipelineHandle = NULL;
     pipelineCreateInfo.basePipelineIndex = -1;
 
-    resultVulkan(vkCreateGraphicsPipelines(*pDevice, NULL, 1, &pipelineCreateInfo, NULL, pGraphicsPipeline),
+    resultVulkan(vkCreateGraphicsPipelines(*pDevice, NULL, 1, &pipelineCreateInfo, allInOne.pAllocationCallbacks, pGraphicsPipeline),
                                         code, 4,
                                         (void*)pipelineVertexInputStateCreateInfo.pVertexBindingDescriptions,
                                         (void*)pipelineVertexInputStateCreateInfo.pVertexAttributeDescriptions,
@@ -407,7 +409,7 @@ void createParticlePipeline(VkDevice * pDevice, VkExtent2D * pExtent2D, uint32_t
     pipelineCreateInfo.basePipelineHandle = NULL;
     pipelineCreateInfo.basePipelineIndex = -1;
 
-    resultVulkan(vkCreateGraphicsPipelines(*pDevice, NULL, 1, &pipelineCreateInfo, NULL, pGraphicsPipeline),
+    resultVulkan(vkCreateGraphicsPipelines(*pDevice, NULL, 1, &pipelineCreateInfo, allInOne.pAllocationCallbacks, pGraphicsPipeline),
                                         code, 0);
 
     //free((void*)pipelineVertexInputStateCreateInfo.pVertexBindingDescriptions);
@@ -427,5 +429,5 @@ void createComputePipeline(VkDevice * pDevice, VkPipelineLayout * pComputePipeli
     pipelineInfo.basePipelineHandle = NULL;
     pipelineInfo.basePipelineIndex = 0;
 
-    vkCreateComputePipelines(*pDevice, NULL, 1, &pipelineInfo, NULL, pComputePipeline);
+    vkCreateComputePipelines(*pDevice, NULL, 1, &pipelineInfo, allInOne.pAllocationCallbacks, pComputePipeline);
 }

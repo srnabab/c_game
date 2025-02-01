@@ -1,4 +1,7 @@
-#include "vk_buffer.h"
+#include "vk_code_h/vk_buffer.h"
+#include "vk_code_h/vk_struct.h"
+
+extern VK_ALL allInOne;
 
 VkResult createBuffer(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkBuffer * pBuffer, VkDeviceMemory * pBufferMemory, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties)
 {
@@ -14,7 +17,7 @@ VkResult createBuffer(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, Vk
     bufferCreateInfo.queueFamilyIndexCount = 0;
     bufferCreateInfo.pQueueFamilyIndices = NULL;
 
-    result |= vkCreateBuffer(*pDevice, &bufferCreateInfo, NULL, pBuffer);
+    result |= vkCreateBuffer(*pDevice, &bufferCreateInfo, allInOne.pAllocationCallbacks, pBuffer);
 
     VkMemoryRequirements memRequirements;
     vkGetBufferMemoryRequirements(*pDevice, *pBuffer, &memRequirements);
@@ -25,7 +28,7 @@ VkResult createBuffer(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, Vk
     bufferMemAllocateInfo.allocationSize = memRequirements.size;
     bufferMemAllocateInfo.memoryTypeIndex = findMemoryType(pPhysicalDevice, memRequirements.memoryTypeBits, properties);
 
-    result |= vkAllocateMemory(*pDevice, &bufferMemAllocateInfo, NULL, pBufferMemory);
+    result |= vkAllocateMemory(*pDevice, &bufferMemAllocateInfo, allInOne.pAllocationCallbacks, pBufferMemory);
     result |= vkBindBufferMemory(*pDevice, *pBuffer, *pBufferMemory, 0);
 
     if (result)

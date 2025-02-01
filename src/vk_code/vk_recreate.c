@@ -79,11 +79,11 @@ void recreateSwapchain()
     //printf("wait done\n");
     
     // SDL_Log("ppSwaapchainFramebuffer: %p\n", allInOne.ppSwapchainFramebuffer);
-    destroyedFrameBuffer(pDevice, *allInOne.imageCount, *allInOne.ppSwapchainFramebuffer);
+    destroyedFrameBuffer(pDevice, *allInOne.pImageCount, *allInOne.ppSwapchainFramebuffer);
     SDL_free(*allInOne.ppSwapchainFramebuffer);
     *allInOne.ppSwapchainFramebuffer = NULL;
 
-    destroyImageViews(pDevice, *allInOne.ppSwapchainImageViews, *allInOne.imageCount);
+    destroyImageViews(pDevice, *allInOne.ppSwapchainImageViews, *allInOne.pImageCount);
     SDL_free(*allInOne.ppSwapchainImageViews);
     *allInOne.ppSwapchainImageViews = NULL;
     SDL_free(*allInOne.ppSwapchainImages);
@@ -99,27 +99,21 @@ void recreateSwapchain()
     //cleanupSwapchain(allInOne.pDevice, *allInOne.ImageCount, *allInOne.pSwapchainFramebuffer, *allInOne.pSwapchainImageViews, allInOne.pSwapchain);
     //printf("imageCOunt: %u\n", *allInOne.ImageCount);
 
-    getSurfaceCapabilities(pPhysicalDevice, allInOne.pSurface, allInOne.pSurfaceCapabilities);
-    getSurfaceFormats(pPhysicalDevice, allInOne.pSurface, allInOne.pSurfaceFormat);
+    getSurfaceCapabilities();
+    getSurfaceFormats();
     //chooseSwapExtent(pPhysicalDevice, allInOne.pSurface, allInOne.pSurfaceCapabilities, allInOne.pExtent2D);
 
     newSwapchain(pDevice, allInOne.pSurfaceCapabilities, allInOne.pSurface, allInOne.pSurfaceFormat, allInOne.pExtent2D, allInOne.pPresentMode, *allInOne.pQueueFamilyIndices, allInOne.pSwapchain);
     
-    getSwapchainNumber(pDevice, allInOne.pSwapchain, allInOne.imageCount);
+    getSwapchainNumber();
     //printf("imageCOunt: %u\n", *allInOne.ImageCount);
 
-    createSwapchainImage(pDevice, allInOne.pSwapchain, *allInOne.imageCount, allInOne.ppSwapchainImages);
-    createImageViews(pDevice, allInOne.ppSwapchainImages, *allInOne.imageCount, allInOne.swapchainFormat, VK_IMAGE_ASPECT_COLOR_BIT, allInOne.ppSwapchainImageViews);
+    createSwapchainImage();
+    createImageViews(pDevice, allInOne.ppSwapchainImages, *allInOne.pImageCount, allInOne.pSurfaceFormat->format, VK_IMAGE_ASPECT_COLOR_BIT, allInOne.ppSwapchainImageViews);
     createDepthResoures(pPhysicalDevice, pDevice, allInOne.pExtent2D, allInOne.pSwapchainCommandPool, allInOne.pGraphicQueue, allInOne.pDepthImage, allInOne.pDepthImageMem, allInOne.pDepthImageView);
     // SDL_Log("depth resoures created\n");
-    createFrameBuffer(pDevice, allInOne.pExtent2D, *allInOne.imageCount, *allInOne.ppSwapchainImageViews, allInOne.pDepthImageView, allInOne.pRenderPass, allInOne.ppSwapchainFramebuffer);
+    createFrameBuffer(pDevice, allInOne.pExtent2D, *allInOne.pImageCount, *allInOne.ppSwapchainImageViews, allInOne.pDepthImageView, allInOne.pRenderPass, allInOne.ppSwapchainFramebuffer);
     // SDL_Log("swapchain framebuffer created\n");
-
-    //fix_ratio(allInOne.ppVertices, *allInOne.pOldExtent2D, *allInOne.pExtent2D, 0);
-    //fix_ratio(allInOne.ppVertices, *allInOne.pOldExtent2D, *allInOne.pExtent2D, 1);
-    //fix_ratio(pR)
-
-    //reInitializePosition(64, 64, *allInOne.pExtent2D, allInOne.ppVertices, 0);
     
     logMessage("recreate swapchain");
 }
