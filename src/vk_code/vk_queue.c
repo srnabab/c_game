@@ -62,19 +62,7 @@ void findQueueFamilies(void)
 
     SDL_free(queueFamily);
 }
-void createGraphicsQueue(void)
+void createQueue(Uint32 index, VkQueue * pQueue)
 {
-    vkGetDeviceQueue(*allInOne.pDevice, allInOne.pQueueFamilyIndices->graphicsFamily.familyIndice, 0, allInOne.pGraphicQueue);
-
-    //printf("graphicsQueue created\n");
-}
-void createPresentQueue(void)
-{
-    vkGetDeviceQueue(*allInOne.pDevice, allInOne.pQueueFamilyIndices->presentFamily.familyIndice, 0, allInOne.pPresentQueue);
-
-    //printf("presentQueue created\n");
-}
-void createComputeQueue(void)
-{
-    vkGetDeviceQueue(*allInOne.pDevice, allInOne.pQueueFamilyIndices->computeFamily.familyIndice, 0, allInOne.pComputeQueue);
+    vkGetDeviceQueue(*allInOne.pDevice, index, 0, pQueue);
 }

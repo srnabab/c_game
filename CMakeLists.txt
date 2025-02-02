@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5.0)
-project(game VERSION 0.1.0 LANGUAGES C CXX)
+project(game VERSION 0.1.0 LANGUAGES C)
 
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_STANDARD_REQUIRED TRUE)
@@ -33,7 +33,7 @@ add_custom_command(
 add_custom_target(GenerateCode DEPENDS ${SRC_ROOT}/file/generated_function.c ${INCLUDE_ROOT}/file/generated_function.h)
 
 add_subdirectory(src/texture_generate)
-add_subdirectory(src/vma)
+# add_subdirectory(src/vma)
 add_subdirectory(src/contentManager)
 
 message(STATUS "Include directories for MyExecutable: ${INCLUDE_ROOT}")
@@ -67,6 +67,8 @@ add_executable(game ${SRC_ROOT}/main.c
                     ${SRC_ROOT}/G_pop_window.c
                     ${SRC_ROOT}/G_scene.c
                     ${SRC_ROOT}/SDL_complement.c
+                    ${SRC_ROOT}/spirv_reflect/spirv_reflect.c
+                    ${SRC_ROOT}/spirv_reflect/shader_resolve.c
                     ${SRC_ROOT}/vk_code/vk_judge.c
                     ${SRC_ROOT}/vk_code/vk_instace.c 
                     ${SRC_ROOT}/vk_code/vk_surface.c
@@ -103,6 +105,7 @@ target_include_directories(game PUBLIC ${INCLUDE_ROOT}
                             "${INCLUDE_ROOT}/SDL3_image"
                             "${INCLUDE_ROOT}/vulkan"
                             "${INCLUDE_ROOT}/vk_video"
+                            "${INCLUDE_ROOT}/spirv_reflect"
                             "${INCLUDE_ROOT}/zlib"
                             "${INCLUDE_ROOT}/textureG"
                             "${INCLUDE_ROOT}/G_file"
@@ -114,7 +117,7 @@ target_include_directories(game PUBLIC ${INCLUDE_ROOT}
 # find_package(SDL REQUIRED)
 # find_package(SDL_mixer REQUIRED)
 
-target_link_libraries(game z SDL3 SDL3_mixer SDL3_image box2d unistring "C:/D/c_game/lib/vulkan/vulkan-1.lib" textureG VMA)
+target_link_libraries(game z SDL3 SDL3_mixer SDL3_image box2d unistring "C:/D/c_game/lib/vulkan/vulkan-1.lib" textureG)
 
 # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mwindows")
 

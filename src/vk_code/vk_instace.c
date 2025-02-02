@@ -121,9 +121,8 @@ void createInstance(void)
     appInfo.apiVersion = VK_API_VERSION_1_3;
 
     uint32_t layersCount = 1;
-    const char * validationLayersGroup[1] = {
-        "VK_LAYER_KHRONOS_validation"
-    };
+    const char * validationLayersGroup[1] = {"VK_LAYER_KHRONOS_validation"};
+    
     const char ** validationLayers = NULL;
     if (checkValidationLayerSupport(layersCount, validationLayersGroup))
     {
