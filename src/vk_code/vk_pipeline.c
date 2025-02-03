@@ -1,6 +1,15 @@
-#include "vk_code_h/vk_graphicsPipeline.h"
+#include "vk_code_h/vk_pipeline.h"
 #include "vk_code_h/vk_judge.h"
 #include "vk_code_h/vk_struct.h"
+
+#undef offsetof
+#define offsetof(s, m) (size_t) & (((s *)0)->m)
+
+static const VkVertexInputAttributeDescription vertexLayoutIn[3] = {
+    {0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0},// position
+    {1, 1, VK_FORMAT_R32G32B32_SFLOAT, 0},// color
+    {2, 2, VK_FORMAT_R32G32_SFLOAT, 0},// texCoord
+};
 
 extern VK_ALL allInOne;
 
@@ -19,10 +28,18 @@ void configureDynamicsState(VkPipelineDynamicStateCreateInfo * pDynamicStateCrea
 }
 static void getBlindingDescription(VkVertexInputBindingDescription ** pBindingDescription)
 {
-    (*pBindingDescription) = (VkVertexInputBindingDescription *)SDL_malloc(1 * sizeof(VkVertexInputBindingDescription));
+    (*pBindingDescription) = (VkVertexInputBindingDescription *)SDL_malloc(3 * sizeof(VkVertexInputBindingDescription));
     (*pBindingDescription)[0].binding = 0;
-    (*pBindingDescription)[0].stride = sizeof(Vertex);
+    (*pBindingDescription)[0].stride = sizeof(vec3);
     (*pBindingDescription)[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+    
+    (*pBindingDescription)[1].binding = 1;
+    (*pBindingDescription)[1].stride = sizeof(vec3);
+    (*pBindingDescription)[1].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+    
+    (*pBindingDescription)[2].binding = 2;
+    (*pBindingDescription)[2].stride = sizeof(vec2);
+    (*pBindingDescription)[2].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 }
 static void getAttributeDescription(VkVertexInputAttributeDescription ** pAttributeDescription)
 {
@@ -30,17 +47,17 @@ static void getAttributeDescription(VkVertexInputAttributeDescription ** pAttrib
     (*pAttributeDescription)[0].location = 0;
     (*pAttributeDescription)[0].binding = 0;
     (*pAttributeDescription)[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-    (*pAttributeDescription)[0].offset = offsetof(Vertex, pos);
+    (*pAttributeDescription)[0].offset = 0;
 
     (*pAttributeDescription)[1].location = 1;
-    (*pAttributeDescription)[1].binding = 0;
+    (*pAttributeDescription)[1].binding = 1;
     (*pAttributeDescription)[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-    (*pAttributeDescription)[1].offset = offsetof(Vertex, color);
+    (*pAttributeDescription)[1].offset = 0;
 
     (*pAttributeDescription)[2].location = 2;
-    (*pAttributeDescription)[2].binding = 0;
+    (*pAttributeDescription)[2].binding = 2;
     (*pAttributeDescription)[2].format = VK_FORMAT_R32G32_SFLOAT;
-    (*pAttributeDescription)[2].offset = offsetof(Vertex, texCoord);
+    (*pAttributeDescription)[2].offset = 0;
 }
 void configurePipelineVertexInputState(VkPipelineVertexInputStateCreateInfo * pPipelineVertexInputStateCreateInfo)
 {
@@ -53,7 +70,7 @@ void configurePipelineVertexInputState(VkPipelineVertexInputStateCreateInfo * pP
     (*pPipelineVertexInputStateCreateInfo).sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     (*pPipelineVertexInputStateCreateInfo).pNext = NULL;
     (*pPipelineVertexInputStateCreateInfo).flags = 0;
-    (*pPipelineVertexInputStateCreateInfo).vertexBindingDescriptionCount = 1;
+    (*pPipelineVertexInputStateCreateInfo).vertexBindingDescriptionCount = 3;
     (*pPipelineVertexInputStateCreateInfo).pVertexBindingDescriptions = pBindingDescription;
     (*pPipelineVertexInputStateCreateInfo).vertexAttributeDescriptionCount = 3;
     (*pPipelineVertexInputStateCreateInfo).pVertexAttributeDescriptions = pAttributeDescriptions;

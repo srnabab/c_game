@@ -564,8 +564,8 @@ int update(void * arg)
                     {
                         for (int x = 0;x < 4;x++)
                         {
-                            (*allInOne.ppVertices)[8000 + i * 4 + x].texCoord[0] = UVs[i][x][0];
-                            (*allInOne.ppVertices)[8000 + i * 4 + x].texCoord[1] = UVs[i][x][1];
+                            (*allInOne.ppVertices_TexCoord)[8000 + i * 4 + x][0] = UVs[i][x][0];
+                            (*allInOne.ppVertices_TexCoord)[8000 + i * 4 + x][1] = UVs[i][x][1];
                         }
                     }
                     textDisplay = false;
@@ -625,7 +625,7 @@ int update(void * arg)
                     }
                     SDL_LockMutex(sdl_mutex_2);
                     // float averagePhysicalCoffect = (physicalCoffectX + physicalCoffectY) / 2.0f;
-                    vertexInitialize(x * physicalCoffectX, 280 * physicalCoffectY, 16 * physicalCoffectY, 16 * physicalCoffectY, 0.9, false, *allInOne.pExtent2D, allInOne.ppVertices, count / 4);
+                    vertexInitialize(x * physicalCoffectX, 280 * physicalCoffectY, 16 * physicalCoffectY, 16 * physicalCoffectY, 0.9, false, count / 4, allInOne.ppVertices_Pos, allInOne.ppVertices_Color, allInOne.ppVertices_TexCoord);
                     SDL_UnlockMutex(sdl_mutex_2);
 
                     ballStack.pushFn(&ballStack, &x);
@@ -639,7 +639,7 @@ int update(void * arg)
                 static int id_timeStep = 0;
                 while (intervalIsDone(f32_s_to_ns(TIME_STEP), &id_timeStep, -1))
                 {
-                    updateCircle(allInOne.pExtent2D, allInOne.ppVertices);
+                    updateCircle();
                     // accumulator -= timeStep;
                 }
             }
@@ -666,7 +666,7 @@ int update(void * arg)
             allInOne.pComputeUbo->deltaTime = delta_time;
 
             SDL_LockMutex(sdl_mutex_2);
-            memcpy(*allInOne.ppVertexBufferMemMapped, *allInOne.ppVertices, 2100 * 4 * sizeof(Vertex));
+            memcpy(*allInOne.ppVertexBufferMemMapped, *allInOne.ppVertices, 2100 * 4 * sizeof(Vertex));// only need to update position
             memcpy(*allInOne.ppIndexBufferMemMapped, *allInOne.ppIndices, 2100 * 6 * sizeof(uint16_t));
             
             memcpy((*allInOne.pppGraphicUniformBufferMapped)[*allInOne.pCurrentFrame], pGraphicUbo, sizeof(UniformBufferObject));

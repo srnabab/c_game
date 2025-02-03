@@ -62,6 +62,7 @@ static void recordCommandBuffer_FirstScene(uint32_t imageIndex)
     /*size_t bufferSize = sizeof((*allInOne.ppVertices)[0]) * *allInOne.pVerticesCount;
     //copyBuffer(allInOne.pMovingStagingBuffer, allInOne.pVertexBuffer, bufferSize, allInOne.pDevice, allInOne.pSwapchainCommandPool, allInOne.pGraphicQueue);
     memcpy(*allInOne.ppVertexBufferMemMapped, *allInOne.ppVertices, bufferSize);*/
+
     VkDeviceSize offsets[] = {0};
 
     vkCmdBindPipeline((*allInOne.ppCommandBuffer)[*pCurrentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pParticlePipeline);
@@ -77,8 +78,9 @@ static void recordCommandBuffer_FirstScene(uint32_t imageIndex)
 
     vkCmdPushConstants((*allInOne.ppCommandBuffer)[*pCurrentFrame], *allInOne.pGraphicPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ImageRotate), allInOne.pImageRotate);
 
-    VkBuffer vertexBuffer[] = {*allInOne.pVertexBuffer};
-    vkCmdBindVertexBuffers((*allInOne.ppCommandBuffer)[*pCurrentFrame], 0, 1, vertexBuffer, offsets);
+    VkBuffer vertexBuffer[] = {*allInOne.pVertexBuffer, *allInOne.pVertexBuffer, *allInOne.pVertexBuffer};
+    VkDeviceSize vertexOffsets[] = {0, allInOne.maxVerticesCount * sizeof(vec3), allInOne.maxVerticesCount * sizeof(vec3) + allInOne.maxVerticesCount * sizeof(vec3)};
+    vkCmdBindVertexBuffers((*allInOne.ppCommandBuffer)[*pCurrentFrame], 0, 3, vertexBuffer, vertexOffsets);
 
     //vkCmdBindVertexBuffers((*allInOne.ppCommandBuffer)[*pCurrentFrame], 2, 1, &(*allInOne.ppShaderStorageBuffers)[*pCurrentFrame], offsets);
 

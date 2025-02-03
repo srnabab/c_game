@@ -6,6 +6,7 @@ void createVertexBuffer(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, 
 {
     FuncCode code = createVertexBufferF;
 
+    // need change buffer size calculation
     VkDeviceSize bufferSize = sizeof(vertices[0]) * verticesCount;
 
     resultVulkan(createBuffer(pPhysicalDevice, pDevice, pVertexBuffer, pVertexBufferMemory, bufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), code, 0);

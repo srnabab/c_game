@@ -83,7 +83,7 @@ add_executable(game ${SRC_ROOT}/main.c
                     ${SRC_ROOT}/vk_code/vk_depth.c
                     ${SRC_ROOT}/vk_code/vk_descriptorPool.c 
                     ${SRC_ROOT}/vk_code/vk_framebuffer.c
-                    ${SRC_ROOT}/vk_code/vk_graphicsPipeline.c 
+                    ${SRC_ROOT}/vk_code/vk_pipeline.c 
                     ${SRC_ROOT}/vk_code/vk_image.c
                     ${SRC_ROOT}/vk_code/vk_index.c 
                     ${SRC_ROOT}/vk_code/vk_move.c

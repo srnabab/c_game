@@ -19,7 +19,7 @@
 #include "vk_code_h/vk_vertex.h"
 #include "vk_code_h/vk_texture.h"
 #include "vk_code_h/vk_depth.h"
-#include "vk_code_h/vk_graphicsPipeline.h"
+#include "vk_code_h/vk_pipeline.h"
 #include "vk_code_h/vk_shader.h"
 #include "vk_code_h/vk_swapchain.h"
 #include "vk_code_h/vk_alloc_func.h"
@@ -211,7 +211,10 @@ static VkDeviceMemory vertexBufferMem = NULL;
 static void * vertexBufferMemMapped = NULL;
 static uint32_t verticesCount = 4;
 //three vertices of a triangle and color
-static Vertex * vertices = NULL;
+static void * vertices = NULL;
+static vec3 * vertices_Pos = NULL;
+static vec3 * vertices_Color = NULL;
+static vec2 * vertices_TexCoord = NULL;
 
 static VkBuffer indexBuffer = NULL;
 static VkDeviceMemory indexBufferMem = NULL;
@@ -331,7 +334,11 @@ static void initializeAllInOne(void)
     allInOne.pDepthImageMem = &depthImageMemory;
 
     allInOne.pVertexBuffer = &vertexBuffer;
+    allInOne.maxVerticesCount = (BALLCOUNT + 100) * 4;
     allInOne.ppVertices = &vertices;
+    allInOne.ppVertices_Pos = &vertices_Pos;
+    allInOne.ppVertices_Color = &vertices_Color;
+    allInOne.ppVertices_TexCoord = &vertices_TexCoord;
     allInOne.pVerticesCount = &verticesCount;
     allInOne.pVertexBufferMem = &vertexBufferMem;
     allInOne.ppVertexBufferMemMapped = &vertexBufferMemMapped;
@@ -453,11 +460,25 @@ void initVulkan(void)
     
     createTextureSampler(&physicalDevice, &device, &textureSampler);
 
-    vertices = (Vertex *)SDL_calloc(BALLCOUNT * 4 + 100 * 4, sizeof(Vertex));
-    vertices[0] = (Vertex){{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}};
-    vertices[1] = (Vertex){{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}};
-    vertices[2] = (Vertex){{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}};
-    vertices[3] = (Vertex){{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}};
+    vertices = SDL_calloc(BALLCOUNT * 4 + 100 * 4, sizeof(vec3) + sizeof(vec3) + sizeof(vec2));
+    vertices_Pos = (vec3 *)vertices;
+    vertices_Color = (vec3 *)(vertices + (BALLCOUNT + 100) * 4 * sizeof(vec3));
+    vertices_TexCoord = (vec2 *)(vertices + (BALLCOUNT + 100) * 4 * (sizeof(vec3) + sizeof(vec3)));
+
+    // vertices_Pos[0] = (vec3){-0.5f, -0.5f, 0.0f};
+    // vertices_Pos[1] = (vec3){0.5f, -0.5f, 0.0f};
+    // vertices_Pos[2] = (vec3){0.5f, 0.5f, 0.0f};
+    // vertices_Pos[3] = (vec3){-0.5f, 0.5f, 0.0f};
+
+    // vertices_Color[0] = (vec3){1.0f, 0.0f, 0.0f};
+    // vertices_Color[1] = (vec3){0.0f, 1.0f, 0.0f};
+    // vertices_Color[2] = (vec3){0.0f, 0.0f, 1.0f};
+    // vertices_Color[3] = (vec3){1.0f, 1.0f, 1.0f};
+
+    // vertices_TexCoord[0] = (vec2){0.0f, 1.0f};
+    // vertices_TexCoord[1] = (vec2){1.0f, 1.0f};
+    // vertices_TexCoord[2] = (vec2){1.0f, 0.0f};
+    // vertices_TexCoord[3] = (vec2){0.0f, 0.0f};
 
     /*vertices[4] = (Vertex){{-0.0f, -0.0f, 0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}};
     vertices[5] = (Vertex){{1.0f, -0.0f, 0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}};
@@ -466,10 +487,7 @@ void initVulkan(void)
 
     verticesCount = 4;
 
-    vertexInitialize(-32, -32, 64, 64, 0.0f, false, extent2D, &vertices, 0);
-    vertices[0].pos[2] = 0.0f; vertices[1].pos[2] = 0.0f; vertices[2].pos[2] = 0.0f; vertices[3].pos[2] = 0.0f;
-    vertices[4].pos[2] = 0.9f; vertices[5].pos[2] = 0.9f; vertices[6].pos[2] = 0.9f; vertices[7].pos[2] = 0.9f;
-    vertices[8].pos[2] = 0.9f; vertices[9].pos[2] = 0.9f; vertices[10].pos[2] = 0.9f; vertices[11].pos[2] = 0.9f;
+    vertexInitialize(-32, -32, 64, 64, 0.0f, false, 0, allInOne.ppVertices_Pos, allInOne.ppVertices_Color, allInOne.ppVertices_TexCoord);
     //positionInitialize(-24, -24, 16, 16, extent2D, &vertices, 1);
 
     createVertexBuffer(&physicalDevice, &device, &vertexBuffer, &vertexBufferMem, &vertexBufferMemMapped, vertices, BALLCOUNT * 4 + MAX_CHARACTERS * 4);
@@ -483,7 +501,7 @@ void initVulkan(void)
 
     for (int i = 0;i < MAX_CHARACTERS;i++)
     {
-        vertexInitialize(-300 + i * 24, -100, 24, 24, 0.1f, true, extent2D, &vertices, i + BALLCOUNT);
+        vertexInitialize(-300 + i * 24, -100, 24, 24, 0.1f, true, i + BALLCOUNT, allInOne.ppVertices_Pos, allInOne.ppVertices_Color, allInOne.ppVertices_TexCoord);
     }
 
     // initializeMovingBuffer(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, &movingStagingBuffer, &movingStagingMemory, &movingBufferMapped, vertices, verticesCount);
@@ -497,12 +515,12 @@ void initVulkan(void)
     /*unfixed code*/
 
     //graphic shader
-    createShaderModule(&device, TriangleVertShader, &vertShaderCode);
+    createShaderModuleFromFile(TriangleVertShader, &vertShaderCode);
     addShaderStageCreateInfo(&vertShaderCode, VK_SHADER_STAGE_VERTEX_BIT, &graphicShaderCount, &graphciShaderStageCreateInfo);
     setDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 1, 0, &graphicBindingCount, &graphicBindings);//0
     setDescriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT, &graphicPoolSizeCount, &graphicDescriptorPoolSize);
 
-    createShaderModule(&device, TriangleFragShader, &fragShaderCode);
+    createShaderModuleFromFile(TriangleFragShader, &fragShaderCode);
     addShaderStageCreateInfo(&fragShaderCode, VK_SHADER_STAGE_FRAGMENT_BIT, &graphicShaderCount, &graphciShaderStageCreateInfo);
     setDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1, 1, &graphicBindingCount, &graphicBindings);//1
     setDescriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_FRAMES_IN_FLIGHT, &graphicPoolSizeCount, &graphicDescriptorPoolSize);
@@ -522,12 +540,12 @@ void initVulkan(void)
     createDescriptorPool(&device, graphicPoolSizeCount, graphicDescriptorPoolSize, 2, &graphicDescriptorPool);
 
     //particle shader
-    createShaderModule(&device, ParticleVertShader, &particleVertexShaderCode);
+    createShaderModuleFromFile(ParticleVertShader, &particleVertexShaderCode);
     addShaderStageCreateInfo(&particleVertexShaderCode, VK_SHADER_STAGE_VERTEX_BIT, &particleShaderCount, &particleShaderStageCreateInfo);
     setDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 1, 1, &particleBindingCount, &particleBindings);//1
     setDescriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT, &particlePoolSizeCount, &particleDescriptorPoolSize);
 
-    createShaderModule(&device, ParticleFragShader, &particleFragmentShaderCode);
+    createShaderModuleFromFile(ParticleFragShader, &particleFragmentShaderCode);
     addShaderStageCreateInfo(&particleFragmentShaderCode, VK_SHADER_STAGE_FRAGMENT_BIT, &particleShaderCount, &particleShaderStageCreateInfo);
 
     addDescriptorSetLayout(&device, particleBindingCount, particleBindings, 0, &particleDescriptorSetLayout);
@@ -538,7 +556,7 @@ void initVulkan(void)
     createDescriptorPool(&device, particlePoolSizeCount, particleDescriptorPoolSize, 2, &particleDescriptorPool);
 
     //compute shader
-    createShaderModule(&device, ParticleCompShader, &compShaderCode);
+    createShaderModuleFromFile(ParticleCompShader, &compShaderCode);
     addShaderStageCreateInfo(&compShaderCode, VK_SHADER_STAGE_COMPUTE_BIT, &computeShaderCount, &computeShaderStageCreateInfo);
     setDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT, 1, 0, &computeBindingCount, &computeBindings);//0
     setDescriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT, &computePoolSizeCount, &computeDescriptorPoolSize);

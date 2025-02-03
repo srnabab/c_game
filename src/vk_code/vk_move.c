@@ -1,6 +1,15 @@
 #include "vk_code_h/vk_move.h"
 #include "vk_code_h/vk_buffer.h"
 
+extern VK_ALL allInOne;
+
+static vec3 vertices_Color[4] = {
+    {1.0f, 0.0f, 0.0f},
+    {0.0f, 1.0f, 0.0f},
+    {0.0f, 0.0f, 1.0f},
+    {1.0f, 1.0f, 1.0f}
+};
+
 void initializeMovingBuffer(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkBuffer * pMoveBuffer, VkDeviceMemory * pMoveBufferMemory, void ** ppMovingBufferMapped, Vertex * vertices, Uint32 verticesCount)
 {
     VkDeviceSize bufferSize = sizeof(vertices[0]) * verticesCount;
@@ -10,12 +19,12 @@ void initializeMovingBuffer(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevi
     vkMapMemory(*pDevice, *pMoveBufferMemory, 0, bufferSize, 0, ppMovingBufferMapped);
     memcpy(*ppMovingBufferMapped, vertices, (size_t)bufferSize);
 }
-void vertexInitialize(float x, float y, float width, float height, float depth, bool setUVZero, VkExtent2D extent2D, Vertex ** ppVertices, Uint32 pictureSequence)
+void vertexPosInit(float x, float y, float width, float height, float depth, Uint32 pictureSequence, vec3 ** ppVertices_Pos)
 {
     Uint32 startNumber = pictureSequence * 4;
 
     // int WindowWidth = extent2D.width;
-    float WindowHeight = (float)extent2D.height;
+    float WindowHeight = (float)allInOne.pExtent2D->height;
     float xOffset = width / (WindowHeight / 2);
     float yOffset = height / (WindowHeight / 2);
 
@@ -33,68 +42,70 @@ void vertexInitialize(float x, float y, float width, float height, float depth, 
     // leftDown[1] = leftUp[1] + yOffset;
 
     //left-up
-    (*ppVertices)[startNumber].pos[0] = leftUp[0];
-    (*ppVertices)[startNumber].pos[1] = leftUp[1];
+    (*ppVertices_Pos)[startNumber][0] = leftUp[0];
+    (*ppVertices_Pos)[startNumber][1] = leftUp[1];
     //printf("x, y: %.2f, %.2f\n", (*ppVertices)[startNumber].pos[0], (*ppVertices)[startNumber].pos[1]);
 
     //right-up
-    (*ppVertices)[startNumber + 1].pos[0] = leftUp[0] + xOffset;
-    (*ppVertices)[startNumber + 1].pos[1] = leftUp[1];
+    (*ppVertices_Pos)[startNumber + 1][0] = leftUp[0] + xOffset;
+    (*ppVertices_Pos)[startNumber + 1][1] = leftUp[1];
     //printf("x, y: %.2f, %.2f\n", (*ppVertices)[startNumber + 1].pos[0], (*ppVertices)[startNumber + 1].pos[1]);
 
     //right-dowm
-    (*ppVertices)[startNumber + 2].pos[0] = leftUp[0] + xOffset;
-    (*ppVertices)[startNumber + 2].pos[1] = leftUp[1] + yOffset;
+    (*ppVertices_Pos)[startNumber + 2][0] = leftUp[0] + xOffset;
+    (*ppVertices_Pos)[startNumber + 2][1] = leftUp[1] + yOffset;
     //printf("x, y: %.2f, %.2f\n", (*ppVertices)[startNumber + 2].pos[0], (*ppVertices)[startNumber + 2].pos[1]);
 
     //left-down
-    (*ppVertices)[startNumber + 3].pos[0] = leftUp[0];
-    (*ppVertices)[startNumber + 3].pos[1] = leftUp[1] + yOffset;
+    (*ppVertices_Pos)[startNumber + 3][0] = leftUp[0];
+    (*ppVertices_Pos)[startNumber + 3][1] = leftUp[1] + yOffset;
     //printf("x, y: %.2f, %.2f\n", (*ppVertices)[startNumber + 3].pos[0], (*ppVertices)[startNumber + 3].pos[1]);
     
     for (Uint32 i = startNumber;i < startNumber + 4;i++)
     {
-        (*ppVertices)[i].pos[2] = depth;
+        (*ppVertices_Pos)[i][2] = depth;
     }
-    
-    (*ppVertices)[startNumber].color[0] = 1.0f;
-    (*ppVertices)[startNumber].color[1] = 0.0f;
-    (*ppVertices)[startNumber].color[2] = 0.0f;
+}
+void vertexColorInit(Uint32 pictureSequence, vec3 ** ppVertices_Color)
+{
+    Uint32 startNumber = pictureSequence * 4;
 
-    (*ppVertices)[startNumber + 1].color[0] = 0.0f;
-    (*ppVertices)[startNumber + 1].color[1] = 1.0f;
-    (*ppVertices)[startNumber + 1].color[2] = 0.0f;
-
-    (*ppVertices)[startNumber + 2].color[0] = 0.0f;
-    (*ppVertices)[startNumber + 2].color[1] = 0.0f;
-    (*ppVertices)[startNumber + 2].color[2] = 1.0f;
-
-    (*ppVertices)[startNumber + 3].color[0] = 1.0f;
-    (*ppVertices)[startNumber + 3].color[1] = 1.0f;
-    (*ppVertices)[startNumber + 3].color[2] = 1.0f;
+    memcpy((*ppVertices_Color) + startNumber, vertices_Color, 4 * sizeof(vec3));
+}
+void vertexTexCoordInit(bool setUVZero, Uint32 pictureSequence, vec2 ** ppVertices_TexCoord)
+{
+    Uint32 startNumber = pictureSequence * 4;
 
     if (setUVZero)
     {
-        for (int i = startNumber;i < 4;i++)
+        for (int i = startNumber;i < 4 + startNumber;i++)
         {
-            (*ppVertices)[i].texCoord[0] = 0.0f;
-            (*ppVertices)[i].texCoord[1] = 0.0f;
+            (*ppVertices_TexCoord)[i][0] = 0.0f;
+            (*ppVertices_TexCoord)[i][1] = 0.0f;
         }
     }
     else
     {
-        (*ppVertices)[startNumber].texCoord[0] = 0.0f;
-        (*ppVertices)[startNumber].texCoord[1] = 1.0f;
+        (*ppVertices_TexCoord)[startNumber][0] = 0.0f;
+        (*ppVertices_TexCoord)[startNumber][1] = 1.0f;
 
-        (*ppVertices)[startNumber + 1].texCoord[0] = 1.0f;
-        (*ppVertices)[startNumber + 1].texCoord[1] = 1.0f;
+        (*ppVertices_TexCoord)[startNumber + 1][0] = 1.0f;
+        (*ppVertices_TexCoord)[startNumber + 1][1] = 1.0f;
 
-        (*ppVertices)[startNumber + 2].texCoord[0] = 1.0f;
-        (*ppVertices)[startNumber + 2].texCoord[1] = 0.0f;
+        (*ppVertices_TexCoord)[startNumber + 2][0] = 1.0f;
+        (*ppVertices_TexCoord)[startNumber + 2][1] = 0.0f;
 
-        (*ppVertices)[startNumber + 3].texCoord[0] = 0.0f;
-        (*ppVertices)[startNumber + 3].texCoord[1] = 0.0f;
+        (*ppVertices_TexCoord)[startNumber + 3][0] = 0.0f;
+        (*ppVertices_TexCoord)[startNumber + 3][1] = 0.0f;
     }
+}
+void vertexInitialize(float x, float y, float width, float height, float depth, bool setUVZero, Uint32 pictureSequence, vec3 ** ppVertices_Pos, vec3 ** ppVertices_Color, vec2 ** ppVertices_TexCoord)
+{
+    vertexPosInit(x, y, width, height, depth, pictureSequence, ppVertices_Pos);
+
+    vertexColorInit(pictureSequence, ppVertices_Color);
+
+    vertexTexCoordInit(setUVZero, pictureSequence, ppVertices_TexCoord);
 }
 void indexInitialize(Uint16 * indices, Uint32 indicesCount)
 {
@@ -110,25 +121,19 @@ void indexInitialize(Uint16 * indices, Uint32 indicesCount)
         indices[index + 5] = serial;
     }
 }
-void updatePosition(float x, float y, VkExtent2D * pExtent2D, Vertex ** ppVertices, uint32_t pictureSequence)
+void updatePosition(float x, float y, vec3 ** ppVertices_Pos, uint32_t pictureSequence)
 {
     uint32_t startNumber = pictureSequence * 4;
 
-    float NDCx = x / (pExtent2D->height / 2);
-    float NDCy = y / (pExtent2D->height / 2);
+    float NDCx = x / (allInOne.pExtent2D->height / 2);
+    float NDCy = y / (allInOne.pExtent2D->height / 2);
 
-    float offSetX = NDCx - (*ppVertices)[startNumber].pos[0];
-    float offSetY = NDCy - (*ppVertices)[startNumber].pos[1];
+    float offSetX = NDCx - (*ppVertices_Pos)[startNumber][0];
+    float offSetY = NDCy - (*ppVertices_Pos)[startNumber][1];
 
-    (*ppVertices)[startNumber].pos[0] += offSetX;
-    (*ppVertices)[startNumber].pos[1] += offSetY;
-
-    (*ppVertices)[startNumber + 1].pos[0] += offSetX;
-    (*ppVertices)[startNumber + 1].pos[1] += offSetY;
-
-    (*ppVertices)[startNumber + 2].pos[0] += offSetX;
-    (*ppVertices)[startNumber + 2].pos[1] += offSetY;
-
-    (*ppVertices)[startNumber + 3].pos[0] += offSetX;
-    (*ppVertices)[startNumber + 3].pos[1] += offSetY;
+    for (Uint32 i = startNumber;i < startNumber + 4;i++)
+    {
+        (*ppVertices_Pos)[i][0] += offSetX;
+        (*ppVertices_Pos)[i][1] += offSetY;
+    }
 }

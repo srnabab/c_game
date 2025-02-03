@@ -13,7 +13,7 @@
 
 extern void SDLCALL initWorld(void);
 extern void SDLCALL createCircle(float x, float y);
-extern void SDLCALL updateCircle(VkExtent2D * pExtent2D, Vertex ** ppVertices);
+extern void SDLCALL updateCircle(void);
 extern uint32_t SDLCALL getBoxCount(void);
 extern void SDLCALL cleanWorld(void);
 extern void SDLCALL destroyFloor(void);

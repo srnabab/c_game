@@ -38,6 +38,7 @@ typedef enum _PathType
     TextRectangle1Png,
     StartFragShader,
     StartVertShader,
+    Spirv_reflectExe,
 } PathType;
 
 extern PathType SDLCALL pathCompare(char * buffer);

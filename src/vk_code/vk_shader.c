@@ -11,7 +11,7 @@
 
 extern VK_ALL allInOne;
 
-void createShaderModule(VkDevice * pDevice, PathType type, VkShaderModule * pShaderModule)
+void createShaderModuleFromFile(PathType type, VkShaderModule * pShaderModule)
 {
     FuncCode code = createShaderModuleF;
 
@@ -30,21 +30,25 @@ void createShaderModule(VkDevice * pDevice, PathType type, VkShaderModule * pSha
 
     char * shaderCode = (char *)SDL_malloc(fileSize * sizeof(char));
     SDL_ReadIO(shaderFile, shaderCode, sizeof(char) * fileSize);
-
-    VkShaderModuleCreateInfo createInfo = {};
-    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    createInfo.pNext = NULL;
-    createInfo.flags = 0;
-    createInfo.codeSize = fileSize;
-    createInfo.pCode = (const uint32_t *)shaderCode;
-
+    
     SDL_CloseIO(shaderFile);
 
-    resultVulkan(vkCreateShaderModule(*pDevice, &createInfo, allInOne.pAllocationCallbacks, pShaderModule), code, 1, shaderCode);
+    resultVulkan(createShaderModuleFromMem(fileSize, (const Uint32 *)shaderCode, pShaderModule), code, 1, shaderCode);
 
     SDL_free(shaderCode);
 
     //printf("shaderModule created\n");
+}
+VkResult createShaderModuleFromMem(size_t codeSize, const Uint32 * pCode, VkShaderModule * pShaderModule)
+{
+    VkShaderModuleCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    createInfo.pNext = NULL;
+    createInfo.flags = 0;
+    createInfo.codeSize = codeSize;
+    createInfo.pCode = pCode;
+
+    return vkCreateShaderModule(*allInOne.pDevice, &createInfo, allInOne.pAllocationCallbacks, pShaderModule);
 }
 void addShaderStageCreateInfo(VkShaderModule * pShaderModule, VkPipelineStageFlags stage, uint32_t * pShaderCount, VkPipelineShaderStageCreateInfo ** pPipelineShaderStageCreateInfo)
 {

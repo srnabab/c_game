@@ -105,7 +105,11 @@ typedef struct _VK_ALL
     VkDeviceMemory * pDepthImageMem;
 
     VkBuffer * pVertexBuffer;
-    Vertex ** ppVertices;
+    Uint32 maxVerticesCount;
+    void ** ppVertices;
+    vec3 ** ppVertices_Pos;
+    vec3 ** ppVertices_Color;
+    vec2 ** ppVertices_TexCoord;
     Uint32 * pVerticesCount;
     VkDeviceMemory * pVertexBufferMem;
     void ** ppVertexBufferMemMapped;

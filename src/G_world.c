@@ -24,6 +24,7 @@ EmptyStack ballStack;
 
 extern float physicalCoffectX;
 extern float physicalCoffectY;
+extern VK_ALL allInOne;
 
 static void * box2d_SDL_Alloc(unsigned int size, int alignment)
 {
@@ -133,7 +134,7 @@ void createCircle(float x, float y)
     shapeIds[index] = b2CreateCircleShape(bodyIds[index], &shapeDefs[index], &dynamicBoxs[index]);
 }
 static bool stepDone = true;
-void updateCircle(VkExtent2D * pExtent2D, Vertex ** ppVertices)
+void updateCircle(void)
 {
     if (stepDone)
     {
@@ -146,7 +147,7 @@ void updateCircle(VkExtent2D * pExtent2D, Vertex ** ppVertices)
         for (uint32_t i = 1;i < boxCount;i++)
         {
             b2Vec2 position = b2Body_GetPosition(bodyIds[i]);
-            updatePosition((position.x * SCALE_FACTOR_INV - 24.0f) * physicalCoffectY, (position.y * SCALE_FACTOR_INV - 24.0f) * physicalCoffectY, pExtent2D, ppVertices, i);
+            updatePosition((position.x * SCALE_FACTOR_INV - 24.0f) * physicalCoffectY, (position.y * SCALE_FACTOR_INV - 24.0f) * physicalCoffectY, allInOne.ppVertices_Pos, i);
         }
         stepDone = false;
         SDL_SignalSemaphore(worldSemaphore);

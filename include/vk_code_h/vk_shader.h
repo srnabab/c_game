@@ -6,7 +6,8 @@
 
 #include "SDL3/SDL_begin_code.h"
 
-extern void SDLCALL createShaderModule(VkDevice * pDevice, PathType type, VkShaderModule * pShaderModule);
+extern void SDLCALL createShaderModuleFromFile(PathType type, VkShaderModule * pShaderModule);
+extern VkResult SDLCALL createShaderModuleFromMem(size_t codeSize, const Uint32 * pCode, VkShaderModule * pShaderModule);
 extern void SDLCALL addShaderStageCreateInfo(VkShaderModule * pShaderModule, VkPipelineStageFlags stage, uint32_t * pShaderCount, VkPipelineShaderStageCreateInfo ** pPipelineShaderStageCreateInfo);
 
 #include "SDL3/SDL_close_code.h"
