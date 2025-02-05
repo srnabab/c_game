@@ -38,6 +38,7 @@ typedef enum _PathType
     TextRectangle1Png,
     StartFragShader,
     StartVertShader,
+    TestShaderFragShader,
     Spirv_reflectExe,
 } PathType;
 

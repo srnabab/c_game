@@ -137,16 +137,13 @@ static VkImageView * swapchainImageViews = NULL;
 
 static VkShaderModule vertShaderCode = NULL;
 static VkShaderModule fragShaderCode = NULL;
-static uint32_t graphicShaderCount = 0;
 static VkPipelineShaderStageCreateInfo * graphciShaderStageCreateInfo = NULL;
 
 static VkShaderModule particleVertexShaderCode = NULL;
 static VkShaderModule particleFragmentShaderCode = NULL;
-static uint32_t particleShaderCount = 0;
 static VkPipelineShaderStageCreateInfo * particleShaderStageCreateInfo = NULL;
 
 static VkShaderModule compShaderCode = NULL;
-static uint32_t computeShaderCount = 0;
 static VkPipelineShaderStageCreateInfo * computeShaderStageCreateInfo = NULL;
 
 static VkDescriptorSetLayout * graphicDescriptorSetLayout = NULL;
@@ -157,17 +154,13 @@ static VkDescriptorSetLayout * computeDescriptorSetLayout = NULL;
 
 // static uint32_t graphicBinding = 0;
 static VkDescriptorSetLayoutBinding * graphicBindings = NULL;
-static uint32_t graphicBindingCount = 0;
-static VkPushConstantRange pushConstantRange = {};
 static VkPipelineLayout graphicPipelineLayout = NULL;
 
 static VkDescriptorSetLayoutBinding * particleBindings = NULL;
-static uint32_t particleBindingCount = 0;
 static VkPipelineLayout particlePipelineLayout = NULL;
 
 // static uint32_t computeBinding = 0;
 static VkDescriptorSetLayoutBinding * computeBindings = NULL;
-static uint32_t computeBindingCount = 0;
 static VkPipelineLayout computePipelineLayout = NULL;
 
 static VkRenderPass renderPass = NULL;
@@ -228,7 +221,6 @@ static void ** graphicUniformBufferMapped = NULL;
 static UniformBufferObject ubo = {};
 
 static VkDescriptorPoolSize * graphicDescriptorPoolSize = NULL;
-static uint32_t graphicPoolSizeCount = 0;
 
 static VkBuffer * computeUniformBuffers = NULL;
 static VkDeviceMemory * computeUniformBuffersmemory = NULL;
@@ -236,10 +228,8 @@ static void ** computeUniformBufferMapped = NULL;
 static ComputeUniformBufferObject computeUbo = {};
 
 static VkDescriptorPoolSize * particleDescriptorPoolSize = NULL;
-static uint32_t particlePoolSizeCount = 0;
 
 static VkDescriptorPoolSize * computeDescriptorPoolSize = NULL;
-static uint32_t computePoolSizeCount = 0;
 
 static VkDescriptorPool graphicDescriptorPool = NULL;
 static VkDescriptorSet * graphicDescriptorSets = NULL;
@@ -274,8 +264,6 @@ static float pictureY = 0;
 
 static VkBuffer * shaderStorageBuffers = NULL;
 static VkDeviceMemory * shaderStorageBuffersMem = NULL;
-
-static Particle * particles = NULL;
 
 static ImageRotate pictureImageRotate = {0.0f};
 
@@ -334,7 +322,7 @@ static void initializeAllInOne(void)
     allInOne.pDepthImageMem = &depthImageMemory;
 
     allInOne.pVertexBuffer = &vertexBuffer;
-    allInOne.maxVerticesCount = (BALLCOUNT + 100) * 4;
+    // allInOne.maxVerticesCount = (BALLCOUNT + 100) * 4;
     allInOne.ppVertices = &vertices;
     allInOne.ppVertices_Pos = &vertices_Pos;
     allInOne.ppVertices_Color = &vertices_Color;
@@ -396,6 +384,10 @@ void initVulkan(void)
 {
     /*fixed compoent*/
     logMessage("initializing...");
+
+    // sprivReflect(TestShaderFragShader);
+    // SDL_Delay(10000);
+    // exit(0);
 
     initializeAllInOne();
 
@@ -461,9 +453,10 @@ void initVulkan(void)
     createTextureSampler(&physicalDevice, &device, &textureSampler);
 
     vertices = SDL_calloc(BALLCOUNT * 4 + 100 * 4, sizeof(vec3) + sizeof(vec3) + sizeof(vec2));
+    allInOne.maxVerticesCount = (BALLCOUNT + 100) * 4;
     vertices_Pos = (vec3 *)vertices;
-    vertices_Color = (vec3 *)(vertices + (BALLCOUNT + 100) * 4 * sizeof(vec3));
-    vertices_TexCoord = (vec2 *)(vertices + (BALLCOUNT + 100) * 4 * (sizeof(vec3) + sizeof(vec3)));
+    vertices_Color = (vec3 *)(vertices + allInOne.maxVerticesCount * sizeof(vec3));
+    vertices_TexCoord = (vec2 *)(vertices + allInOne.maxVerticesCount * (sizeof(vec3) + sizeof(vec3)));
 
     // vertices_Pos[0] = (vec3){-0.5f, -0.5f, 0.0f};
     // vertices_Pos[1] = (vec3){0.5f, -0.5f, 0.0f};
@@ -510,74 +503,70 @@ void initVulkan(void)
 
     createUniformBuffers(&physicalDevice, &device, &computeUniformBuffers, &computeUniformBuffersmemory, &computeUniformBufferMapped, sizeof(ComputeUniformBufferObject));
 
+
+    Particle * particles = NULL;
     createShaderStorageBuffers(&physicalDevice, &device, &swapchainCommandPool, &computeQueue, extent2D, &shaderStorageBuffers, &shaderStorageBuffersMem, &particles);
 
     /*unfixed code*/
 
     //graphic shader
-    createShaderModuleFromFile(TriangleVertShader, &vertShaderCode);
-    addShaderStageCreateInfo(&vertShaderCode, VK_SHADER_STAGE_VERTEX_BIT, &graphicShaderCount, &graphciShaderStageCreateInfo);
-    setDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 1, 0, &graphicBindingCount, &graphicBindings);//0
-    setDescriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT, &graphicPoolSizeCount, &graphicDescriptorPoolSize);
+    graphicDescriptorPoolSize = (VkDescriptorPoolSize*)SDL_malloc(2 * sizeof(VkDescriptorPoolSize));
+    graphicDescriptorPoolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    graphicDescriptorPoolSize[0].descriptorCount = 2;
+    graphicDescriptorPoolSize[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    graphicDescriptorPoolSize[1].descriptorCount = 8;
+    createDescriptorPool(&device, 2, graphicDescriptorPoolSize, 2, &graphicDescriptorPool);
 
-    createShaderModuleFromFile(TriangleFragShader, &fragShaderCode);
-    addShaderStageCreateInfo(&fragShaderCode, VK_SHADER_STAGE_FRAGMENT_BIT, &graphicShaderCount, &graphciShaderStageCreateInfo);
-    setDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1, 1, &graphicBindingCount, &graphicBindings);//1
-    setDescriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_FRAMES_IN_FLIGHT, &graphicPoolSizeCount, &graphicDescriptorPoolSize);
-    
-    setDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1, 2, &graphicBindingCount, &graphicBindings);//2
-    setDescriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_FRAMES_IN_FLIGHT, &graphicPoolSizeCount, &graphicDescriptorPoolSize);
-    
-    setDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1, 3, &graphicBindingCount, &graphicBindings);//3
-    setDescriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_FRAMES_IN_FLIGHT, &graphicPoolSizeCount, &graphicDescriptorPoolSize);
+    PathType graphicTypes[] = {TriangleVertShader, TriangleFragShader};
+    VkShaderModule * graphicTempModule = NULL;
+    char ** entryName = NULL;
+    CreateShaderModulesAndDescriptorSets(graphicTypes, &graphicDescriptorPool, 2, &graphicTempModule, &graphciShaderStageCreateInfo, &graphicDescriptorSetLayout, &graphicPipelineLayout, &graphicDescriptorSets, &entryName);
+    vertShaderCode = graphicTempModule[0];
+    fragShaderCode = graphicTempModule[1];
 
-    addDescriptorSetLayout(&device, graphicBindingCount, graphicBindings, 0, &graphicDescriptorSetLayout);
+    createGraphicsPipeline(&device, &extent2D, 2, graphciShaderStageCreateInfo, &graphicPipelineLayout, &renderPass, &graphicPipeline);
 
-    createPushConstantRange(VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ImageRotate), &pushConstantRange);
-    createPipelineLayout(&device, 1, &graphicDescriptorSetLayout, 1, &pushConstantRange, &graphicPipelineLayout);
-    createGraphicsPipeline(&device, &extent2D, graphicShaderCount, graphciShaderStageCreateInfo, &graphicPipelineLayout, &renderPass, &graphicPipeline);
+    freeEntryName(2, entryName);
 
-    createDescriptorPool(&device, graphicPoolSizeCount, graphicDescriptorPoolSize, 2, &graphicDescriptorPool);
 
     //particle shader
-    createShaderModuleFromFile(ParticleVertShader, &particleVertexShaderCode);
-    addShaderStageCreateInfo(&particleVertexShaderCode, VK_SHADER_STAGE_VERTEX_BIT, &particleShaderCount, &particleShaderStageCreateInfo);
-    setDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 1, 1, &particleBindingCount, &particleBindings);//1
-    setDescriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT, &particlePoolSizeCount, &particleDescriptorPoolSize);
+    particleDescriptorPoolSize = (VkDescriptorPoolSize*)SDL_malloc(1 * sizeof(VkDescriptorPoolSize));
+    particleDescriptorPoolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    particleDescriptorPoolSize[0].descriptorCount = 2;
+    createDescriptorPool(&device, 1, particleDescriptorPoolSize, 2, &particleDescriptorPool);
 
-    createShaderModuleFromFile(ParticleFragShader, &particleFragmentShaderCode);
-    addShaderStageCreateInfo(&particleFragmentShaderCode, VK_SHADER_STAGE_FRAGMENT_BIT, &particleShaderCount, &particleShaderStageCreateInfo);
+    PathType particleTypes[] = {ParticleVertShader, ParticleFragShader};
+    VkShaderModule * particleTempModule = NULL;
+    entryName = NULL;
+    CreateShaderModulesAndDescriptorSets(particleTypes, &particleDescriptorPool, 2, &particleTempModule, &particleShaderStageCreateInfo, &particleDescriptorSetLayout, &particlePipelineLayout, &particleDescriptorSets, &entryName);
+    particleVertexShaderCode = particleTempModule[0];
+    particleFragmentShaderCode = particleTempModule[1];
 
-    addDescriptorSetLayout(&device, particleBindingCount, particleBindings, 0, &particleDescriptorSetLayout);
-
-    createPipelineLayout(&device, 1, &particleDescriptorSetLayout, 0, NULL, &particlePipelineLayout);
-    createParticlePipeline(&device, &extent2D, particleShaderCount, particleShaderStageCreateInfo, &particlePipelineLayout, &renderPass, &particlePipeline);
-
-    createDescriptorPool(&device, particlePoolSizeCount, particleDescriptorPoolSize, 2, &particleDescriptorPool);
+    createParticlePipeline(&device, &extent2D, 2, particleShaderStageCreateInfo, &particlePipelineLayout, &renderPass, &particlePipeline);
+    freeEntryName(2, entryName);
 
     //compute shader
-    createShaderModuleFromFile(ParticleCompShader, &compShaderCode);
-    addShaderStageCreateInfo(&compShaderCode, VK_SHADER_STAGE_COMPUTE_BIT, &computeShaderCount, &computeShaderStageCreateInfo);
-    setDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT, 1, 0, &computeBindingCount, &computeBindings);//0
-    setDescriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT, &computePoolSizeCount, &computeDescriptorPoolSize);
+    computeDescriptorPoolSize = (VkDescriptorPoolSize*)SDL_malloc(2 * sizeof(VkDescriptorPoolSize));
+    computeDescriptorPoolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    computeDescriptorPoolSize[0].descriptorCount = 2;
+    computeDescriptorPoolSize[1].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    computeDescriptorPoolSize[1].descriptorCount = 4;
+    createDescriptorPool(&device, 2, computeDescriptorPoolSize, 2, &computeDescriptorPool);
 
-    setDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT, 1, 1, &computeBindingCount, &computeBindings);//1
-    setDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT, 1, 2, &computeBindingCount, &computeBindings);//2
-    setDescriptorPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT * 2, &computePoolSizeCount, &computeDescriptorPoolSize);
-
-    addDescriptorSetLayout(&device, computeBindingCount, computeBindings, 0, &computeDescriptorSetLayout);
-
-    createPipelineLayout(&device, 1, &computeDescriptorSetLayout, 0, NULL, &computePipelineLayout);
+    PathType computeTypes[] = {ParticleCompShader};
+    VkShaderModule * computeTempModule = NULL;
+    entryName = NULL;
+    CreateShaderModulesAndDescriptorSets(computeTypes, &computeDescriptorPool, 1, &computeTempModule, &computeShaderStageCreateInfo, &computeDescriptorSetLayout, &computePipelineLayout, &computeDescriptorSets, &entryName);
+    compShaderCode = computeTempModule[0];
+    
     createComputePipeline(&device, &computePipelineLayout, computeShaderStageCreateInfo, &computePipeline);
-
-    createDescriptorPool(&device, computePoolSizeCount, computeDescriptorPoolSize, 3, &computeDescriptorPool);
 
     //graphics
     VkImageView tempImageView[3];
     tempImageView[0] = loadingImageView;
     tempImageView[1] = textureImageView;
     tempImageView[2] = textImageView;
-    createGraphicDescriptorSets(&device, &graphicUniformBuffers, graphicDescriptorSetLayout, &graphicDescriptorPool, &graphicDescriptorSets, tempImageView, &textureSampler);
+    updateGraphicDescriptorSets(&device, &graphicUniformBuffers, &graphicDescriptorSets, tempImageView, &textureSampler);
 
     createCommandbuffer(&device, &swapchainCommandPool, &commandBuffer);
 
@@ -587,10 +576,10 @@ void initVulkan(void)
     createFence(&device, &inFlightFence);
 
     //particle
-    createParticleDescriptorSets(&device, &graphicUniformBuffers, particleDescriptorSetLayout, &particleDescriptorPool, &particleDescriptorSets);
+    updateParticleDescriptorSets(&device, &graphicUniformBuffers, &particleDescriptorSets);
 
     //compute
-    createComputeDescriptorSets(&device, &computeUniformBuffers, &shaderStorageBuffers, computeDescriptorSetLayout, &computeDescriptorPool, &computeDescriptorSets);
+    updateComputeDescriptorSets(&device, &computeUniformBuffers, &shaderStorageBuffers, &computeDescriptorSets);
 
     createCommandbuffer(&device, &computeCommandPool, &computeCommandBuufer);
 

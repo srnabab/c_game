@@ -9,6 +9,7 @@ void createShaderStorageBuffers(VkPhysicalDevice * pPhysicalDevice, VkDevice * p
 {
     VkDeviceSize bufferSize = sizeof(Particle) * PARTICLE_COUNT;
 
+    *ppParticles = (Particle *)SDL_malloc(PARTICLE_COUNT * sizeof(Particle));
     initializeParticles(ppParticles, extent2D);
 
     *ppShaderStorageBuffers = (VkBuffer *)SDL_malloc(MAX_FRAMES_IN_FLIGHT * sizeof(VkBuffer));
@@ -34,14 +35,10 @@ void createShaderStorageBuffers(VkPhysicalDevice * pPhysicalDevice, VkDevice * p
 
     vkDestroyBuffer(*pDevice, stagingBuffer, allInOne.pAllocationCallbacks);
     vkFreeMemory(*pDevice, stagingBufferMemory, allInOne.pAllocationCallbacks);
+    SDL_free(*ppParticles);
 }
-// float randomFloat(void)
-// {
-//     return SDL_rand() / (float)RAND_MAX;
-// }
 void initializeParticles(Particle ** ppParticles, VkExtent2D extent2D)
 {
-    *ppParticles = (Particle *)SDL_malloc(PARTICLE_COUNT * sizeof(Particle));
     SDL_srand(0);
 
     for (int i = 0;i < PARTICLE_COUNT;i++)

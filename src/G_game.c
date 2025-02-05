@@ -463,6 +463,8 @@ int update(void * arg)
     
     bool recovreyPause = false;
     bool sceneCleaned = false;
+
+    bool updateVertex = false;
     
     SDL_Delay(3000);
 
@@ -568,6 +570,7 @@ int update(void * arg)
                             (*allInOne.ppVertices_TexCoord)[8000 + i * 4 + x][1] = UVs[i][x][1];
                         }
                     }
+                    updateVertex = true;
                     textDisplay = false;
                 }
 
@@ -633,6 +636,7 @@ int update(void * arg)
                     //SDL_Log("indices count: %u\n", indiceCount);
                     //*allInOne.ppIndices = (uint16_t *)realloc(*allInOne.ppIndices, indiceCount * sizeof(uint16_t));
 
+                    updateVertex = true;
                     ballAdd = false;
                 }
             
@@ -666,7 +670,15 @@ int update(void * arg)
             allInOne.pComputeUbo->deltaTime = delta_time;
 
             SDL_LockMutex(sdl_mutex_2);
-            memcpy(*allInOne.ppVertexBufferMemMapped, *allInOne.ppVertices, 2100 * 4 * sizeof(Vertex));// only need to update position
+            if (updateVertex)
+            {
+                memcpy(*allInOne.ppVertexBufferMemMapped, *allInOne.ppVertices, 2100 * 4 * (sizeof(vec3) + sizeof(vec3) + sizeof(vec2)));// update vertex buffer
+                updateVertex = false;
+            }
+            else
+            {
+                memcpy(*allInOne.ppVertexBufferMemMapped, *allInOne.ppVertices_Pos, 2100 * 4 * sizeof(vec3));// update position
+            }
             memcpy(*allInOne.ppIndexBufferMemMapped, *allInOne.ppIndices, 2100 * 6 * sizeof(uint16_t));
             
             memcpy((*allInOne.pppGraphicUniformBufferMapped)[*allInOne.pCurrentFrame], pGraphicUbo, sizeof(UniformBufferObject));
@@ -675,7 +687,6 @@ int update(void * arg)
 
             allInOne.pImageRotate->rotation = totalTime * glm_rad(580.0f);
             
-
             SDL_UnlockMutex(sdl_mutex_2);
 
             //logMessage("test: %lf", testNum);

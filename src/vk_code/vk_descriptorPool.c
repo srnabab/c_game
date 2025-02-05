@@ -71,26 +71,8 @@ void modifyPoolSizeDescriptorCount(VkDescriptorType type, Uint32 addDescriptorCo
         }
     }
 }
-void createGraphicDescriptorSets(VkDevice * pDevice, VkBuffer ** ppUniformBuffers, VkDescriptorSetLayout * pDescriptorLayout, VkDescriptorPool * pDescriptorPool, VkDescriptorSet ** ppDescriptorSets, VkImageView * pTextureImageView, VkSampler * pTextureSampler)
+void updateGraphicDescriptorSets(VkDevice * pDevice, VkBuffer ** ppUniformBuffers, VkDescriptorSet ** ppDescriptorSets, VkImageView * pTextureImageView, VkSampler * pTextureSampler)
 {
-    FuncCode code = createDescriptorSetsF;
-
-    VkDescriptorSetLayout * layouts = (VkDescriptorSetLayout *)SDL_malloc(MAX_FRAMES_IN_FLIGHT * sizeof(VkDescriptorSetLayout));
-    for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
-    {
-        layouts[i] = *pDescriptorLayout;
-    }
-    *ppDescriptorSets = (VkDescriptorSet *)SDL_calloc(MAX_FRAMES_IN_FLIGHT ,sizeof(VkDescriptorSet));
-
-    VkDescriptorSetAllocateInfo allocInfo = {};
-    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.pNext = NULL;
-    allocInfo.descriptorSetCount = (Uint32)MAX_FRAMES_IN_FLIGHT;
-    allocInfo.descriptorPool = *pDescriptorPool;
-    allocInfo.pSetLayouts = layouts;
-
-    resultVulkan(vkAllocateDescriptorSets(*pDevice, &allocInfo, *ppDescriptorSets), code, 2, layouts, *ppDescriptorSets);
-
     for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
     {
         VkWriteDescriptorSet descriptorWrite[4];
@@ -126,7 +108,7 @@ void createGraphicDescriptorSets(VkDevice * pDevice, VkBuffer ** ppUniformBuffer
         descriptorWrite[1].dstArrayElement = 0;
         descriptorWrite[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         descriptorWrite[1].descriptorCount = 1;
-        descriptorWrite[1].pImageInfo = &imageInfo[0];
+        descriptorWrite[1].pImageInfo = imageInfo + 0;
         descriptorWrite[1].pBufferInfo = NULL;
         descriptorWrite[1].pTexelBufferView = NULL;
 
@@ -137,7 +119,7 @@ void createGraphicDescriptorSets(VkDevice * pDevice, VkBuffer ** ppUniformBuffer
         descriptorWrite[2].dstArrayElement = 0;
         descriptorWrite[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         descriptorWrite[2].descriptorCount = 1;
-        descriptorWrite[2].pImageInfo = &imageInfo[1];
+        descriptorWrite[2].pImageInfo = imageInfo + 1;
         descriptorWrite[2].pBufferInfo = NULL;
         descriptorWrite[2].pTexelBufferView = NULL;
 
@@ -148,11 +130,57 @@ void createGraphicDescriptorSets(VkDevice * pDevice, VkBuffer ** ppUniformBuffer
         descriptorWrite[3].dstArrayElement = 0;
         descriptorWrite[3].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         descriptorWrite[3].descriptorCount = 1;
-        descriptorWrite[3].pImageInfo = &imageInfo[2];
+        descriptorWrite[3].pImageInfo = imageInfo + 2;
         descriptorWrite[3].pBufferInfo = NULL;
         descriptorWrite[3].pTexelBufferView = NULL;
 
         vkUpdateDescriptorSets(*pDevice, 4, descriptorWrite, 0, NULL);
+    }
+}
+void createGraphicDescriptorSets(VkDevice * pDevice, VkDescriptorSetLayout * pDescriptorLayout, VkDescriptorPool * pDescriptorPool, VkDescriptorSet ** ppDescriptorSets)
+{
+    FuncCode code = createDescriptorSetsF;
+
+    VkDescriptorSetLayout * layouts = (VkDescriptorSetLayout *)SDL_malloc(MAX_FRAMES_IN_FLIGHT * sizeof(VkDescriptorSetLayout));
+    for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
+    {
+        layouts[i] = *pDescriptorLayout;
+    }
+    *ppDescriptorSets = (VkDescriptorSet *)SDL_calloc(MAX_FRAMES_IN_FLIGHT ,sizeof(VkDescriptorSet));
+
+    VkDescriptorSetAllocateInfo allocInfo = {};
+    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    allocInfo.pNext = NULL;
+    allocInfo.descriptorSetCount = (Uint32)MAX_FRAMES_IN_FLIGHT;
+    allocInfo.descriptorPool = *pDescriptorPool;
+    allocInfo.pSetLayouts = layouts;
+
+    resultVulkan(vkAllocateDescriptorSets(*pDevice, &allocInfo, *ppDescriptorSets), code, 2, layouts, *ppDescriptorSets);
+}
+void updateParticleDescriptorSets(VkDevice * pDevice, VkBuffer ** ppUniformBuffers, VkDescriptorSet ** ppDescriptorSets)
+{
+    for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
+    {
+        VkWriteDescriptorSet descriptorWrite[1];
+
+        VkDescriptorBufferInfo bufferInfo = {};
+        bufferInfo.buffer = (*ppUniformBuffers)[i];
+        bufferInfo.offset = 0;
+        bufferInfo.range = sizeof(UniformBufferObject);
+
+        descriptorWrite[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWrite[0].pNext = NULL;
+        descriptorWrite[0].dstSet = (*ppDescriptorSets)[i];
+        descriptorWrite[0].dstBinding = 0;
+        descriptorWrite[0].dstArrayElement = 0;
+        descriptorWrite[0].descriptorCount = 1;
+        descriptorWrite[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        descriptorWrite[0].descriptorCount = 1;
+        descriptorWrite[0].pImageInfo = NULL;
+        descriptorWrite[0].pBufferInfo = &bufferInfo;
+        descriptorWrite[0].pTexelBufferView = NULL;
+
+        vkUpdateDescriptorSets(*pDevice, 1, descriptorWrite, 0, NULL);
     }
 }
 void createParticleDescriptorSets(VkDevice * pDevice, VkBuffer ** ppUniformBuffers, VkDescriptorSetLayout * pDescriptorLayout, VkDescriptorPool * pDescriptorPool, VkDescriptorSet ** ppDescriptorSets)
@@ -195,6 +223,63 @@ void createParticleDescriptorSets(VkDevice * pDevice, VkBuffer ** ppUniformBuffe
         descriptorWrite[0].pTexelBufferView = NULL;
 
         vkUpdateDescriptorSets(*pDevice, 1, descriptorWrite, 0, NULL);
+    }
+}
+void updateComputeDescriptorSets(VkDevice * pDevice, VkBuffer ** ppUniformBuffers, VkBuffer ** ppShaderStorageBuffers, VkDescriptorSet ** ppDescriptorSets)
+{
+    for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
+    {
+        VkWriteDescriptorSet descriptorWrite[3];
+
+        VkDescriptorBufferInfo bufferInfo = {};
+        bufferInfo.buffer = (*ppUniformBuffers)[i];
+        bufferInfo.offset = 0;
+        bufferInfo.range = sizeof(ComputeUniformBufferObject);
+
+        descriptorWrite[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWrite[0].pNext = NULL;
+        descriptorWrite[0].dstSet = (*ppDescriptorSets)[i];
+        descriptorWrite[0].dstBinding = 0;
+        descriptorWrite[0].dstArrayElement = 0;
+        descriptorWrite[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        descriptorWrite[0].descriptorCount = 1;
+        descriptorWrite[0].pImageInfo = NULL;
+        descriptorWrite[0].pBufferInfo = &bufferInfo;
+        descriptorWrite[0].pTexelBufferView = NULL;
+        
+        VkDescriptorBufferInfo storageBufferInfoLastFrame = {};
+        storageBufferInfoLastFrame.buffer = (*ppShaderStorageBuffers)[(i + MAX_FRAMES_IN_FLIGHT - 1) % MAX_FRAMES_IN_FLIGHT];
+        storageBufferInfoLastFrame.offset = 0;
+        storageBufferInfoLastFrame.range = sizeof(Particle) * PARTICLE_COUNT;
+
+        descriptorWrite[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWrite[1].pNext = NULL;
+        descriptorWrite[1].dstSet = (*ppDescriptorSets)[i];
+        descriptorWrite[1].dstBinding = 1;
+        descriptorWrite[1].dstArrayElement = 0;
+        descriptorWrite[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+        descriptorWrite[1].descriptorCount = 1;
+        descriptorWrite[1].pImageInfo = NULL;
+        descriptorWrite[1].pBufferInfo = &storageBufferInfoLastFrame;
+        descriptorWrite[1].pTexelBufferView = NULL;
+
+        VkDescriptorBufferInfo storageBufferInfoCurrentFrame = {};
+        storageBufferInfoCurrentFrame.buffer = (*ppShaderStorageBuffers)[i];
+        storageBufferInfoCurrentFrame.offset = 0;
+        storageBufferInfoCurrentFrame.range = sizeof(Particle) * PARTICLE_COUNT;
+
+        descriptorWrite[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWrite[2].pNext = NULL;
+        descriptorWrite[2].dstSet = (*ppDescriptorSets)[i];
+        descriptorWrite[2].dstBinding = 2;
+        descriptorWrite[2].dstArrayElement = 0;
+        descriptorWrite[2].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+        descriptorWrite[2].descriptorCount = 1;
+        descriptorWrite[2].pImageInfo = NULL;
+        descriptorWrite[2].pBufferInfo = &storageBufferInfoCurrentFrame;
+        descriptorWrite[2].pTexelBufferView = NULL;
+
+        vkUpdateDescriptorSets(*pDevice, 3, descriptorWrite, 0, NULL);
     }
 }
 void createComputeDescriptorSets(VkDevice * pDevice, VkBuffer ** ppUniformBuffers, VkBuffer ** ppShaderStorageBuffers, VkDescriptorSetLayout * pDescriptorLayout, VkDescriptorPool * pDescriptorPool, VkDescriptorSet ** ppDescriptorSets)

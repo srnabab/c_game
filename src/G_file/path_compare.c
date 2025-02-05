@@ -130,6 +130,10 @@ PathType pathCompare(char * buffer)
     {
         return StartVertShader;
     }
+    else if ((SDL_strcmp(buffer, "[TestShaderFragShader]") == 0))
+    {
+        return TestShaderFragShader;
+    }
     else if ((SDL_strcmp(buffer, "[Spirv_reflectExe]") == 0))
     {
         return Spirv_reflectExe;
