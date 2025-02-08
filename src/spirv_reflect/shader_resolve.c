@@ -64,7 +64,7 @@ PathType * types, VkDescriptorPool * pDescriptorPool, int8_t shaderCount, VkShad
         char * shaderCode = (char *)SDL_malloc(fileSize * sizeof(char));
         SDL_ReadIO(shaderFile, shaderCode, sizeof(char) * fileSize);
 
-       createShaderModuleFromMem(fileSize, (const Uint32*)shaderCode, (*ppShaderModule) + i);
+        createShaderModuleFromMem(fileSize, (const Uint32*)shaderCode, (*ppShaderModule) + i);
 
         SpvReflectShaderModule module;
         spv_result = spvReflectCreateShaderModule(fileSize, shaderCode, &module);
@@ -168,8 +168,7 @@ PathType * types, VkDescriptorPool * pDescriptorPool, int8_t shaderCount, VkShad
     allocInfo.descriptorPool = *pDescriptorPool;
     allocInfo.pSetLayouts = layouts;
 
-    VkResult aResult = vkAllocateDescriptorSets(*allInOne.pDevice, &allocInfo, *ppDescriptorSets);
-    logMessage("%d", aResult);
+    vkAllocateDescriptorSets(*allInOne.pDevice, &allocInfo, *ppDescriptorSets);
 
     SDL_free(layouts);
     SDL_free(pPushConstantRange);

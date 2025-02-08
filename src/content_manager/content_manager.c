@@ -1,35 +1,17 @@
+#include "content_manager/content_manager.h"
 #include "G_constants.h"
-#include "sqlite3/sqlite3_alloc_func.h"
+
 #include "SDL3/SDL_filesystem.h"
 #include "SDL3/SDL_log.h"
 #include "SDL3/SDL_iostream.h"
-#include "sqlite3/sqlite3.h"
 
-struct _DB_Path
-{
-    sqlite3 * db;
-    char * A_path;// absolutely path
-    Uint16 R_Begin;// relative path
-    Uint16 LenGetId;// where to begin get short file path
-};
-typedef struct _DB_Path DB_Path;
-
-// for fixed file: font, log...
-struct _Fixed_File
-{
-    char * alias;
-    char * name;
-};
-typedef struct _Fixed_File Fixed_File;
-
-// max row count in database
-#define MAX_ROW 1024
+#include "sqlite3/sqlite3_alloc_func.h"
 
 static int PathBeginLocation = 0;
 static bool existInDatabase[MAX_ROW];
 
 // only for two different tables: ContentPath, AliasNamePair
-void createTable(const char * tableName, sqlite3 * db)
+static void createTable(const char * tableName, sqlite3 * db)
 {
     if (SDL_strcmp(tableName, "ContentPath") == 0)
     {
@@ -64,7 +46,7 @@ void createTable(const char * tableName, sqlite3 * db)
     }
 }
 // insert to AliasNamePair
-void insertNode_2(sqlite3 *db, const char * alias, const char * name)
+static void insertNode_2(sqlite3 *db, const char * alias, const char * name)
 {
     static const char * insertSQL = "INSERT OR IGNORE INTO AliasNamePair (Alias, Name) VALUES (?, ?);";
     sqlite3_stmt *stmt;
@@ -87,7 +69,7 @@ void insertNode_2(sqlite3 *db, const char * alias, const char * name)
     sqlite3_finalize(stmt);
 }
 // insert to minest ID row in ContentPath
-void insertNode(sqlite3 *db, const char *name, int parentID, Sint64 timeStamp, int type) 
+static void insertNode(sqlite3 *db, const char *name, int parentID, Sint64 timeStamp, int type) 
 {
     static const char *insertSQL = "INSERT INTO ContentPath (Name, ParentID, ModifiedTime, TYPE) VALUES (?, ?, ?, ?);";
     static const char *insertSQL_ID = "INSERT INTO ContentPath (ID, Name, ParentID, ModifiedTime, TYPE) VALUES (?, ?, ?, ?, ?);";
@@ -173,7 +155,7 @@ void insertNode(sqlite3 *db, const char *name, int parentID, Sint64 timeStamp, i
     return;
 }
 // judge if table AliasNamePair exist
-bool tableExistJudge(sqlite3 * db)
+static bool tableExistJudge(sqlite3 * db)
 {
     static const char * SQL = "SELECT name \
                             FROM sqlite_master \
@@ -196,7 +178,7 @@ bool tableExistJudge(sqlite3 * db)
     return false;
 }
 // get ID in ContentPath by Name
-int getID(sqlite3 *db, const char * name)
+static int getID(sqlite3 *db, const char * name)
 {
     static const char *findSQL = "SELECT ID FROM ContentPath WHERE Name = ?;";
     sqlite3_stmt * stmt;
@@ -228,7 +210,7 @@ int getID(sqlite3 *db, const char * name)
     return rc;
 }
 // get ParentID in ContentPath by ID
-int getParentID(sqlite3 *db, const int ID)
+static int getParentID(sqlite3 *db, const int ID)
 {
     static const char *findSQL = "SELECT ParentID FROM ContentPath WHERE ID = ?;";
     sqlite3_stmt * stmt;
@@ -260,7 +242,7 @@ int getParentID(sqlite3 *db, const int ID)
     return rc;
 }
 // get MOdifiedTime in ContentPath by ID
-Sint64 getModifyTime(sqlite3 * db, const int ID)
+static Sint64 getModifyTime(sqlite3 * db, const int ID)
 {
     const char * SQL = "SELECT ModifiedTime FROM ContentPath WHERE ID = ?";
     sqlite3_stmt * stmt;
@@ -290,7 +272,7 @@ Sint64 getModifyTime(sqlite3 * db, const int ID)
     return timeStamp;
 }
 // get row TYPE(folder / file) in ContentPath by ID
-SDL_PathType getPathType(sqlite3 * db, const int id)
+static SDL_PathType getPathType(sqlite3 * db, const int id)
 {
     const char * SQL = "SELECT TYPE FROM ContentPath WHERE ID = ?";
     sqlite3_stmt * stmt;
@@ -323,7 +305,7 @@ SDL_PathType getPathType(sqlite3 * db, const int id)
     return rc;
 }
 // get Name in ContentPath by ID
-char * getName(sqlite3 * db, const int ID)
+static char * getName(sqlite3 * db, const int ID)
 {
     const char * SQL = "SELECT Name FROM ContentPath WHERE ID = ?";
     sqlite3_stmt * stmt;
@@ -359,7 +341,7 @@ char * getName(sqlite3 * db, const int ID)
     return name;
 }
 // update ModifiedTime in ContentPath by ID
-void updateModifyTime(sqlite3 * db, Sint64 timeStamp, const int ID)
+static void updateModifyTime(sqlite3 * db, Sint64 timeStamp, const int ID)
 {
     const char * SQL = "UPDATE ContentPath SET ModifiedTime = ? WHERE ID = ?";
     sqlite3_stmt * stmt;
@@ -383,7 +365,7 @@ void updateModifyTime(sqlite3 * db, Sint64 timeStamp, const int ID)
     return;
 }
 // update ParentID in ContentPath by ID (parent folder changed)
-void updateParentID(sqlite3 * db, int parentID, int ID)
+static void updateParentID(sqlite3 * db, int parentID, int ID)
 {
     const char * SQL = "UPDATE ContentPath SET ParentID = ? WHERE ID = ?";
     sqlite3_stmt * stmt;
@@ -407,7 +389,7 @@ void updateParentID(sqlite3 * db, int parentID, int ID)
     return;
 }
 // recursion to get all file and folder in Content Folder and create database
-SDL_EnumerationResult SDLCALL createFolderDatabase(void *userdata, const char *dirname, const char *fname)
+static SDL_EnumerationResult SDLCALL createFolderDatabase(void *userdata, const char *dirname, const char *fname)
 {
     if (fname != NULL)
     {
@@ -442,7 +424,7 @@ SDL_EnumerationResult SDLCALL createFolderDatabase(void *userdata, const char *d
     return SDL_ENUM_CONTINUE;
 }
 // recursion to update all file and folder in Content Folder and create database
-SDL_EnumerationResult SDLCALL updateFolderDatabase(void *userdata, const char *dirname, const char *fname)
+static SDL_EnumerationResult SDLCALL updateFolderDatabase(void *userdata, const char *dirname, const char *fname)
 {
     if (fname != NULL)
     {
@@ -505,7 +487,7 @@ SDL_EnumerationResult SDLCALL updateFolderDatabase(void *userdata, const char *d
     return SDL_ENUM_CONTINUE;
 }
 // delete row in ContentPath by ID
-bool deleteRow(sqlite3 *db, const int ID)
+static bool deleteRow(sqlite3 *db, const int ID)
 {
     const char * SQL = "DELETE FROM ContentPath WHERE ID = ?";
     sqlite3_stmt * stmt;
@@ -528,7 +510,7 @@ bool deleteRow(sqlite3 *db, const int ID)
     return true;
 }
 // get row count in ContentPath
-int getRowsCount(sqlite3 * db)
+static int getRowsCount(sqlite3 * db)
 {
     const char * SQL = "SELECT COUNT(*) FROM ContentPath";
     sqlite3_stmt * stmt;
@@ -555,7 +537,7 @@ int getRowsCount(sqlite3 * db)
     return rc;
 }
 // get absolutely path by joint relative path 
-char * getPath(sqlite3 * db, const int ID)
+static char * getPathByID(sqlite3 * db, const int ID)
 {
     int IDs[15];
     IDs[14] = ID;
@@ -619,7 +601,7 @@ static bool isShader(const char * name)
     
     return false;
 }
-int main(int argc, char * argv[])
+int generatePath(int argc, char * argv[])
 {
     char dataBasePath[255];
 
@@ -758,7 +740,7 @@ int main(int argc, char * argv[])
     {
         if (getPathType(db, i) == SDL_PATHTYPE_FILE)
         {
-            char * temp = getPath(db, i);
+            char * temp = getPathByID(db, i);
             // if (fixedFileCount != templateCount)
             // {
 

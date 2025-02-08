@@ -4,9 +4,11 @@
 #include "vk_code_h/vk_judge.h"
 #include "vk_code_h/vk_struct.h"
 
+#include "G_log.h"
+
 extern VK_ALL allInOne;
 
-void createCommandPool(VkDevice * pDevice, Uint32 graphicsFamilyIndice, VkCommandPool * pCommandPool)
+void createCommandPool(Uint32 graphicsFamilyIndice, VkCommandPool * pCommandPool)
 {
     FuncCode code = createCommandPoolF;
 
@@ -16,10 +18,10 @@ void createCommandPool(VkDevice * pDevice, Uint32 graphicsFamilyIndice, VkComman
     commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     commandPoolCreateInfo.queueFamilyIndex = graphicsFamilyIndice;
 
-    resultVulkan(vkCreateCommandPool(*pDevice, &commandPoolCreateInfo, allInOne.pAllocationCallbacks, pCommandPool), code, 0);
-    //printf("command pool created\n");
+    resultVulkan(vkCreateCommandPool(*allInOne.pDevice, &commandPoolCreateInfo, allInOne.pAllocationCallbacks, pCommandPool), code, 0);
+    logMessage("command pool created\n");
 } 
-void createCommandbuffer(VkDevice * pDevice, VkCommandPool * pCommandPool, VkCommandBuffer ** pCommandBuffer)
+void createCommandbuffer(VkCommandPool * pCommandPool, VkCommandBuffer ** pCommandBuffer)
 {
     FuncCode code = createCommandbufferF;
 
@@ -32,6 +34,6 @@ void createCommandbuffer(VkDevice * pDevice, VkCommandPool * pCommandPool, VkCom
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     allocInfo.commandBufferCount = MAX_FRAMES_IN_FLIGHT;
 
-    resultVulkan(vkAllocateCommandBuffers(*pDevice, &allocInfo, *pCommandBuffer), code, 0);
-    //printf("command buffer allocated\n");
+    resultVulkan(vkAllocateCommandBuffers(*allInOne.pDevice, &allocInfo, *pCommandBuffer), code, 0);
+    logMessage("command buffer allocated\n");
 }

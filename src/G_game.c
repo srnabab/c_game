@@ -15,10 +15,17 @@
 #include "G_pop_window.h"
 #include "G_constants.h"
 #include "G_stack.h"
-#define LOG_ENABLE
 #include "G_log.h"
 #include "G_file/G_file.h"
 
+// Global variables
+bool game_is_running = false;
+
+extern SDL_Window * window;
+extern SDL_DisplayID displayId;
+extern VK_ALL allInOne;
+
+// file variables
 static SDL_Thread * sdl_pid_update;
 static SDL_Thread * sdl_pid_draw;
 static SDL_Thread * sdl_pid_signal;
@@ -26,20 +33,14 @@ static SDL_Thread * sdl_pid_signal;
 static SDL_Mutex * sdl_mutex;
 static SDL_Mutex * sdl_mutex_2;
 
-bool update_done, draw_done = false;
-
-// Global variables
-bool game_is_running = false;
+static bool update_done, draw_done = false;
 
 static double testNum = 0.0f;
 
-extern SDL_Window * window;
-extern SDL_DisplayID displayId;
-extern VK_ALL allInOne;
 
 static SDL_Semaphore * main_semaphore1;
 static SDL_Semaphore * main_semaphore2;
-static SDL_Semaphore * signal_semaphore = NULL;
+static SDL_Semaphore * signal_semaphore;
 
 static SDL_MessageBoxData * boxData;
 
@@ -151,7 +152,7 @@ bool process_input(void)
     while(SDL_PollEvent(&event))
     {
         SDL_Keycode key = event.key.key;
-        LogMessage("preKeyState: %u, keyState: %u, key: %s(%u)", preKeyState, event.type, SDL_GetKeyName(key), key);
+        logMessage("preKeyState: %u, keyState: %u, key: %s(%u)", preKeyState, event.type, SDL_GetKeyName(key), key);
         // logMessage("pressed Key:%u", pressedKey);
         
         if (event.type == SDL_EVENT_WINDOW_MINIMIZED)

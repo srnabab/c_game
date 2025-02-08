@@ -1,7 +1,6 @@
 #include "vk_code_h/vk_judge.h"
 #include "vk_code_h/vk_recreate.h"
 
-#include <stdlib.h>
 #include "G_log.h"
 
 extern bool game_is_running;

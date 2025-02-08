@@ -433,14 +433,15 @@ void initVulkan(void)
     findDepthFormat(VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
     createRenderPass();
 
-    createCommandPool(&device, indices.graphicsFamily.familyIndice, &swapchainCommandPool);
+    createCommandPool(indices.graphicsFamily.familyIndice, &swapchainCommandPool);
 
-    createCommandPool(&device, indices.computeFamily.familyIndice, &computeCommandPool);
+    createCommandPool(indices.computeFamily.familyIndice, &computeCommandPool);
 
     createDepthResoures(&physicalDevice, &device, &extent2D, &swapchainCommandPool, &graphicQueue, &depthImage, &depthImageMemory, &depthImageView);
 
     createFrameBuffer(&device, &extent2D, imageCount, swapchainImageViews, &depthImageView, &renderPass, &swapchainFramebuffer);
 
+    // when one textureImage creatation failed should clean others 
     createTextureImage(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, CirclePng, VK_FORMAT_R8G8B8A8_SRGB, &texturesImage, &textureImageMem);
     createTextureImageView(&device, &texturesImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, &textureImageView);
 
@@ -561,6 +562,19 @@ void initVulkan(void)
     
     createComputePipeline(&device, &computePipelineLayout, computeShaderStageCreateInfo, &computePipeline);
 
+    createCommandbuffer(&swapchainCommandPool, &commandBuffer);
+
+    createSemaphore(&device, &imageAvailableSemaphore);
+    createSemaphore(&device, &renderFinishedSemaphore);
+ 
+    createFence(&device, &inFlightFence);
+
+    createCommandbuffer(&computeCommandPool, &computeCommandBuufer);
+
+    createSemaphore(&device, &computeFinishedSemaphore);
+
+    createFence(&device, &computeInFlightFences);
+
     //graphics
     VkImageView tempImageView[3];
     tempImageView[0] = loadingImageView;
@@ -568,24 +582,11 @@ void initVulkan(void)
     tempImageView[2] = textImageView;
     updateGraphicDescriptorSets(&device, &graphicUniformBuffers, &graphicDescriptorSets, tempImageView, &textureSampler);
 
-    createCommandbuffer(&device, &swapchainCommandPool, &commandBuffer);
-
-    createSemaphore(&device, &imageAvailableSemaphore);
-    createSemaphore(&device, &renderFinishedSemaphore);
- 
-    createFence(&device, &inFlightFence);
-
     //particle
     updateParticleDescriptorSets(&device, &graphicUniformBuffers, &particleDescriptorSets);
 
     //compute
     updateComputeDescriptorSets(&device, &computeUniformBuffers, &shaderStorageBuffers, &computeDescriptorSets);
-
-    createCommandbuffer(&device, &computeCommandPool, &computeCommandBuufer);
-
-    createSemaphore(&device, &computeFinishedSemaphore);
-
-    createFence(&device, &computeInFlightFences);
 
     // initializeRecreate();
 

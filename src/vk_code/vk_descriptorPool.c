@@ -8,36 +8,6 @@
 
 extern VK_ALL allInOne;
 
-void addDescriptorSetLayout(VkDevice * pDevice, Uint32 bindingCount, VkDescriptorSetLayoutBinding * pBindings, Uint32 set, VkDescriptorSetLayout ** ppDescriptorSetLayout)
-{
-    // FuncCode code = createDescriptorSetLayoutF;
-
-    *ppDescriptorSetLayout = (VkDescriptorSetLayout *)SDL_realloc(*ppDescriptorSetLayout, (set + 1) * sizeof(VkDescriptorSetLayout));
-
-    VkDescriptorSetLayoutCreateInfo layoutInfo = {};
-    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    layoutInfo.pNext = NULL;
-    layoutInfo.flags = 0;
-    layoutInfo.bindingCount = bindingCount;
-    layoutInfo.pBindings = pBindings;
-
-    resultVulkan(vkCreateDescriptorSetLayout(*pDevice, &layoutInfo, allInOne.pAllocationCallbacks, &(*ppDescriptorSetLayout)[set]), createDescriptorSetLayoutF, 0);
-}
-void setDescriptorSetLayoutBinding(VkDescriptorType descriptorType, VkShaderStageFlags stage, Uint32 descriptorCount, Uint32 binding, Uint32 * pBindingCount, VkDescriptorSetLayoutBinding ** ppDescriptorSetLayoutBinding)
-{
-    (*pBindingCount)++;
-
-    (*ppDescriptorSetLayoutBinding) = (VkDescriptorSetLayoutBinding *)SDL_realloc(*ppDescriptorSetLayoutBinding, *pBindingCount * sizeof(VkDescriptorSetLayoutBinding));
-
-    Uint32 index = *pBindingCount - 1;
-    (*ppDescriptorSetLayoutBinding)[index].binding = binding;
-    (*ppDescriptorSetLayoutBinding)[index].descriptorType = descriptorType;
-    (*ppDescriptorSetLayoutBinding)[index].descriptorCount = descriptorCount;
-    (*ppDescriptorSetLayoutBinding)[index].stageFlags = stage;
-    (*ppDescriptorSetLayoutBinding)[index].pImmutableSamplers = NULL;
-
-    logMessage("binding: %u", binding);
-}
 void createDescriptorPool(VkDevice * pDevice, Uint32 poolSizeCount, VkDescriptorPoolSize * pPoolSizes, Uint32 maxSets, VkDescriptorPool * pDescriptorPool)
 {
     FuncCode code = createDescriptorPoolF;
@@ -51,15 +21,6 @@ void createDescriptorPool(VkDevice * pDevice, Uint32 poolSizeCount, VkDescriptor
     poolInfo.maxSets  = maxSets;
 
     resultVulkan(vkCreateDescriptorPool(*pDevice, &poolInfo, allInOne.pAllocationCallbacks, pDescriptorPool), code, 0);
-}
-void setDescriptorPoolSize(VkDescriptorType type, Uint32 descriptorCount, Uint32 * pPoolCount, VkDescriptorPoolSize ** ppPoolSize)
-{
-    (*pPoolCount)++;
-    (*ppPoolSize) = (VkDescriptorPoolSize *)SDL_realloc(*ppPoolSize, *pPoolCount * sizeof(VkDescriptorPoolSize));
-
-    Uint32 index = *pPoolCount - 1;
-    (*ppPoolSize)[index].type = type;
-    (*ppPoolSize)[index].descriptorCount = descriptorCount;
 }
 void modifyPoolSizeDescriptorCount(VkDescriptorType type, Uint32 addDescriptorCount, Uint32 poolCount, VkDescriptorPoolSize ** ppPoolSize)
 {

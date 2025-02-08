@@ -34,7 +34,7 @@ add_custom_target(GenerateCode DEPENDS ${SRC_ROOT}/file/generated_function.c ${I
 
 add_subdirectory(src/texture_generate)
 # add_subdirectory(src/vma)
-add_subdirectory(src/contentManager)
+add_subdirectory(src/content_manager)
 
 message(STATUS "Include directories for MyExecutable: ${INCLUDE_ROOT}")
 message(STATUS "Src directories for MyExecutable: ${SRC_ROOT}")
@@ -42,16 +42,19 @@ message(STATUS "Src directories for MyExecutable: ${SRC_ROOT}")
 add_custom_target(
     ShaderCompile
     COMMAND cmd /c ${CMAKE_SOURCE_DIR}/shader.bat
-    COMMENT "Running script.py before building target"
+    COMMENT "Running shader.bat before building target"
 )
 
 add_custom_target(
     MoveLib
     COMMAND cmd /c ${CMAKE_SOURCE_DIR}/move_lib.lnk
-    COMMENT "Running script.py before building target"
+    COMMENT "Running move_lib.lnk before building target"
 )
 
 add_executable(game ${SRC_ROOT}/main.c 
+                    ${SRC_ROOT}/sqlite3_alloc_func.c
+                    ${SRC_ROOT}/content_manager/content_manager.c
+                    ${SRC_ROOT}/texture_generate/textureG.c
                     ${SRC_ROOT}/G_game.c
                     ${SRC_ROOT}/G_file/G_file.c 
                     ${SRC_ROOT}/G_file/path_compare.c
@@ -98,7 +101,7 @@ add_executable(game ${SRC_ROOT}/main.c
 target_include_directories(game PUBLIC ${INCLUDE_ROOT}
                             "${INCLUDE_ROOT}/cglm"
                             "${INCLUDE_ROOT}/vk_code_h"
-                            "${INCLUDE_ROOT}/GLFW"
+                            # "${INCLUDE_ROOT}/GLFW"
                             # "${INCLUDE_ROOT}/libpng"
                             "${INCLUDE_ROOT}/SDL3"
                             "${INCLUDE_ROOT}/SDL3_mixer"
@@ -117,13 +120,23 @@ target_include_directories(game PUBLIC ${INCLUDE_ROOT}
 # find_package(SDL REQUIRED)
 # find_package(SDL_mixer REQUIRED)
 
-target_link_libraries(game z SDL3 SDL3_mixer SDL3_image box2d unistring "C:/D/c_game/lib/vulkan/vulkan-1.lib" textureG)
+# target_link_libraries(game z SDL3 SDL3_mixer SDL3_image box2d unistring "C:/D/c_game/lib/vulkan/vulkan-1.lib" textureG)
+target_link_libraries(game PRIVATE
+                    sqlite3.a
+                    SDL3.a
+                    SDL3_mixer.a
+                    SDL3_image.a
+                    box2d.a
+                    unistring.a
+                    "${LIB_ROOT}/vulkan/vulkan-1.lib"
+                    freetyped.a bz2 z.a
+                    setupapi winmm imm32 version)
 
 # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mwindows")
 
 target_compile_options(game PUBLIC -O0 -Wall)
 # target_compile_options(game PUBLIC -O0 -Wall -Wextra)
-# target_compile_options(game PUBLIC -O2 -Wall)
+# target_compile_options(game PUBLIC -Os -Wall)
 
 add_dependencies(GeneratePath ContentManager ShaderCompile MoveLib)
 add_dependencies(GenerateCode GeneratePath)

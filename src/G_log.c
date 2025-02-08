@@ -187,8 +187,7 @@ void initLog(Uint8 log)
 }
 void logMessage(char * format, ...)
 {
-    if (disabled)
-        return;
+    if (disabled) return;
     
     va_list arg;
 

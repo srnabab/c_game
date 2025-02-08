@@ -1,3 +1,5 @@
+#include "content_manager/content_manager.h"
+
 #include "G_constants.h"
 
 #include "G_file/G_file.h"
@@ -84,26 +86,10 @@ static bool initPath(void)
     Path = (const char (*)[MAX_PATHLEN])PathTemp;
     return true;
 }
-static int systemRun(void * arg)
-{
-    return system((char*)arg);
-}
 static bool setPath(void)
 {
-    char path[512] = {0};
-    
-#if defined(_WIN32)
-    SDL_snprintf(path, 512, "%s%s", rootPath, "ContentManager.exe");
-#elif defined(__linux__)
-    SDL_snprintf(path, 512, "%s%s", rootPath, "ContentManager");
-#endif
-
-
-    SDL_Thread * thread = SDL_CreateThread(systemRun, "contentManager", path);
-    int status;
-    SDL_WaitThread(thread, &status);
-    // printf("%d\n", status);
-    // system(path);
+    char * path = (char*)rootPath;
+    generatePath(0, &path);
 
     return true;
 }

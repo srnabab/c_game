@@ -58,6 +58,22 @@ PathType pathCompare(char * buffer)
     {
         return ParticleVertShader;
     }
+    else if ((SDL_strcmp(buffer, "[Spirv_reflectExe]") == 0))
+    {
+        return Spirv_reflectExe;
+    }
+    else if ((SDL_strcmp(buffer, "[StartFragShader]") == 0))
+    {
+        return StartFragShader;
+    }
+    else if ((SDL_strcmp(buffer, "[StartVertShader]") == 0))
+    {
+        return StartVertShader;
+    }
+    else if ((SDL_strcmp(buffer, "[TestShaderFragShader]") == 0))
+    {
+        return TestShaderFragShader;
+    }
     else if ((SDL_strcmp(buffer, "[TriangleFragShader]") == 0))
     {
         return TriangleFragShader;
@@ -121,22 +137,6 @@ PathType pathCompare(char * buffer)
     else if ((SDL_strcmp(buffer, "[TextRectangle1Png]") == 0))
     {
         return TextRectangle1Png;
-    }
-    else if ((SDL_strcmp(buffer, "[StartFragShader]") == 0))
-    {
-        return StartFragShader;
-    }
-    else if ((SDL_strcmp(buffer, "[StartVertShader]") == 0))
-    {
-        return StartVertShader;
-    }
-    else if ((SDL_strcmp(buffer, "[TestShaderFragShader]") == 0))
-    {
-        return TestShaderFragShader;
-    }
-    else if ((SDL_strcmp(buffer, "[Spirv_reflectExe]") == 0))
-    {
-        return Spirv_reflectExe;
     }
 
     return None;

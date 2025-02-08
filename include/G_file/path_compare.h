@@ -20,6 +20,10 @@ typedef enum _PathType
     ParticleCompShader,
     ParticleFragShader,
     ParticleVertShader,
+    Spirv_reflectExe,
+    StartFragShader,
+    StartVertShader,
+    TestShaderFragShader,
     TriangleFragShader,
     TriangleVertShader,
     TextTxt,
@@ -36,10 +40,6 @@ typedef enum _PathType
     SettingPng,
     StartPng,
     TextRectangle1Png,
-    StartFragShader,
-    StartVertShader,
-    TestShaderFragShader,
-    Spirv_reflectExe,
 } PathType;
 
 extern PathType SDLCALL pathCompare(char * buffer);

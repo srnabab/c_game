@@ -4,6 +4,7 @@ include/cJSON/
 include/libpng/
 include/SDL3/
 include/SDL3_mixer/
+include/SDL3_image/
 include/zlib/
 include/vk_video/
 include/vulkan/

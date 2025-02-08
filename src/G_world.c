@@ -34,12 +34,9 @@ static void box2d_SDL_Free(void * memory)
 {
     SDL_aligned_free(memory);
 }
-
 void initWorld(void)
 {
-    b2AllocFcn * allocFcn = box2d_SDL_Alloc;
-    b2FreeFcn * freeFcn = box2d_SDL_Free;
-    b2SetAllocator(allocFcn, freeFcn);
+    b2SetAllocator(box2d_SDL_Alloc, box2d_SDL_Free);
 
     worldDef = b2DefaultWorldDef();
     worldDef.gravity = (b2Vec2){0.0f, -100.0f * SCALE_FACTOR};
