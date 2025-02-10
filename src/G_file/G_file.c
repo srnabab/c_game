@@ -1,5 +1,7 @@
 #include "content_manager/content_manager.h"
 
+#include "textureG/textureG.h"
+
 #include "G_constants.h"
 
 #include "G_file/G_file.h"
@@ -12,6 +14,11 @@
 
 static Uint8 setArgments(int argc, char * argv[])
 {
+    if (argc == 1) 
+    {
+        SDL_Log(".exe\n[-Log-print](to console)\n[-Log-txt](to log file)\n"
+        "[-FontImage] [-F] [FontPath] [-C] [Channels] [-S] [fontSize] [-H] [HashTablePath] [-P] [PngPath]");
+    }
     Uint8 log = 0x0;
     for (int i = 1;i < argc;i++)
     {
@@ -22,6 +29,41 @@ static Uint8 setArgments(int argc, char * argv[])
         else if (SDL_strcmp(argv[i], "-Log-txt") == 0)
         {
             log |= (LOG_ENABLED | LOG_TXT);
+        }
+        else if (SDL_strcmp(argv[i], "-FontImage") == 0)
+        {
+            char fontPath[255] = {0};
+            char pngPath[255] = {0};
+            char hashPath[255] = {0};
+            int fontSize = 60;
+            int channel = 4;
+            i++;
+            for (;i < argc;i++)
+            {
+                if (SDL_strcmp(argv[i], "-F") == 0)
+                {
+                    strcpy(fontPath, argv[++i]);
+                }
+                else if (SDL_strcmp(argv[i], "-P") == 0)
+                {
+                    strcpy(pngPath, argv[++i]);
+                }
+                else if (SDL_strcmp(argv[i], "-H") == 0)
+                {
+                    strcpy(hashPath, argv[++i]);
+                }
+                else if (SDL_strcmp(argv[i], "-S") == 0)
+                {
+                    fontSize = atoi(argv[++i]);
+                }
+                else if (SDL_strcmp(argv[i], "-C") == 0)
+                {
+                    channel = SDL_atoi(argv[++i]);
+                }
+            }
+
+            int failed = 0;
+            exit(textureGenerate(fontPath, hashPath, pngPath, channel, fontSize, &failed));
         }
     }
     return log;
@@ -77,7 +119,7 @@ static bool initPath(void)
 
             buffer[SDL_strcspn(buffer, "\n")] = '\0';
             SDL_strlcat(PathTemp[type], buffer, 255);
-            SDL_Log(PathTemp[type]);
+            // SDL_Log(PathTemp[type]);
             fileCount++;
         }
         memset(buffer, 0, MAX_PATHLEN);
@@ -96,12 +138,12 @@ static bool setPath(void)
 
 int initFileSystem(int argc, char * argv[])
 {
-    if (!setRootPath(argv[0])) return -1;
-    if (!setPath()) return -2;
     Uint8 place1 = 0x0; 
     Uint8 place2 = 0x0;
     Uint8 place3 = 0x0;
     Uint8 log = setArgments(argc, argv);
+    if (!setRootPath(argv[0])) return -1;
+    if (!setPath()) return -2;
     if (!initPath()) return -4;
 
     return (place1 << 24) | (place2 << 16) | (place3 << 8) | log;

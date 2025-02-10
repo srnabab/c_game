@@ -7,6 +7,7 @@
 #include "textureG/stb_image_write.h"
 
 #include "SDL3/SDL_iostream.h"
+#include "SDL3/SDL_log.h"
 
 #include "textureG/textureG.h"
 
@@ -95,8 +96,9 @@ static void SDL_stb_image_write_func(void * context, void * data, int size)
 }
 int textureGenerate(const char* fontPath, const char* hashTablePath, const char* pngSavePath, Sint8 channels, int fontSize, int* failed)
 {
-    if ((fontPath == NULL) || (hashTablePath == NULL) || (pngSavePath == NULL) || (fontSize <= 0))
+    if ((fontPath[0] == 0) || (hashTablePath[0] == 0) || (pngSavePath[0] == 0) || (fontSize <= 0))
     {
+        SDL_Log("[-F] [FontPath] [-C] [Channels] [-S] [fontSize] [-H] [HashTablePath] [-P] [PngPath]");
         return -1;
     }
 
@@ -272,5 +274,5 @@ int textureGenerate(const char* fontPath, const char* hashTablePath, const char*
     FT_Done_Face(face);
     FT_Done_FreeType(ft);
 
-    return 1;
+    return 0;
 }
