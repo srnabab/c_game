@@ -208,67 +208,10 @@ static bool * extensionSupportedCheck_Optional(Uint32 neededExtensionCount, char
 static Uint32 configureQueueCreateInfo(VkDeviceQueueCreateInfo * pCreateInfo, QueueFamily * indices, float * pQueuePriority)
 {
     Uint32 queueFamilyCount = 0;
-    if ((indices[1].familyIndice != indices[0].familyIndice) || (indices[2].familyIndice != indices[1].familyIndice))
-    {
-        if (indices[1].familyIndice == indices[0].familyIndice)
-        {
-            for (int i = 1;i < 3;i++)
-            {
-                pCreateInfo[i].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-                pCreateInfo[i].pNext = NULL;
-                pCreateInfo[i].flags = 0;
-                pCreateInfo[i].queueFamilyIndex = indices[i].familyIndice;
-                pCreateInfo[i].queueCount = indices[i].queueCount;
-                pCreateInfo[i].pQueuePriorities = pQueuePriority;
+    Uint32 index[4] = {indices[0].familyIndice, indices[1].familyIndice, indices[2].familyIndice, indices[3].familyIndice};
 
-                queueFamilyCount++;
-            }
-        }
-        else if (indices[2].familyIndice == indices[1].familyIndice)
-        {
-            for (int i = 0;i < 2;i++)
-            {
-                pCreateInfo[i].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-                pCreateInfo[i].pNext = NULL;
-                pCreateInfo[i].flags = 0;
-                pCreateInfo[i].queueFamilyIndex = indices[i].familyIndice;
-                pCreateInfo[i].queueCount = indices[i].queueCount;
-                pCreateInfo[i].pQueuePriorities = pQueuePriority;
-
-                queueFamilyCount++;
-            }
-        }
-        else if (indices[2].familyIndice == indices[0].familyIndice)
-        {
-            for (int i = 0;i < 3;i += 2)
-            {
-                pCreateInfo[i].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-                pCreateInfo[i].pNext = NULL;
-                pCreateInfo[i].flags = 0;
-                pCreateInfo[i].queueFamilyIndex = indices[i].familyIndice;
-                pCreateInfo[i].queueCount = indices[i].queueCount;
-                pCreateInfo[i].pQueuePriorities = pQueuePriority;
-
-                queueFamilyCount++;
-            }
-        }
-        else
-        {
-            for (int i = 0;i < 3;i++)
-            {
-                pCreateInfo[i].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-                pCreateInfo[i].pNext = NULL;
-                pCreateInfo[i].flags = 0;
-                pCreateInfo[i].queueFamilyIndex = indices[i].familyIndice;
-                pCreateInfo[i].queueCount = indices[i].queueCount;
-                pCreateInfo[i].pQueuePriorities = pQueuePriority;
-
-                queueFamilyCount++;
-            }
-        }
-    }
-
-    if (queueFamilyCount == 0)
+    //graphic, present
+    if (index[0] == index[1])
     {
         pCreateInfo[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
         pCreateInfo[0].pNext = NULL;
@@ -276,7 +219,46 @@ static Uint32 configureQueueCreateInfo(VkDeviceQueueCreateInfo * pCreateInfo, Qu
         pCreateInfo[0].queueFamilyIndex = indices[0].familyIndice;
         pCreateInfo[0].queueCount = indices[0].queueCount;
         pCreateInfo[0].pQueuePriorities = pQueuePriority;
+        queueFamilyCount++;
+    }
+    else
+    {
+        pCreateInfo[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        pCreateInfo[0].pNext = NULL;
+        pCreateInfo[0].flags = 0;
+        pCreateInfo[0].queueFamilyIndex = indices[0].familyIndice;
+        pCreateInfo[0].queueCount = indices[0].queueCount;
+        pCreateInfo[0].pQueuePriorities = pQueuePriority;
+        queueFamilyCount++;
 
+        pCreateInfo[1].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        pCreateInfo[1].pNext = NULL;
+        pCreateInfo[1].flags = 0;
+        pCreateInfo[1].queueFamilyIndex = indices[1].familyIndice;
+        pCreateInfo[1].queueCount = indices[1].queueCount;
+        pCreateInfo[1].pQueuePriorities = pQueuePriority;
+        queueFamilyCount++;
+    }
+
+    if (index[2] != index[0] && index[2] != index[1]) 
+    {
+        pCreateInfo[queueFamilyCount].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        pCreateInfo[queueFamilyCount].pNext = NULL;
+        pCreateInfo[queueFamilyCount].flags = 0;
+        pCreateInfo[queueFamilyCount].queueFamilyIndex = indices[2].familyIndice;
+        pCreateInfo[queueFamilyCount].queueCount = indices[2].queueCount;
+        pCreateInfo[queueFamilyCount].pQueuePriorities = pQueuePriority;
+        queueFamilyCount++;
+    }
+
+    if (index[3] != index[0] && index[3] != index[1] && index[3] != index[0])
+    {
+        pCreateInfo[queueFamilyCount].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        pCreateInfo[queueFamilyCount].pNext = NULL;
+        pCreateInfo[queueFamilyCount].flags = 0;
+        pCreateInfo[queueFamilyCount].queueFamilyIndex = indices[3].familyIndice;
+        pCreateInfo[queueFamilyCount].queueCount = indices[3].queueCount;
+        pCreateInfo[queueFamilyCount].pQueuePriorities = pQueuePriority;
         queueFamilyCount++;
     }
 
@@ -339,9 +321,10 @@ void createLogicalDevice(void)
     }
     SDL_free(enabledGroup);
 
-    QueueFamily indices[3] = {allInOne.pQueueFamilyIndices->graphicsFamily, allInOne.pQueueFamilyIndices->presentFamily, allInOne.pQueueFamilyIndices->computeFamily};
+    QueueFamily indices[4] = {allInOne.pQueueFamilyIndices->graphicsFamily, allInOne.pQueueFamilyIndices->presentFamily,
+         allInOne.pQueueFamilyIndices->computeFamily, allInOne.pQueueFamilyIndices->transferFamily};
 
-    VkDeviceQueueCreateInfo queueCreateInfo[3];
+    VkDeviceQueueCreateInfo queueCreateInfo[4];
 
     float queuePriority = 1.0f;
     Uint32 queueFamilyCount = configureQueueCreateInfo(queueCreateInfo, indices, &queuePriority);

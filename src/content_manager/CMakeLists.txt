@@ -14,4 +14,4 @@ target_link_libraries(ContentManager PRIVATE
                                     setupapi winmm imm32 version)
 target_compile_options(ContentManager PUBLIC -O2 -Wall)
 
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/run)
+set(EXECUTABLE_OUTPUT_PATH ${RUN_ROOT})

@@ -4,7 +4,7 @@
 
 extern VK_ALL allInOne;
 
-VkResult createImage(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage * pImage, VkDeviceMemory * pImageMem)
+VkResult createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage * pImage, VkDeviceMemory * pImageMem)
 {
     VkResult result = VK_SUCCESS;
 
@@ -27,23 +27,23 @@ VkResult createImage(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, uin
     imageInfo.pQueueFamilyIndices = NULL;
     imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-    result |= vkCreateImage(*pDevice, &imageInfo, allInOne.pAllocationCallbacks, pImage);
+    result |= vkCreateImage(*allInOne.pDevice, &imageInfo, allInOne.pAllocationCallbacks, pImage);
 
     VkMemoryRequirements memRequirements;
-    vkGetImageMemoryRequirements(*pDevice, *pImage, &memRequirements);
+    vkGetImageMemoryRequirements(*allInOne.pDevice, *pImage, &memRequirements);
 
     VkMemoryAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = findMemoryType(pPhysicalDevice, memRequirements.memoryTypeBits, properties);
+    allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
 
-    result |= vkAllocateMemory(*pDevice, &allocInfo, allInOne.pAllocationCallbacks, pImageMem);
+    result |= vkAllocateMemory(*allInOne.pDevice, &allocInfo, allInOne.pAllocationCallbacks, pImageMem);
 
-    result |= vkBindImageMemory(*pDevice, *pImage, *pImageMem, 0);
+    result |= vkBindImageMemory(*allInOne.pDevice, *pImage, *pImageMem, 0);
 
     return result;
 }
-VkResult createImageView(VkDevice * pDevice, VkImage * pImage, VkFormat format, VkImageAspectFlags aspectFlags, VkImageView * pImageView)
+VkResult createImageView(VkImage * pImage, VkFormat format, VkImageAspectFlags aspectFlags, VkImageView * pImageView)
 {
     VkResult result = VK_SUCCESS;
 
@@ -65,11 +65,11 @@ VkResult createImageView(VkDevice * pDevice, VkImage * pImage, VkFormat format, 
     viewInfo.subresourceRange.baseArrayLayer = 0;
     viewInfo.subresourceRange.layerCount = 1;
 
-    result |= vkCreateImageView(*pDevice, &viewInfo, allInOne.pAllocationCallbacks, pImageView);
+    result |= vkCreateImageView(*allInOne.pDevice, &viewInfo, allInOne.pAllocationCallbacks, pImageView);
 
     return result;
 }
-VkResult createImageViews(VkDevice * pDevice, VkImage ** ppImages, uint32_t imageCount, VkFormat format, VkImageAspectFlags aspectFlags, VkImageView ** ppImageView)
+VkResult createImageViews(VkImage ** ppImages, uint32_t imageCount, VkFormat format, VkImageAspectFlags aspectFlags, VkImageView ** ppImageView)
 {
     VkResult result = VK_SUCCESS;
 
@@ -81,7 +81,7 @@ VkResult createImageViews(VkDevice * pDevice, VkImage ** ppImages, uint32_t imag
 
     for (uint32_t i = 0;i < imageCount;i++)
     {
-        result |= createImageView(pDevice, &(*ppImages)[i], format, aspectFlags, &(*ppImageView)[i]);
+        result |= createImageView(&(*ppImages)[i], format, aspectFlags, &(*ppImageView)[i]);
     }
 
     SDL_free(imageViewCreatInfo);
@@ -89,19 +89,19 @@ VkResult createImageViews(VkDevice * pDevice, VkImage ** ppImages, uint32_t imag
 
     return result;
 }
-void destroyImageViews(VkDevice * pDevice, VkImageView * pImageView, uint32_t imageCount)
+void destroyImageViews(VkImageView * pImageView, uint32_t imageCount)
 {
     for (uint32_t i = 0;i < imageCount;i++)
     {
-        vkDestroyImageView(*pDevice, pImageView[i], allInOne.pAllocationCallbacks);
+        vkDestroyImageView(*allInOne.pDevice, pImageView[i], allInOne.pAllocationCallbacks);
     }
 }
-VkResult transitionImageLayout(VkDevice * pDevice, VkCommandPool * pCommandPool, VkQueue * pGraphcisQueue, VkImage * pImage, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
+VkResult transitionImageLayout(VkCommandPool * pCommandPool, VkQueue * pGraphcisQueue, VkImage * pImage, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
 {
     VkResult result  = VK_SUCCESS;
 
     VkCommandBuffer commandBuffer = NULL;
-    result |= beginSingleTimeCommands(pDevice, pCommandPool, &commandBuffer);
+    result |= beginSingleTimeCommands(pCommandPool, &commandBuffer);
 
     VkImageMemoryBarrier barrier = {};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -158,7 +158,7 @@ VkResult transitionImageLayout(VkDevice * pDevice, VkCommandPool * pCommandPool,
 
     vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, NULL, 0, NULL, 1, &barrier);
 
-    result |= endSingleTimeCommands(pDevice, pCommandPool, pGraphcisQueue, &commandBuffer);
+    result |= endSingleTimeCommands(pCommandPool, pGraphcisQueue, &commandBuffer);
 
     return result;
 }

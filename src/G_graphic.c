@@ -1,6 +1,7 @@
 #include "G_constants.h"
 #include "G_log.h"
 #include "G_graphic.h"
+#include "G_resource.h"
 
 #include "SDL3/SDL_init.h"
 #include "SDL3/SDL_video.h"
@@ -113,12 +114,12 @@ static VkSurfaceKHR surface = NULL;
 
 static VkPhysicalDevice physicalDevice = NULL;
 
-static QueueFamilyIndices indices = {};
+static QueueFamilyIndices queueIndices = {};
 static VkDevice device = NULL;
 static VkQueue graphicQueue = NULL;
 static VkQueue presentQueue = NULL;
-
 static VkQueue computeQueue = NULL;
+static VkQueue transferQueue = NULL;
 
 static VkAllocationCallbacks SDL_allocationCallBacks = {};
 
@@ -171,7 +172,11 @@ static VkPipeline particlePipeline = NULL;
 
 static VkPipeline computePipeline = NULL;
 
-static VkCommandPool swapchainCommandPool = NULL;
+static VkCommandPool graphicCommandPool = NULL;
+
+static VkCommandPool presentCommandPool = NULL;
+
+static VkCommandPool transferCommandPool = NULL;
 
 static VkCommandPool computeCommandPool = NULL;
 
@@ -215,16 +220,16 @@ static void * indexBufferMemMapped = NULL;
 static uint32_t indicesCount = 6;
 static uint16_t * indices_v = NULL;
 
-static VkBuffer * graphicUniformBuffers = NULL;
-static VkDeviceMemory * graphicUniformBuffersMemory = NULL;
-static void ** graphicUniformBufferMapped = NULL;
+static VkBuffer graphicUniformBuffers[MAX_FRAMES_IN_FLIGHT];
+static VkDeviceMemory graphicUniformBuffersMemory[MAX_FRAMES_IN_FLIGHT];
+static void* graphicUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
 static UniformBufferObject ubo = {};
 
 static VkDescriptorPoolSize * graphicDescriptorPoolSize = NULL;
 
-static VkBuffer * computeUniformBuffers = NULL;
-static VkDeviceMemory * computeUniformBuffersmemory = NULL;
-static void ** computeUniformBufferMapped = NULL;
+static VkBuffer computeUniformBuffers[MAX_FRAMES_IN_FLIGHT];
+static VkDeviceMemory computeUniformBuffersmemory[MAX_FRAMES_IN_FLIGHT];
+static void* computeUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
 static ComputeUniformBufferObject computeUbo = {};
 
 static VkDescriptorPoolSize * particleDescriptorPoolSize = NULL;
@@ -240,17 +245,18 @@ static VkDescriptorSet * particleDescriptorSets = NULL;
 static VkDescriptorPool computeDescriptorPool = NULL;
 static VkDescriptorSet * computeDescriptorSets = NULL;
 
-static VkCommandBuffer * commandBuffer = NULL;
+static VkCommandBuffer graphicCommandBuffer[MAX_FRAMES_IN_FLIGHT];
+static VkCommandBuffer presentCommandBuffer[MAX_FRAMES_IN_FLIGHT];
+static VkCommandBuffer computeCommandBuffer[MAX_FRAMES_IN_FLIGHT];
+static VkCommandBuffer transferCommandBuffer[MAX_FRAMES_IN_FLIGHT];
 
-static VkCommandBuffer * computeCommandBuufer = NULL;
+static VkSemaphore imageAvailableSemaphore[MAX_FRAMES_IN_FLIGHT];
+static VkSemaphore renderFinishedSemaphore[MAX_FRAMES_IN_FLIGHT];
 
-static VkSemaphore * imageAvailableSemaphore = NULL;
-static VkSemaphore * renderFinishedSemaphore = NULL;
+static VkFence graphicInFlightFence[2];
 
-static VkFence * inFlightFence = NULL;
-
-static VkSemaphore * computeFinishedSemaphore = NULL;
-static VkFence * computeInFlightFences = NULL;
+static VkSemaphore computeFinishedSemaphore[MAX_FRAMES_IN_FLIGHT];
+static VkFence computeInFlightFences[2];
 
 static uint32_t currentFrame = 0;
 
@@ -262,8 +268,8 @@ static float pictureY = 0;
 
 // static bool moveEnabled = false;
 
-static VkBuffer * shaderStorageBuffers = NULL;
-static VkDeviceMemory * shaderStorageBuffersMem = NULL;
+static VkBuffer shaderStorageBuffers[MAX_FRAMES_IN_FLIGHT];
+static VkDeviceMemory shaderStorageBuffersMem[MAX_FRAMES_IN_FLIGHT];
 
 static ImageRotate pictureImageRotate = {0.0f};
 
@@ -286,10 +292,16 @@ static void initializeAllInOne(void)
 
     allInOne.pSurface = &surface;
 
-    allInOne.pQueueFamilyIndices = &indices;
+    allInOne.pQueueFamilyIndices = &queueIndices;
     allInOne.pGraphicQueue = &graphicQueue;
     allInOne.pPresentQueue = &presentQueue;
     allInOne.pComputeQueue = &computeQueue;
+    allInOne.pTransferQueue = &transferQueue;
+    
+    allInOne.pGraphicCommandPool = &graphicCommandPool;
+    allInOne.pPresentCommandPool = &presentCommandPool;
+    allInOne.pComputeCommandPool = &computeCommandPool;
+    allInOne.pTransferCommandPool = &transferCommandPool;
 
     allInOne.pExtent2D = &extent2D;
     allInOne.pOldExtent2D = &oldExtent2D;
@@ -314,7 +326,6 @@ static void initializeAllInOne(void)
     allInOne.ppSwapchainImages = &swapchainImages;
     allInOne.ppSwapchainImageViews = &swapchainImageViews;
     allInOne.ppSwapchainFramebuffer = &swapchainFramebuffer;
-    allInOne.pSwapchainCommandPool = &swapchainCommandPool;
     
     allInOne.pDepthFormat = &depthFormat;
     allInOne.pDepthImage = &depthImage;
@@ -356,14 +367,15 @@ static void initializeAllInOne(void)
 
     allInOne.ppShaderStorageBuffers = &shaderStorageBuffers;
 
-    allInOne.ppCommandBuffer = &commandBuffer;
-
-    allInOne.ppComputeCommandBuffer = &computeCommandBuufer;
+    allInOne.ppGraphicCommandBuffer = &graphicCommandBuffer;
+    allInOne.ppPresentCommandBuffer = &presentCommandBuffer;
+    allInOne.ppComputeCommandBuffer = &computeCommandBuffer;
+    allInOne.ppTransferCommandBuffer = &transferCommandBuffer;
 
     allInOne.ppImageAvailableSemaphore = &imageAvailableSemaphore;
     allInOne.ppRenderFinishedSemaphore = &renderFinishedSemaphore;
 
-    allInOne.ppInFlightFence = &inFlightFence;
+    allInOne.ppGraphicInFlightFence = &graphicInFlightFence;
 
     allInOne.ppComputeFinishedSemaphore = &computeFinishedSemaphore;
 
@@ -385,6 +397,7 @@ void initVulkan(void)
     /*fixed compoent*/
     logMessage("initializing...");
 
+    initGlobalTexture();
     // sprivReflect(TestShaderFragShader);
     // SDL_Delay(10000);
     // exit(0);
@@ -409,9 +422,10 @@ void initVulkan(void)
     findQueueFamilies();
     createLogicalDevice();
 
-    createQueue(allInOne.pQueueFamilyIndices->graphicsFamily.familyIndice, allInOne.pGraphicQueue);
-    createQueue(allInOne.pQueueFamilyIndices->presentFamily.familyIndice, allInOne.pPresentQueue);
-    createQueue(allInOne.pQueueFamilyIndices->computeFamily.familyIndice, allInOne.pComputeQueue);
+    createQueue(queueIndices.graphicsFamily.familyIndice, &graphicQueue);
+    createQueue(queueIndices.presentFamily.familyIndice, &presentQueue);
+    createQueue(queueIndices.computeFamily.familyIndice, &computeQueue);
+    createQueue(queueIndices.transferFamily.familyIndice, &transferQueue);
 
     getSurfaceFormats();
     getPresentModes();
@@ -433,23 +447,24 @@ void initVulkan(void)
     findDepthFormat(VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
     createRenderPass();
 
-    createCommandPool(indices.graphicsFamily.familyIndice, &swapchainCommandPool);
+    createCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, queueIndices.graphicsFamily.familyIndice, &graphicCommandPool);
+    createCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, queueIndices.presentFamily.familyIndice, &presentCommandPool);
+    createCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, queueIndices.computeFamily.familyIndice, &computeCommandPool);
+    createCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, queueIndices.transferFamily.familyIndice, &transferCommandPool);
 
-    createCommandPool(indices.computeFamily.familyIndice, &computeCommandPool);
-
-    createDepthResoures(&physicalDevice, &device, &extent2D, &swapchainCommandPool, &graphicQueue, &depthImage, &depthImageMemory, &depthImageView);
+    createDepthResoures(&physicalDevice, &device, &extent2D, &graphicCommandPool, &graphicQueue, &depthImage, &depthImageMemory, &depthImageView);
 
     createFrameBuffer(&device, &extent2D, imageCount, swapchainImageViews, &depthImageView, &renderPass, &swapchainFramebuffer);
 
     // when one textureImage creatation failed should clean others 
-    createTextureImage(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, CirclePng, VK_FORMAT_R8G8B8A8_SRGB, &texturesImage, &textureImageMem);
-    createTextureImageView(&device, &texturesImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, &textureImageView);
+    createTextureImage(&graphicCommandPool, &graphicQueue, CirclePng, VK_FORMAT_R8G8B8A8_SRGB, &texturesImage, &textureImageMem);
+    createTextureImageView(&texturesImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, &textureImageView);
 
-    createTextureImage(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, Loading1Png, VK_FORMAT_R8G8B8A8_SRGB, &loadingImage, &loadingImageMem);
-    createTextureImageView(&device, &loadingImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, &loadingImageView);
+    createTextureImage(&graphicCommandPool, &graphicQueue, Loading1Png, VK_FORMAT_R8G8B8A8_SRGB, &loadingImage, &loadingImageMem);
+    createTextureImageView(&loadingImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, &loadingImageView);
 
-    createTextureImage(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, MainFontPng, VK_FORMAT_R8_UNORM, &textImage, &textImageMem);
-    createTextureImageView(&device, &textImage, VK_FORMAT_R8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, &textImageView);
+    createTextureImage(&graphicCommandPool, &graphicQueue, MainFontPng, VK_FORMAT_R8_UNORM, &textImage, &textImageMem);
+    createTextureImageView(&textImage, VK_FORMAT_R8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, &textImageView);
     
     createTextureSampler(&physicalDevice, &device, &textureSampler);
 
@@ -498,15 +513,14 @@ void initVulkan(void)
         vertexInitialize(-300 + i * 24, -100, 24, 24, 0.1f, true, i + BALLCOUNT, allInOne.ppVertices_Pos, allInOne.ppVertices_Color, allInOne.ppVertices_TexCoord);
     }
 
-    // initializeMovingBuffer(&physicalDevice, &device, &swapchainCommandPool, &graphicQueue, &movingStagingBuffer, &movingStagingMemory, &movingBufferMapped, vertices, verticesCount);
+    // initializeMovingBuffer(&physicalDevice, &device, &graphicCommandPool, &graphicQueue, &movingStagingBuffer, &movingStagingMemory, &movingBufferMapped, vertices, verticesCount);
 
-    createUniformBuffers(&physicalDevice, &device, &graphicUniformBuffers, &graphicUniformBuffersMemory, &graphicUniformBufferMapped, sizeof(UniformBufferObject));
+    createUniformBufferByBuffering(&physicalDevice, &device, &graphicUniformBuffers, &graphicUniformBuffersMemory, &graphicUniformBufferMapped, sizeof(UniformBufferObject));
 
-    createUniformBuffers(&physicalDevice, &device, &computeUniformBuffers, &computeUniformBuffersmemory, &computeUniformBufferMapped, sizeof(ComputeUniformBufferObject));
+    createUniformBufferByBuffering(&physicalDevice, &device, &computeUniformBuffers, &computeUniformBuffersmemory, &computeUniformBufferMapped, sizeof(ComputeUniformBufferObject));
 
 
-    Particle * particles = NULL;
-    createShaderStorageBuffers(&physicalDevice, &device, &swapchainCommandPool, &computeQueue, extent2D, &shaderStorageBuffers, &shaderStorageBuffersMem, &particles);
+    createShaderStorageBuffers(&physicalDevice, &device, &shaderStorageBuffers, &shaderStorageBuffersMem);
 
     /*unfixed code*/
 
@@ -562,18 +576,19 @@ void initVulkan(void)
     
     createComputePipeline(&device, &computePipelineLayout, computeShaderStageCreateInfo, &computePipeline);
 
-    createCommandbuffer(&swapchainCommandPool, &commandBuffer);
+    createCommandbufferByBuffering(VK_COMMAND_BUFFER_LEVEL_PRIMARY, &graphicCommandPool, &graphicCommandBuffer);
+    createCommandbufferByBuffering(VK_COMMAND_BUFFER_LEVEL_PRIMARY, &presentCommandPool, &presentCommandBuffer);
+    createCommandbufferByBuffering(VK_COMMAND_BUFFER_LEVEL_PRIMARY, &computeCommandPool, &computeCommandBuffer);
+    createCommandbufferByBuffering(VK_COMMAND_BUFFER_LEVEL_PRIMARY, &transferCommandPool, &transferCommandBuffer);
 
-    createSemaphore(&device, &imageAvailableSemaphore);
-    createSemaphore(&device, &renderFinishedSemaphore);
+    createSemaphoreByBuffering(&imageAvailableSemaphore);
+    createSemaphoreByBuffering(&renderFinishedSemaphore);
  
-    createFence(&device, &inFlightFence);
+    createFenceByBuffering(&graphicInFlightFence);
 
-    createCommandbuffer(&computeCommandPool, &computeCommandBuufer);
+    createSemaphoreByBuffering(&computeFinishedSemaphore);
 
-    createSemaphore(&device, &computeFinishedSemaphore);
-
-    createFence(&device, &computeInFlightFences);
+    createFenceByBuffering(&computeInFlightFences);
 
     //graphics
     VkImageView tempImageView[3];
@@ -581,6 +596,14 @@ void initVulkan(void)
     tempImageView[1] = textureImageView;
     tempImageView[2] = textImageView;
     updateGraphicDescriptorSets(&device, &graphicUniformBuffers, &graphicDescriptorSets, tempImageView, &textureSampler);
+
+    // G_DescriptorSet_Update updates[4] = {};
+    // updates[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    // updates[0].bufferImage.pBuffer->pBuffer = graphicUniformBuffers;
+    // updates[0].bufferImage.pBuffer->offset = 0;
+    // updates[0].bufferImage.pBuffer->range = sizeof(UniformBufferObject);
+    // updates[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    // updates[1].bufferImage.pTexture
 
     //particle
     updateParticleDescriptorSets(&device, &graphicUniformBuffers, &particleDescriptorSets);
@@ -616,22 +639,19 @@ void cleanVulkan(FuncCode code)
         {
             vkDestroyFence(device, computeInFlightFences[i], allInOne.pAllocationCallbacks);
         }
-        SDL_free(computeInFlightFences);
         logMessage("compute in flight fences destroyed");
 
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
         {
             vkDestroySemaphore(device, computeFinishedSemaphore[i], allInOne.pAllocationCallbacks);
         }
-        SDL_free(computeFinishedSemaphore);
         logMessage("compute finished semaphore destroyed");
         /*fall through*/
 
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
         {
-            vkDestroyFence(device, inFlightFence[i], allInOne.pAllocationCallbacks);
+            vkDestroyFence(device, graphicInFlightFence[i], allInOne.pAllocationCallbacks);
         }
-        SDL_free(inFlightFence);
         logMessage("in flight fence destroyed");
         /*fall through*/
 
@@ -640,26 +660,29 @@ void cleanVulkan(FuncCode code)
         {
             vkDestroySemaphore(device, renderFinishedSemaphore[i], allInOne.pAllocationCallbacks);
         }
-        SDL_free(renderFinishedSemaphore);
         logMessage("render finished semaphore destroyed");
 
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
         {
             vkDestroySemaphore(device, imageAvailableSemaphore[i], allInOne.pAllocationCallbacks);
         }
-        SDL_free(imageAvailableSemaphore);
         logMessage("image available semaphore destroyed");
         /*fall through*/
 
         case createSemaphoreF:
-        SDL_free(commandBuffer);
-        logMessage("command buffer freed");
+        // SDL_free(graphicCommandBuffer);
+        // logMessage("command buffer freed");
 
-        SDL_free(computeCommandBuufer);
-        logMessage("compute command buffer freed");
-        /*fall through*/
+        // SDL_free(computeCommandBuffer);
+        // logMessage("compute command buffer freed");
 
-        case createCommandbufferF:
+        // SDL_free(presentCommandBuffer);
+        // logMessage("command buffer freed");
+
+        // SDL_free(transferCommandBuffer);
+        // logMessage("compute command buffer freed");
+        // /*fall through*/
+        case createCommandbufferByBufferingF:
         vkDestroyDescriptorPool(device, computeDescriptorPool, allInOne.pAllocationCallbacks);
         SDL_free(computeDescriptorPoolSize);
         logMessage("compute descriptro pool destroyed");
@@ -734,15 +757,12 @@ void cleanVulkan(FuncCode code)
             vkUnmapMemory(device, graphicUniformBuffersMemory[i]);
             vkDestroyBuffer(device, graphicUniformBuffers[i], allInOne.pAllocationCallbacks);
         }
-        SDL_free(graphicUniformBuffers);
         logMessage("graphic uniform buffer destroyed");
 
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
         {
             vkFreeMemory(device, graphicUniformBuffersMemory[i], allInOne.pAllocationCallbacks);
         }
-        SDL_free(graphicUniformBuffersMemory);
-        SDL_free(graphicUniformBufferMapped);
         logMessage("graphic uniform buffer memory freed");
 
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
@@ -750,29 +770,24 @@ void cleanVulkan(FuncCode code)
             vkUnmapMemory(device, computeUniformBuffersmemory[i]);
             vkDestroyBuffer(device, computeUniformBuffers[i], allInOne.pAllocationCallbacks);
         }
-        SDL_free(computeUniformBuffers);
         logMessage("compute uniform buffers destroyed");
 
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
         {
             vkFreeMemory(device, computeUniformBuffersmemory[i], allInOne.pAllocationCallbacks);
         }
-        SDL_free(computeUniformBuffersmemory);
-        SDL_free(computeUniformBufferMapped);
         logMessage("compute uniform buffer memory freed");
 
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
         {
             vkDestroyBuffer(device, shaderStorageBuffers[i], allInOne.pAllocationCallbacks);
         }
-        SDL_free(shaderStorageBuffers);
         logMessage("shader storage buffer destroyed");
 
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
         {
             vkFreeMemory(device, shaderStorageBuffersMem[i], allInOne.pAllocationCallbacks);
         }
-        SDL_free(shaderStorageBuffersMem);
         logMessage("shader storage buffer memory freed");
         /*fall through*/
 
@@ -852,10 +867,16 @@ void cleanVulkan(FuncCode code)
         /*fall through*/
 
         case createDepthResouresF:
-        vkDestroyCommandPool(device, swapchainCommandPool, allInOne.pAllocationCallbacks);
+        vkDestroyCommandPool(device, graphicCommandPool, allInOne.pAllocationCallbacks);
         logMessage("commandpool destroyed");
         
         vkDestroyCommandPool(device, computeCommandPool, allInOne.pAllocationCallbacks);
+        logMessage("compute commandpool destroyed");
+
+        vkDestroyCommandPool(device, presentCommandPool, allInOne.pAllocationCallbacks);
+        logMessage("commandpool destroyed");
+        
+        vkDestroyCommandPool(device, transferCommandPool, allInOne.pAllocationCallbacks);
         logMessage("compute commandpool destroyed");
         /*fall through*/
 
@@ -865,7 +886,7 @@ void cleanVulkan(FuncCode code)
         /*fall through*/
 
         case createRenderPassF:
-        destroyImageViews(&device, swapchainImageViews, imageCount);
+        destroyImageViews(swapchainImageViews, imageCount);
         SDL_free(swapchainImageViews);
         logMessage("swapchain image views destroyed");
         /*fall through*/

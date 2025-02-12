@@ -6,11 +6,11 @@
 
 #include "SDL3/SDL_begin_code.h"
 
-extern VkResult SDLCALL createBuffer(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkBuffer * pBuffer, VkDeviceMemory * pBufferMemory, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
-extern VkResult SDLCALL beginSingleTimeCommands(VkDevice * pDevice, VkCommandPool * pCommandPool, VkCommandBuffer * pCommandBuffer);
-extern VkResult SDLCALL endSingleTimeCommands(VkDevice * pDevice, VkCommandPool * pCommandPool, VkQueue * pGraphicsQueue, VkCommandBuffer * pCommandBuffer);
-extern VkResult SDLCALL copyBuffer(VkBuffer * pSrcBuffer, VkBuffer * pDstBuffer, VkDeviceSize size, VkDevice * pDevice, VkCommandPool * pCommandPool, VkQueue * pGraphicQueue);
-extern int SDLCALL findMemoryType(VkPhysicalDevice * pPhysicalDevice, Uint32 typeFilter, VkMemoryPropertyFlags properties);
+extern VkResult SDLCALL createBuffer(VkBuffer * pBuffer, VkDeviceMemory * pBufferMemory, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
+extern VkResult SDLCALL beginSingleTimeCommands(VkCommandPool * pCommandPool, VkCommandBuffer * pCommandBuffer);
+extern VkResult SDLCALL endSingleTimeCommands(VkCommandPool * pCommandPool, VkQueue * pQueue, VkCommandBuffer * pCommandBuffer);
+extern VkResult SDLCALL copyBuffer(VkBuffer * pSrcBuffer, VkBuffer * pDstBuffer, VkDeviceSize size);
+extern int SDLCALL findMemoryType(Uint32 typeFilter, VkMemoryPropertyFlags properties);
 
 #include "SDL3/SDL_close_code.h"
 

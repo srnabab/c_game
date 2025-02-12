@@ -185,7 +185,7 @@ void resultVulkan(VkResult result, FuncCode code, uint32_t num, ...)
             logMessage("\ncreate descriptor sets failed");
             goto end;
 
-            case createCommandbufferF:
+            case createCommandbufferByBufferingF:
             logMessage("\ncreate command buffer failed");
             goto end;
 

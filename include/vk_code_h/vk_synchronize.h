@@ -6,8 +6,8 @@
 
 #include "SDL3/SDL_begin_code.h"
 
-extern void SDLCALL createSemaphore(VkDevice * pDevice, VkSemaphore ** pSemaphore);
-extern void SDLCALL createFence(VkDevice * pDevice, VkFence ** pFence);
+extern void SDLCALL createSemaphoreByBuffering(VkSemaphore (*pSemaphore)[2]);
+extern void SDLCALL createFenceByBuffering(VkFence (*pFence)[2]);
 
 #include "SDL3/SDL_close_code.h"
 

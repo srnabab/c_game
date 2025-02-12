@@ -8,7 +8,7 @@ void createIndexBuffer(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, V
 
     VkDeviceSize bufferSize = sizeof(indices[0]) * indicesCount;
 
-    resultVulkan(createBuffer(pPhysicalDevice, pDevice, pIndexBuffer, pIndexBufferMemory, bufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), code, 0);
+    resultVulkan(createBuffer(pIndexBuffer, pIndexBufferMemory, bufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), code, 0);
 
     vkMapMemory(*pDevice, *pIndexBufferMemory, 0, bufferSize, 0, pIndexBufferMemMapped);
     memcpy(*pIndexBufferMemMapped, indices, (size_t)bufferSize);

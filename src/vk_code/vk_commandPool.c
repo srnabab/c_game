@@ -8,32 +8,44 @@
 
 extern VK_ALL allInOne;
 
-void createCommandPool(Uint32 graphicsFamilyIndice, VkCommandPool * pCommandPool)
+void createCommandPool(VkCommandPoolCreateFlags flag, Uint32 graphicsFamilyIndice, VkCommandPool * pCommandPool)
 {
     FuncCode code = createCommandPoolF;
 
     VkCommandPoolCreateInfo commandPoolCreateInfo = {};
     commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     commandPoolCreateInfo.pNext = NULL;
-    commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+    commandPoolCreateInfo.flags = flag;
     commandPoolCreateInfo.queueFamilyIndex = graphicsFamilyIndice;
 
     resultVulkan(vkCreateCommandPool(*allInOne.pDevice, &commandPoolCreateInfo, allInOne.pAllocationCallbacks, pCommandPool), code, 0);
     logMessage("command pool created\n");
 } 
-void createCommandbuffer(VkCommandPool * pCommandPool, VkCommandBuffer ** pCommandBuffer)
-{
-    FuncCode code = createCommandbufferF;
-
-    *pCommandBuffer = (VkCommandBuffer *)SDL_malloc(MAX_FRAMES_IN_FLIGHT * sizeof(VkCommandBuffer));
+void createCommandbufferByBuffering(VkCommandBufferLevel level, VkCommandPool * pCommandPool, VkCommandBuffer (*ppCommandBuffer)[MAX_FRAMES_IN_FLIGHT])
+{ 
+    FuncCode code = createCommandbufferByBufferingF;
 
     VkCommandBufferAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.pNext = NULL;
     allocInfo.commandPool = *pCommandPool;
-    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    allocInfo.level = level;
     allocInfo.commandBufferCount = MAX_FRAMES_IN_FLIGHT;
 
-    resultVulkan(vkAllocateCommandBuffers(*allInOne.pDevice, &allocInfo, *pCommandBuffer), code, 0);
+    resultVulkan(vkAllocateCommandBuffers(*allInOne.pDevice, &allocInfo, *ppCommandBuffer), code, 0);
+    logMessage("command buffer allocated\n");
+}
+void createCommandBuffer(VkCommandBufferLevel level, VkCommandPool * pCommandPool, VkCommandBuffer ** ppCommandBuffer, Uint32 bufferCount)
+{
+    *ppCommandBuffer = (VkCommandBuffer*)SDL_malloc(bufferCount * sizeof(VkCommandBuffer));
+
+    VkCommandBufferAllocateInfo allocInfo = {};
+    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocInfo.pNext = NULL;
+    allocInfo.commandPool = *pCommandPool;
+    allocInfo.level = level;
+    allocInfo.commandBufferCount = bufferCount;
+
+    vkAllocateCommandBuffers(*allInOne.pDevice, &allocInfo, *ppCommandBuffer);
     logMessage("command buffer allocated\n");
 }

@@ -83,7 +83,7 @@ void recreateSwapchain()
     SDL_free(*allInOne.ppSwapchainFramebuffer);
     *allInOne.ppSwapchainFramebuffer = NULL;
 
-    destroyImageViews(pDevice, *allInOne.ppSwapchainImageViews, *allInOne.pImageCount);
+    destroyImageViews(*allInOne.ppSwapchainImageViews, *allInOne.pImageCount);
     SDL_free(*allInOne.ppSwapchainImageViews);
     *allInOne.ppSwapchainImageViews = NULL;
     SDL_free(*allInOne.ppSwapchainImages);
@@ -109,8 +109,8 @@ void recreateSwapchain()
     //printf("imageCOunt: %u\n", *allInOne.ImageCount);
 
     createSwapchainImage();
-    createImageViews(pDevice, allInOne.ppSwapchainImages, *allInOne.pImageCount, allInOne.pSurfaceFormat->format, VK_IMAGE_ASPECT_COLOR_BIT, allInOne.ppSwapchainImageViews);
-    createDepthResoures(pPhysicalDevice, pDevice, allInOne.pExtent2D, allInOne.pSwapchainCommandPool, allInOne.pGraphicQueue, allInOne.pDepthImage, allInOne.pDepthImageMem, allInOne.pDepthImageView);
+    createImageViews(allInOne.ppSwapchainImages, *allInOne.pImageCount, allInOne.pSurfaceFormat->format, VK_IMAGE_ASPECT_COLOR_BIT, allInOne.ppSwapchainImageViews);
+    createDepthResoures(pPhysicalDevice, pDevice, allInOne.pExtent2D, allInOne.pGraphicCommandPool, allInOne.pGraphicQueue, allInOne.pDepthImage, allInOne.pDepthImageMem, allInOne.pDepthImageView);
     // SDL_Log("depth resoures created\n");
     createFrameBuffer(pDevice, allInOne.pExtent2D, *allInOne.pImageCount, *allInOne.ppSwapchainImageViews, allInOne.pDepthImageView, allInOne.pRenderPass, allInOne.ppSwapchainFramebuffer);
     // SDL_Log("swapchain framebuffer created\n");

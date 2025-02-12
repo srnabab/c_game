@@ -20,7 +20,7 @@ static void recordCommandBuffer_FirstScene(uint32_t imageIndex)
     beginInfo.flags = 0;
     beginInfo.pInheritanceInfo = NULL;
 
-    resultVulkan(vkBeginCommandBuffer((*allInOne.ppCommandBuffer)[*pCurrentFrame], &beginInfo), code, 0);
+    resultVulkan(vkBeginCommandBuffer((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], &beginInfo), code, 0);
     //printf("record command buffer begin\n");
 
     VkOffset2D offset = {0, 0};
@@ -39,7 +39,7 @@ static void recordCommandBuffer_FirstScene(uint32_t imageIndex)
     renderBeginInfo.clearValueCount = 2;
     renderBeginInfo.pClearValues = clearValue;
 
-    vkCmdBeginRenderPass((*allInOne.ppCommandBuffer)[*pCurrentFrame], &renderBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBeginRenderPass((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], &renderBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
     //printf("render pass begin\n");
 
     VkViewport viewport = {};
@@ -50,63 +50,62 @@ static void recordCommandBuffer_FirstScene(uint32_t imageIndex)
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
 
-    vkCmdSetViewport((*allInOne.ppCommandBuffer)[*pCurrentFrame], 0, 1, &viewport);
+    vkCmdSetViewport((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], 0, 1, &viewport);
 
     VkRect2D scissor = {};
     scissor.offset = (VkOffset2D){0, 0};
     scissor.extent = *allInOne.pExtent2D;
 
-    vkCmdSetScissor((*allInOne.ppCommandBuffer)[*pCurrentFrame], 0, 1, &scissor);
+    vkCmdSetScissor((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], 0, 1, &scissor);
     
     //printf("commandBuffer width: %u, height: %u\n", allInOne.pExtent2D->width, allInOne.pExtent2D->height);
     /*size_t bufferSize = sizeof((*allInOne.ppVertices)[0]) * *allInOne.pVerticesCount;
-    //copyBuffer(allInOne.pMovingStagingBuffer, allInOne.pVertexBuffer, bufferSize, allInOne.pDevice, allInOne.pSwapchainCommandPool, allInOne.pGraphicQueue);
+    //copyBuffer(allInOne.pMovingStagingBuffer, allInOne.pVertexBuffer, bufferSize, allInOne.pDevice, allInOne.pGraphicCommandPool, allInOne.pGraphicQueue);
     memcpy(*allInOne.ppVertexBufferMemMapped, *allInOne.ppVertices, bufferSize);*/
 
     VkDeviceSize offsets[] = {0};
 
-    vkCmdBindPipeline((*allInOne.ppCommandBuffer)[*pCurrentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pParticlePipeline);
+    vkCmdBindPipeline((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pParticlePipeline);
 
-    vkCmdBindVertexBuffers((*allInOne.ppCommandBuffer)[*pCurrentFrame], 0, 1, &(*allInOne.ppShaderStorageBuffers)[*pCurrentFrame], offsets);
+    vkCmdBindVertexBuffers((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], 0, 1, &(*allInOne.ppShaderStorageBuffers)[*pCurrentFrame], offsets);
 
-    vkCmdBindDescriptorSets((*allInOne.ppCommandBuffer)[*pCurrentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pParticlePipelineLayout, 0,
+    vkCmdBindDescriptorSets((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pParticlePipelineLayout, 0,
     1, &(*allInOne.ppParticleDescriptorSets)[*pCurrentFrame], 0, NULL);
 
-    vkCmdDraw((*allInOne.ppCommandBuffer)[*pCurrentFrame], PARTICLE_COUNT, 1, 0, 0);
+    vkCmdDraw((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], PARTICLE_COUNT, 1, 0, 0);
 
-    vkCmdBindPipeline((*allInOne.ppCommandBuffer)[*pCurrentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pGraphicPipeline);
+    vkCmdBindPipeline((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pGraphicPipeline);
 
-    vkCmdPushConstants((*allInOne.ppCommandBuffer)[*pCurrentFrame], *allInOne.pGraphicPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ImageRotate), allInOne.pImageRotate);
+    vkCmdPushConstants((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], *allInOne.pGraphicPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ImageRotate), allInOne.pImageRotate);
 
     VkBuffer vertexBuffer[] = {*allInOne.pVertexBuffer, *allInOne.pVertexBuffer, *allInOne.pVertexBuffer};
     VkDeviceSize vertexOffsets[] = {0, allInOne.maxVerticesCount * sizeof(vec3), allInOne.maxVerticesCount * sizeof(vec3) + allInOne.maxVerticesCount * sizeof(vec3)};
-    vkCmdBindVertexBuffers((*allInOne.ppCommandBuffer)[*pCurrentFrame], 0, 3, vertexBuffer, vertexOffsets);
+    vkCmdBindVertexBuffers((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], 0, 3, vertexBuffer, vertexOffsets);
 
-    //vkCmdBindVertexBuffers((*allInOne.ppCommandBuffer)[*pCurrentFrame], 2, 1, &(*allInOne.ppShaderStorageBuffers)[*pCurrentFrame], offsets);
+    //vkCmdBindVertexBuffers((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], 2, 1, &(*allInOne.ppShaderStorageBuffers)[*pCurrentFrame], offsets);
 
-    vkCmdBindIndexBuffer((*allInOne.ppCommandBuffer)[*pCurrentFrame], *allInOne.pIndexBuffer, 0, VK_INDEX_TYPE_UINT16);
+    vkCmdBindIndexBuffer((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], *allInOne.pIndexBuffer, 0, VK_INDEX_TYPE_UINT16);
 
-    vkCmdBindDescriptorSets((*allInOne.ppCommandBuffer)[*pCurrentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pGraphicPipelineLayout, 0,
+    vkCmdBindDescriptorSets((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pGraphicPipelineLayout, 0,
     1, &(*allInOne.ppGraphicDescriptorSets)[*pCurrentFrame], 0, NULL);
 
-    //vkCmdDraw((*allInOne.ppCommandBuffer)[*pCurrentFrame], PARTICLE_COUNT, 1, 0, 0);
+    //vkCmdDraw((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], PARTICLE_COUNT, 1, 0, 0);
 
-    vkCmdDrawIndexed((*allInOne.ppCommandBuffer)[*pCurrentFrame], 12600, 1, 0, 0, 0);
+    vkCmdDrawIndexed((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], 12600, 1, 0, 0, 0);
 
-    vkCmdEndRenderPass((*allInOne.ppCommandBuffer)[*pCurrentFrame]);
+    vkCmdEndRenderPass((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame]);
 }
 static void recordComputeCommandBuffer(void)
 {
     uint32_t * pCurrentFrame = allInOne.pCurrentFrame;
 
-    VkCommandBufferBeginInfo beginInfo = {
-        VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-        NULL,
-        0,
-        NULL
-    };
+    VkCommandBufferBeginInfo computeBeginInfo;
+    computeBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    computeBeginInfo.pNext = NULL;
+    computeBeginInfo.flags = 0;
+    computeBeginInfo.pInheritanceInfo = NULL;
     
-    vkBeginCommandBuffer((*allInOne.ppComputeCommandBuffer)[*pCurrentFrame], &beginInfo);
+    vkBeginCommandBuffer((*allInOne.ppComputeCommandBuffer)[*pCurrentFrame], &computeBeginInfo);
 
     vkCmdBindPipeline((*allInOne.ppComputeCommandBuffer)[*pCurrentFrame], VK_PIPELINE_BIND_POINT_COMPUTE, *allInOne.pComputePipeline);
 
@@ -116,14 +115,18 @@ static void recordComputeCommandBuffer(void)
 }
 static void drawFirstScene(void)
 {
-    uint32_t * pCurrentFrame = allInOne.pCurrentFrame;
+    resultVulkan(vkWaitForFences(*allInOne.pDevice, 1, &(*allInOne.ppComputeInFlightFence)[*allInOne.pCurrentFrame], VK_TRUE, UINT64_MAX), waitForFencesF, 0);
 
-    resultVulkan(vkWaitForFences(*allInOne.pDevice, 1, &(*allInOne.ppComputeInFlightFence)[*pCurrentFrame], VK_TRUE, UINT64_MAX), waitForFencesF, 0);
+    vkResetFences(*allInOne.pDevice, 1, &(*allInOne.ppComputeInFlightFence)[*allInOne.pCurrentFrame]);
 
-    vkResetFences(*allInOne.pDevice, 1, &(*allInOne.ppComputeInFlightFence)[*pCurrentFrame]);
+
+
 
     recordComputeCommandBuffer();
-    vkEndCommandBuffer((*allInOne.ppComputeCommandBuffer)[*pCurrentFrame]);
+    vkEndCommandBuffer((*allInOne.ppComputeCommandBuffer)[*allInOne.pCurrentFrame]);
+
+
+
 
     VkSubmitInfo computeSubmitInfo = {};
     computeSubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -132,32 +135,45 @@ static void drawFirstScene(void)
     computeSubmitInfo.pWaitSemaphores = NULL;
     computeSubmitInfo.pWaitDstStageMask = NULL;
     computeSubmitInfo.commandBufferCount = 1;
-    computeSubmitInfo.pCommandBuffers = &(*allInOne.ppComputeCommandBuffer)[*pCurrentFrame];
+    computeSubmitInfo.pCommandBuffers = &(*allInOne.ppComputeCommandBuffer)[*allInOne.pCurrentFrame];
     computeSubmitInfo.signalSemaphoreCount = 1;
-    computeSubmitInfo.pSignalSemaphores = &(*allInOne.ppComputeFinishedSemaphore)[*pCurrentFrame];
+    computeSubmitInfo.pSignalSemaphores = &(*allInOne.ppComputeFinishedSemaphore)[*allInOne.pCurrentFrame];
 
-    vkQueueSubmit(*allInOne.pComputeQueue, 1, &computeSubmitInfo, (*allInOne.ppComputeInFlightFence)[*pCurrentFrame]);
+    vkQueueSubmit(*allInOne.pComputeQueue, 1, &computeSubmitInfo, (*allInOne.ppComputeInFlightFence)[*allInOne.pCurrentFrame]);
 
-    vkWaitForFences(*allInOne.pDevice, 1, &(*allInOne.ppInFlightFence)[*pCurrentFrame], VK_TRUE, UINT64_MAX);
 
-    uint32_t imageIndex;
-    resultVulkan(vkAcquireNextImageKHR(*allInOne.pDevice, *allInOne.pSwapchain, UINT64_MAX, (*allInOne.ppImageAvailableSemaphore)[*pCurrentFrame], NULL, &imageIndex), acquireNextImageF, 0);
-    //printf("acquire next image index\n"); 
 
-    resultVulkan(vkResetFences(*allInOne.pDevice, 1, &(*allInOne.ppInFlightFence)[*pCurrentFrame]), resetFencesF, 0);
+
+    vkWaitForFences(*allInOne.pDevice, 1, &(*allInOne.ppGraphicInFlightFence)[*allInOne.pCurrentFrame], VK_TRUE, UINT64_MAX);
+
+    resultVulkan(vkResetFences(*allInOne.pDevice, 1, &(*allInOne.ppGraphicInFlightFence)[*allInOne.pCurrentFrame]), resetFencesF, 0);
     //printf("reset fences\n");
 
-    resultVulkan(vkResetCommandBuffer((*allInOne.ppCommandBuffer)[*pCurrentFrame], 0), resetCommandBufferF, 0);
+
+
+    uint32_t imageIndex;
+    resultVulkan(vkAcquireNextImageKHR(*allInOne.pDevice, *allInOne.pSwapchain, UINT64_MAX, (*allInOne.ppImageAvailableSemaphore)[*allInOne.pCurrentFrame], NULL, &imageIndex), acquireNextImageF, 0);
+    //printf("acquire next image index\n"); 
+
+
+
+    resultVulkan(vkResetCommandBuffer((*allInOne.ppGraphicCommandBuffer)[*allInOne.pCurrentFrame], 0), resetCommandBufferF, 0);
     //printf("reset command bufer\n");
 
+
+
+
     recordCommandBuffer_FirstScene(imageIndex);
-    resultVulkan(vkEndCommandBuffer((*allInOne.ppCommandBuffer)[*pCurrentFrame]), endCommandBufferF, 0);
+    resultVulkan(vkEndCommandBuffer((*allInOne.ppGraphicCommandBuffer)[*allInOne.pCurrentFrame]), endCommandBufferF, 0);
     //printf("end command buffer\n");
 
-    VkSemaphore waitSemaphore[2] = {(*allInOne.ppComputeFinishedSemaphore)[*pCurrentFrame], (*allInOne.ppImageAvailableSemaphore)[*pCurrentFrame]};
+
+
+
+    VkSemaphore waitSemaphore[2] = {(*allInOne.ppComputeFinishedSemaphore)[*allInOne.pCurrentFrame], (*allInOne.ppImageAvailableSemaphore)[*allInOne.pCurrentFrame]};
     VkPipelineStageFlags waitStage[2] = {VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
 
-    VkSemaphore signalSemaphore[1] = {(*allInOne.ppRenderFinishedSemaphore)[*pCurrentFrame]};
+    VkSemaphore signalSemaphore[1] = {(*allInOne.ppRenderFinishedSemaphore)[*allInOne.pCurrentFrame]};
 
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -166,17 +182,20 @@ static void drawFirstScene(void)
     submitInfo.pWaitSemaphores = waitSemaphore;
     submitInfo.pWaitDstStageMask = waitStage;
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &(*allInOne.ppCommandBuffer)[*pCurrentFrame];
+    submitInfo.pCommandBuffers = &(*allInOne.ppGraphicCommandBuffer)[*allInOne.pCurrentFrame];
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphore;
 
-    resultVulkan(vkQueueSubmit(*allInOne.pGraphicQueue, 1, &submitInfo, (*allInOne.ppInFlightFence)[*pCurrentFrame]), queueSumbitF, 0);
+    resultVulkan(vkQueueSubmit(*allInOne.pGraphicQueue, 1, &submitInfo, (*allInOne.ppGraphicInFlightFence)[*allInOne.pCurrentFrame]), queueSumbitF, 0);
+
+
+    
 
     VkPresentInfoKHR presentInfo = {};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
     presentInfo.pNext = NULL;
     presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = &(*allInOne.ppRenderFinishedSemaphore)[*pCurrentFrame];
+    presentInfo.pWaitSemaphores = &(*allInOne.ppRenderFinishedSemaphore)[*allInOne.pCurrentFrame];
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = allInOne.pSwapchain;
     presentInfo.pImageIndices = &imageIndex;
@@ -185,12 +204,10 @@ static void drawFirstScene(void)
     resultVulkan(vkQueuePresentKHR(*allInOne.pPresentQueue, &presentInfo), queuePresentF, 0);
     //printf("present queue\n");
 
-    *pCurrentFrame = (*pCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+    *allInOne.pCurrentFrame = (*allInOne.pCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 static void drawMenuScene(void)
 {
-    uint32_t * pCurrentFrame = allInOne.pCurrentFrame;
-    // logMessage("in menu");
 }
 void drawFrame(Scene scene)
 {

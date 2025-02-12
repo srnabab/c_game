@@ -38,7 +38,7 @@ typedef enum _FuncCode {
     createUniformBuffersF,
     createDescriptorPoolF,
     createDescriptorSetsF,
-    createCommandbufferF,
+    createCommandbufferByBufferingF,
     createSemaphoreF,
     createFenceF,
     recordCommandBufferF,

@@ -1,5 +1,8 @@
 #include "SDL3/SDL_stdinc.h"
 #include "vulkan/vulkan.h"
+
+#include "G_constants.h"
+#include "G_resource.h"
 #include "cglm/cglm.h"
 
 #ifndef VK_STRUCT_H
@@ -17,6 +20,7 @@ typedef struct _QueueFamilyIndices{
     QueueFamily graphicsFamily;
     QueueFamily presentFamily;
     QueueFamily computeFamily;
+    QueueFamily transferFamily;
 }QueueFamilyIndices;
 
 //same as layout in vertex shader code
@@ -72,6 +76,12 @@ typedef struct _VK_ALL
     VkQueue * pGraphicQueue;
     VkQueue * pPresentQueue;
     VkQueue * pComputeQueue;
+    VkQueue * pTransferQueue;
+    
+    VkCommandPool * pGraphicCommandPool;
+    VkCommandPool * pPresentCommandPool;
+    VkCommandPool * pComputeCommandPool;
+    VkCommandPool * pTransferCommandPool;
 
     VkFormat * pDepthFormat;
 
@@ -98,7 +108,6 @@ typedef struct _VK_ALL
     VkImage ** ppSwapchainImages;
     VkImageView ** ppSwapchainImageViews;
     VkFramebuffer ** ppSwapchainFramebuffer;
-    VkCommandPool * pSwapchainCommandPool;
     
     VkImage * pDepthImage;
     VkImageView * pDepthImageView;
@@ -122,8 +131,8 @@ typedef struct _VK_ALL
 
     VkSampler * pTextureSampler;
 
-    VkBuffer ** ppGraphicUniformBuffer;
-    void *** pppGraphicUniformBufferMapped;
+    VkBuffer (*ppGraphicUniformBuffer)[MAX_FRAMES_IN_FLIGHT];
+    void * (*pppGraphicUniformBufferMapped)[MAX_FRAMES_IN_FLIGHT];
 
     UniformBufferObject * pGraphicUbo;
 
@@ -131,26 +140,27 @@ typedef struct _VK_ALL
 
     VkDescriptorSet ** ppParticleDescriptorSets;
 
-    VkBuffer ** ppShaderStorageBuffers;
+    VkBuffer (*ppShaderStorageBuffers)[MAX_FRAMES_IN_FLIGHT];
 
     struct _ComputeUniformBufferObject * pComputeUbo;
 
-    void *** pppComputeUniformBufferMapped;
+    void* (*pppComputeUniformBufferMapped)[MAX_FRAMES_IN_FLIGHT];
 
     VkDescriptorSet ** ppComputeDescriptorSets;
 
-    VkCommandBuffer ** ppCommandBuffer;
+    VkCommandBuffer (*ppGraphicCommandBuffer)[MAX_FRAMES_IN_FLIGHT];
+    VkCommandBuffer (*ppPresentCommandBuffer)[MAX_FRAMES_IN_FLIGHT];
+    VkCommandBuffer (*ppComputeCommandBuffer)[MAX_FRAMES_IN_FLIGHT];
+    VkCommandBuffer (*ppTransferCommandBuffer)[MAX_FRAMES_IN_FLIGHT];
 
-    VkCommandBuffer ** ppComputeCommandBuffer;
+    VkSemaphore (*ppImageAvailableSemaphore)[MAX_FRAMES_IN_FLIGHT];
+    VkSemaphore (*ppRenderFinishedSemaphore)[MAX_FRAMES_IN_FLIGHT];
 
-    VkSemaphore ** ppImageAvailableSemaphore;
-    VkSemaphore ** ppRenderFinishedSemaphore;
+    VkFence (*ppGraphicInFlightFence)[MAX_FRAMES_IN_FLIGHT];
 
-    VkFence ** ppInFlightFence;
+    VkSemaphore (*ppComputeFinishedSemaphore)[MAX_FRAMES_IN_FLIGHT];
 
-    VkSemaphore ** ppComputeFinishedSemaphore;
-
-    VkFence ** ppComputeInFlightFence;
+    VkFence (*ppComputeInFlightFence)[MAX_FRAMES_IN_FLIGHT];
 
     Uint32 * pCurrentFrame;
 
@@ -161,6 +171,8 @@ typedef struct _VK_ALL
     float * pPictureY;
 
     ImageRotate * pImageRotate;
+
+    G_Texture * pGlobalTexture;
 } VK_ALL;
 
 #include "SDL3/SDL_close_code.h"

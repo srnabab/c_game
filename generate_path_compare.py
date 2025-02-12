@@ -1,14 +1,14 @@
 import os
 
 # 输入文件路径
-input_file = "C:\\D\\c_game\\run\\Path"
+input_file = "C:\\D\\code\\c_game\\run\\Path"
 
 # 输出文件路径
-output_file_h = "C:\\D\\c_game\\include\\G_file\\path_compare.h"
-output_file_c = "C:\\D\\c_game\\src\\G_file\\path_compare.c"
+output_file_h = "C:\\D\\code\\c_game\\include\\G_file\\path_compare.h"
+output_file_c = "C:\\D\\code\\c_game\\src\\G_file\\path_compare.c"
 
-output_file_h_temp = "C:\\D\\c_game\\include\\G_file\\path_compare_temp.h"
-output_file_c_temp = "C:\\D\\c_game\\src\\G_file\\path_compare_temp.c"
+output_file_h_temp = "C:\\D\\code\\c_game\\include\\G_file\\path_compare_temp.h"
+output_file_c_temp = "C:\\D\\code\\c_game\\src\\G_file\\path_compare_temp.c"
 
 def generate_code(input_file, output_file_h, output_file_c):
     # 用于存储生成的代码
@@ -53,6 +53,7 @@ def generate_code(input_file, output_file_h, output_file_c):
         f.write("    None,\n")
         for line in enum_lines:
             f.write(line + "\n")
+        f.write("    MAX_PATH_TYPE = 0x7FFFFFFF\n")
         f.write("} PathType;\n")
         f.write("\nextern PathType SDLCALL pathCompare(char * buffer);\n\n")
         f.write("#endif")

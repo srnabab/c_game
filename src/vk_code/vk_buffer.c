@@ -3,7 +3,7 @@
 
 extern VK_ALL allInOne;
 
-VkResult createBuffer(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkBuffer * pBuffer, VkDeviceMemory * pBufferMemory, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties)
+VkResult createBuffer(VkBuffer * pBuffer, VkDeviceMemory * pBufferMemory, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties)
 {
     VkResult result = VK_SUCCESS;
 
@@ -17,26 +17,26 @@ VkResult createBuffer(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, Vk
     bufferCreateInfo.queueFamilyIndexCount = 0;
     bufferCreateInfo.pQueueFamilyIndices = NULL;
 
-    result |= vkCreateBuffer(*pDevice, &bufferCreateInfo, allInOne.pAllocationCallbacks, pBuffer);
+    result |= vkCreateBuffer(*allInOne.pDevice, &bufferCreateInfo, allInOne.pAllocationCallbacks, pBuffer);
 
     VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements(*pDevice, *pBuffer, &memRequirements);
+    vkGetBufferMemoryRequirements(*allInOne.pDevice, *pBuffer, &memRequirements);
 
     VkMemoryAllocateInfo bufferMemAllocateInfo = {};
     bufferMemAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     bufferMemAllocateInfo.pNext = NULL;
     bufferMemAllocateInfo.allocationSize = memRequirements.size;
-    bufferMemAllocateInfo.memoryTypeIndex = findMemoryType(pPhysicalDevice, memRequirements.memoryTypeBits, properties);
+    bufferMemAllocateInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
 
-    result |= vkAllocateMemory(*pDevice, &bufferMemAllocateInfo, allInOne.pAllocationCallbacks, pBufferMemory);
-    result |= vkBindBufferMemory(*pDevice, *pBuffer, *pBufferMemory, 0);
+    result |= vkAllocateMemory(*allInOne.pDevice, &bufferMemAllocateInfo, allInOne.pAllocationCallbacks, pBufferMemory);
+    result |= vkBindBufferMemory(*allInOne.pDevice, *pBuffer, *pBufferMemory, 0);
 
     if (result)
         return 0x7FFFFFFF;
     else 
         return result;
 }
-VkResult beginSingleTimeCommands(VkDevice * pDevice, VkCommandPool * pCommandPool, VkCommandBuffer * pCommandBuffer)
+VkResult beginSingleTimeCommands(VkCommandPool * pCommandPool, VkCommandBuffer * pCommandBuffer)
 {
     VkResult result = VK_SUCCESS;
 
@@ -47,7 +47,7 @@ VkResult beginSingleTimeCommands(VkDevice * pDevice, VkCommandPool * pCommandPoo
     allocInfo.commandPool = *pCommandPool;
     allocInfo.commandBufferCount = 1;
 
-    result |= vkAllocateCommandBuffers(*pDevice, &allocInfo, pCommandBuffer);
+    result |= vkAllocateCommandBuffers(*allInOne.pDevice, &allocInfo, pCommandBuffer);
 
     VkCommandBufferBeginInfo beginInfo = {};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -59,7 +59,7 @@ VkResult beginSingleTimeCommands(VkDevice * pDevice, VkCommandPool * pCommandPoo
 
     return result;
 }
-VkResult endSingleTimeCommands(VkDevice * pDevice, VkCommandPool * pCommandPool, VkQueue * pGraphicsQueue, VkCommandBuffer * pCommandBuffer)
+VkResult endSingleTimeCommands(VkCommandPool * pCommandPool, VkQueue * pQueue, VkCommandBuffer * pCommandBuffer)
 {
     VkResult result = VK_SUCCESS;
 
@@ -76,19 +76,19 @@ VkResult endSingleTimeCommands(VkDevice * pDevice, VkCommandPool * pCommandPool,
     submitInfo.signalSemaphoreCount = 0;
     submitInfo.pSignalSemaphores = NULL;
 
-    result |= vkQueueSubmit(*pGraphicsQueue, 1, &submitInfo, NULL);
-    result |= vkQueueWaitIdle(*pGraphicsQueue);
+    result |= vkQueueSubmit(*pQueue, 1, &submitInfo, NULL);
+    result |= vkQueueWaitIdle(*pQueue);
 
-    vkFreeCommandBuffers(*pDevice, *pCommandPool, 1, pCommandBuffer);
+    vkFreeCommandBuffers(*allInOne.pDevice, *pCommandPool, 1, pCommandBuffer);
 
     return result;
 }
-VkResult copyBuffer(VkBuffer * pSrcBuffer, VkBuffer * pDstBuffer, VkDeviceSize size, VkDevice * pDevice, VkCommandPool * pCommandPool, VkQueue * pGraphicQueue)
+VkResult copyBuffer(VkBuffer * pSrcBuffer, VkBuffer * pDstBuffer, VkDeviceSize size)
 {
     VkResult result = VK_SUCCESS;
 
     VkCommandBuffer commandBuffer = NULL;
-    result |= beginSingleTimeCommands(pDevice, pCommandPool, &commandBuffer);
+    result |= beginSingleTimeCommands(allInOne.pTransferCommandPool, &commandBuffer);
 
     VkBufferCopy copyRegion = {};
     copyRegion.srcOffset = 0;
@@ -97,17 +97,17 @@ VkResult copyBuffer(VkBuffer * pSrcBuffer, VkBuffer * pDstBuffer, VkDeviceSize s
 
     vkCmdCopyBuffer(commandBuffer, *pSrcBuffer, *pDstBuffer, 1, &copyRegion);
 
-    result |= endSingleTimeCommands(pDevice, pCommandPool, pGraphicQueue, &commandBuffer);
+    result |= endSingleTimeCommands(allInOne.pTransferCommandPool, allInOne.pTransferQueue, &commandBuffer);
 
     if (result)
         return 0x7FFFFFFF;
     else 
         return result;
 }
-int findMemoryType(VkPhysicalDevice * pPhysicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties)
+int findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
 {
     VkPhysicalDeviceMemoryProperties memProperties;
-    vkGetPhysicalDeviceMemoryProperties(*pPhysicalDevice, &memProperties);
+    vkGetPhysicalDeviceMemoryProperties(*allInOne.pPhysicalDevice, &memProperties);
     for (uint32_t i = 0;i < memProperties.memoryTypeCount;i++)
     {
         if ((typeFilter & (i << i)) && (memProperties.memoryTypes[i].propertyFlags & properties))

@@ -40,6 +40,7 @@ typedef enum _PathType
     SettingPng,
     StartPng,
     TextRectangle1Png,
+    MAX_PATH_TYPE = 0x7FFFFFFF
 } PathType;
 
 extern PathType SDLCALL pathCompare(char * buffer);

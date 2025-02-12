@@ -21,8 +21,8 @@ void findQueueFamilies(void)
     {
         logMessage("queueFlags: %d", queueFamily[i].queueFlags);
     }
-    bool ok1, ok2, ok3;
-    ok1 = ok2 = ok3 = false;
+    bool ok1, ok2, ok3, ok4;
+    ok1 = ok2 = ok3 = ok4 = false;
     for (uint32_t i = 0;i < queueFamilyCount;i++)
     {
         if ((queueFamily[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) && !ok1)
@@ -54,7 +54,14 @@ void findQueueFamilies(void)
             ok3 = true;
         }
 
-        if (ok1 && ok2 && ok3)
+        if ((queueFamily[i].queueFlags & VK_QUEUE_TRANSFER_BIT) && !ok4)
+        {
+            allInOne.pQueueFamilyIndices->transferFamily.familyIndice = i;
+            allInOne.pQueueFamilyIndices->transferFamily.queueCount = queueFamily[i].queueCount;
+            ok4 = true;
+        }
+
+        if (ok1 && ok2 && ok3 && ok4)
             break;
     }
     //printf("graphicsFamily:: %u\n", pQueueFamilyIndices->graphicsFamily);

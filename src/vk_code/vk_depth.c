@@ -41,9 +41,9 @@ void createDepthResoures(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice,
 
     findDepthFormat(VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
     
-    resultVulkan(createImage(pPhysicalDevice, pDevice, pExtent2D->width, pExtent2D->height, *allInOne.pDepthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, pDepthImage, pDepthImageMem), code, 0);
+    resultVulkan(createImage(pExtent2D->width, pExtent2D->height, *allInOne.pDepthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, pDepthImage, pDepthImageMem), code, 0);
 
-    resultVulkan(createImageView(pDevice, pDepthImage, *allInOne.pDepthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, pDepthImageView), code, 0);
+    resultVulkan(createImageView(pDepthImage, *allInOne.pDepthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, pDepthImageView), code, 0);
 
-    resultVulkan(transitionImageLayout(pDevice, pCommandPool, pGraphicQueue, pDepthImage, *allInOne.pDepthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL), code, 0);
+    resultVulkan(transitionImageLayout(pCommandPool, pGraphicQueue, pDepthImage, *allInOne.pDepthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL), code, 0);
 }

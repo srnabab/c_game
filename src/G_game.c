@@ -467,8 +467,8 @@ int update(void * arg)
 
     bool updateVertex = false;
     
-    SDL_Delay(3000);
-
+    SDL_Delay(300);
+    
     Uint64 last_frame_time = SDL_GetPerformanceCounter();
     SDL_SignalSemaphore(main_semaphore1);
     SDL_SignalSemaphore(main_semaphore2);

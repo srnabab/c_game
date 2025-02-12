@@ -8,7 +8,7 @@
 
 extern VK_ALL allInOne;
 
-void createTextureImage(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkCommandPool * pCommandPool, VkQueue * pGraphicQueue, PathType type, VkFormat format, VkImage * pTextureImage, VkDeviceMemory * pTextureImageMem)
+void createTextureImage(VkCommandPool * pCommandPool, VkQueue * pGraphicQueue, PathType type, VkFormat format, VkImage * pTextureImage, VkDeviceMemory * pTextureImageMem)
 {
     FuncCode code = createTextureImageF;
 
@@ -22,24 +22,24 @@ void createTextureImage(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, 
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
 
-    resultVulkan(createBuffer(pPhysicalDevice, pDevice, &stagingBuffer, &stagingBufferMemory, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), code, 1, pixels);
+    resultVulkan(createBuffer(&stagingBuffer, &stagingBufferMemory, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), code, 1, pixels);
 
     void * data;
-    resultVulkan(vkMapMemory(*pDevice, stagingBufferMemory, 0, imageSize, 0, &data), code, 1, pixels);
+    resultVulkan(vkMapMemory(*allInOne.pDevice, stagingBufferMemory, 0, imageSize, 0, &data), code, 1, pixels);
     memcpy(data, pixels, imageSize);
-    vkUnmapMemory(*pDevice, stagingBufferMemory);
+    vkUnmapMemory(*allInOne.pDevice, stagingBufferMemory);
 
-    resultVulkan(createImage(pPhysicalDevice, pDevice, width, height, format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, pTextureImage, pTextureImageMem), code, 1, pixels);
+    resultVulkan(createImage(width, height, format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, pTextureImage, pTextureImageMem), code, 1, pixels);
 
-    resultVulkan(transitionImageLayout(pDevice, pCommandPool, pGraphicQueue, pTextureImage, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL), code, 1, pixels);
-    resultVulkan(copyBufferToImage(pDevice, pCommandPool, pGraphicQueue, pTextureImage, width, height, &stagingBuffer), code, 1, pixels);
+    resultVulkan(transitionImageLayout(pCommandPool, pGraphicQueue, pTextureImage, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL), code, 1, pixels);
+    resultVulkan(copyBufferToImage(pCommandPool, pGraphicQueue, pTextureImage, width, height, &stagingBuffer), code, 1, pixels);
 
-    resultVulkan(transitionImageLayout(pDevice, pCommandPool, pGraphicQueue, pTextureImage, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL), code, 1, pixels);
+    resultVulkan(transitionImageLayout(pCommandPool, pGraphicQueue, pTextureImage, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL), code, 1, pixels);
     
     SDL_free(pixels);
 
-    vkDestroyBuffer(*pDevice, stagingBuffer, allInOne.pAllocationCallbacks);
-    vkFreeMemory(*pDevice, stagingBufferMemory, allInOne.pAllocationCallbacks);
+    vkDestroyBuffer(*allInOne.pDevice, stagingBuffer, allInOne.pAllocationCallbacks);
+    vkFreeMemory(*allInOne.pDevice, stagingBufferMemory, allInOne.pAllocationCallbacks);
 }
 unsigned char * readPNG(PathType type, uint32_t * pWidth, uint32_t * pHeight, uint8_t * pChannel)
 {
@@ -60,12 +60,12 @@ unsigned char * readPNG(PathType type, uint32_t * pWidth, uint32_t * pHeight, ui
 
     return pixels;
 }
-VkResult copyBufferToImage(VkDevice * pDevice, VkCommandPool * pCommandPool, VkQueue * pGraphcisQueue, VkImage * pImage, uint32_t width, uint32_t height, VkBuffer * pBuffer)
+VkResult copyBufferToImage(VkCommandPool * pCommandPool, VkQueue * pGraphcisQueue, VkImage * pImage, uint32_t width, uint32_t height, VkBuffer * pBuffer)
 {
     VkResult result = VK_SUCCESS;
 
     VkCommandBuffer commandBuffer = NULL;
-    result |= beginSingleTimeCommands(pDevice, pCommandPool, &commandBuffer);
+    result |= beginSingleTimeCommands(pCommandPool, &commandBuffer);
 
     VkBufferImageCopy region = {};
     region.bufferOffset = 0;
@@ -86,15 +86,15 @@ VkResult copyBufferToImage(VkDevice * pDevice, VkCommandPool * pCommandPool, VkQ
 
     vkCmdCopyBufferToImage(commandBuffer, *pBuffer, *pImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
     
-    result |= endSingleTimeCommands(pDevice, pCommandPool, pGraphcisQueue, &commandBuffer);
+    result |= endSingleTimeCommands(pCommandPool, pGraphcisQueue, &commandBuffer);
 
     return result;
 }
-void createTextureImageView(VkDevice * pDevice, VkImage * pTextureImage, VkFormat format, VkImageAspectFlags aspectFlags, VkImageView * pTextureImageView)
+void createTextureImageView(VkImage * pTextureImage, VkFormat format, VkImageAspectFlags aspectFlags, VkImageView * pTextureImageView)
 {
     FuncCode code = createTextureImageViewF;
     
-    resultVulkan(createImageView(pDevice, pTextureImage, format, aspectFlags, pTextureImageView), code, 0);
+    resultVulkan(createImageView(pTextureImage, format, aspectFlags, pTextureImageView), code, 0);
 }
 void createTextureSampler(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkSampler * pTextureSampler)
 {
@@ -124,10 +124,6 @@ void createTextureSampler(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice
     samplerInfo.unnormalizedCoordinates = VK_FALSE;
 
     resultVulkan(vkCreateSampler(*pDevice, &samplerInfo, allInOne.pAllocationCallbacks, pTextureSampler), code, 0);
-}
-void loadTexture()
-{
-    // TODO
 }
 // png_bytep readPNG(PathType type, uint32_t * pWidth, uint32_t * pHeight, uint8_t * pChannel)
 // {

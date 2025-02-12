@@ -6,11 +6,9 @@
 
 extern VK_ALL allInOne;
 
-void createSemaphore(VkDevice * pDevice, VkSemaphore ** pSemaphore)
+void createSemaphoreByBuffering(VkSemaphore (*ppSemaphore)[2])
 {
     FuncCode code = createSemaphoreF;
-
-    *pSemaphore = (VkSemaphore *)SDL_malloc(MAX_FRAMES_IN_FLIGHT * sizeof(VkSemaphore));
 
     VkSemaphoreCreateInfo semaphoreCreateInfo = {};
     semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -18,14 +16,12 @@ void createSemaphore(VkDevice * pDevice, VkSemaphore ** pSemaphore)
     semaphoreCreateInfo.flags = 0;
 
     for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
-        resultVulkan(vkCreateSemaphore(*pDevice, &semaphoreCreateInfo, allInOne.pAllocationCallbacks, &((*pSemaphore)[i])), code, 0);
+        resultVulkan(vkCreateSemaphore(*allInOne.pDevice, &semaphoreCreateInfo, allInOne.pAllocationCallbacks, (*ppSemaphore) + i), code, 0);
     //printf("semaphor created\n");
 }
-void createFence(VkDevice * pDevice, VkFence ** pFence)
+void createFenceByBuffering(VkFence (*ppFence)[2])
 {
     FuncCode code = createFenceF;
-
-    *pFence = (VkFence *)SDL_malloc(MAX_FRAMES_IN_FLIGHT * sizeof(VkFence));
 
     VkFenceCreateInfo fenceCreateInfo = {};
     fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -33,6 +29,6 @@ void createFence(VkDevice * pDevice, VkFence ** pFence)
     fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
     for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
-        resultVulkan(vkCreateFence(*pDevice, &fenceCreateInfo, allInOne.pAllocationCallbacks, &((*pFence)[i])), code, 0);
+        resultVulkan(vkCreateFence(*allInOne.pDevice, &fenceCreateInfo, allInOne.pAllocationCallbacks, (*ppFence) + i), code, 0);
     //printf("fence created\n");
 }

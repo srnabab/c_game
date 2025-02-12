@@ -133,5 +133,5 @@ void createSwapchainImageView(VkImageAspectFlags aspectFlags)
 {
     FuncCode code = createSwapchainImageViewsF;
 
-    resultVulkan(createImageViews(allInOne.pDevice, allInOne.ppSwapchainImages, *allInOne.pImageCount, allInOne.pSurfaceFormat->format, aspectFlags, allInOne.ppSwapchainImageViews), code, 0);   
+    resultVulkan(createImageViews(allInOne.ppSwapchainImages, *allInOne.pImageCount, allInOne.pSurfaceFormat->format, aspectFlags, allInOne.ppSwapchainImageViews), code, 0);   
 }

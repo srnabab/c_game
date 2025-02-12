@@ -5,8 +5,7 @@
 
 #include "SDL3/SDL_begin_code.h"
 
-extern void SDLCALL createShaderStorageBuffers(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkCommandPool * pCommandPool, VkQueue * pGraphicQueue, VkExtent2D extent2D, VkBuffer ** ppShaderStorageBuffers, VkDeviceMemory ** ppShaderStorageBuffersMem, Particle ** ppParticles);
-extern void SDLCALL initializeParticles(Particle ** ppParticles, VkExtent2D extent2D);
+extern void SDLCALL createShaderStorageBuffers(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkBuffer (*ppShaderStorageBuffers)[2], VkDeviceMemory (*ppShaderStorageBuffersMem)[2]);
 
 #include "SDL3/SDL_close_code.h"
 
