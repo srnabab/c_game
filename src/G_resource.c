@@ -77,15 +77,22 @@ G_Texture_P const * getTextureByName(const char * innerName)
 
     return NULL;
 }
-void deRefTexture(G_Texture_P * pTexture_P)
+void deRefTexture(G_Texture_P const * pTexture_P)
 {
     if (pTexture_P->refCount == 0) return;
 
-    SDL_LockMutex(textureMutex);
 
-    pTexture_P->refCount--;
+    for (int i = 0;i < 10;i++)
+    {
+        if (globalTexture + i == pTexture_P)
+        {
+            SDL_LockMutex(textureMutex);
+            globalTexture[i].refCount--;
+            SDL_UnlockMutex(textureMutex);
 
-    SDL_UnlockMutex(textureMutex);
+            break;
+        }
+    }
 }
 bool unloadTexture(const char * innerName)
 {
@@ -106,6 +113,8 @@ bool unloadTexture(const char * innerName)
             return false;
         }
     }
+
+    return false;
 }
 // bool setDescriptorSet(G_DescriptorSetLayoutConfigCreateInfo * pCreateInfo)
 // {

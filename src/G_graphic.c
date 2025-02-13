@@ -187,20 +187,20 @@ static VkFormat depthFormat = 0;
 
 static VkFramebuffer * swapchainFramebuffer = NULL;
 
-//circle.png
-static VkImage texturesImage = NULL;
-static VkDeviceMemory textureImageMem = NULL;
-static VkImageView textureImageView = NULL;
+// //circle.png
+// static VkImage texturesImage = NULL;
+// static VkDeviceMemory textureImageMem = NULL;
+// static VkImageView textureImageView = NULL;
 
-//loading1.png
-static VkImage loadingImage = NULL;
-static VkDeviceMemory loadingImageMem = NULL;
-static VkImageView loadingImageView = NULL;
+// //loading1.png
+// static VkImage loadingImage = NULL;
+// static VkDeviceMemory loadingImageMem = NULL;
+// static VkImageView loadingImageView = NULL;
 
-//MainFont.png
-static VkImage textImage = NULL;
-static VkDeviceMemory textImageMem = NULL;
-static VkImageView textImageView = NULL;
+// //MainFont.png
+// static VkImage textImage = NULL;
+// static VkDeviceMemory textImageMem = NULL;
+// static VkImageView textImageView = NULL;
 
 static VkSampler textureSampler = NULL;
 

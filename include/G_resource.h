@@ -68,7 +68,7 @@ typedef struct _G_DescriptorSet_Update G_DescriptorSet_Update;
 extern void SDLCALL initGlobalTexture(void);
 extern bool SDLCALL loadTexture(PathType path, VkFormat format, VkImageAspectFlags flags, const char * innerName);
 extern G_Texture_P const * SDLCALL getTextureByName(const char * innerName);
-extern void SDLCALL deRefTexture(G_Texture_P * pTexture_P);
+extern void SDLCALL deRefTexture(G_Texture_P const * pTexture_P);
 extern bool SDLCALL unloadTexture(const char * innerName);
 
 #include "SDL3/SDL_close_code.h"
