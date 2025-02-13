@@ -248,7 +248,7 @@ void updateDescriptorSets(G_DescriptorSet_Update * pUpdate, Uint32 updateCount)
                 Uint32 offset = j * updateCount;
                 ppCreateInfo[i + offset] = SDL_malloc(sizeof(VkDescriptorImageInfo));
                 VkDescriptorImageInfo * temp = (VkDescriptorImageInfo *)(ppCreateInfo[i + offset]);
-                temp->sampler = pUpdate[i].bufferImage.pTexture->pSampler[j];
+                temp->sampler = pUpdate[i].bufferImage.pTexture->sampler;
                 temp->imageView = pUpdate[i].bufferImage.pTexture->pParent->imageView;
                 temp->imageLayout = pUpdate[i].bufferImage.pTexture->layout;
 

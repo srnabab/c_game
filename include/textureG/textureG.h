@@ -6,7 +6,7 @@
 
 #include "SDL3/SDL_begin_code.h"
 
-#define MAX_2D_SIZE 16383
+#define MAX_2D_SIZE 16384
 
 #define HASH_SIZE 65537
 #define MAX_KICKS 128

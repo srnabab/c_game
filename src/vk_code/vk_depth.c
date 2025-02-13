@@ -45,5 +45,5 @@ void createDepthResoures(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice,
 
     resultVulkan(createImageView(pDepthImage, *allInOne.pDepthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, pDepthImageView), code, 0);
 
-    resultVulkan(transitionImageLayout(pCommandPool, pGraphicQueue, pDepthImage, *allInOne.pDepthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL), code, 0);
+    resultVulkan(transitionImageLayout(pDepthImage, *allInOne.pDepthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL), code, 0);
 }

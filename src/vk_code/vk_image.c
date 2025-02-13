@@ -96,12 +96,12 @@ void destroyImageViews(VkImageView * pImageView, uint32_t imageCount)
         vkDestroyImageView(*allInOne.pDevice, pImageView[i], allInOne.pAllocationCallbacks);
     }
 }
-VkResult transitionImageLayout(VkCommandPool * pCommandPool, VkQueue * pGraphcisQueue, VkImage * pImage, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
+VkResult transitionImageLayout(VkImage * pImage, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
 {
     VkResult result  = VK_SUCCESS;
 
     VkCommandBuffer commandBuffer = NULL;
-    result |= beginSingleTimeCommands(pCommandPool, &commandBuffer);
+    result |= beginSingleTimeCommands(allInOne.pTransferCommandPool, &commandBuffer);
 
     VkImageMemoryBarrier barrier = {};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -158,7 +158,7 @@ VkResult transitionImageLayout(VkCommandPool * pCommandPool, VkQueue * pGraphcis
 
     vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, NULL, 0, NULL, 1, &barrier);
 
-    result |= endSingleTimeCommands(pCommandPool, pGraphcisQueue, &commandBuffer);
+    result |= endSingleTimeCommands(allInOne.pTransferCommandPool, allInOne.pTransferQueue, &commandBuffer);
 
     return result;
 }

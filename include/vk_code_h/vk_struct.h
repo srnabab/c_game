@@ -56,6 +56,18 @@ typedef struct _ImageRotate
     float rotation;
 } ImageRotate;
 
+enum _FormatQualifier
+{
+    UNORM = 0,
+    SNORM = 1,
+    USCALED = 2,
+    SSCALED = 3,
+    UINT = 4,
+    SINT = 5,
+    SRGB = 6
+};
+typedef enum _FormatQualifier FormatQualifier;
+
 typedef struct _VK_ALL
 {
     VkAllocationCallbacks * pAllocationCallbacks;

@@ -457,14 +457,23 @@ void initVulkan(void)
     createFrameBuffer(&device, &extent2D, imageCount, swapchainImageViews, &depthImageView, &renderPass, &swapchainFramebuffer);
 
     // when one textureImage creatation failed should clean others 
-    createTextureImage(&graphicCommandPool, &graphicQueue, CirclePng, VK_FORMAT_R8G8B8A8_SRGB, &texturesImage, &textureImageMem);
-    createTextureImageView(&texturesImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, &textureImageView);
+    // createTextureImageFromFile(CirclePng, VK_FORMAT_R8G8B8A8_SRGB, &texturesImage, &textureImageMem);
+    // createTextureImageView(&texturesImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, &textureImageView);
 
-    createTextureImage(&graphicCommandPool, &graphicQueue, Loading1Png, VK_FORMAT_R8G8B8A8_SRGB, &loadingImage, &loadingImageMem);
-    createTextureImageView(&loadingImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, &loadingImageView);
+    // createTextureImageFromFile(Loading1Png, VK_FORMAT_R8G8B8A8_SRGB, &loadingImage, &loadingImageMem);
+    // createTextureImageView(&loadingImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, &loadingImageView);
 
-    createTextureImage(&graphicCommandPool, &graphicQueue, MainFontPng, VK_FORMAT_R8_UNORM, &textImage, &textImageMem);
-    createTextureImageView(&textImage, VK_FORMAT_R8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, &textImageView);
+    // createTextureImageFromFile(MainFontPng, VK_FORMAT_R8_UNORM, &textImage, &textImageMem);
+    // createTextureImageView(&textImage, VK_FORMAT_R8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, &textImageView);
+
+    loadTexture(CirclePng, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "circle");
+    G_Texture_P const * circleTexture = getTextureByName("circle");
+
+    loadTexture(Loading1Png, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "loading");
+    G_Texture_P const * loadingTexture = getTextureByName("loading");
+
+    loadTexture(MainFontPng, VK_FORMAT_R8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, "font");
+    G_Texture_P const * fontTexture = getTextureByName("font");
     
     createTextureSampler(&physicalDevice, &device, &textureSampler);
 
@@ -592,10 +601,14 @@ void initVulkan(void)
 
     //graphics
     VkImageView tempImageView[3];
-    tempImageView[0] = loadingImageView;
-    tempImageView[1] = textureImageView;
-    tempImageView[2] = textImageView;
+    tempImageView[0] = loadingTexture->imageView;
+    tempImageView[1] = circleTexture->imageView;
+    tempImageView[2] = fontTexture->imageView;
     updateGraphicDescriptorSets(&device, &graphicUniformBuffers, &graphicDescriptorSets, tempImageView, &textureSampler);
+
+    deRefTexture(loadingTexture);
+    deRefTexture(circleTexture);
+    deRefTexture(fontTexture);
 
     // G_DescriptorSet_Update updates[4] = {};
     // updates[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -819,34 +832,37 @@ void cleanVulkan(FuncCode code)
         /*fall through*/
 
         case createTextureSamplerF:
-        vkDestroyImageView(device, textureImageView, allInOne.pAllocationCallbacks);
-        logMessage("texture image view destroyed");
+        unloadTexture("circle");
+        unloadTexture("font");
+        unloadTexture("loading");
+        // vkDestroyImageView(device, textureImageView, allInOne.pAllocationCallbacks);
+        // logMessage("texture image view destroyed");
 
-        vkDestroyImageView(device, loadingImageView, allInOne.pAllocationCallbacks);
-        logMessage("texture image view destroyed");
+        // vkDestroyImageView(device, loadingImageView, allInOne.pAllocationCallbacks);
+        // logMessage("texture image view destroyed");
 
-        vkDestroyImageView(device, textImageView, allInOne.pAllocationCallbacks);
-        logMessage("texture image view destroyed");
-        /*fall through*/
+        // vkDestroyImageView(device, textImageView, allInOne.pAllocationCallbacks);
+        // logMessage("texture image view destroyed");
+        // /*fall through*/
 
         case createTextureImageViewF:
-        vkDestroyImage(device, texturesImage, allInOne.pAllocationCallbacks);
-        logMessage("texture image destroyed");
+        // vkDestroyImage(device, texturesImage, allInOne.pAllocationCallbacks);
+        // logMessage("texture image destroyed");
 
-        vkFreeMemory(device, textureImageMem, allInOne.pAllocationCallbacks);
-        logMessage("texture image memory freed");
+        // vkFreeMemory(device, textureImageMem, allInOne.pAllocationCallbacks);
+        // logMessage("texture image memory freed");
 
-        vkDestroyImage(device, loadingImage, allInOne.pAllocationCallbacks);
-        logMessage("texture image destroyed");
+        // vkDestroyImage(device, loadingImage, allInOne.pAllocationCallbacks);
+        // logMessage("texture image destroyed");
 
-        vkFreeMemory(device, loadingImageMem, allInOne.pAllocationCallbacks);
-        logMessage("texture image memory freed");
+        // vkFreeMemory(device, loadingImageMem, allInOne.pAllocationCallbacks);
+        // logMessage("texture image memory freed");
 
-        vkDestroyImage(device, textImage, allInOne.pAllocationCallbacks);
-        logMessage("texture image destroyed");
+        // vkDestroyImage(device, textImage, allInOne.pAllocationCallbacks);
+        // logMessage("texture image destroyed");
 
-        vkFreeMemory(device, textImageMem, allInOne.pAllocationCallbacks);
-        logMessage("texture image memory freed");
+        // vkFreeMemory(device, textImageMem, allInOne.pAllocationCallbacks);
+        // logMessage("texture image memory freed");
         /*fall through*/
 
         case createTextureImageF:
