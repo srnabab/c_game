@@ -8,40 +8,39 @@ set(CMAKE_C_STANDARD_REQUIRED TRUE)
 # set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_SYSTEM_PROCESSOR x86_64)
 
-set(INCLUDE_ROOT "${CMAKE_SOURCE_DIR}/include")
-set(SRC_ROOT "${CMAKE_SOURCE_DIR}/src")
-set(LIB_ROOT "${CMAKE_SOURCE_DIR}/lib")
-set(RUN_ROOT "${CMAKE_SOURCE_DIR}/run")
+set(INCLUDE_ROOT ${CMAKE_SOURCE_DIR}/include)
+set(SRC_ROOT ${CMAKE_SOURCE_DIR}/src)
+set(LIB_ROOT ${CMAKE_SOURCE_DIR}/lib)
+set(RUN_ROOT ${CMAKE_SOURCE_DIR}/run)
+set(BUILD_SCRIPT ${CMAKE_SOURCE_DIR}/build_script)
 
-set(PYTHON_SCRIPT ${CMAKE_SOURCE_DIR}/generate_path_compare.py)
+set(PYTHON_SCRIPT ${BUILD_SCRIPT}/generate_path_compare.py)
 
 add_custom_target(
     ShaderCompile
-    COMMAND cmd /c ${CMAKE_SOURCE_DIR}/shader.bat
+    COMMAND cmd /c ${BUILD_SCRIPT}/shader.bat
     COMMENT "Running shader.bat before building target"
 )
 
-add_custom_target(
-    MoveLib
-    COMMAND cmd /c ${CMAKE_SOURCE_DIR}/move_lib.lnk
-    COMMENT "Running move_lib.lnk before building target"
-)
+# add_custom_target(
+#     MoveLib
+#     COMMAND cmd /c ${BUILD_SCRIPT}/move_lib.lnk
+#     COMMENT "Running move_lib.lnk before building target"
+# )
 
-add_subdirectory(src/content_manager) # 确保 ContentManager target 被定义
+add_subdirectory(src/content_manager)
 
 add_custom_command(
-    OUTPUT "${RUN_ROOT}/Path"
-    COMMAND $<TARGET_FILE:ContentManager> # 使用 TARGET_FILE 生成器表达式, 修正路径问题
+    OUTPUT ${RUN_ROOT}/Path
+    COMMAND $<TARGET_FILE:ContentManager>
     COMMENT "Generate PATH"
     VERBATIM
 )
-add_custom_target(GeneratePath
-    DEPENDS "${RUN_ROOT}/Path"
-)
+add_custom_target(GeneratePath DEPENDS "${RUN_ROOT}/Path")
 
 add_custom_command(
     OUTPUT ${SRC_ROOT}/file/generated_function.c ${INCLUDE_ROOT}/file/generated_function.h
-    COMMAND python.exe ${PYTHON_SCRIPT}
+    COMMAND python.exe ${PYTHON_SCRIPT} ${RUN_ROOT}/Path
     COMMENT "Running Python script to generate code..."
     VERBATIM
 )
@@ -131,10 +130,8 @@ target_compile_options(game PUBLIC -O0 -Wall)
 # target_compile_options(game PUBLIC -O0 -Wall -Wextra)
 # target_compile_options(game PUBLIC -Os -Wall)
 
-#  修正后的依赖关系:
-add_dependencies(GeneratePath ShaderCompile MoveLib) # GeneratePath 依赖 ShaderCompile 和 MoveLib (先执行)
-add_dependencies(GeneratePath ContentManager)   # GeneratePath 依赖 ContentManager (在 ShaderCompile, MoveLib 之后执行)
-add_dependencies(GenerateCode GeneratePath)    # GenerateCode 依赖 GeneratePath
-add_dependencies(game GenerateCode)         # game 依赖 GenerateCode
+add_dependencies(GeneratePath ContentManager ShaderCompile)
+add_dependencies(GenerateCode GeneratePath)
+add_dependencies(game GenerateCode)
 
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/run)

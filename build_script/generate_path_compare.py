@@ -1,14 +1,4 @@
-import os
-
-# 输入文件路径
-input_file = "C:\\D\\code\\c_game\\run\\Path"
-
-# 输出文件路径
-output_file_h = "C:\\D\\code\\c_game\\include\\G_file\\path_compare.h"
-output_file_c = "C:\\D\\code\\c_game\\src\\G_file\\path_compare.c"
-
-output_file_h_temp = "C:\\D\\code\\c_game\\include\\G_file\\path_compare_temp.h"
-output_file_c_temp = "C:\\D\\code\\c_game\\src\\G_file\\path_compare_temp.c"
+import os, sys
 
 def generate_code(input_file, output_file_h, output_file_c):
     # 用于存储生成的代码
@@ -88,6 +78,31 @@ def create_new_file(filepath):
         return
 
 # 调用函数
+
+
+# 输入文件路径
+# input_file = "C:/D/code/c_game/run/Path"
+try:
+    input_file = sys.argv[1]
+except:
+    print('need Path file')
+    exit(-1)
+
+root_index1 = sys.argv[1].rfind('/')
+root_index2 = sys.argv[1][:root_index1].rfind('/')
+root = sys.argv[1][:root_index2 + 1]
+
+# 输出文件路径
+# output_file_h = "C:/D/code/c_game/include/G_file/path_compare.h"
+output_file_h = root + "include/G_file/path_compare.h"
+# output_file_c = "C:/D/code/c_game/src/G_file/path_compare.c"
+output_file_c = root + "src/G_file/path_compare.c"
+
+# output_file_h_temp = "C:/D/code/c_game/include/G_file/path_compare_temp.h"
+output_file_h_temp = root + "include/G_file/path_compare_temp.h"
+# output_file_c_temp = "C:/D/code/c_game/src/G_file/path_compare_temp.c"
+output_file_c_temp = root + "src/G_file/path_compare_temp.c"
+
 create_new_file(output_file_h_temp)
 create_new_file(output_file_c_temp)
 create_new_file(output_file_h)

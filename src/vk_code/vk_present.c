@@ -23,6 +23,22 @@ static void recordCommandBuffer_FirstScene(uint32_t imageIndex)
     resultVulkan(vkBeginCommandBuffer((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], &beginInfo), code, 0);
     //printf("record command buffer begin\n");
 
+    VkViewport viewport = {};
+    viewport.x = 0.0f;
+    viewport.y = 0.0f;
+    viewport.width = (float)allInOne.pExtent2D->width;
+    viewport.height = (float)allInOne.pExtent2D->height;
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+
+    vkCmdSetViewport((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], 0, 1, &viewport);
+
+    VkRect2D scissor = {};
+    scissor.offset = (VkOffset2D){0, 0};
+    scissor.extent = *allInOne.pExtent2D;
+
+    vkCmdSetScissor((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], 0, 1, &scissor);
+
     VkOffset2D offset = {0, 0};
     VkRect2D renderArea = {offset, *allInOne.pExtent2D};
 
@@ -41,22 +57,6 @@ static void recordCommandBuffer_FirstScene(uint32_t imageIndex)
 
     vkCmdBeginRenderPass((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], &renderBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
     //printf("render pass begin\n");
-
-    VkViewport viewport = {};
-    viewport.x = 0.0f;
-    viewport.y = 0.0f;
-    viewport.width = (float)allInOne.pExtent2D->width;
-    viewport.height = (float)allInOne.pExtent2D->height;
-    viewport.minDepth = 0.0f;
-    viewport.maxDepth = 1.0f;
-
-    vkCmdSetViewport((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], 0, 1, &viewport);
-
-    VkRect2D scissor = {};
-    scissor.offset = (VkOffset2D){0, 0};
-    scissor.extent = *allInOne.pExtent2D;
-
-    vkCmdSetScissor((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], 0, 1, &scissor);
     
     //printf("commandBuffer width: %u, height: %u\n", allInOne.pExtent2D->width, allInOne.pExtent2D->height);
     /*size_t bufferSize = sizeof((*allInOne.ppVertices)[0]) * *allInOne.pVerticesCount;
