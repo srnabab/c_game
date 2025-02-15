@@ -30,20 +30,21 @@ void findSupportFormat(VkFormat * candiates, VkPhysicalDevice * pPhysicalDevice,
     if (*pFormat == 0)
         logMessage("falied to find supported format!\n");
 }
-void findDepthFormat(VkImageTiling tiling, VkFormatFeatureFlags features)
+void findDepthFormat(VkImageTiling tiling, VkFormatFeatureFlags features, VkFormat * pDepthFormat)
 {
     VkFormat candiates[3] = {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT};
-    findSupportFormat(candiates, allInOne.pPhysicalDevice, tiling, features, allInOne.pDepthFormat);
+    findSupportFormat(candiates, allInOne.pPhysicalDevice, tiling, features, pDepthFormat);
 }
-void createDepthResoures(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkExtent2D * pExtent2D, VkCommandPool * pCommandPool, VkQueue * pGraphicQueue, VkImage * pDepthImage, VkDeviceMemory * pDepthImageMem, VkImageView * pDepthImageView)
+void createDepthResoures(VkImage * pDepthImage, VkDeviceMemory * pDepthImageMem, VkImageView * pDepthImageView)
 {
     FuncCode code = createDepthResouresF;
 
-    findDepthFormat(VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+    VkFormat depthFormat;
+    findDepthFormat(VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT, &depthFormat);
     
-    resultVulkan(createImage(pExtent2D->width, pExtent2D->height, *allInOne.pDepthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, pDepthImage, pDepthImageMem), code, 0);
+    resultVulkan(createImage(allInOne.pExtent2D->width, allInOne.pExtent2D->height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, pDepthImage, pDepthImageMem), code, 0);
 
-    resultVulkan(createImageView(pDepthImage, *allInOne.pDepthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, pDepthImageView), code, 0);
+    resultVulkan(createImageView(pDepthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, pDepthImageView), code, 0);
 
-    resultVulkan(transitionImageLayout(pDepthImage, *allInOne.pDepthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL), code, 0);
+    resultVulkan(transitionImageLayout(pDepthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL), code, 0);
 }

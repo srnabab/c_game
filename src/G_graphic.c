@@ -180,10 +180,10 @@ static VkCommandPool transferCommandPool = NULL;
 
 static VkCommandPool computeCommandPool = NULL;
 
-static VkImage depthImage = NULL;
-static VkDeviceMemory depthImageMemory = NULL;
-static VkImageView depthImageView = NULL;
-static VkFormat depthFormat = 0;
+// static VkImage depthImage = NULL;
+// static VkDeviceMemory depthImageMemory = NULL;
+// static VkImageView depthImageView = NULL;
+// static VkFormat depthFormat = 0;
 
 static VkFramebuffer * swapchainFramebuffer = NULL;
 
@@ -327,10 +327,10 @@ static void initializeAllInOne(void)
     allInOne.ppSwapchainImageViews = &swapchainImageViews;
     allInOne.ppSwapchainFramebuffer = &swapchainFramebuffer;
     
-    allInOne.pDepthFormat = &depthFormat;
-    allInOne.pDepthImage = &depthImage;
-    allInOne.pDepthImageView = &depthImageView;
-    allInOne.pDepthImageMem = &depthImageMemory;
+    // allInOne.pDepthFormat = &depthFormat;
+    // allInOne.pDepthImage = &depthImage;
+    // allInOne.pDepthImageView = &depthImageView;
+    // allInOne.pDepthImageMem = &depthImageMemory;
 
     allInOne.pVertexBuffer = &vertexBuffer;
     // allInOne.maxVerticesCount = (BALLCOUNT + 100) * 4;
@@ -427,6 +427,11 @@ void initVulkan(void)
     createQueue(queueIndices.computeFamily.familyIndice, &computeQueue);
     createQueue(queueIndices.transferFamily.familyIndice, &transferQueue);
 
+    createCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, queueIndices.graphicsFamily.familyIndice, &graphicCommandPool);
+    createCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, queueIndices.presentFamily.familyIndice, &presentCommandPool);
+    createCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, queueIndices.computeFamily.familyIndice, &computeCommandPool);
+    createCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, queueIndices.transferFamily.familyIndice, &transferCommandPool);
+
     getSurfaceFormats();
     getPresentModes();
     getSurfaceCapabilities();
@@ -444,36 +449,17 @@ void initVulkan(void)
     //swapchain image view
     createSwapchainImageView(VK_IMAGE_ASPECT_COLOR_BIT);
 
-    findDepthFormat(VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
-    createRenderPass();
+    loadDepthResource("depth");
+    G_Texture_P const * depthTexutre = getTexture(NULL, DepthImage);
+    createRenderPass(swapchainFormat, depthTexutre->format);
 
-    createCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, queueIndices.graphicsFamily.familyIndice, &graphicCommandPool);
-    createCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, queueIndices.presentFamily.familyIndice, &presentCommandPool);
-    createCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, queueIndices.computeFamily.familyIndice, &computeCommandPool);
-    createCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, queueIndices.transferFamily.familyIndice, &transferCommandPool);
+    // createDepthResoures(&depthImage, &depthImageMemory, &depthImageView);
 
-    createDepthResoures(&physicalDevice, &device, &extent2D, &graphicCommandPool, &graphicQueue, &depthImage, &depthImageMemory, &depthImageView);
-
-    createFrameBuffer(&device, &extent2D, imageCount, swapchainImageViews, &depthImageView, &renderPass, &swapchainFramebuffer);
-
-    // when one textureImage creatation failed should clean others 
-    // createTextureImageFromFile(CirclePng, VK_FORMAT_R8G8B8A8_SRGB, &texturesImage, &textureImageMem);
-    // createTextureImageView(&texturesImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, &textureImageView);
-
-    // createTextureImageFromFile(Loading1Png, VK_FORMAT_R8G8B8A8_SRGB, &loadingImage, &loadingImageMem);
-    // createTextureImageView(&loadingImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, &loadingImageView);
-
-    // createTextureImageFromFile(MainFontPng, VK_FORMAT_R8_UNORM, &textImage, &textImageMem);
-    // createTextureImageView(&textImage, VK_FORMAT_R8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, &textImageView);
+    createFrameBuffer(imageCount, swapchainImageViews, &depthTexutre->imageView, &renderPass, &swapchainFramebuffer);
 
     loadTexture(CirclePng, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "circle");
-    G_Texture_P const * circleTexture = getTextureByName("circle");
-
     loadTexture(Loading1Png, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "loading");
-    G_Texture_P const * loadingTexture = getTextureByName("loading");
-
     loadTexture(MainFontPng, VK_FORMAT_R8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, "font");
-    G_Texture_P const * fontTexture = getTextureByName("font");
     
     createTextureSampler(&physicalDevice, &device, &textureSampler);
 
@@ -597,18 +583,56 @@ void initVulkan(void)
 
     createSemaphoreByBuffering(&computeFinishedSemaphore);
 
-    createFenceByBuffering(&computeInFlightFences);
+    createFenceByBuffering(&computeInFlightFences);\
+
+    G_DescriptorSet_Update descriptorSetUpdate[8];
+
+    descriptorSetUpdate[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptorSetUpdate[0].binding = 0;
+    descriptorSetUpdate[0].pSet = graphicDescriptorSets;
+    descriptorSetUpdate[0].bufferImage.Buffer = (G_Buffer){graphicUniformBuffers, 0, sizeof(UniformBufferObject)};
+
+    descriptorSetUpdate[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptorSetUpdate[1].binding = 0;
+    descriptorSetUpdate[1].pSet = particleDescriptorSets;
+    descriptorSetUpdate[1].bufferImage.Buffer = (G_Buffer){graphicUniformBuffers, 0, sizeof(UniformBufferObject)};
+
+    descriptorSetUpdate[2].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptorSetUpdate[2].binding = 0;
+    descriptorSetUpdate[2].pSet = computeDescriptorSets;
+    descriptorSetUpdate[2].bufferImage.Buffer = (G_Buffer){computeUniformBuffers, 0, sizeof(ComputeUniformBufferObject)};
+    
+    descriptorSetUpdate[3].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    descriptorSetUpdate[3].binding = 1;
+    descriptorSetUpdate[3].pSet = graphicDescriptorSets;
+    descriptorSetUpdate[3].bufferImage.Texture = (G_Texture){getTexture(NULL, Loading1Png), textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+    
+    descriptorSetUpdate[4].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    descriptorSetUpdate[4].binding = 2;
+    descriptorSetUpdate[4].pSet = graphicDescriptorSets;
+    descriptorSetUpdate[4].bufferImage.Texture = (G_Texture){getTexture(NULL, CirclePng), textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+    
+    descriptorSetUpdate[5].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    descriptorSetUpdate[5].binding = 3;
+    descriptorSetUpdate[5].pSet = graphicDescriptorSets;
+    descriptorSetUpdate[5].bufferImage.Texture = (G_Texture){getTexture(NULL, MainFontPng), textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+    
+    descriptorSetUpdate[6].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    descriptorSetUpdate[6].binding = 1;
+    descriptorSetUpdate[6].pSet = computeDescriptorSets;
+    descriptorSetUpdate[6].bufferImage.Buffer = (G_Buffer){shaderStorageBuffers, 0, sizeof(Particle) * PARTICLE_COUNT};
+    
+    descriptorSetUpdate[7].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    descriptorSetUpdate[7].binding = 2;
+    descriptorSetUpdate[7].pSet = computeDescriptorSets;
+    descriptorSetUpdate[7].bufferImage.Buffer = (G_Buffer){shaderStorageBuffers, 0, sizeof(Particle) * PARTICLE_COUNT};
 
     //graphics
-    VkImageView tempImageView[3];
-    tempImageView[0] = loadingTexture->imageView;
-    tempImageView[1] = circleTexture->imageView;
-    tempImageView[2] = fontTexture->imageView;
-    updateGraphicDescriptorSets(&device, &graphicUniformBuffers, &graphicDescriptorSets, tempImageView, &textureSampler);
-
-    deRefTexture(loadingTexture);
-    deRefTexture(circleTexture);
-    deRefTexture(fontTexture);
+    // VkImageView tempImageView[3];
+    // tempImageView[0] = getTexture(NULL, Loading1Png)->imageView;
+    // tempImageView[1] = getTexture(NULL, CirclePng)->imageView;
+    // tempImageView[2] = getTexture(NULL, MainFontPng)->imageView;
+    // updateGraphicDescriptorSets(&device, &graphicUniformBuffers, &graphicDescriptorSets, tempImageView, &textureSampler);
 
     // G_DescriptorSet_Update updates[4] = {};
     // updates[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -619,10 +643,16 @@ void initVulkan(void)
     // updates[1].bufferImage.pTexture
 
     //particle
-    updateParticleDescriptorSets(&device, &graphicUniformBuffers, &particleDescriptorSets);
+    // updateParticleDescriptorSets(&device, &graphicUniformBuffers, &particleDescriptorSets);
 
     //compute
-    updateComputeDescriptorSets(&device, &computeUniformBuffers, &shaderStorageBuffers, &computeDescriptorSets);
+    // updateComputeDescriptorSets(&device, &computeUniformBuffers, &shaderStorageBuffers, &computeDescriptorSets);
+
+    updateDescriptorSets(descriptorSetUpdate, 8);
+
+    deRefTexture(NULL, Loading1Png);
+    deRefTexture(NULL, CirclePng);
+    deRefTexture(NULL, MainFontPng);
 
     // initializeRecreate();
 
@@ -832,54 +862,25 @@ void cleanVulkan(FuncCode code)
         /*fall through*/
 
         case createTextureSamplerF:
-        unloadTexture("circle");
-        unloadTexture("font");
-        unloadTexture("loading");
-        // vkDestroyImageView(device, textureImageView, allInOne.pAllocationCallbacks);
-        // logMessage("texture image view destroyed");
-
-        // vkDestroyImageView(device, loadingImageView, allInOne.pAllocationCallbacks);
-        // logMessage("texture image view destroyed");
-
-        // vkDestroyImageView(device, textImageView, allInOne.pAllocationCallbacks);
-        // logMessage("texture image view destroyed");
-        // /*fall through*/
-
-        case createTextureImageViewF:
-        // vkDestroyImage(device, texturesImage, allInOne.pAllocationCallbacks);
-        // logMessage("texture image destroyed");
-
-        // vkFreeMemory(device, textureImageMem, allInOne.pAllocationCallbacks);
-        // logMessage("texture image memory freed");
-
-        // vkDestroyImage(device, loadingImage, allInOne.pAllocationCallbacks);
-        // logMessage("texture image destroyed");
-
-        // vkFreeMemory(device, loadingImageMem, allInOne.pAllocationCallbacks);
-        // logMessage("texture image memory freed");
-
-        // vkDestroyImage(device, textImage, allInOne.pAllocationCallbacks);
-        // logMessage("texture image destroyed");
-
-        // vkFreeMemory(device, textImageMem, allInOne.pAllocationCallbacks);
-        // logMessage("texture image memory freed");
+        unloadAllTexture();
         /*fall through*/
 
+        case createTextureImageViewF:
         case createTextureImageF:
-        destroyedFrameBuffer(&device, imageCount, swapchainFramebuffer);
+        destroyedFrameBuffer(imageCount, swapchainFramebuffer);
         SDL_free(swapchainFramebuffer);
         logMessage("framebuffer destroyed");
         /*fall through*/
 
         case createFrameBufferF:
-        vkDestroyImageView(device, depthImageView, allInOne.pAllocationCallbacks);
-        logMessage("depth image view destroyed");
+        // vkDestroyImageView(device, depthImageView, allInOne.pAllocationCallbacks);
+        // logMessage("depth image view destroyed");
 
-        vkDestroyImage(device, depthImage, allInOne.pAllocationCallbacks);
-        logMessage("depth image destroyed");
+        // vkDestroyImage(device, depthImage, allInOne.pAllocationCallbacks);
+        // logMessage("depth image destroyed");
 
-        vkFreeMemory(device, depthImageMemory, allInOne.pAllocationCallbacks);
-        logMessage("depth image memory freed");
+        // vkFreeMemory(device, depthImageMemory, allInOne.pAllocationCallbacks);
+        // logMessage("depth image memory freed");
         /*fall through*/
 
         case createDepthResouresF:

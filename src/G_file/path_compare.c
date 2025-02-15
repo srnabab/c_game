@@ -14,6 +14,26 @@ PathType pathCompare(char * buffer)
     {
         return FontPng1;
     }
+    else if ((SDL_strcmp(buffer, "[DepthImage]") == 0))
+    {
+        return DepthImage;
+    }
+    else if ((SDL_strcmp(buffer, "[CustomePath1]") == 0))
+    {
+        return CustomePath1;
+    }
+    else if ((SDL_strcmp(buffer, "[CustomePath2]") == 0))
+    {
+        return CustomePath2;
+    }
+    else if ((SDL_strcmp(buffer, "[CustomePath3]") == 0))
+    {
+        return CustomePath3;
+    }
+    else if ((SDL_strcmp(buffer, "[CustomePath4]") == 0))
+    {
+        return CustomePath4;
+    }
     else if ((SDL_strcmp(buffer, "[LogPath]") == 0))
     {
         return LogPath;

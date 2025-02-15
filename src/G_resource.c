@@ -3,6 +3,8 @@
 
 #include "vk_code_h/vk_texture.h"
 #include "vk_code_h/vk_struct.h"
+#include "vk_code_h/vk_depth.h"
+#include "vk_code_h/vk_image.h"
 
 static G_Texture_P globalTexture[10];
 
@@ -50,6 +52,7 @@ bool loadTexture(PathType path, VkFormat format, VkImageAspectFlags flags, const
 
     Uint8 channel;
     void * pixels = (void*)readPNG(path, &globalTexture[i].source_width, &globalTexture[i].source_height, &channel);
+    if (pixels == NULL) return false;
     VkDeviceSize imageSize = globalTexture[i].source_width * globalTexture[i].source_height * channel;
     globalTexture[i].format = format;
 
@@ -63,136 +66,157 @@ bool loadTexture(PathType path, VkFormat format, VkImageAspectFlags flags, const
 
     return true;
 }
-G_Texture_P const * getTextureByName(const char * innerName)
+bool loadDepthResource(const char * innerName)
 {
-    for (int i = 0;i < 10;i++)
+    int i;
+    for (i = 0;i < 10;i++)    
     {
-        if (SDL_strcmp(innerName, globalTexture[i].innerName) == 0)
-        {
-            globalTexture[i].refCount++;
+        if (globalTexture[i].pathType == None) break;
+    }
 
-            return globalTexture + i;
+    VkFormat depthFormat;
+    findDepthFormat(VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT, &depthFormat);
+    
+    createImage(allInOne.pExtent2D->width, allInOne.pExtent2D->height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &globalTexture[i].image, &globalTexture[i].imageMem);
+
+    createImageView(&globalTexture[i].image, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, &globalTexture[i].imageView);
+
+    transitionImageLayout(&globalTexture[i].image, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+
+    globalTexture[i].source_width = allInOne.pExtent2D->width;
+    globalTexture[i].source_height = allInOne.pExtent2D->height;
+    globalTexture[i].format = depthFormat;
+    SDL_strlcpy(globalTexture[i].innerName, innerName, 16);
+    globalTexture[i].pathType = DepthImage;
+
+    return true;
+}
+G_Texture_P const * getTexture(const char * innerName, PathType type)
+{
+    int i;
+    if (innerName)
+    {
+        for (i = 0;i < 10;i++)
+        {
+            if (SDL_strcmp(innerName, globalTexture[i].innerName) == 0) break;
+        }
+    }
+    else
+    {
+        for (i = 0;i < 10;i++)
+        {
+            if (globalTexture[i].pathType == type) break;
         }
     }
 
-    return NULL;
+    if (i == 10) return NULL;
+
+    globalTexture[i].refCount++;
+
+    return globalTexture + i;
 }
-void deRefTexture(G_Texture_P const * pTexture_P)
+static G_Texture_P * innerGetTexture(PathType type)
 {
-    if (pTexture_P->refCount == 0) return;
-
-
-    for (int i = 0;i < 10;i++)
+    int i;
+    for (i = 0;i < 10;i++)
     {
-        if (globalTexture + i == pTexture_P)
-        {
-            SDL_LockMutex(textureMutex);
-            globalTexture[i].refCount--;
-            SDL_UnlockMutex(textureMutex);
-
-            break;
-        }
+        if (globalTexture[i].pathType == type) break;
     }
+
+    if (i == 10) return NULL;
+
+    globalTexture[i].refCount++;
+
+    return globalTexture + i;
 }
-bool unloadTexture(const char * innerName)
+bool deRefTexture(G_Texture_P const * pTexture_P, PathType type)
 {
-    for (int i = 0;i < 10;i++)
+    if (pTexture_P)
     {
-        if (SDL_strcmp(innerName, globalTexture[i].innerName) == 0)
+        if (pTexture_P->refCount == 0) 
         {
-            if (globalTexture[i].refCount == 0)
+            unloadTexture(NULL, pTexture_P->pathType);
+            return true;
+        }
+
+        for (int i = 0;i < 10;i++)
+        {
+            if (globalTexture + i == pTexture_P)
             {
-                vkFreeMemory(*allInOne.pDevice, globalTexture[i].imageMem, allInOne.pAllocationCallbacks);
-                vkDestroyImageView(*allInOne.pDevice, globalTexture[i].imageView, allInOne.pAllocationCallbacks);
-                vkDestroyImage(*allInOne.pDevice, globalTexture[i].image, allInOne.pAllocationCallbacks);
-                emptyTexture(globalTexture + i);
+                SDL_LockMutex(textureMutex);
+                globalTexture[i].refCount--;
+                SDL_UnlockMutex(textureMutex);
 
-                return true;
+                break;
             }
+        }
+    }
+    else
+    {
+        G_Texture_P * tempTexture = innerGetTexture(type);
+        
+        if (tempTexture->refCount == 0) 
+        {
+            unloadTexture(NULL, tempTexture->pathType);
+            return true;
+        }
 
-            return false;
+        for (int i = 0;i < 10;i++)
+        {
+            if (globalTexture + i == tempTexture)
+            {
+                SDL_LockMutex(textureMutex);
+                globalTexture[i].refCount--;
+                SDL_UnlockMutex(textureMutex);
+
+                break;
+            }
         }
     }
 
     return false;
 }
-// bool setDescriptorSet(G_DescriptorSetLayoutConfigCreateInfo * pCreateInfo)
-// {
-//     if (pCreateInfo == NULL)
-//         return false;
+bool unloadTexture(const char * innerName, PathType type)
+{
+    int i;
+    if (innerName)
+    {
+        for (i = 0;i < 10;i++)
+        {
+            if (SDL_strcmp(innerName, globalTexture[i].innerName) == 0) break;
+        }
+    }
+    else
+    {
+        for (i = 0;i < 10;i++)
+        {
+            if (globalTexture[i].pathType == type) break;
+        }
+    }
 
-//     int i;
-//     int descriptorSetCount = sizeof(globalDescriptorSet) / sizeof(G_DescriptorSet);
+    if (i == 10) return false;
 
-//     for (i = 0;i < descriptorSetCount;i++)
-//     {
-//         if (globalDescriptorSet[i].descriptorSet == VK_NULL_HANDLE)
-//         {
-//             globalDescriptorSet[i].config = (G_DescriptorSetLayoutConfig *)SDL_malloc(sizeof(G_DescriptorSetLayoutConfig));
-//             globalDescriptorSet[i].config->createInfo = (G_DescriptorSetLayoutConfigCreateInfo *)SDL_malloc(sizeof(G_DescriptorSetLayoutConfigCreateInfo));
-//             globalDescriptorSet[i].config->binding = (VkDescriptorSetLayoutBinding *)SDL_malloc(sizeof(VkDescriptorSetLayoutBinding) * pCreateInfo->bindingCount);
+    if (globalTexture[i].refCount == 0)
+    {
+        vkFreeMemory(*allInOne.pDevice, globalTexture[i].imageMem, allInOne.pAllocationCallbacks);
+        vkDestroyImageView(*allInOne.pDevice, globalTexture[i].imageView, allInOne.pAllocationCallbacks);
+        vkDestroyImage(*allInOne.pDevice, globalTexture[i].image, allInOne.pAllocationCallbacks);
+        emptyTexture(globalTexture + i);
 
-//             globalDescriptorSet[i].config->createInfo->bindingCount = pCreateInfo->bindingCount;
+        return true;
+    }
 
-//             for (int j = 0;j < pCreateInfo->bindingCount;j++)
-//             {
-//                 globalDescriptorSet[i].config->createInfo->type[j] = pCreateInfo->type[j];
-//                 globalDescriptorSet[i].config->createInfo->setBinding[j] = pCreateInfo->setBinding[j];
-//                 globalDescriptorSet[i].config->createInfo->descriptorCount[j] = pCreateInfo->descriptorCount[j];
-//             }
-
-//             createDescriptorSetLayout(&allInOne.pDevice, pCreateInfo->bindingCount, globalDescriptorSet[i].config->binding, 0, &globalDescriptorSet[i].descriptorSetLayout);
-//             createDescriptorPool(&allInOne.pDevice, pCreateInfo->bindingCount, globalDescriptorSet[i].config->poolSize, 3, &globalDescriptorSet[i].descriptorSet);
-//         }
-//     }
-// }
-// bool loadTexture(PathType type, const char * innerName, Uint8 descriptorSetIndex, VkFramebuffer ** ppFrameBuffer)
-// {
-//     if (descriptorSetIndex < 0 || descriptorSetIndex >= sizeof(globalDescriptorSet) / sizeof(G_DescriptorSet) || globalDescriptorSet[descriptorSetIndex].descriptorSet == VK_NULL_HANDLE)
-//         return false;
-
-//     int textureCount = sizeof(globalTexture) / sizeof(G_Texture);
-
-//     SDL_LockMutex(textureMutex);
-
-//     for (int i = 0;i < textureCount;i++)
-//     {
-//         if (globalTexture[i].pathType == None)
-//         {
-//             Uint8 channel;
-            
-//             res = readPNG(type, &globalTexture[i].source_width, &globalTexture[i].source_height, &channel);
-
-//             if (res == NULL)
-//             {
-//                 globalTexture[i].source_width = 0;
-//                 globalTexture[i].source_height = 0;
-//                 return false;
-//             }
-
-//             VkFormat format = getVulkanFormat(channel);
-
-//             if (format == VK_FORMAT_UNDEFINED)
-//             {
-//                 globalTexture[i].source_width = 0;
-//                 globalTexture[i].source_height = 0;
-//                 SDL_free(res);
-//                 return false;
-//             }
-
-//             createTextureImage(allInOne.pPhysicalDevice, allInOne.pDevice, &allInOne.commandPool, &allInOne.graphicQueue, type, format, &globalTexture[i].image, &globalTexture[i].imageMem);
-//             createTextureImageView(allInOne.pDevice, &globalTexture[i].image, format, VK_IMAGE_ASPECT_COLOR_BIT, &globalTexture[i].imageView);
-
-//             globalTexture[i].channel = channel;
-//             globalTexture[i].descriptorSetIndex = descriptorSetIndex;
-//             globalTexture[i].pathType = type;
-//             globalTexture[i].ppFrameBuffer = ppFrameBuffer;
-
-//             SDL_strlcpy(globalTexture[i].innerName, innerName, sizeof(globalTexture[i].innerName));
-//             return true;
-//         }
-//     }
-//     SDL_UnlockMutex(textureMutex);
-
-//     return false;
-// }
+    return false;
+}
+void unloadAllTexture(void)
+{
+    for (int i = 0;i < 10;i++)
+    {
+        if (globalTexture[i].pathType != None)
+        {
+            vkFreeMemory(*allInOne.pDevice, globalTexture[i].imageMem, allInOne.pAllocationCallbacks);
+            vkDestroyImageView(*allInOne.pDevice, globalTexture[i].imageView, allInOne.pAllocationCallbacks);
+            vkDestroyImage(*allInOne.pDevice, globalTexture[i].image, allInOne.pAllocationCallbacks);
+        }
+    }
+}

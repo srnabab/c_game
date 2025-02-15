@@ -211,6 +211,46 @@ static bool useTexelBuffer(VkDescriptorType type)
 
     return false;
 }
+static int getShaderStorageBufferIndex(VkBuffer * pBufferAddress)
+{
+    static void ** ptrs = NULL;
+    static int8_t count = 0;
+    static int8_t * enterCount = NULL;
+    int i;
+
+    if (pBufferAddress == NULL)
+    {
+        SDL_free(ptrs);
+        SDL_free(enterCount);
+        return 2;
+    }
+
+    for (i = 0;i < count;i++)
+    {
+        if (ptrs[i] == pBufferAddress)
+        {
+            enterCount[i]++;
+            if (enterCount[i] == 2) return 0;
+            if (enterCount[i] == 3) return 0;
+            if (enterCount[i] == 4) return 1;
+        }
+    }
+
+    if (i == count)
+    {
+        count++;
+        ptrs = (void**)SDL_realloc(ptrs, count * sizeof(void*));
+        enterCount = (int8_t*)SDL_realloc(enterCount, count * sizeof(int8_t*));
+
+        ptrs[i] = pBufferAddress;
+        enterCount[i] = 0;
+        enterCount[i]++;
+
+        return 1;
+    }
+
+    return 2;
+}
 void updateDescriptorSets(G_DescriptorSet_Update * pUpdate, Uint32 updateCount)
 {
     int i, j;
@@ -225,9 +265,17 @@ void updateDescriptorSets(G_DescriptorSet_Update * pUpdate, Uint32 updateCount)
                 Uint32 offset = j * updateCount;
                 ppCreateInfo[i + offset] = SDL_malloc(sizeof(VkDescriptorBufferInfo));
                 VkDescriptorBufferInfo * temp = (VkDescriptorBufferInfo *)(ppCreateInfo[i + offset]);
-                temp->buffer = pUpdate[i].bufferImage.pBuffer->pBuffer[j];
-                temp->offset = pUpdate[i].bufferImage.pBuffer->offset;
-                temp->range = pUpdate[i].bufferImage.pBuffer->range;
+                if (pUpdate[i].descriptorType == VK_DESCRIPTOR_TYPE_STORAGE_BUFFER)
+                {
+                    temp->buffer = pUpdate[i].bufferImage.Buffer.pBuffer[getShaderStorageBufferIndex(pUpdate[i].bufferImage.Buffer.pBuffer)];
+                }
+                else
+                {
+                    temp->buffer = pUpdate[i].bufferImage.Buffer.pBuffer[j];
+                }
+
+                temp->offset = pUpdate[i].bufferImage.Buffer.offset;
+                temp->range = pUpdate[i].bufferImage.Buffer.range;
 
                 pWriteDescriptorSets[i + offset].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                 pWriteDescriptorSets[i + offset].pNext = NULL;
@@ -248,9 +296,9 @@ void updateDescriptorSets(G_DescriptorSet_Update * pUpdate, Uint32 updateCount)
                 Uint32 offset = j * updateCount;
                 ppCreateInfo[i + offset] = SDL_malloc(sizeof(VkDescriptorImageInfo));
                 VkDescriptorImageInfo * temp = (VkDescriptorImageInfo *)(ppCreateInfo[i + offset]);
-                temp->sampler = pUpdate[i].bufferImage.pTexture->sampler;
-                temp->imageView = pUpdate[i].bufferImage.pTexture->pParent->imageView;
-                temp->imageLayout = pUpdate[i].bufferImage.pTexture->layout;
+                temp->sampler = pUpdate[i].bufferImage.Texture.sampler;
+                temp->imageView = pUpdate[i].bufferImage.Texture.pParent->imageView;
+                temp->imageLayout = pUpdate[i].bufferImage.Texture.layout;
 
                 pWriteDescriptorSets[i + offset].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                 pWriteDescriptorSets[i + offset].pNext = NULL;
@@ -270,7 +318,7 @@ void updateDescriptorSets(G_DescriptorSet_Update * pUpdate, Uint32 updateCount)
             {
                 Uint32 offset = j * updateCount;
                 ppCreateInfo[i + offset] = SDL_malloc(sizeof(VkBufferView));
-                ppCreateInfo[i + offset] = (void*)&pUpdate[i].bufferImage.pTexelBuffer->pBufferView[j];
+                ppCreateInfo[i + offset] = (void*)&pUpdate[i].bufferImage.TexelBuffer.pBufferView[j];
 
                 pWriteDescriptorSets[i + offset].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                 pWriteDescriptorSets[i + offset].pNext = NULL;
@@ -293,6 +341,7 @@ void updateDescriptorSets(G_DescriptorSet_Update * pUpdate, Uint32 updateCount)
     }
     SDL_free(ppCreateInfo);
     SDL_free(pWriteDescriptorSets);
+    getShaderStorageBufferIndex(NULL);
 }
 // void createGraphicDescriptorSets(VkDevice * pDevice, VkDescriptorSetLayout * pDescriptorLayout, VkDescriptorPool * pDescriptorPool, VkDescriptorSet ** ppDescriptorSets)
 // {

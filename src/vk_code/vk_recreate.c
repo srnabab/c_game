@@ -72,14 +72,14 @@ void recreateSwapchain()
 {
     FuncCode code = recreateSwapchainF; 
     VkDevice * pDevice = allInOne.pDevice;
-    VkPhysicalDevice * pPhysicalDevice = allInOne.pPhysicalDevice;
+    // VkPhysicalDevice * pPhysicalDevice = allInOne.pPhysicalDevice;
     //printf("wait\n");
     //printf("pDevice: %p\n", allInOne.pDevice);
     resultVulkan(vkDeviceWaitIdle(*pDevice), code, 0);
     //printf("wait done\n");
     
     // SDL_Log("ppSwaapchainFramebuffer: %p\n", allInOne.ppSwapchainFramebuffer);
-    destroyedFrameBuffer(pDevice, *allInOne.pImageCount, *allInOne.ppSwapchainFramebuffer);
+    destroyedFrameBuffer(*allInOne.pImageCount, *allInOne.ppSwapchainFramebuffer);
     SDL_free(*allInOne.ppSwapchainFramebuffer);
     *allInOne.ppSwapchainFramebuffer = NULL;
 
@@ -89,12 +89,14 @@ void recreateSwapchain()
     SDL_free(*allInOne.ppSwapchainImages);
     *allInOne.ppSwapchainImages = NULL;
 
-    vkDestroyImageView(*pDevice, *allInOne.pDepthImageView, NULL);
-    *allInOne.pDepthImageView = NULL;
-    vkDestroyImage(*pDevice, *allInOne.pDepthImage, NULL);
-    *allInOne.pDepthImage = NULL;
-    vkFreeMemory(*pDevice, *allInOne.pDepthImageMem, NULL);
-    *allInOne.pDepthImageMem = NULL;
+    // vkDestroyImageView(*pDevice, *allInOne.pDepthImageView, NULL);
+    // *allInOne.pDepthImageView = NULL;
+    // vkDestroyImage(*pDevice, *allInOne.pDepthImage, NULL);
+    // *allInOne.pDepthImage = NULL;
+    // vkFreeMemory(*pDevice, *allInOne.pDepthImageMem, NULL);
+    // *allInOne.pDepthImageMem = NULL;
+
+    unloadTexture("depth", None);
     
     //cleanupSwapchain(allInOne.pDevice, *allInOne.ImageCount, *allInOne.pSwapchainFramebuffer, *allInOne.pSwapchainImageViews, allInOne.pSwapchain);
     //printf("imageCOunt: %u\n", *allInOne.ImageCount);
@@ -110,10 +112,13 @@ void recreateSwapchain()
 
     createSwapchainImage();
     createImageViews(allInOne.ppSwapchainImages, *allInOne.pImageCount, allInOne.pSurfaceFormat->format, VK_IMAGE_ASPECT_COLOR_BIT, allInOne.ppSwapchainImageViews);
-    createDepthResoures(pPhysicalDevice, pDevice, allInOne.pExtent2D, allInOne.pGraphicCommandPool, allInOne.pGraphicQueue, allInOne.pDepthImage, allInOne.pDepthImageMem, allInOne.pDepthImageView);
+
+    loadDepthResource("depth");
     // SDL_Log("depth resoures created\n");
-    createFrameBuffer(pDevice, allInOne.pExtent2D, *allInOne.pImageCount, *allInOne.ppSwapchainImageViews, allInOne.pDepthImageView, allInOne.pRenderPass, allInOne.ppSwapchainFramebuffer);
+    createFrameBuffer(*allInOne.pImageCount, *allInOne.ppSwapchainImageViews, &getTexture(NULL, DepthImage)->imageView, allInOne.pRenderPass, allInOne.ppSwapchainFramebuffer);
     // SDL_Log("swapchain framebuffer created\n");
+
+    deRefTexture(NULL, DepthImage);
     
     logMessage("recreate swapchain");
 }

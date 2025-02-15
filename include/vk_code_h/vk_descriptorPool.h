@@ -15,6 +15,7 @@ extern void SDLCALL createParticleDescriptorSets(VkDevice * pDevice, VkBuffer **
 extern void SDLCALL updateComputeDescriptorSets(VkDevice * pDevice, VkBuffer (*ppUniformBuffers)[2], VkBuffer (*ppShaderStorageBuffers)[2], VkDescriptorSet ** ppDescriptorSets);
 extern void SDLCALL createComputeDescriptorSets(VkDevice * pDevice, VkBuffer ** ppUniformBuffers, VkBuffer ** ppShaderStorageBuffers, VkDescriptorSetLayout * pDescriptorLayout, VkDescriptorPool * pDescriptorPool, VkDescriptorSet ** ppDescriptorSets);
 extern void SDLCALL createDescriptorSets(VkDevice * pDevice, VkBuffer ** ppGraphicsUniformBuffers, VkBuffer ** ppComputeUniformBuffers, VkBuffer ** ppShaderStorageBuffers, VkDescriptorSetLayout * pDescriptorLayout, VkDescriptorPool * pDescriptorPool, VkDescriptorSet ** ppDescriptorSets, VkImageView * pTextureImageView, VkSampler * pTextureSampler);
+extern void SDLCALL updateDescriptorSets(G_DescriptorSet_Update * pUpdate, Uint32 updateCount);
 
 #include "SDL3/SDL_close_code.h"
 

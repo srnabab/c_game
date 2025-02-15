@@ -6,12 +6,12 @@
 
 extern VK_ALL allInOne;
 
-void createFrameBuffer(VkDevice * pDevice, VkExtent2D * pExtent2D, uint32_t imageCount, VkImageView * pSwapchainImageView, VkImageView * pDepthImageView, VkRenderPass * pRenderPass, VkFramebuffer ** pSwapchainFramebuffer)
+void createFrameBuffer(uint32_t imageCount, VkImageView * pSwapchainImageView, VkImageView const * pDepthImageView, VkRenderPass * pRenderPass, VkFramebuffer ** pSwapchainFramebuffer)
 {
     FuncCode code = createFrameBufferF;
 
     *pSwapchainFramebuffer = (VkFramebuffer *)SDL_calloc(imageCount, sizeof(VkFramebuffer));
-    logMessage("framebuffer width: %u, height: %u\n", pExtent2D->width, pExtent2D->height);
+    logMessage("framebuffer width: %u, height: %u\n", allInOne.pExtent2D->width, allInOne.pExtent2D->height);
 
     for (uint32_t i = 0;i < imageCount;i++)
     {
@@ -24,19 +24,19 @@ void createFrameBuffer(VkDevice * pDevice, VkExtent2D * pExtent2D, uint32_t imag
         framebufferInfo.renderPass = *pRenderPass;
         framebufferInfo.attachmentCount = 2;
         framebufferInfo.pAttachments = attachments;
-        framebufferInfo.width = pExtent2D->width;
-        framebufferInfo.height = pExtent2D->height;
+        framebufferInfo.width = allInOne.pExtent2D->width;
+        framebufferInfo.height = allInOne.pExtent2D->height;
         framebufferInfo.layers = 1;
 
-        resultVulkan(vkCreateFramebuffer(*pDevice, &framebufferInfo, allInOne.pAllocationCallbacks, &((*pSwapchainFramebuffer)[i])), code, 0);
+        resultVulkan(vkCreateFramebuffer(*allInOne.pDevice, &framebufferInfo, allInOne.pAllocationCallbacks, &((*pSwapchainFramebuffer)[i])), code, 0);
     }
 
     //printf("swapchain framebuffer created\n");
 }
-void destroyedFrameBuffer(VkDevice * pDevice, uint32_t imageCount, VkFramebuffer * pSwapchainFramebuffer)
+void destroyedFrameBuffer(uint32_t imageCount, VkFramebuffer * pSwapchainFramebuffer)
 {
     for (uint32_t i = 0;i < imageCount;i++)
     {
-        vkDestroyFramebuffer(*pDevice, pSwapchainFramebuffer[i], allInOne.pAllocationCallbacks);
+        vkDestroyFramebuffer(*allInOne.pDevice, pSwapchainFramebuffer[i], allInOne.pAllocationCallbacks);
     }
 } 

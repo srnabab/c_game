@@ -95,8 +95,6 @@ typedef struct _VK_ALL
     VkCommandPool * pComputeCommandPool;
     VkCommandPool * pTransferCommandPool;
 
-    VkFormat * pDepthFormat;
-
     VkExtent2D * pExtent2D;
     VkExtent2D * pOldExtent2D;
     Uint32 * pImageCount;
@@ -120,10 +118,11 @@ typedef struct _VK_ALL
     VkImage ** ppSwapchainImages;
     VkImageView ** ppSwapchainImageViews;
     VkFramebuffer ** ppSwapchainFramebuffer;
-    
-    VkImage * pDepthImage;
-    VkImageView * pDepthImageView;
-    VkDeviceMemory * pDepthImageMem;
+
+    // VkFormat * pDepthFormat;
+    // VkImage * pDepthImage;
+    // VkImageView * pDepthImageView;
+    // VkDeviceMemory * pDepthImageMem;
 
     VkBuffer * pVertexBuffer;
     Uint32 maxVerticesCount;

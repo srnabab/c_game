@@ -635,6 +635,11 @@ int generatePath(int argc, char * argv[])
         {"Font1", ""},
         {"FontHashTable1", ""},
         {"FontPng1", ""},
+        {"DepthImage", ""},
+        {"CustomePath1", ""},
+        {"CustomePath2", ""},
+        {"CustomePath3", ""},
+        {"CustomePath4", ""},
         {"LogPath", "log"SEPRATOR"log0.txt"},
         {"PathPath", "Path"},
     };

@@ -200,12 +200,12 @@ void createPipelineLayout(VkDevice * pDevice, uint32_t setLayoutCount, VkDescrip
 
     //printf("pipeLayout created\n");
 }
-void createRenderPass(void)
+void createRenderPass(VkFormat surfaceFormat, VkFormat depthFormat)
 {
     FuncCode code = createRenderPassF;
     VkAttachmentDescription colorAttachment = {};
     colorAttachment.flags = 0;
-    colorAttachment.format = allInOne.pSurfaceFormat->format;
+    colorAttachment.format = surfaceFormat;
     colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
     colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -220,7 +220,7 @@ void createRenderPass(void)
 
     VkAttachmentDescription depthAttachment = {};
     depthAttachment.flags = 0;
-    depthAttachment.format = *allInOne.pDepthFormat;
+    depthAttachment.format = depthFormat;
     depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
     depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -254,7 +254,7 @@ void createRenderPass(void)
     dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
     dependency.dependencyFlags = 0;
 
-    VkAttachmentDescription attachments[3] = {colorAttachment, depthAttachment};
+    VkAttachmentDescription attachments[] = {colorAttachment, depthAttachment};
 
     VkRenderPassCreateInfo renderPassCreateInfo = {};
     renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;

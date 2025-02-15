@@ -27,11 +27,8 @@ typedef struct _G_Texture_P G_Texture_P;
 
 struct _G_Texture
 {
-	G_Texture_P * pParent;
-	Uint32 width;
-	Uint32 height;
+	G_Texture_P const * pParent;
 
-	VkDescriptorSet descriptorSet;
 	VkSampler sampler;
 	VkImageLayout layout;
 };
@@ -56,9 +53,9 @@ struct _G_DescriptorSet_Update
 	VkDescriptorType descriptorType;
 	union Buffer_Image
 	{
-		G_Buffer * pBuffer;
-		G_Texture * pTexture;
-		G_Buffer_View * pTexelBuffer;
+		G_Buffer Buffer;
+		G_Texture Texture;
+		G_Buffer_View TexelBuffer;
 	} bufferImage;
 	VkDescriptorSet * pSet;
 	Uint32 binding;
@@ -67,9 +64,11 @@ typedef struct _G_DescriptorSet_Update G_DescriptorSet_Update;
 
 extern void SDLCALL initGlobalTexture(void);
 extern bool SDLCALL loadTexture(PathType path, VkFormat format, VkImageAspectFlags flags, const char * innerName);
-extern G_Texture_P const * SDLCALL getTextureByName(const char * innerName);
-extern void SDLCALL deRefTexture(G_Texture_P const * pTexture_P);
-extern bool SDLCALL unloadTexture(const char * innerName);
+extern G_Texture_P const* SDLCALL getTexture(const char * innerName, PathType type);
+extern bool SDLCALL deRefTexture(G_Texture_P const * pTexture_P, PathType type);
+extern bool SDLCALL unloadTexture(const char * innerName, PathType type);
+extern void SDLCALL unloadAllTexture(void);
+extern bool SDLCALL loadDepthResource(const char * innerName);
 
 #include "SDL3/SDL_close_code.h"
 

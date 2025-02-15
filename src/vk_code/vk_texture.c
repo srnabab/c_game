@@ -78,6 +78,7 @@ void createTextureImageFromMem(void * pixels, Uint32 width, Uint32 height, VkDev
 unsigned char * readPNG(PathType type, Uint32 * pWidth, Uint32 * pHeight, Uint8 * pChannel)
 {
     SDL_IOStream * io = SDL_IOFromFile(getPath(type), "rb");
+    if (io == NULL) return NULL;
     SDL_Surface * png = IMG_LoadPNG_IO(io);
     SDL_CloseIO(io);
 
