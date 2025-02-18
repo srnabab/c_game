@@ -94,6 +94,8 @@ bool loadDepthResource(const char * innerName)
 G_Texture_P const * getTexture(const char * innerName, PathType type)
 {
     int i;
+
+    SDL_LockMutex(textureMutex);
     if (innerName)
     {
         for (i = 0;i < 10;i++)
@@ -113,6 +115,8 @@ G_Texture_P const * getTexture(const char * innerName, PathType type)
 
     globalTexture[i].refCount++;
 
+    SDL_UnlockMutex(textureMutex);
+
     return globalTexture + i;
 }
 static G_Texture_P * innerGetTexture(PathType type)
@@ -131,23 +135,24 @@ static G_Texture_P * innerGetTexture(PathType type)
 }
 bool deRefTexture(G_Texture_P const * pTexture_P, PathType type)
 {
+    SDL_LockMutex(textureMutex);
+
     if (pTexture_P)
     {
-        if (pTexture_P->refCount == 0) 
+        if (pTexture_P->refCount == 0)
         {
-            unloadTexture(NULL, pTexture_P->pathType);
-            return true;
+            SDL_UnlockMutex(textureMutex);
+            return false;
         }
-
+        
         for (int i = 0;i < 10;i++)
         {
             if (globalTexture + i == pTexture_P)
             {
-                SDL_LockMutex(textureMutex);
                 globalTexture[i].refCount--;
                 SDL_UnlockMutex(textureMutex);
 
-                break;
+                return true;
             }
         }
     }
@@ -155,29 +160,32 @@ bool deRefTexture(G_Texture_P const * pTexture_P, PathType type)
     {
         G_Texture_P * tempTexture = innerGetTexture(type);
         
-        if (tempTexture->refCount == 0) 
+        if (tempTexture->refCount == 0)
         {
-            unloadTexture(NULL, tempTexture->pathType);
-            return true;
+            SDL_UnlockMutex(textureMutex);
+            return false;
         }
 
         for (int i = 0;i < 10;i++)
         {
             if (globalTexture + i == tempTexture)
             {
-                SDL_LockMutex(textureMutex);
                 globalTexture[i].refCount--;
                 SDL_UnlockMutex(textureMutex);
 
-                break;
+                return true;
             }
         }
     }
+    
+    SDL_UnlockMutex(textureMutex);
 
     return false;
 }
 bool unloadTexture(const char * innerName, PathType type)
 {
+    SDL_LockMutex(textureMutex);
+
     int i;
     if (innerName)
     {
@@ -205,6 +213,8 @@ bool unloadTexture(const char * innerName, PathType type)
 
         return true;
     }
+
+    SDL_UnlockMutex(textureMutex);
 
     return false;
 }

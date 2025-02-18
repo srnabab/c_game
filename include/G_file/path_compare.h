@@ -45,6 +45,7 @@ typedef enum _PathType
     SettingPng,
     StartPng,
     TextRectangle1Png,
+    H1w1Png,
     MAX_PATH_TYPE = 0x7FFFFFFF
 } PathType;
 

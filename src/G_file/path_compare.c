@@ -158,6 +158,10 @@ PathType pathCompare(char * buffer)
     {
         return TextRectangle1Png;
     }
+    else if ((SDL_strcmp(buffer, "[H1w1Png]") == 0))
+    {
+        return H1w1Png;
+    }
 
     return None;
 }

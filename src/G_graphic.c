@@ -398,9 +398,8 @@ void initVulkan(void)
     logMessage("initializing...");
 
     initGlobalTexture();
-    // sprivReflect(TestShaderFragShader);
-    // SDL_Delay(10000);
-    // exit(0);
+
+    initDescriptorUpdate();
 
     initializeAllInOne();
 
@@ -457,6 +456,7 @@ void initVulkan(void)
 
     createFrameBuffer(imageCount, swapchainImageViews, &depthTexutre->imageView, &renderPass, &swapchainFramebuffer);
 
+    deRefTexture(depthTexutre, None);
     loadTexture(CirclePng, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "circle");
     loadTexture(Loading1Png, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "loading");
     loadTexture(MainFontPng, VK_FORMAT_R8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, "font");
@@ -522,17 +522,19 @@ void initVulkan(void)
     //graphic shader
     graphicDescriptorPoolSize = (VkDescriptorPoolSize*)SDL_malloc(2 * sizeof(VkDescriptorPoolSize));
     graphicDescriptorPoolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    graphicDescriptorPoolSize[0].descriptorCount = 2;
+    graphicDescriptorPoolSize[0].descriptorCount = 6;
     graphicDescriptorPoolSize[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    graphicDescriptorPoolSize[1].descriptorCount = 8;
-    createDescriptorPool(&device, 2, graphicDescriptorPoolSize, 2, &graphicDescriptorPool);
+    graphicDescriptorPoolSize[1].descriptorCount = 18;
+    createDescriptorPool(&device, 2, graphicDescriptorPoolSize, 6, &graphicDescriptorPool);
 
     PathType graphicTypes[] = {TriangleVertShader, TriangleFragShader};
     VkShaderModule * graphicTempModule = NULL;
     char ** entryName = NULL;
-    CreateShaderModulesAndDescriptorSets(graphicTypes, &graphicDescriptorPool, 2, &graphicTempModule, &graphciShaderStageCreateInfo, &graphicDescriptorSetLayout, &graphicPipelineLayout, &graphicDescriptorSets, &entryName);
+    Uint32 graphicSetCount = CreateShaderModulesAndDescriptorSets(graphicTypes, 2, &graphicTempModule, &graphciShaderStageCreateInfo, &graphicDescriptorSetLayout, &graphicPipelineLayout, &entryName);
     vertShaderCode = graphicTempModule[0];
     fragShaderCode = graphicTempModule[1];
+
+    createDescriptorSets(&graphicDescriptorPool, graphicDescriptorSetLayout, graphicSetCount, 3, &graphicDescriptorSets);
 
     createGraphicsPipeline(&device, &extent2D, 2, graphciShaderStageCreateInfo, &graphicPipelineLayout, &renderPass, &graphicPipeline);
 
@@ -548,9 +550,11 @@ void initVulkan(void)
     PathType particleTypes[] = {ParticleVertShader, ParticleFragShader};
     VkShaderModule * particleTempModule = NULL;
     entryName = NULL;
-    CreateShaderModulesAndDescriptorSets(particleTypes, &particleDescriptorPool, 2, &particleTempModule, &particleShaderStageCreateInfo, &particleDescriptorSetLayout, &particlePipelineLayout, &particleDescriptorSets, &entryName);
+    Uint32 particleSetCount = CreateShaderModulesAndDescriptorSets(particleTypes, 2, &particleTempModule, &particleShaderStageCreateInfo, &particleDescriptorSetLayout, &particlePipelineLayout, &entryName);
     particleVertexShaderCode = particleTempModule[0];
     particleFragmentShaderCode = particleTempModule[1];
+
+    createDescriptorSets(&particleDescriptorPool, particleDescriptorSetLayout, particleSetCount, 1, &particleDescriptorSets);
 
     createParticlePipeline(&device, &extent2D, 2, particleShaderStageCreateInfo, &particlePipelineLayout, &renderPass, &particlePipeline);
     freeEntryName(2, entryName);
@@ -566,10 +570,13 @@ void initVulkan(void)
     PathType computeTypes[] = {ParticleCompShader};
     VkShaderModule * computeTempModule = NULL;
     entryName = NULL;
-    CreateShaderModulesAndDescriptorSets(computeTypes, &computeDescriptorPool, 1, &computeTempModule, &computeShaderStageCreateInfo, &computeDescriptorSetLayout, &computePipelineLayout, &computeDescriptorSets, &entryName);
+    Uint32 computeSetCount = CreateShaderModulesAndDescriptorSets(computeTypes, 1, &computeTempModule, &computeShaderStageCreateInfo, &computeDescriptorSetLayout, &computePipelineLayout, &entryName);
     compShaderCode = computeTempModule[0];
     
+    createDescriptorSets(&computeDescriptorPool, computeDescriptorSetLayout, computeSetCount, 1, &computeDescriptorSets);
+
     createComputePipeline(&device, &computePipelineLayout, computeShaderStageCreateInfo, &computePipeline);
+    freeEntryName(1, entryName);
 
     createCommandbufferByBuffering(VK_COMMAND_BUFFER_LEVEL_PRIMARY, &graphicCommandPool, &graphicCommandBuffer);
     createCommandbufferByBuffering(VK_COMMAND_BUFFER_LEVEL_PRIMARY, &presentCommandPool, &presentCommandBuffer);
@@ -583,76 +590,20 @@ void initVulkan(void)
 
     createSemaphoreByBuffering(&computeFinishedSemaphore);
 
-    createFenceByBuffering(&computeInFlightFences);\
-
-    G_DescriptorSet_Update descriptorSetUpdate[8];
-
-    descriptorSetUpdate[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    descriptorSetUpdate[0].binding = 0;
-    descriptorSetUpdate[0].pSet = graphicDescriptorSets;
-    descriptorSetUpdate[0].bufferImage.Buffer = (G_Buffer){graphicUniformBuffers, 0, sizeof(UniformBufferObject)};
-
-    descriptorSetUpdate[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    descriptorSetUpdate[1].binding = 0;
-    descriptorSetUpdate[1].pSet = particleDescriptorSets;
-    descriptorSetUpdate[1].bufferImage.Buffer = (G_Buffer){graphicUniformBuffers, 0, sizeof(UniformBufferObject)};
-
-    descriptorSetUpdate[2].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    descriptorSetUpdate[2].binding = 0;
-    descriptorSetUpdate[2].pSet = computeDescriptorSets;
-    descriptorSetUpdate[2].bufferImage.Buffer = (G_Buffer){computeUniformBuffers, 0, sizeof(ComputeUniformBufferObject)};
+    createFenceByBuffering(&computeInFlightFences);
     
-    descriptorSetUpdate[3].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    descriptorSetUpdate[3].binding = 1;
-    descriptorSetUpdate[3].pSet = graphicDescriptorSets;
-    descriptorSetUpdate[3].bufferImage.Texture = (G_Texture){getTexture(NULL, Loading1Png), textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
-    
-    descriptorSetUpdate[4].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    descriptorSetUpdate[4].binding = 2;
-    descriptorSetUpdate[4].pSet = graphicDescriptorSets;
-    descriptorSetUpdate[4].bufferImage.Texture = (G_Texture){getTexture(NULL, CirclePng), textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
-    
-    descriptorSetUpdate[5].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    descriptorSetUpdate[5].binding = 3;
-    descriptorSetUpdate[5].pSet = graphicDescriptorSets;
-    descriptorSetUpdate[5].bufferImage.Texture = (G_Texture){getTexture(NULL, MainFontPng), textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
-    
-    descriptorSetUpdate[6].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-    descriptorSetUpdate[6].binding = 1;
-    descriptorSetUpdate[6].pSet = computeDescriptorSets;
-    descriptorSetUpdate[6].bufferImage.Buffer = (G_Buffer){shaderStorageBuffers, 0, sizeof(Particle) * PARTICLE_COUNT};
-    
-    descriptorSetUpdate[7].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-    descriptorSetUpdate[7].binding = 2;
-    descriptorSetUpdate[7].pSet = computeDescriptorSets;
-    descriptorSetUpdate[7].bufferImage.Buffer = (G_Buffer){shaderStorageBuffers, 0, sizeof(Particle) * PARTICLE_COUNT};
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, graphicDescriptorSets, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, graphicDescriptorSets + 2, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, graphicDescriptorSets + 4, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, particleDescriptorSets, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, computeDescriptorSets, computeUniformBuffers, 0, sizeof(ComputeUniformBufferObject));
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, graphicDescriptorSets, Loading1Png, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, graphicDescriptorSets + 2, CirclePng, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, graphicDescriptorSets + 4, MainFontPng, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, computeDescriptorSets, shaderStorageBuffers, 0, sizeof(Particle) * PARTICLE_COUNT);
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 2, computeDescriptorSets, shaderStorageBuffers, 0, sizeof(Particle) * PARTICLE_COUNT);
 
-    //graphics
-    // VkImageView tempImageView[3];
-    // tempImageView[0] = getTexture(NULL, Loading1Png)->imageView;
-    // tempImageView[1] = getTexture(NULL, CirclePng)->imageView;
-    // tempImageView[2] = getTexture(NULL, MainFontPng)->imageView;
-    // updateGraphicDescriptorSets(&device, &graphicUniformBuffers, &graphicDescriptorSets, tempImageView, &textureSampler);
-
-    // G_DescriptorSet_Update updates[4] = {};
-    // updates[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    // updates[0].bufferImage.pBuffer->pBuffer = graphicUniformBuffers;
-    // updates[0].bufferImage.pBuffer->offset = 0;
-    // updates[0].bufferImage.pBuffer->range = sizeof(UniformBufferObject);
-    // updates[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    // updates[1].bufferImage.pTexture
-
-    //particle
-    // updateParticleDescriptorSets(&device, &graphicUniformBuffers, &particleDescriptorSets);
-
-    //compute
-    // updateComputeDescriptorSets(&device, &computeUniformBuffers, &shaderStorageBuffers, &computeDescriptorSets);
-
-    updateDescriptorSets(descriptorSetUpdate, 8);
-
-    deRefTexture(NULL, Loading1Png);
-    deRefTexture(NULL, CirclePng);
-    deRefTexture(NULL, MainFontPng);
+    executeUpdateDescriptorSets();
 
     // initializeRecreate();
 
@@ -737,6 +688,8 @@ void cleanVulkan(FuncCode code)
         vkDestroyDescriptorPool(device, graphicDescriptorPool, allInOne.pAllocationCallbacks);
         SDL_free(graphicDescriptorPoolSize);
         logMessage("graphic descriptor pool destroyed");
+
+        deInitDescriptorUpdate();
         /*fall through*/
 
         case createDescriptorPoolF:

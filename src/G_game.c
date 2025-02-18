@@ -202,7 +202,7 @@ bool process_input(void)
                 logMessage("F10");
 
                 SDL_DisplayMode displayMode = {0};
-                
+
                 SDL_GetClosestFullscreenDisplayMode(displayId, allInOne.pExtent2D->width, allInOne.pExtent2D->height, 0, false, &displayMode);
                 SDL_SetWindowFullscreen(window, 1);
                 SDL_SetWindowFullscreenMode(window, &displayMode);
@@ -217,7 +217,7 @@ bool process_input(void)
                 SDL_SetWindowFullscreen(window, 0);
                 allInOne.pOldExtent2D->width = allInOne.pExtent2D->width;
                 allInOne.pOldExtent2D->height = allInOne.pExtent2D->height;
-                
+
                 SDL_SetWindowSize(window, allInOne.pExtent2D->width, allInOne.pExtent2D->height);
                 SDL_RaiseWindow(window);
 

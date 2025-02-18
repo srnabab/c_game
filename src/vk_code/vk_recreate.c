@@ -14,7 +14,7 @@ extern VK_ALL allInOne;
 
 static void newSwapchain(VkDevice * pDevice, VkSurfaceCapabilitiesKHR * pSurfaceCapabilities, VkSurfaceKHR * pSurface, VkSurfaceFormatKHR * pSurfaceFormat, VkExtent2D * pExtent2D, VkPresentModeKHR * pPresentMode, QueueFamilyIndices indices, VkSwapchainKHR * pSwapchain)
 {
-    // FuncCode code = createSwapchainF;
+    FuncCode code = createSwapchainF;
     uint32_t imageCount = pSurfaceCapabilities->minImageCount + 1;
 
     if (pSurfaceCapabilities->maxImageCount > 0 && imageCount > pSurfaceCapabilities->maxImageCount)
@@ -49,7 +49,7 @@ static void newSwapchain(VkDevice * pDevice, VkSurfaceCapabilitiesKHR * pSurface
     createInfo.clipped = VK_TRUE;
     createInfo.oldSwapchain = oldSwapchain;
 
-    uint32_t queueFamilyIndices[3] = {indices.graphicsFamily.familyIndice, indices.presentFamily.familyIndice, indices.computeFamily.familyIndice};
+    uint32_t queueFamilyIndices[] = {indices.graphicsFamily.familyIndice, indices.presentFamily.familyIndice, indices.computeFamily.familyIndice, indices.transferFamily.familyIndice};
     if (indices.graphicsFamily.familyIndice != indices.presentFamily.familyIndice) 
     {
         createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
@@ -63,10 +63,9 @@ static void newSwapchain(VkDevice * pDevice, VkSurfaceCapabilitiesKHR * pSurface
         createInfo.pQueueFamilyIndices = NULL; // Optional
     }
 
-    //resultVulkan(
-        vkCreateSwapchainKHR(*pDevice, &createInfo, NULL, pSwapchain);//, code, 0);
+    resultVulkan(vkCreateSwapchainKHR(*pDevice, &createInfo, allInOne.pAllocationCallbacks, pSwapchain), code, 0);
     
-    vkDestroySwapchainKHR(*pDevice, oldSwapchain, NULL);
+    vkDestroySwapchainKHR(*pDevice, oldSwapchain, allInOne.pAllocationCallbacks);
 }
 void recreateSwapchain()
 {
@@ -75,19 +74,15 @@ void recreateSwapchain()
     // VkPhysicalDevice * pPhysicalDevice = allInOne.pPhysicalDevice;
     //printf("wait\n");
     //printf("pDevice: %p\n", allInOne.pDevice);
+    VkFramebuffer * oldFrameBuffer = *allInOne.ppSwapchainFramebuffer;
+    VkImageView * oldSwapchainImageView = *allInOne.ppSwapchainImageViews;
+    VkImage * oldSwapchainImage = *allInOne.ppSwapchainImages;
+    Uint32 oldImageCount = *allInOne.pImageCount;
+
     resultVulkan(vkDeviceWaitIdle(*pDevice), code, 0);
     //printf("wait done\n");
     
     // SDL_Log("ppSwaapchainFramebuffer: %p\n", allInOne.ppSwapchainFramebuffer);
-    destroyedFrameBuffer(*allInOne.pImageCount, *allInOne.ppSwapchainFramebuffer);
-    SDL_free(*allInOne.ppSwapchainFramebuffer);
-    *allInOne.ppSwapchainFramebuffer = NULL;
-
-    destroyImageViews(*allInOne.ppSwapchainImageViews, *allInOne.pImageCount);
-    SDL_free(*allInOne.ppSwapchainImageViews);
-    *allInOne.ppSwapchainImageViews = NULL;
-    SDL_free(*allInOne.ppSwapchainImages);
-    *allInOne.ppSwapchainImages = NULL;
 
     // vkDestroyImageView(*pDevice, *allInOne.pDepthImageView, NULL);
     // *allInOne.pDepthImageView = NULL;
@@ -119,6 +114,9 @@ void recreateSwapchain()
     // SDL_Log("swapchain framebuffer created\n");
 
     deRefTexture(NULL, DepthImage);
+    destroyedFrameBuffer(oldImageCount, oldFrameBuffer);
+
+    destroyImageViews(oldSwapchainImageView, oldImageCount);
     
     logMessage("recreate swapchain");
 }
