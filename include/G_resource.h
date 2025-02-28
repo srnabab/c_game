@@ -11,7 +11,7 @@ struct _G_Texture_P
 {
 	char innerName[16];
     
-	PathType pathType;
+	Uint32 ID;
 	Uint32 source_width;
 	Uint32 source_height;
 	VkFormat format;
@@ -19,9 +19,13 @@ struct _G_Texture_P
 	VkImage image;
 	VkImageView imageView;
 	VkDeviceMemory imageMem;
+
+	VkDescriptorSet * pDescriptorSet;
 	VkFramebuffer frameBuffer;
 
-	Uint16 refCount;
+	Uint32 * offsets;
+    Uint32 offsetSize;
+	Uint32 refCount;
 };
 typedef struct _G_Texture_P G_Texture_P;
 
@@ -63,12 +67,13 @@ struct _G_DescriptorSet_Update
 typedef struct _G_DescriptorSet_Update G_DescriptorSet_Update;
 
 extern void SDLCALL initGlobalTexture(void);
-extern bool SDLCALL loadTexture(PathType path, VkFormat format, VkImageAspectFlags flags, const char * innerName);
-extern G_Texture_P const* SDLCALL getTexture(const char * innerName, PathType type);
-extern bool SDLCALL deRefTexture(G_Texture_P const * pTexture_P, PathType type);
-extern bool SDLCALL unloadTexture(const char * innerName, PathType type);
-extern void SDLCALL unloadAllTexture(void);
+extern bool SDLCALL loadTexture(PathType path, VkFormat format, VkImageAspectFlags flags, const char * innerName, VkDescriptorSet * pDescriptorSet);
+extern G_Texture_P * SDLCALL getTexture(const char * innerName);
 extern bool SDLCALL loadDepthResource(const char * innerName);
+extern bool SDLCALL textureOffsetsAdd(G_Texture_P * pTexture, Uint32 offset);
+extern void SDLCALL emptyTextureRefCount(void);
+extern bool SDLCALL unloadTexture(const char * innerName);
+extern void SDLCALL unloadAllTexture(void);
 
 #include "SDL3/SDL_close_code.h"
 

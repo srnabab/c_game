@@ -124,21 +124,21 @@ typedef struct _VK_ALL
     // VkImageView * pDepthImageView;
     // VkDeviceMemory * pDepthImageMem;
 
-    VkBuffer * pVertexBuffer;
+    VkBuffer (*pVertexBuffer)[MAX_FRAMES_IN_FLIGHT];
     Uint32 maxVerticesCount;
-    void ** ppVertices;
-    vec3 ** ppVertices_Pos;
-    vec3 ** ppVertices_Color;
-    vec2 ** ppVertices_TexCoord;
+    Vertex ** ppVertices;
+    // vec3 ** ppVertices_Pos;
+    // vec3 ** ppVertices_Color;
+    // vec2 ** ppVertices_TexCoord;
     Uint32 * pVerticesCount;
-    VkDeviceMemory * pVertexBufferMem;
-    void ** ppVertexBufferMemMapped;
+    VkDeviceMemory (*pVertexBufferMem)[MAX_FRAMES_IN_FLIGHT];
+    void* (*ppVertexBufferMemMapped)[MAX_FRAMES_IN_FLIGHT];
 
-    VkBuffer * pIndexBuffer;
+    VkBuffer (*pIndexBuffer)[MAX_FRAMES_IN_FLIGHT];
     Uint16 ** ppIndices;
     Uint32 * pIndicesCount;
-    VkDeviceMemory * pIndexBufferMem;
-    void ** ppIndexBufferMemMapped;
+    VkDeviceMemory (*pIndexBufferMem)[MAX_FRAMES_IN_FLIGHT];
+    void* (*ppIndexBufferMemMapped)[MAX_FRAMES_IN_FLIGHT];
 
     VkSampler * pTextureSampler;
 
@@ -183,7 +183,7 @@ typedef struct _VK_ALL
 
     ImageRotate * pImageRotate;
 
-    G_Texture * pGlobalTexture;
+    G_Texture_P * pGlobalTexture;
 } VK_ALL;
 
 #include "SDL3/SDL_close_code.h"

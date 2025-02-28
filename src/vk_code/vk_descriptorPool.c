@@ -150,10 +150,10 @@ void addDescriptorUpdate_Buffer(VkDescriptorType descriptorType, Uint32 binding,
 
     SDL_UnlockMutex(descriptorSetMutex);
 }
-void addDescriptorUpdate_Texture(VkDescriptorType descriptorType, Uint32 binding, VkDescriptorSet * pSet, PathType type, VkSampler sampler, VkImageLayout layout)
+void addDescriptorUpdate_Texture(VkDescriptorType descriptorType, Uint32 binding, const char *innerName, VkSampler sampler, VkImageLayout layout)
 {
     G_Texture tempTexture;
-    tempTexture.pParent = getTexture(NULL, type);
+    tempTexture.pParent = getTexture(innerName);
     tempTexture.sampler = sampler;
     tempTexture.layout = layout;
 
@@ -163,11 +163,9 @@ void addDescriptorUpdate_Texture(VkDescriptorType descriptorType, Uint32 binding
 
     updates[updatesCount].descriptorType = descriptorType;
     updates[updatesCount].binding = binding;
-    updates[updatesCount].pSet = pSet;
+    updates[updatesCount].pSet = tempTexture.pParent->pDescriptorSet;
     updates[updatesCount].bufferImage.Texture = tempTexture;
     updatesCount++;
-
-    deRefTexture(tempTexture.pParent, None);
 
     SDL_UnlockMutex(descriptorSetMutex);
 }

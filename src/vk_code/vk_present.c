@@ -5,46 +5,31 @@
 #include "vk_code_h/vk_buffer.h"
 #include "vk_code_h/vk_judge.h"
 
+#include "SDL3/SDL_timer.h"
+
 #include "G_log.h"
 
 extern VK_ALL allInOne;
+extern bool offsetDone;
+extern bool vertexCopyDone;
 
-static void drawParticle(void)
+static void drawPic(const char * innerName, Uint32 currentFrame)
 {
-    VkDeviceSize offsets[] = {0};
+    G_Texture_P * tempTexture = getTexture(innerName);
+    if (tempTexture == NULL) return;
 
-    vkCmdBindPipeline((*allInOne.ppGraphicCommandBuffer)[*allInOne.pCurrentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pParticlePipeline);
-
-    vkCmdBindVertexBuffers((*allInOne.ppGraphicCommandBuffer)[*allInOne.pCurrentFrame], 0, 1, &(*allInOne.ppShaderStorageBuffers)[*allInOne.pCurrentFrame], offsets);
-
-    vkCmdBindDescriptorSets((*allInOne.ppGraphicCommandBuffer)[*allInOne.pCurrentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pParticlePipelineLayout, 0,
-    1, &(*allInOne.ppParticleDescriptorSets)[*allInOne.pCurrentFrame], 0, NULL);
-
-    vkCmdDraw((*allInOne.ppGraphicCommandBuffer)[*allInOne.pCurrentFrame], PARTICLE_COUNT, 1, 0, 0);
-}
-static void drawPicture(void)
-{
-    vkCmdBindPipeline((*allInOne.ppGraphicCommandBuffer)[*allInOne.pCurrentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pGraphicPipeline);
-
-    vkCmdPushConstants((*allInOne.ppGraphicCommandBuffer)[*allInOne.pCurrentFrame], *allInOne.pGraphicPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ImageRotate), allInOne.pImageRotate);
-
-    VkBuffer vertexBuffer[] = {*allInOne.pVertexBuffer, *allInOne.pVertexBuffer, *allInOne.pVertexBuffer};
-    VkDeviceSize vertexOffsets[] = {0, allInOne.maxVerticesCount * sizeof(vec3), allInOne.maxVerticesCount * sizeof(vec3) + allInOne.maxVerticesCount * sizeof(vec3)};
-    vkCmdBindVertexBuffers((*allInOne.ppGraphicCommandBuffer)[*allInOne.pCurrentFrame], 0, 3, vertexBuffer, vertexOffsets);
-
-    vkCmdBindIndexBuffer((*allInOne.ppGraphicCommandBuffer)[*allInOne.pCurrentFrame], *allInOne.pIndexBuffer, 0, VK_INDEX_TYPE_UINT16);
-
-    vkCmdBindDescriptorSets((*allInOne.ppGraphicCommandBuffer)[*allInOne.pCurrentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pGraphicPipelineLayout, 0,
-    1, &(*allInOne.ppGraphicDescriptorSets)[*allInOne.pCurrentFrame], 0, NULL);
-
-    //vkCmdDraw((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], PARTICLE_COUNT, 1, 0, 0);
-
-    vkCmdDrawIndexed((*allInOne.ppGraphicCommandBuffer)[*allInOne.pCurrentFrame], 12600, 1, 0, 0, 0);
+    vkCmdBindDescriptorSets((*allInOne.ppGraphicCommandBuffer)[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pGraphicPipelineLayout, 0,
+    1, tempTexture->pDescriptorSet + currentFrame, 0, NULL);
+    
+    for (int i = 0;i < tempTexture->refCount;i++)
+    {
+        vkCmdDrawIndexed((*allInOne.ppGraphicCommandBuffer)[currentFrame], 6, 1, 0, tempTexture->offsets[i], 0);
+    }
 }
 static void recordCommandBuffer_FirstScene(uint32_t imageIndex)
 {
     FuncCode code = recordCommandBufferF;
-    uint32_t * pCurrentFrame = allInOne.pCurrentFrame;
+    uint32_t currentFrame = *allInOne.pCurrentFrame;
 
     VkCommandBufferBeginInfo beginInfo = {};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -52,7 +37,7 @@ static void recordCommandBuffer_FirstScene(uint32_t imageIndex)
     beginInfo.flags = 0;
     beginInfo.pInheritanceInfo = NULL;
 
-    resultVulkan(vkBeginCommandBuffer((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], &beginInfo), code, 0);
+    resultVulkan(vkBeginCommandBuffer((*allInOne.ppGraphicCommandBuffer)[currentFrame], &beginInfo), code, 0);
     //printf("record command buffer begin\n");
 
     VkViewport viewport = {};
@@ -63,14 +48,14 @@ static void recordCommandBuffer_FirstScene(uint32_t imageIndex)
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
 
-    vkCmdSetViewport((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], 0, 1, &viewport);
+    vkCmdSetViewport((*allInOne.ppGraphicCommandBuffer)[currentFrame], 0, 1, &viewport);
 
     VkRect2D scissor = {};
     scissor.offset = (VkOffset2D){0, 0};
     // scissor.extent = (VkExtent2D){200, 200};
     scissor.extent = *allInOne.pExtent2D;
 
-    vkCmdSetScissor((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], 0, 1, &scissor);
+    vkCmdSetScissor((*allInOne.ppGraphicCommandBuffer)[currentFrame], 0, 1, &scissor);
 
     VkOffset2D offset = {0, 0};
     VkRect2D renderArea = {offset, *allInOne.pExtent2D};
@@ -88,58 +73,40 @@ static void recordCommandBuffer_FirstScene(uint32_t imageIndex)
     renderBeginInfo.clearValueCount = 2;
     renderBeginInfo.pClearValues = clearValue;
 
-    vkCmdBeginRenderPass((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], &renderBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBeginRenderPass((*allInOne.ppGraphicCommandBuffer)[currentFrame], &renderBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
     VkDeviceSize offsets[] = {0};
 
-    vkCmdBindPipeline((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pParticlePipeline);
+    vkCmdBindPipeline((*allInOne.ppGraphicCommandBuffer)[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pParticlePipeline);
 
-    vkCmdBindVertexBuffers((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], 0, 1, &(*allInOne.ppShaderStorageBuffers)[*pCurrentFrame], offsets);
+    vkCmdBindVertexBuffers((*allInOne.ppGraphicCommandBuffer)[currentFrame], 0, 1, &(*allInOne.ppShaderStorageBuffers)[currentFrame], offsets);
 
-    vkCmdBindDescriptorSets((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pParticlePipelineLayout, 0,
-    1, &(*allInOne.ppParticleDescriptorSets)[*pCurrentFrame], 0, NULL);
+    vkCmdBindDescriptorSets((*allInOne.ppGraphicCommandBuffer)[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pParticlePipelineLayout, 0,
+    1, &(*allInOne.ppParticleDescriptorSets)[currentFrame], 0, NULL);
 
-    vkCmdDraw((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], PARTICLE_COUNT, 1, 0, 0);
+    vkCmdDraw((*allInOne.ppGraphicCommandBuffer)[currentFrame], PARTICLE_COUNT, 1, 0, 0);
 
-    vkCmdBindPipeline((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pGraphicPipeline);
+    vkCmdBindPipeline((*allInOne.ppGraphicCommandBuffer)[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pGraphicPipeline);
 
-    vkCmdPushConstants((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], *allInOne.pGraphicPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ImageRotate), allInOne.pImageRotate);
+    vkCmdPushConstants((*allInOne.ppGraphicCommandBuffer)[currentFrame], *allInOne.pGraphicPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ImageRotate), allInOne.pImageRotate);
 
-        VkBuffer vertexBuffer[] = {*allInOne.pVertexBuffer, *allInOne.pVertexBuffer, *allInOne.pVertexBuffer};
-    VkDeviceSize vertexOffsets1[] = {0, allInOne.maxVerticesCount * sizeof(vec3), allInOne.maxVerticesCount * sizeof(vec3) + allInOne.maxVerticesCount * sizeof(vec3)};
+
+    VkBuffer vertexBuffer[] = {(*allInOne.pVertexBuffer)[currentFrame]};
+    // VkDeviceSize vertexOffsets1[] = {0, allInOne.maxVerticesCount * sizeof(vec3), allInOne.maxVerticesCount * sizeof(vec3) + allInOne.maxVerticesCount * sizeof(vec3)};
+    vkCmdBindVertexBuffers((*allInOne.ppGraphicCommandBuffer)[currentFrame], 0, 1, vertexBuffer, offsets);
+
+    vkCmdBindIndexBuffer((*allInOne.ppGraphicCommandBuffer)[currentFrame], (*allInOne.pIndexBuffer)[currentFrame], 0, VK_INDEX_TYPE_UINT16);
+
     //loading1 png
-    vkCmdBindVertexBuffers((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], 0, 3, vertexBuffer, vertexOffsets1);
-
-    vkCmdBindIndexBuffer((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], *allInOne.pIndexBuffer, 0, VK_INDEX_TYPE_UINT16);
-
-    vkCmdBindDescriptorSets((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pGraphicPipelineLayout, 0,
-    1, &(*allInOne.ppGraphicDescriptorSets)[*pCurrentFrame], 0, NULL);
-
-    vkCmdDrawIndexed((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], 6, 1, 0, 0, 0);
+    drawPic("loading", currentFrame);
 
     //circle
-    VkDeviceSize vertexOffsets2[] = {4 * sizeof(vec3), allInOne.maxVerticesCount * sizeof(vec3) + 4 * sizeof(vec3), allInOne.maxVerticesCount * sizeof(vec3) + allInOne.maxVerticesCount * sizeof(vec3) + 4 * sizeof(vec2)};
-    vkCmdBindVertexBuffers((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], 0, 3, vertexBuffer, vertexOffsets2);
-
-    vkCmdBindIndexBuffer((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], *allInOne.pIndexBuffer, 0, VK_INDEX_TYPE_UINT16);
-
-    vkCmdBindDescriptorSets((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pGraphicPipelineLayout, 0,
-    1, &(*allInOne.ppGraphicDescriptorSets)[*pCurrentFrame + 2], 0, NULL);
-
-    vkCmdDrawIndexed((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], 11994, 1, 0, 0, 0);
+    drawPic("circle", currentFrame);
 
     // main font png
-    VkDeviceSize vertexOffsets3[] = {8000 * sizeof(vec3), allInOne.maxVerticesCount * sizeof(vec3) + 8000 * sizeof(vec3), allInOne.maxVerticesCount * sizeof(vec3) + allInOne.maxVerticesCount * sizeof(vec3) + 8000 * sizeof(vec2)};
-    vkCmdBindVertexBuffers((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], 0, 3, vertexBuffer, vertexOffsets3);
+    drawPic("font", currentFrame);
 
-    vkCmdBindIndexBuffer((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], *allInOne.pIndexBuffer, 0, VK_INDEX_TYPE_UINT16);
-
-    vkCmdBindDescriptorSets((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pGraphicPipelineLayout, 0,
-    1, &(*allInOne.ppGraphicDescriptorSets)[*pCurrentFrame + 4], 0, NULL);
-
-    vkCmdDrawIndexed((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], 600, 1, 0, 0, 0);
-
-    vkCmdEndRenderPass((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame]);
+    vkCmdEndRenderPass((*allInOne.ppGraphicCommandBuffer)[currentFrame]);
 }
 static void recordComputeCommandBuffer(void)
 {
@@ -249,6 +216,7 @@ static void drawFirstScene(void)
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphore;
 
+    if (vertexCopyDone == false) SDL_Delay(1);
     resultVulkan(vkQueueSubmit(*allInOne.pGraphicQueue, 1, &submitInfo, (*allInOne.ppGraphicInFlightFence)[*allInOne.pCurrentFrame]), queueSumbitF, 0);
 
 
@@ -266,8 +234,84 @@ static void drawFirstScene(void)
 
     resultVulkan(vkQueuePresentKHR(*allInOne.pPresentQueue, &presentInfo), queuePresentF, 0);
     //printf("present queue\n");
+}
+static void recoreCommandBuffer_MenuScene(void)
+{
+    // FuncCode code = recordCommandBufferF;
+    // uint32_t * pCurrentFrame = allInOne.pCurrentFrame;
 
-    *allInOne.pCurrentFrame = (*allInOne.pCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+    // VkCommandBufferBeginInfo beginInfo = {};
+    // beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    // beginInfo.pNext = NULL;
+    // beginInfo.flags = 0;
+    // beginInfo.pInheritanceInfo = NULL;
+
+    // resultVulkan(vkBeginCommandBuffer((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], &beginInfo), code, 0);
+    // //printf("record command buffer begin\n");
+
+    // VkViewport viewport = {};
+    // viewport.x = 0.0f;
+    // viewport.y = 0.0f;
+    // viewport.width = (float)allInOne.pExtent2D->width;
+    // viewport.height = (float)allInOne.pExtent2D->height;
+    // viewport.minDepth = 0.0f;
+    // viewport.maxDepth = 1.0f;
+
+    // vkCmdSetViewport((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], 0, 1, &viewport);
+
+    // VkRect2D scissor = {};
+    // scissor.offset = (VkOffset2D){0, 0};
+    // // scissor.extent = (VkExtent2D){200, 200};
+    // scissor.extent = *allInOne.pExtent2D;
+
+    // vkCmdSetScissor((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], 0, 1, &scissor);
+
+    // VkOffset2D offset = {0, 0};
+    // VkRect2D renderArea = {offset, *allInOne.pExtent2D};
+
+    // VkClearValue clearValue[2];
+    // clearValue[0].color= (VkClearColorValue){{0.0f, 0.0f, 0.0f, 1.0f}};
+    // clearValue[1].depthStencil = (VkClearDepthStencilValue){1.0f, 0};
+
+    // VkRenderPassBeginInfo renderBeginInfo = {};
+    // renderBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    // renderBeginInfo.pNext = NULL;
+    // renderBeginInfo.renderPass = *allInOne.pRenderPass;
+    // renderBeginInfo.framebuffer = (*allInOne.ppSwapchainFramebuffer)[imageIndex];
+    // renderBeginInfo.renderArea = renderArea;
+    // renderBeginInfo.clearValueCount = 2;
+    // renderBeginInfo.pClearValues = clearValue;
+
+    // vkCmdBeginRenderPass((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], &renderBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+    // VkDeviceSize offsets[] = {0};
+
+    // vkCmdBindPipeline((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pParticlePipeline);
+
+    // vkCmdBindVertexBuffers((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], 0, 1, &(*allInOne.ppShaderStorageBuffers)[*pCurrentFrame], offsets);
+
+    // vkCmdBindDescriptorSets((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pParticlePipelineLayout, 0,
+    // 1, &(*allInOne.ppParticleDescriptorSets)[*pCurrentFrame], 0, NULL);
+
+    // vkCmdDraw((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], PARTICLE_COUNT, 1, 0, 0);
+
+    // vkCmdBindPipeline((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pGraphicPipeline);
+
+    // vkCmdPushConstants((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], *allInOne.pGraphicPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ImageRotate), allInOne.pImageRotate);
+
+    // VkBuffer vertexBuffer[] = {*allInOne.pVertexBuffer, *allInOne.pVertexBuffer, *allInOne.pVertexBuffer};
+    // VkDeviceSize vertexOffsets1[] = {0, allInOne.maxVerticesCount * sizeof(vec3), allInOne.maxVerticesCount * sizeof(vec3) + allInOne.maxVerticesCount * sizeof(vec3)};
+    // //loading1 png
+    // vkCmdBindVertexBuffers((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], 0, 3, vertexBuffer, vertexOffsets1);
+
+    // vkCmdBindIndexBuffer((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], *allInOne.pIndexBuffer, 0, VK_INDEX_TYPE_UINT16);
+
+    // vkCmdBindDescriptorSets((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pGraphicPipelineLayout, 0,
+    // 1, &(*allInOne.ppGraphicDescriptorSets)[*pCurrentFrame], 0, NULL);
+
+    // vkCmdDrawIndexed((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], 6, 1, 0, 0, 0);
+
+    // vkCmdEndRenderPass((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame]);
 }
 static void drawMenuScene(void)
 {

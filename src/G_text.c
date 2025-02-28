@@ -8,7 +8,7 @@
 #include "SDL3/SDL_iostream.h"
 #include <unistr.h>
 
-static Hash textHash[HASH_SIZE * 2];
+static TextHash textHash[HASH_SIZE * 2];
 
 bool initTextSystem(void)
 {
@@ -29,7 +29,7 @@ bool initTextSystem(void)
         }
     }
 
-    SDL_ReadIO(fp, textHash, sizeof(Hash) * HASH_SIZE * 2);
+    SDL_ReadIO(fp, textHash, sizeof(TextHash) * HASH_SIZE * 2);
     SDL_CloseIO(fp);
     
     if ((fp = SDL_IOFromFile(getPath(EmojiHashTable), "rb")) == NULL)

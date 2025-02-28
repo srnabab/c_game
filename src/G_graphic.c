@@ -204,20 +204,20 @@ static VkFramebuffer * swapchainFramebuffer = NULL;
 
 static VkSampler textureSampler = NULL;
 
-static VkBuffer vertexBuffer = NULL;
-static VkDeviceMemory vertexBufferMem = NULL;
-static void * vertexBufferMemMapped = NULL;
-static uint32_t verticesCount = 4;
-//three vertices of a triangle and color
-static void * vertices = NULL;
-static vec3 * vertices_Pos = NULL;
-static vec3 * vertices_Color = NULL;
-static vec2 * vertices_TexCoord = NULL;
+static VkBuffer vertexBuffer[MAX_FRAMES_IN_FLIGHT];
+static VkDeviceMemory vertexBufferMem[MAX_FRAMES_IN_FLIGHT];
+static void * vertexBufferMemMapped[MAX_FRAMES_IN_FLIGHT];
+static uint32_t verticesCount = 0;
 
-static VkBuffer indexBuffer = NULL;
-static VkDeviceMemory indexBufferMem = NULL;
-static void * indexBufferMemMapped = NULL;
-static uint32_t indicesCount = 6;
+//three vertices of a triangle and color
+static Vertex * vertices = NULL;
+// static vec3 * vertices_Pos = NULL;
+// static vec3 * vertices_Color = NULL;
+// static vec2 * vertices_TexCoord = NULL;
+
+static VkBuffer indexBuffer[MAX_FRAMES_IN_FLIGHT];
+static VkDeviceMemory indexBufferMem[MAX_FRAMES_IN_FLIGHT];
+static void * indexBufferMemMapped [MAX_FRAMES_IN_FLIGHT];
 static uint16_t * indices_v = NULL;
 
 static VkBuffer graphicUniformBuffers[MAX_FRAMES_IN_FLIGHT];
@@ -333,18 +333,17 @@ static void initializeAllInOne(void)
     // allInOne.pDepthImageMem = &depthImageMemory;
 
     allInOne.pVertexBuffer = &vertexBuffer;
-    // allInOne.maxVerticesCount = (BALLCOUNT + 100) * 4;
+    allInOne.maxVerticesCount = (BALLCOUNT + MAX_CHARACTERS) * 4 * 2;
     allInOne.ppVertices = &vertices;
-    allInOne.ppVertices_Pos = &vertices_Pos;
-    allInOne.ppVertices_Color = &vertices_Color;
-    allInOne.ppVertices_TexCoord = &vertices_TexCoord;
+    // allInOne.ppVertices_Pos = &vertices_Pos;
+    // allInOne.ppVertices_Color = &vertices_Color;
+    // allInOne.ppVertices_TexCoord = &vertices_TexCoord;
     allInOne.pVerticesCount = &verticesCount;
     allInOne.pVertexBufferMem = &vertexBufferMem;
     allInOne.ppVertexBufferMemMapped = &vertexBufferMemMapped;
 
     allInOne.pIndexBuffer = &indexBuffer;
     allInOne.ppIndices = &indices_v;
-    allInOne.pIndicesCount = &indicesCount;
     allInOne.pIndexBufferMem = &indexBufferMem;
     allInOne.ppIndexBufferMemMapped = &indexBufferMemMapped;
 
@@ -398,6 +397,7 @@ void initVulkan(void)
     logMessage("initializing...");
 
     initGlobalTexture();
+    initVertexMutex();
 
     initDescriptorUpdate();
 
@@ -449,25 +449,21 @@ void initVulkan(void)
     createSwapchainImageView(VK_IMAGE_ASPECT_COLOR_BIT);
 
     loadDepthResource("depth");
-    G_Texture_P const * depthTexutre = getTexture(NULL, DepthImage);
+    G_Texture_P const * depthTexutre = getTexture("depth");
     createRenderPass(swapchainFormat, depthTexutre->format);
 
     // createDepthResoures(&depthImage, &depthImageMemory, &depthImageView);
 
     createFrameBuffer(imageCount, swapchainImageViews, &depthTexutre->imageView, &renderPass, &swapchainFramebuffer);
-
-    deRefTexture(depthTexutre, None);
-    loadTexture(CirclePng, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "circle");
-    loadTexture(Loading1Png, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "loading");
-    loadTexture(MainFontPng, VK_FORMAT_R8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, "font");
     
     createTextureSampler(&physicalDevice, &device, &textureSampler);
 
-    vertices = SDL_calloc(BALLCOUNT * 4 + 100 * 4, sizeof(vec3) + sizeof(vec3) + sizeof(vec2));
-    allInOne.maxVerticesCount = (BALLCOUNT + 100) * 4;
-    vertices_Pos = (vec3 *)vertices;
-    vertices_Color = (vec3 *)(vertices + allInOne.maxVerticesCount * sizeof(vec3));
-    vertices_TexCoord = (vec2 *)(vertices + allInOne.maxVerticesCount * (sizeof(vec3) + sizeof(vec3)));
+    // vertices = SDL_calloc((BALLCOUNT * 4 + MAX_CHARACTERS * 4) * 2, sizeof(vec3) + sizeof(vec3) + sizeof(vec2));
+    vertices = (Vertex*)SDL_calloc((BALLCOUNT * 4 + MAX_CHARACTERS * 4) * 2, sizeof(Vertex));
+    allInOne.maxVerticesCount = (BALLCOUNT + MAX_CHARACTERS) * 4 * 2;
+    // vertices_Pos = (vec3 *)vertices;
+    // vertices_Color = (vec3 *)(vertices + allInOne.maxVerticesCount * sizeof(vec3));
+    // vertices_TexCoord = (vec2 *)(vertices + allInOne.maxVerticesCount * (sizeof(vec3) + sizeof(vec3)));
 
     // vertices_Pos[0] = (vec3){-0.5f, -0.5f, 0.0f};
     // vertices_Pos[1] = (vec3){0.5f, -0.5f, 0.0f};
@@ -489,31 +485,30 @@ void initVulkan(void)
     vertices[6] = (Vertex){{1.0f, 1.0f, 0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}};
     vertices[7] = (Vertex){{-0.0f, 1.0f, 0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}};*/
 
-    verticesCount = 4;
-
-    vertexInitialize(-32, -32, 64, 64, 0.0f, false, 0, allInOne.ppVertices_Pos, allInOne.ppVertices_Color, allInOne.ppVertices_TexCoord);
     //positionInitialize(-24, -24, 16, 16, extent2D, &vertices, 1);
 
-    createVertexBuffer(&physicalDevice, &device, &vertexBuffer, &vertexBufferMem, &vertexBufferMemMapped, vertices, BALLCOUNT * 4 + MAX_CHARACTERS * 4);
+    createVertexBuffer(&physicalDevice, &device, vertexBuffer, vertexBufferMem, vertexBufferMemMapped, vertices, (BALLCOUNT * 4 + MAX_CHARACTERS * 4) * 2);
+    createVertexBuffer(&physicalDevice, &device, vertexBuffer + 1, vertexBufferMem + 1, vertexBufferMemMapped + 1, vertices, (BALLCOUNT * 4 + MAX_CHARACTERS * 4) * 2);
+    printf("vertexBuffer: 1 %p, 2 %p\n", vertexBuffer[0], vertexBuffer[1]);
 
     indices_v = (uint16_t *)SDL_calloc(BALLCOUNT * 6 + MAX_CHARACTERS * 6, sizeof(uint16_t));
     indexInitialize(indices_v, BALLCOUNT + MAX_CHARACTERS);
-    indicesCount = 6;
 
-    createIndexBuffer(&physicalDevice, &device, &indexBuffer, &indexBufferMem, &indexBufferMemMapped, indices_v, BALLCOUNT * 6 + MAX_CHARACTERS * 6);
+    createIndexBuffer(&physicalDevice, &device, indexBuffer, indexBufferMem, indexBufferMemMapped, indices_v, BALLCOUNT * 6 + MAX_CHARACTERS * 6);
+    createIndexBuffer(&physicalDevice, &device, indexBuffer + 1, indexBufferMem + 1, indexBufferMemMapped + 1, indices_v, BALLCOUNT * 6 + MAX_CHARACTERS * 6);
 
+    SDL_free(indices_v);
 
-    for (int i = 0;i < MAX_CHARACTERS;i++)
-    {
-        vertexInitialize(-300 + i * 24, -100, 24, 24, 0.1f, true, i + BALLCOUNT, allInOne.ppVertices_Pos, allInOne.ppVertices_Color, allInOne.ppVertices_TexCoord);
-    }
+    // for (int i = 0;i < MAX_CHARACTERS;i++)
+    // {
+    //     vertexInitialize(-300 + i * 24, -100, 24, 24, 0.1f, true, i + BALLCOUNT, allInOne.ppVertices_Pos, allInOne.ppVertices_Color, allInOne.ppVertices_TexCoord);
+    // }
 
     // initializeMovingBuffer(&physicalDevice, &device, &graphicCommandPool, &graphicQueue, &movingStagingBuffer, &movingStagingMemory, &movingBufferMapped, vertices, verticesCount);
 
     createUniformBufferByBuffering(&physicalDevice, &device, &graphicUniformBuffers, &graphicUniformBuffersMemory, &graphicUniformBufferMapped, sizeof(UniformBufferObject));
 
     createUniformBufferByBuffering(&physicalDevice, &device, &computeUniformBuffers, &computeUniformBuffersmemory, &computeUniformBufferMapped, sizeof(ComputeUniformBufferObject));
-
 
     createShaderStorageBuffers(&physicalDevice, &device, &shaderStorageBuffers, &shaderStorageBuffersMem);
 
@@ -592,14 +587,22 @@ void initVulkan(void)
 
     createFenceByBuffering(&computeInFlightFences);
     
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, graphicDescriptorSets, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, graphicDescriptorSets + 2, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, graphicDescriptorSets + 4, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
+    loadTexture(Loading1Png, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "loading", graphicDescriptorSets);
+    loadTexture(CirclePng, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "circle", graphicDescriptorSets + 2);
+    loadTexture(MainFontPng, VK_FORMAT_R8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, "font", graphicDescriptorSets + 4);
+    
+    G_Texture_P const * loadingTexture = getTexture("loading");
+    G_Texture_P const * circleTexture = getTexture("circle");
+    G_Texture_P const * fontTexture = getTexture("font");
+
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, loadingTexture->pDescriptorSet, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, circleTexture->pDescriptorSet, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, fontTexture->pDescriptorSet, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, "loading", textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, "circle", textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, "font", textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, particleDescriptorSets, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, computeDescriptorSets, computeUniformBuffers, 0, sizeof(ComputeUniformBufferObject));
-    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, graphicDescriptorSets, Loading1Png, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, graphicDescriptorSets + 2, CirclePng, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, graphicDescriptorSets + 4, MainFontPng, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, computeDescriptorSets, shaderStorageBuffers, 0, sizeof(Particle) * PARTICLE_COUNT);
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 2, computeDescriptorSets, shaderStorageBuffers, 0, sizeof(Particle) * PARTICLE_COUNT);
 
@@ -788,24 +791,27 @@ void cleanVulkan(FuncCode code)
         /*fall through*/
 
         case createUniformBuffersF:
-        vkUnmapMemory(device, indexBufferMem);
-
-        vkDestroyBuffer(device, indexBuffer, allInOne.pAllocationCallbacks);
-        SDL_free(indices_v);
+        vkDestroyBuffer(device, indexBuffer[0], allInOne.pAllocationCallbacks);
+        vkDestroyBuffer(device, indexBuffer[1], allInOne.pAllocationCallbacks);
         logMessage("index buffer destroyed");
 
-        vkFreeMemory(device, indexBufferMem, allInOne.pAllocationCallbacks);
+        vkFreeMemory(device, indexBufferMem[0], allInOne.pAllocationCallbacks);
+        vkFreeMemory(device, indexBufferMem[1], allInOne.pAllocationCallbacks);
         logMessage("index buffer memory freed");
         /*fall through*/
 
         case createIndexBufferF:
-        vkUnmapMemory(device, vertexBufferMem);
-
-        vkDestroyBuffer(device, vertexBuffer, allInOne.pAllocationCallbacks);
         SDL_free(vertices);
+        
+        vkUnmapMemory(device, vertexBufferMem[1]);
+        vkUnmapMemory(device, vertexBufferMem[0]);
+
+        vkDestroyBuffer(device, vertexBuffer[1], allInOne.pAllocationCallbacks);
+        vkDestroyBuffer(device, vertexBuffer[0], allInOne.pAllocationCallbacks);
         logMessage("vertex buffer destroyed");
 
-        vkFreeMemory(device, vertexBufferMem, allInOne.pAllocationCallbacks);
+        vkFreeMemory(device, vertexBufferMem[0], allInOne.pAllocationCallbacks);
+        vkFreeMemory(device, vertexBufferMem[1], allInOne.pAllocationCallbacks);
         logMessage("vertex buffer memory freed");
         /*fall through*/
 

@@ -6,9 +6,9 @@
 #define offsetof(s, m) (size_t) & (((s *)0)->m)
 
 #define VERTEX_LAYOUT_IN {\
-    {0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0},\
-    {1, 1, VK_FORMAT_R32G32B32_SFLOAT, 0},\
-    {2, 2, VK_FORMAT_R32G32_SFLOAT, 0}\
+    {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, pos)},\
+    {1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color)},\
+    {2, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, texCoord)}\
 }
 
 extern VK_ALL allInOne;
@@ -256,16 +256,8 @@ void createGraphicsPipeline(VkDevice * pDevice, VkExtent2D * pExtent2D, uint32_t
     // configurePipelineVertexInputState(&pipelineVertexInputStateCreateInfo);
     VkVertexInputBindingDescription * pBindingDescription = (VkVertexInputBindingDescription *)SDL_malloc(3 * sizeof(VkVertexInputBindingDescription));
     pBindingDescription[0].binding = 0;
-    pBindingDescription[0].stride = sizeof(vec3);
+    pBindingDescription[0].stride = sizeof(Vertex);
     pBindingDescription[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-    
-    pBindingDescription[1].binding = 1;
-    pBindingDescription[1].stride = sizeof(vec3);
-    pBindingDescription[1].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-    
-    pBindingDescription[2].binding = 2;
-    pBindingDescription[2].stride = sizeof(vec2);
-    pBindingDescription[2].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
     VkVertexInputAttributeDescription pAttributeDescriptions[3] = VERTEX_LAYOUT_IN;
 
@@ -273,7 +265,7 @@ void createGraphicsPipeline(VkDevice * pDevice, VkExtent2D * pExtent2D, uint32_t
     pipelineVertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     pipelineVertexInputStateCreateInfo.pNext = NULL;
     pipelineVertexInputStateCreateInfo.flags = 0;
-    pipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = 3;
+    pipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = 1;
     pipelineVertexInputStateCreateInfo.pVertexBindingDescriptions = pBindingDescription;
     pipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = 3;
     pipelineVertexInputStateCreateInfo.pVertexAttributeDescriptions = pAttributeDescriptions;
@@ -305,7 +297,7 @@ void createGraphicsPipeline(VkDevice * pDevice, VkExtent2D * pExtent2D, uint32_t
     pipelineViewportStateCreateInfo.flags = 0;
     pipelineViewportStateCreateInfo.viewportCount = 1;
     pipelineViewportStateCreateInfo.pViewports = viewport;
-    pipelineViewportStateCreateInfo.scissorCount =1;
+    pipelineViewportStateCreateInfo.scissorCount = 1;
     pipelineViewportStateCreateInfo.pScissors = scissor;
     // configurePipelineViewportsStateCreateInfo(&pipelineViewportStateCreateInfo, pExtent2D);
 

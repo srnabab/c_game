@@ -91,7 +91,7 @@ void recreateSwapchain()
     // vkFreeMemory(*pDevice, *allInOne.pDepthImageMem, NULL);
     // *allInOne.pDepthImageMem = NULL;
 
-    unloadTexture("depth", None);
+    unloadTexture("depth");
     
     //cleanupSwapchain(allInOne.pDevice, *allInOne.ImageCount, *allInOne.pSwapchainFramebuffer, *allInOne.pSwapchainImageViews, allInOne.pSwapchain);
     //printf("imageCOunt: %u\n", *allInOne.ImageCount);
@@ -110,10 +110,9 @@ void recreateSwapchain()
 
     loadDepthResource("depth");
     // SDL_Log("depth resoures created\n");
-    createFrameBuffer(*allInOne.pImageCount, *allInOne.ppSwapchainImageViews, &getTexture(NULL, DepthImage)->imageView, allInOne.pRenderPass, allInOne.ppSwapchainFramebuffer);
+    createFrameBuffer(*allInOne.pImageCount, *allInOne.ppSwapchainImageViews, &getTexture("depth")->imageView, allInOne.pRenderPass, allInOne.ppSwapchainFramebuffer);
     // SDL_Log("swapchain framebuffer created\n");
 
-    deRefTexture(NULL, DepthImage);
     destroyedFrameBuffer(oldImageCount, oldFrameBuffer);
 
     destroyImageViews(oldSwapchainImageView, oldImageCount);

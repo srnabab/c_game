@@ -21,7 +21,7 @@ Uint32 hash_func2(Uint32 utf32)
     return (utf32 * 3344921057U) % HASH_SIZE;
 }
 
-static bool insert(Hash * hash, Uint32 utf32)
+static bool insert(TextHash * hash, Uint32 utf32)
 {
     int pos1 = hash_func1(utf32);
     if (hash[pos1].utf32 == 0) 
@@ -66,12 +66,12 @@ static bool insert(Hash * hash, Uint32 utf32)
     return false;
 }
 
-static bool look_up(Hash * hash, Uint32 utf32)
+static bool look_up(TextHash * hash, Uint32 utf32)
 {
     return (hash[hash_func1(utf32)].utf32 == utf32) | (hash[hash_func2(utf32) + HASH_SIZE].utf32 == utf32);
 }
 
-int find_value(Hash * hash, Uint32 utf32)
+int find_value(TextHash * hash, Uint32 utf32)
 {
     Uint32 pos1 = hash_func1(utf32);
 
@@ -102,7 +102,7 @@ int textureGenerate(const char* fontPath, const char* hashTablePath, const char*
         return -1;
     }
 
-    Hash * hash = (Hash*)SDL_calloc(2 * HASH_SIZE, sizeof(Hash));
+    TextHash * hash = (TextHash*)SDL_calloc(2 * HASH_SIZE, sizeof(TextHash));
 
     FT_Library ft;
     if (FT_Init_FreeType(&ft)) 
@@ -254,7 +254,7 @@ int textureGenerate(const char* fontPath, const char* hashTablePath, const char*
     }
     else
     {
-        SDL_WriteIO(fp, hash, sizeof(Hash) * HASH_SIZE * 2);
+        SDL_WriteIO(fp, hash, sizeof(TextHash) * HASH_SIZE * 2);
         SDL_CloseIO(fp);
         SDL_free(hash);
     }

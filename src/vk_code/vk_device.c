@@ -5,6 +5,10 @@
 #include "G_pop_window.h"
 #include "G_log.h"
 
+#define RTX_2060 0
+#define INTEL_GPU 1
+#define GPU_CHOOSED RTX_2060
+
 extern VK_ALL allInOne;
 
 static Uint64 getPhysicalDeviceTotalMemory(VkPhysicalDeviceMemoryProperties *pPhysicalDeviceMemoryProperties)
@@ -169,9 +173,13 @@ void pickPhysicalDevice(void)
     VkPhysicalDevice * devices = (VkPhysicalDevice *)SDL_malloc(deviceCount * sizeof(VkPhysicalDevice));
     resultVulkan(vkEnumeratePhysicalDevices(*allInOne.pInstance, &deviceCount, devices), code, 1, devices);
 
-	VkPhysicalDevice device = devices[getBestPhysicalDeviceIndex(devices, deviceCount)];
+	// VkPhysicalDevice device = devices[getBestPhysicalDeviceIndex(devices, deviceCount)];xx
+    VkPhysicalDevice device = devices[GPU_CHOOSED];
 	VkPhysicalDeviceFeatures deviceFeatures;
 	vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+
+    if (GPU_CHOOSED) logMessage("device picked: INTEL_GPU");
+    else logMessage("device picked: RTX_2060");
 
 	if (deviceFeatures.geometryShader)
 	{

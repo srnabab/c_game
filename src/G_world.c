@@ -104,7 +104,7 @@ static b2ShapeDef * shapeDefs = NULL;
 
 static b2ShapeId * shapeIds = NULL;
 
-static uint32_t boxCount = 1;
+static uint32_t boxCount = 0;
 
 void createCircle(float x, float y)
 {
@@ -131,6 +131,7 @@ void createCircle(float x, float y)
     shapeIds[index] = b2CreateCircleShape(bodyIds[index], &shapeDefs[index], &dynamicBoxs[index]);
 }
 static bool stepDone = true;
+
 void updateCircle(void)
 {
     if (stepDone)
@@ -141,10 +142,12 @@ void updateCircle(void)
             int32_t temp = *(int32_t*)(ballStack.popFn(&ballStack));
             createCircle(temp + 8, 288);
         }
-        for (uint32_t i = 1;i < boxCount;i++)
+        for (uint32_t i = 0;i < boxCount;i++)
         {
             b2Vec2 position = b2Body_GetPosition(bodyIds[i]);
-            updatePosition((position.x * SCALE_FACTOR_INV - 24.0f) * physicalCoffectY, (position.y * SCALE_FACTOR_INV - 24.0f) * physicalCoffectY, allInOne.ppVertices_Pos, i);
+            // updatePosition((position.x * SCALE_FACTOR_INV - 24.0f) * physicalCoffectY, (position.y * SCALE_FACTOR_INV - 24.0f) * physicalCoffectY, allInOne.ppVertices_Pos, i);
+            texturePosUpdate((position.x * SCALE_FACTOR_INV - 24.0f) * physicalCoffectY, (position.y * SCALE_FACTOR_INV - 24.0f) * physicalCoffectY, *allInOne.ppVertices, getTexture("circle")->offsets, i);
+            // textureVertexInit((position.x * SCALE_FACTOR_INV - 24.0f) * physicalCoffectY, (position.y * SCALE_FACTOR_INV - 24.0f) * physicalCoffectY, 16 * physicalCoffectY, 16 * physicalCoffectY, 0.9, allInOne.pVerticesCount, *allInOne.ppVertices, getTexture("circle"));
         }
         stepDone = false;
         SDL_SignalSemaphore(worldSemaphore);

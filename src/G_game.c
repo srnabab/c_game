@@ -446,6 +446,9 @@ static int test(void * arg)
 extern EmptyStack ballStack;
 extern vec2 UVs[MAX_CHARACTERS][FOUR_POINT];
 
+bool offsetDone = false;
+bool vertexCopyDone = false;
+
 // Update function with a fixed time step
 int update(void * arg)
 {
@@ -466,6 +469,14 @@ int update(void * arg)
     bool sceneCleaned = false;
 
     bool updateVertex = false;
+
+    Uint32 currentFrame;
+    Uint32 preFrame;
+
+    Uint32 vertexStart = 0;
+    Uint32 vertexEnd = *allInOne.pVerticesCount;
+
+    textureVertexInit(-32, -32, 64, 64, 0.0f, allInOne.pVerticesCount, *allInOne.ppVertices, getTexture("loading"));
     
     SDL_Delay(300);
     
@@ -489,6 +500,15 @@ int update(void * arg)
         totalTimeNs += delta_time_ns;
         delta_time = delta_time_ns / ((float)S_TO_NS);
         totalTime = totalTimeNs / ((float)S_TO_NS);
+
+        currentFrame = *allInOne.pCurrentFrame;
+        preFrame = (currentFrame == 0) ? 1 : 0;
+
+        // vertexStart = *allInOne.pVerticesCount;
+        offsetDone = false;
+        vertexCopyDone = false;
+
+        // emptyTextureRefCount();
         
         // Get delta_time factor converted to seconds to be used to update objects
         if (scene == Pause_Scene)
@@ -544,7 +564,7 @@ int update(void * arg)
             }
 
             if (scene == First_Scene)
-            {                
+            {
                 if (!Mix_PlayingMusic() && !playedMusic)
                 {
                     playMusic("test");
@@ -557,21 +577,19 @@ int update(void * arg)
 
                 if (textDisplay)
                 {
-                    Uint32 textLen;
-                    if (textLine == 1)
-                        getTextUV("一二三", &textLen);
-                    if (textLine == 2)
-                        getTextUV("哈哈哈哈哈哈哈哈哈", &textLen);
+                    Uint32 textLen = 0;
+                    if (textLine == 1) getTextUV("一二三", &textLen);
+                    else if (textLine == 2) getTextUV("哈哈哈哈哈哈哈哈哈", &textLen);
 
-                    for (Uint32 i = 0;i < textLen;i++)
+                    if (textLine < 3)
                     {
-                        for (int x = 0;x < 4;x++)
+                        getTexture("font")->refCount = 0;
+                        for (Uint32 i = 0;i < textLen;i++)
                         {
-                            (*allInOne.ppVertices_TexCoord)[8000 + i * 4 + x][0] = UVs[i][x][0];
-                            (*allInOne.ppVertices_TexCoord)[8000 + i * 4 + x][1] = UVs[i][x][1];
+                            textureVertexInit_SetUV(-300.0 + (float)i * 24.0, -100.0, 24, 24, 0.1f, allInOne.pVerticesCount, *allInOne.ppVertices, UVs[i], getTexture("font"));
                         }
+                        updateVertex = true;
                     }
-                    updateVertex = true;
                     textDisplay = false;
                 }
 
@@ -619,18 +637,14 @@ int update(void * arg)
 
                 if (ballAdd)
                 {
-                    *allInOne.pVerticesCount += 4;
-                    *allInOne.pIndicesCount += 6;
                     //*allInOne.ppVertices = (Vertex *)realloc(*allInOne.ppVertices, count * sizeof(Vertex));
                     int x = SDL_rand(250);
                     if (SDL_rand(2))
                     {
                         x *= -1;
                     }
-                    SDL_LockMutex(sdl_mutex_2);
                     // float averagePhysicalCoffect = (physicalCoffectX + physicalCoffectY) / 2.0f;
-                    vertexInitialize(x * physicalCoffectX, 280 * physicalCoffectY, 16 * physicalCoffectY, 16 * physicalCoffectY, 0.9, false, count / 4, allInOne.ppVertices_Pos, allInOne.ppVertices_Color, allInOne.ppVertices_TexCoord);
-                    SDL_UnlockMutex(sdl_mutex_2);
+                    textureVertexInit(x * physicalCoffectX, 280 * physicalCoffectY, 16 * physicalCoffectY, 16 * physicalCoffectY, 0.9, allInOne.pVerticesCount, *allInOne.ppVertices, getTexture("circle"));
 
                     ballStack.pushFn(&ballStack, &x);
 
@@ -644,7 +658,7 @@ int update(void * arg)
                 static int id_timeStep = 0;
                 while (intervalIsDone(f32_s_to_ns(TIME_STEP), &id_timeStep, -1))
                 {
-                    updateCircle();
+                    updateCircle(); 
                     // accumulator -= timeStep;
                 }
             }
@@ -670,21 +684,31 @@ int update(void * arg)
 
             allInOne.pComputeUbo->deltaTime = delta_time;
 
-            SDL_LockMutex(sdl_mutex_2);
-            if (updateVertex)
-            {
-                memcpy(*allInOne.ppVertexBufferMemMapped, *allInOne.ppVertices, 2100 * 4 * (sizeof(vec3) + sizeof(vec3) + sizeof(vec2)));// update vertex buffer
-                updateVertex = false;
-            }
-            else
-            {
-                memcpy(*allInOne.ppVertexBufferMemMapped, *allInOne.ppVertices_Pos, 2100 * 4 * sizeof(vec3));// update position
-            }
-            memcpy(*allInOne.ppIndexBufferMemMapped, *allInOne.ppIndices, 2100 * 6 * sizeof(uint16_t));
-            
-            memcpy((*allInOne.pppGraphicUniformBufferMapped)[*allInOne.pCurrentFrame], pGraphicUbo, sizeof(UniformBufferObject));
+            vertexEnd = *allInOne.pVerticesCount;
 
-            memcpy((*allInOne.pppComputeUniformBufferMapped)[*allInOne.pCurrentFrame], allInOne.pComputeUbo, sizeof(ComputeUniformBufferObject));
+            SDL_LockMutex(sdl_mutex_2);
+            // if (updateVertex)
+            // {
+            //     memcpy(*allInOne.ppVertexBufferMemMapped, *allInOne.ppVertices, 2100 * 4 * (sizeof(vec3) + sizeof(vec3) + sizeof(vec2)) * 2);// update vertex buffer
+            //     updateVertex = false;
+            // }
+            // else
+            // {
+            //     memcpy((*allInOne.ppVertexBufferMemMapped)[*allInOne.pCurrentFrame], *allInOne.ppVertices_Pos, 2100 * 4 * sizeof(vec3));// update position
+            // }
+
+            // if (vertexEnd > vertexStart) memcpy((Vertex*)(*allInOne.ppVertexBufferMemMapped)[currentFrame] + vertexStart, *allInOne.ppVertices + vertexStart, (vertexEnd - vertexStart) * sizeof(Vertex));// update vertex buffer
+            // else if (vertexEnd < vertexStart) 
+            // {
+            //     memcpy((Vertex*)(*allInOne.ppVertexBufferMemMapped)[currentFrame] + vertexStart, *allInOne.ppVertices + vertexStart, (allInOne.maxVerticesCount - vertexStart) * sizeof(Vertex));// update vertex buffer
+            //     memcpy((*allInOne.ppVertexBufferMemMapped)[currentFrame], *allInOne.ppVertices, vertexEnd * sizeof(Vertex));
+            // }
+            memcpy((*allInOne.ppVertexBufferMemMapped)[currentFrame], *allInOne.ppVertices, vertexEnd * sizeof(Vertex));// update vertex buffer
+            vertexCopyDone = true;
+
+            memcpy((*allInOne.pppGraphicUniformBufferMapped)[currentFrame], pGraphicUbo, sizeof(UniformBufferObject));
+
+            memcpy((*allInOne.pppComputeUniformBufferMapped)[currentFrame], allInOne.pComputeUbo, sizeof(ComputeUniformBufferObject));
 
             allInOne.pImageRotate->rotation = totalTime * glm_rad(580.0f);
             
@@ -712,9 +736,13 @@ int render(void * arg)
         SDL_WaitSemaphore(main_semaphore2);
 
         drawFrame(scene);
+
+        *allInOne.pCurrentFrame = (*allInOne.pCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+
         draw_done = true;
 
         //logMessage("render frames: %d ----%s", render_frame, timeNow);
+
         render_frame++;
 
         SDL_SignalSemaphore(signal_semaphore);
@@ -751,19 +779,22 @@ void destroy(void)
     SDL_Log("update end\n");
     SDL_WaitThread(sdl_pid_draw, NULL);
     SDL_Log("draw end\n");
-
-    cleanVulkan(FuncCodeMax);
-    
-    cleanWorld();
-
-    deInitTimerSystem();
-    deInitMusicManagement();
-    deInitPopWindow();
-    destroyLog();
     SDL_DestroyMutex(sdl_mutex);
     SDL_DestroyMutex(sdl_mutex_2);
     SDL_DestroySemaphore(main_semaphore1);
     SDL_DestroySemaphore(main_semaphore2);
+    
+    cleanWorld();
+
+    deInitTimerSystem();
+
+    deInitMusicManagement();
+
+    deInitVertexMutex();
+    cleanVulkan(FuncCodeMax);
+
+    deInitPopWindow();
+    destroyLog();
     SDL_Quit();
     exit(0);
 }

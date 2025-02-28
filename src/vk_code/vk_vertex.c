@@ -12,5 +12,5 @@ void createVertexBuffer(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, 
     resultVulkan(createBuffer(pVertexBuffer, pVertexBufferMemory, bufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), code, 0);
     
     vkMapMemory(*pDevice, *pVertexBufferMemory, 0, bufferSize, 0, ppVertexBufferMemMapped);
-    memcpy(*ppVertexBufferMemMapped, vertices, (size_t)bufferSize);
+    memset(*ppVertexBufferMemMapped, 0, (size_t)bufferSize);
 }
