@@ -1,7 +1,8 @@
 #include "G_pop_window.h"
-#include "SDL3/SDL_mutex.h"
+#include "G_struct.h"
 
 extern SDL_Window * window;
+extern G_SYNC allSync;
 
 typedef struct _PopWindow
 {
@@ -17,14 +18,13 @@ typedef struct _PopList
 } PopList;
 
 static PopList * root = NULL;
-static SDL_Mutex * mutex = NULL;
 
 bool initPopWindow(void)
 {
     root = (PopList*)SDL_malloc(sizeof(PopList));
     root->next = NULL;
     root->node = NULL;
-    mutex = SDL_CreateMutex();
+    
     return true;
 }
 static PopList * toNull(PopList * next)
@@ -40,7 +40,7 @@ static PopList * toNull(PopList * next)
 }
 static bool insertMessage(SDL_MessageBoxFlags flags, const char * title, const char * message)
 {
-    SDL_LockMutex(mutex);
+    SDL_LockMutex(allSync.popWindowMutex);
     PopWindow * node = (PopWindow*)SDL_malloc(sizeof(PopWindow));
     if (node == NULL)
         return false;
@@ -60,7 +60,7 @@ static bool insertMessage(SDL_MessageBoxFlags flags, const char * title, const c
 
     listNode->next->next = NULL;
     listNode->next->node = NULL;
-    SDL_UnlockMutex(mutex);
+    SDL_UnlockMutex(allSync.popWindowMutex);
 
     return true;
 }
@@ -99,7 +99,7 @@ bool willPopWindow(void)
 }
 void popWindow(void)
 {
-    SDL_LockMutex(mutex);
+    SDL_LockMutex(allSync.popWindowMutex);
     PopList * next = root;
     while (next->node != NULL)
     {
@@ -108,12 +108,11 @@ void popWindow(void)
     }
     cleanList();
     
-    SDL_UnlockMutex(mutex);
+    SDL_UnlockMutex(allSync.popWindowMutex);
 }
 bool deInitPopWindow(void)
 {
     cleanList();
     SDL_free(root);
-    SDL_DestroyMutex(mutex);
     return true;
 }

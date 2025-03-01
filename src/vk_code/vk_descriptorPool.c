@@ -6,19 +6,14 @@
 #include "vk_code_h/vk_struct.h"
 
 #include "G_log.h"
-
-#include "SDL3/SDL_mutex.h"
+#include "G_struct.h"
 
 extern VK_ALL allInOne;
+extern G_SYNC allSync;
 
 static G_DescriptorSet_Update updates[20];
 static Uint32 updatesCount = 0;
-static SDL_Mutex * descriptorSetMutex = NULL;
 
-void initDescriptorUpdate(void)
-{
-    descriptorSetMutex = SDL_CreateMutex();
-}
 void createDescriptorPool(VkDevice * pDevice, Uint32 poolSizeCount, VkDescriptorPoolSize * pPoolSizes, Uint32 maxSets, VkDescriptorPool * pDescriptorPool)
 {
     FuncCode code = createDescriptorPoolF;
@@ -138,7 +133,7 @@ void addDescriptorUpdate_Buffer(VkDescriptorType descriptorType, Uint32 binding,
     tempBuffer.offset = offset;
     tempBuffer.range = range;
 
-    SDL_LockMutex(descriptorSetMutex);
+    SDL_LockMutex(allSync.descriptorUpdateMutex);
 
     if (updatesCount == 20) return;
 
@@ -148,7 +143,7 @@ void addDescriptorUpdate_Buffer(VkDescriptorType descriptorType, Uint32 binding,
     updates[updatesCount].bufferImage.Buffer = tempBuffer;
     updatesCount++;
 
-    SDL_UnlockMutex(descriptorSetMutex);
+    SDL_UnlockMutex(allSync.descriptorUpdateMutex);
 }
 void addDescriptorUpdate_Texture(VkDescriptorType descriptorType, Uint32 binding, const char *innerName, VkSampler sampler, VkImageLayout layout)
 {
@@ -157,7 +152,7 @@ void addDescriptorUpdate_Texture(VkDescriptorType descriptorType, Uint32 binding
     tempTexture.sampler = sampler;
     tempTexture.layout = layout;
 
-    SDL_LockMutex(descriptorSetMutex);
+    SDL_LockMutex(allSync.descriptorUpdateMutex);
 
     if (updatesCount == 20) return;
 
@@ -167,14 +162,14 @@ void addDescriptorUpdate_Texture(VkDescriptorType descriptorType, Uint32 binding
     updates[updatesCount].bufferImage.Texture = tempTexture;
     updatesCount++;
 
-    SDL_UnlockMutex(descriptorSetMutex);
+    SDL_UnlockMutex(allSync.descriptorUpdateMutex);
 }
 void addDescriptorUpdate_TexelBuffer(VkDescriptorType descriptorType, Uint32 binding, VkDescriptorSet * pSet, VkBufferView * pBufferView)
 {
     G_Buffer_View tempBufferView;
     tempBufferView.pBufferView = pBufferView;
 
-    SDL_LockMutex(descriptorSetMutex);
+    SDL_LockMutex(allSync.descriptorUpdateMutex);
 
     if (updatesCount == 20) return;
 
@@ -184,7 +179,7 @@ void addDescriptorUpdate_TexelBuffer(VkDescriptorType descriptorType, Uint32 bin
     updates[updatesCount].bufferImage.TexelBuffer = tempBufferView;
     updatesCount++;
 
-    SDL_UnlockMutex(descriptorSetMutex);
+    SDL_UnlockMutex(allSync.descriptorUpdateMutex);
 }
 static void updateDescriptorSets(G_DescriptorSet_Update * pUpdate, Uint32 updateCount)
 {
@@ -280,14 +275,10 @@ static void updateDescriptorSets(G_DescriptorSet_Update * pUpdate, Uint32 update
 }
 void executeUpdateDescriptorSets(void)
 {
-    SDL_LockMutex(descriptorSetMutex);
+    SDL_LockMutex(allSync.descriptorUpdateMutex);
 
     updateDescriptorSets(updates, updatesCount);
     updatesCount = 0;
 
-    SDL_UnlockMutex(descriptorSetMutex);
-}
-void deInitDescriptorUpdate(void)
-{
-    SDL_DestroyMutex(descriptorSetMutex);
+    SDL_UnlockMutex(allSync.descriptorUpdateMutex);
 }

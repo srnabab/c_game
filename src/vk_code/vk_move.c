@@ -1,7 +1,7 @@
 #include "vk_code_h/vk_move.h"
 #include "vk_code_h/vk_buffer.h"
 
-#include "SDL3/SDL_mutex.h"
+#include "G_struct.h"
 
 extern VK_ALL allInOne;
 
@@ -12,12 +12,8 @@ static vec3 vertices_Color[4] = {
     {1.0f, 1.0f, 1.0f}
 };
 
-static SDL_Mutex * vertexMutex = NULL;
+extern G_SYNC allSync;
 
-void initVertexMutex(void)
-{
-    vertexMutex = SDL_CreateMutex();
-}
 void initializeMovingBuffer(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkBuffer * pMoveBuffer, VkDeviceMemory * pMoveBufferMemory, void ** ppMovingBufferMapped, Vertex * vertices, Uint32 verticesCount)
 {
     VkDeviceSize bufferSize = sizeof(vertices[0]) * verticesCount;
@@ -174,31 +170,31 @@ void vertexInitialize(float x, float y, float width, float height, float depth, 
 }
 void textureVertexInit(float x, float y, float width, float height, float depth, Uint32 * pVertexCount, Vertex * pVertices, G_Texture_P * tempTexture)
 {
-    SDL_LockMutex(vertexMutex);
+    SDL_LockMutex(allSync.vertexMutex);
 
     Uint32 vertexCount = *pVertexCount;
     textureOffsetsAdd(tempTexture, vertexCount);
     if (*pVertexCount < allInOne.maxVerticesCount) *pVertexCount += 4;
     else return;
 
-    SDL_UnlockMutex(vertexMutex);
+    SDL_UnlockMutex(allSync.vertexMutex);
 
-    SDL_LockMutex(vertexMutex);
+    SDL_LockMutex(allSync.vertexMutex);
     vertexInitialize(x, y, width, height, depth, vertexCount, pVertices);
-    SDL_UnlockMutex(vertexMutex);
+    SDL_UnlockMutex(allSync.vertexMutex);
 }
 void textureVertexInit_SetUV(float x, float y, float width, float height, float depth, Uint32 * pVertexCount, Vertex * pVertices, vec2 * UV, G_Texture_P * tempTexture)
 {
-    SDL_LockMutex(vertexMutex);
+    SDL_LockMutex(allSync.vertexMutex);
 
     Uint32 vertexCount = *pVertexCount;
     textureOffsetsAdd(tempTexture, vertexCount);
     if (*pVertexCount < allInOne.maxVerticesCount) *pVertexCount += 4;
     else return;
 
-    SDL_UnlockMutex(vertexMutex);
+    SDL_UnlockMutex(allSync.vertexMutex);
 
-    SDL_LockMutex(vertexMutex);
+    SDL_LockMutex(allSync.vertexMutex);
     vertexInitialize(x, y, width, height, depth, vertexCount, pVertices);
     
     pVertices[vertexCount].texCoord[0] = UV[0][0];
@@ -215,7 +211,7 @@ void textureVertexInit_SetUV(float x, float y, float width, float height, float 
     vertexCount++;
     pVertices[vertexCount].texCoord[0] = UV[3][0];
     pVertices[vertexCount].texCoord[1] = UV[3][1];
-    SDL_UnlockMutex(vertexMutex);
+    SDL_UnlockMutex(allSync.vertexMutex);
 }
 void texturePosUpdate(float x, float y, Vertex * pVertices, Uint32 offset)
 {
@@ -229,7 +225,7 @@ void vertexPosUpdate(float x, float y, Vertex * pVertices, Uint32 vertexCount)
     float offSetX = NDCx - pVertices[vertexCount].pos[0];
     float offSetY = NDCy - pVertices[vertexCount].pos[1];
 
-    SDL_LockMutex(vertexMutex);
+    SDL_LockMutex(allSync.vertexMutex);
 
     pVertices[vertexCount].pos[0] += offSetX;
     pVertices[vertexCount].pos[1] += offSetY;
@@ -246,7 +242,7 @@ void vertexPosUpdate(float x, float y, Vertex * pVertices, Uint32 vertexCount)
     pVertices[vertexCount].pos[0] += offSetX;
     pVertices[vertexCount].pos[1] += offSetY;
 
-    SDL_UnlockMutex(vertexMutex);
+    SDL_UnlockMutex(allSync.vertexMutex);
 }
 void indexInitialize(Uint16 * indices, Uint32 indicesCount)
 {
@@ -277,8 +273,4 @@ void updatePosition(float x, float y, vec3 ** ppVertices_Pos, uint32_t pictureSe
         (*ppVertices_Pos)[i][0] += offSetX;
         (*ppVertices_Pos)[i][1] += offSetY;
     }
-}
-void deInitVertexMutex(void)
-{
-    SDL_DestroyMutex(vertexMutex);
 }

@@ -7,6 +7,7 @@
 
 #include "G_file/G_file.h"
 #include "G_log.h"
+#include "G_struct.h"
 
 #include <time.h>
 
@@ -18,11 +19,6 @@ static char message[MAX_MESSAGE_STORAGE][MAX_MESSAGE_SIZE];
 static uint32_t messageCount = -1;
 static uint32_t messagePrintCount = 0;
 
-static SDL_Mutex * log_mutex = NULL;
-static SDL_Mutex * print_mutex = NULL;
-
-static SDL_Semaphore * log_semaphore = NULL;
-
 extern bool game_is_running;
 
 static SDL_Thread * log_thread = NULL;
@@ -30,6 +26,8 @@ static SDL_Thread * log_thread = NULL;
 static SDL_IOStream * log_file = NULL;
 
 static bool disabled = false;
+
+extern G_SYNC allSync;
 
 static char * getCurrentTime(char * buffer, SDL_DateTime dateTime)
 {
@@ -113,7 +111,7 @@ static int putMessage_file(void * arg)
             }
         }
 
-        SDL_WaitSemaphore(log_semaphore);
+        SDL_WaitSemaphore(allSync.logSemaphore);
         
         if (!game_is_running && (messageCount + 1 == messagePrintCount))
             break;
@@ -123,13 +121,13 @@ static int putMessage_file(void * arg)
         SDL_TimeToDateTime(ticks, &dateTime, 1);
         getCurrentTime(timeBuffer, dateTime);
         
-        SDL_LockMutex(print_mutex);
+        SDL_LockMutex(allSync.printMutex);
 
         SDL_strlcat(getCurrentTime(timeBuffer, dateTime), "\n", 3);
         SDL_strlcat(message[messagePrintCount % MAX_MESSAGE_STORAGE], timeBuffer, 255);
         messagePrintCount++;
 
-        SDL_UnlockMutex(print_mutex);
+        SDL_UnlockMutex(allSync.printMutex);
     }
     uint32_t count = 0;
     uint32_t maxCount = messagePrintCount % MAX_MESSAGE_STORAGE;
@@ -147,17 +145,17 @@ static int putMessage_print(void * arg)
     SDL_CloseIO(log_file);
     while(1)
     {
-        SDL_WaitSemaphore(log_semaphore);
+        SDL_WaitSemaphore(allSync.logSemaphore);
         
         if (!game_is_running && (messageCount + 1 == messagePrintCount))
             break;
 
-        SDL_LockMutex(print_mutex);
+        SDL_LockMutex(allSync.printMutex);
 
         SDL_Log(message[messagePrintCount % MAX_MESSAGE_STORAGE]);
         messagePrintCount++;
 
-        SDL_UnlockMutex(print_mutex);
+        SDL_UnlockMutex(allSync.printMutex);
     }
     return 0;
 }
@@ -171,10 +169,6 @@ void initLog(Uint8 log)
         SDL_Log("open log file failed: %s\n", getPath(LogPath));
         return;
     }
-
-    log_mutex = SDL_CreateMutex();
-    print_mutex = SDL_CreateMutex();
-    log_semaphore = SDL_CreateSemaphore(0);
 
     if (log & LOG_TXT)
     {
@@ -192,18 +186,17 @@ void logMessage(char * format, ...)
     va_list arg;
 
     va_start(arg, format);
-    SDL_LockMutex(log_mutex);
+    SDL_LockMutex(allSync.logMutex);
     messageCount++;
     SDL_vsnprintf(message[messageCount % MAX_MESSAGE_STORAGE], MAX_MESSAGE_SIZE, format, arg);
-    SDL_UnlockMutex(log_mutex);
-    SDL_SignalSemaphore(log_semaphore);
+    SDL_UnlockMutex(allSync.logMutex);
+    SDL_SignalSemaphore(allSync.logSemaphore);
 
     va_end(arg);
 }
 void destroyLog(void)
 {
-    SDL_SignalSemaphore(log_semaphore);
+    SDL_SignalSemaphore(allSync.logSemaphore);
     SDL_WaitThread(log_thread, NULL);
     SDL_Log("log end\n");
-    SDL_DestroySemaphore(log_semaphore);
 }

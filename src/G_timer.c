@@ -1,7 +1,7 @@
 #include "G_timer.h"
 #include "G_log.h"
 
-#include "SDL3/SDL_mutex.h"
+#include "G_struct.h"
 
 typedef struct _Timer
 {
@@ -15,14 +15,13 @@ typedef struct _Timer
 } Timer;
 
 static Timer timerS[128];
-static SDL_Mutex * timerMutex = NULL;
+
+extern G_SYNC allSync;
 
 bool initTimerSystem(void)
 {
     memset(timerS, 0, sizeof(timerS));
-
-    timerMutex = SDL_CreateMutex();
-
+    
     return true;
 }
 
@@ -88,7 +87,7 @@ bool intervalIsDone(Uint64 nano, int * id, int repeat)
             return false;
         }
 
-        SDL_LockMutex(timerMutex);
+        SDL_LockMutex(allSync.timerMutex);
         if (tempTimer->done)
         {
             if (tempTimer->func != NULL)
@@ -97,18 +96,18 @@ bool intervalIsDone(Uint64 nano, int * id, int repeat)
             }
             tempTimer->done = false;
 
-            SDL_UnlockMutex(timerMutex);
+            SDL_UnlockMutex(allSync.timerMutex);
             return true;
         }
     }
     else
     {
-        SDL_LockMutex(timerMutex);
+        SDL_LockMutex(allSync.timerMutex);
         *id = Ids;
         Ids++;
 
         addTimer(nano, *id, repeat);
-        SDL_UnlockMutex(timerMutex);
+        SDL_UnlockMutex(allSync.timerMutex);
     }
     return false;
 }
@@ -121,12 +120,12 @@ bool addTimerFunc(Uint64 nano, int * id, int repeat, int (*func)(void *), void *
     else
     {
         intervalIsDone(nano, id, repeat);
-        SDL_LockMutex(timerMutex);
+        SDL_LockMutex(allSync.timerMutex);
         Timer * tempTimer = findTimer(*id);
 
         tempTimer->data = data;
         tempTimer->func = func;
-        SDL_UnlockMutex(timerMutex);
+        SDL_UnlockMutex(allSync.timerMutex);
     }
 
     return false;
@@ -135,9 +134,9 @@ bool deleteTimeSet(int *id)
 {
     Timer * tempTimer = findTimer(*id);
 
-    SDL_LockMutex(timerMutex);
+    SDL_LockMutex(allSync.timerMutex);
     memset(tempTimer, 0, sizeof(Timer));
-    SDL_UnlockMutex(timerMutex);
+    SDL_UnlockMutex(allSync.timerMutex);
 
     *id = 0;
 
@@ -155,7 +154,7 @@ static bool deleteTimeSetIn(int *id)
 }
 void accumlateTime(Uint64 nano)
 {
-    SDL_LockMutex(timerMutex);
+    SDL_LockMutex(allSync.timerMutex);
     for (int i = 0;i < 128;i++)
     {
         if (timerS[i].id)
@@ -181,10 +180,9 @@ void accumlateTime(Uint64 nano)
             }
         }
     }
-    SDL_UnlockMutex(timerMutex);
+    SDL_UnlockMutex(allSync.timerMutex);
 }
 bool deInitTimerSystem(void)
 {
-    SDL_DestroyMutex(timerMutex);
     return true;
 }

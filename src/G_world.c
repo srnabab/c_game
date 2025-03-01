@@ -17,14 +17,13 @@ static b2ShapeDef groundShapeDef[4];
 static b2ShapeId groundShapeId[4];
 
 static SDL_Thread * worldThread;
-static SDL_Semaphore * worldSemaphore;
-ThreadSem world;
 
 EmptyStack ballStack;
 
 extern float physicalCoffectX;
 extern float physicalCoffectY;
 extern VK_ALL allInOne;
+extern G_SYNC allSync;
 
 static void * box2d_SDL_Alloc(unsigned int size, int alignment)
 {
@@ -89,11 +88,7 @@ void initWorld(void)
     groundShapeId[3] = b2CreatePolygonShape(groundId[3], &groundShapeDef[3], &groundBox[3]);*/
     initStack(&ballStack, i32, NULL, NULL, NULL);
 
-    worldSemaphore = SDL_CreateSemaphore(0);
     worldThread = SDL_CreateThread(stepWorld, "physical", NULL);
-
-    world.thread = worldThread;
-    world.semaphore = worldSemaphore;
 }
 static b2BodyDef * bodyDefs = NULL;
 static b2BodyId * bodyIds = NULL;
@@ -161,7 +156,7 @@ void updateCircle(void)
             }
         }
         stepDone = false;
-        SDL_SignalSemaphore(worldSemaphore);
+        SDL_SignalSemaphore(allSync.worldSemaphore);
     }
 }
 extern bool game_is_running;
@@ -169,7 +164,7 @@ int stepWorld(void * arg)
 {
     while (game_is_running)
     {
-        SDL_WaitSemaphore(worldSemaphore);
+        SDL_WaitSemaphore(allSync.worldSemaphore);
         // if (boxCount > 2)
         // {
         //     b2Body_SetTransform(bodyIds[1], (b2Vec2){-700.0f * SCALE_FACTOR, -300.0f * SCALE_FACTOR}, b2Rot_identity);
@@ -185,10 +180,9 @@ uint32_t getBoxCount(void)
 }
 void cleanWorld(void)
 {
-    SDL_SignalSemaphore(worldSemaphore);
+    SDL_SignalSemaphore(allSync.worldSemaphore);
     deInitStack(&ballStack);
     SDL_WaitThread(worldThread, NULL);
-    SDL_DestroySemaphore(worldSemaphore);
     b2DestroyWorld(worldId);
 }
 void destroyFloor(void)

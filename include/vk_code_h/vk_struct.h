@@ -68,7 +68,7 @@ enum _FormatQualifier
 };
 typedef enum _FormatQualifier FormatQualifier;
 
-typedef struct _VK_ALL
+struct _VK_ALL
 {
     VkAllocationCallbacks * pAllocationCallbacks;
 
@@ -184,7 +184,8 @@ typedef struct _VK_ALL
     ImageRotate * pImageRotate;
 
     G_Texture_P * pGlobalTexture;
-} VK_ALL;
+};
+typedef struct _VK_ALL VK_ALL;
 
 #include "SDL3/SDL_close_code.h"
 

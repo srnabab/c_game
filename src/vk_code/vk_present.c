@@ -8,10 +8,10 @@
 #include "SDL3/SDL_timer.h"
 
 #include "G_log.h"
+#include "G_struct.h"
 
 extern VK_ALL allInOne;
-extern bool offsetDone;
-extern bool vertexCopyDone;
+extern G_SYNC allSync;
 
 static void drawPic(const char * innerName, Uint32 currentFrame)
 {
@@ -20,11 +20,15 @@ static void drawPic(const char * innerName, Uint32 currentFrame)
 
     vkCmdBindDescriptorSets((*allInOne.ppGraphicCommandBuffer)[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pGraphicPipelineLayout, 0,
     1, tempTexture->pDescriptorSet + currentFrame, 0, NULL);
+
+    SDL_LockMutex(allSync.renderMutex);
     
     for (int i = 0;i < tempTexture->refCount;i++)
     {
         vkCmdDrawIndexed((*allInOne.ppGraphicCommandBuffer)[currentFrame], tempTexture->offsets[i].count * 6, 1, 0, tempTexture->offsets[i].offset, 0);
     }
+
+    SDL_UnlockMutex(allSync.renderMutex);
 }
 static void recordCommandBuffer_FirstScene(uint32_t imageIndex)
 {
@@ -216,7 +220,7 @@ static void drawFirstScene(void)
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphore;
 
-    if (vertexCopyDone == false) SDL_Delay(1);
+    SDL_WaitSemaphore(allSync.vertexSemaphore);
     resultVulkan(vkQueueSubmit(*allInOne.pGraphicQueue, 1, &submitInfo, (*allInOne.ppGraphicInFlightFence)[*allInOne.pCurrentFrame]), queueSumbitF, 0);
 
 

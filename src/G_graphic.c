@@ -397,9 +397,6 @@ void initVulkan(void)
     logMessage("initializing...");
 
     initGlobalTexture();
-    initVertexMutex();
-
-    initDescriptorUpdate();
 
     initializeAllInOne();
 
@@ -690,8 +687,6 @@ void cleanVulkan(FuncCode code)
         vkDestroyDescriptorPool(device, graphicDescriptorPool, allInOne.pAllocationCallbacks);
         SDL_free(graphicDescriptorPoolSize);
         logMessage("graphic descriptor pool destroyed");
-
-        deInitDescriptorUpdate();
         /*fall through*/
 
         case createDescriptorPoolF:

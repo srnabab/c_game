@@ -17,6 +17,7 @@
 #include "G_stack.h"
 #include "G_log.h"
 #include "G_file/G_file.h"
+#include "G_struct.h"
 
 // Global variables
 bool game_is_running = false;
@@ -30,24 +31,38 @@ static SDL_Thread * sdl_pid_update;
 static SDL_Thread * sdl_pid_draw;
 static SDL_Thread * sdl_pid_signal;
 
-static SDL_Mutex * sdl_mutex;
-static SDL_Mutex * sdl_mutex_2;
-
 static bool update_done, draw_done = false;
 
 static double testNum = 0.0f;
 
-
-static SDL_Semaphore * main_semaphore1;
-static SDL_Semaphore * main_semaphore2;
-static SDL_Semaphore * signal_semaphore;
+G_SYNC allSync = {};
 
 static SDL_MessageBoxData * boxData;
 
+static void initAllSync(void)
+{
+    allSync.updateMutex = SDL_CreateMutex();
+    allSync.renderMutex = SDL_CreateMutex();
+    allSync.logMutex = SDL_CreateMutex();
+    allSync.printMutex = SDL_CreateMutex();
+    allSync.popWindowMutex = SDL_CreateMutex();
+    allSync.textureMutex = SDL_CreateMutex();
+    allSync.timerMutex = SDL_CreateMutex();
+    allSync.descriptorUpdateMutex = SDL_CreateMutex();
+    allSync.vertexMutex = SDL_CreateMutex();
+
+    allSync.updateSemaphore = SDL_CreateSemaphore(0);
+    allSync.renderSemaphore = SDL_CreateSemaphore(0);
+    allSync.vertexSemaphore = SDL_CreateSemaphore(0);
+    allSync.signalSemaphore = SDL_CreateSemaphore(0);
+    allSync.logSemaphore = SDL_CreateSemaphore(0);
+    allSync.worldSemaphore = SDL_CreateSemaphore(0);
+}
 // Setup function that runs once at the beginning of our program
 void setup(int argc, char* argv[]) 
 {
     int arg = initFileSystem(argc, argv);
+    initAllSync();
 
     initLog(arg);
 
@@ -55,13 +70,6 @@ void setup(int argc, char* argv[])
     logMessage("game_is_running: %d", game_is_running);
 
     SDL_StopTextInput(window);
-
-    sdl_mutex = SDL_CreateMutex();
-    sdl_mutex_2 = SDL_CreateMutex();
-
-    main_semaphore1 = SDL_CreateSemaphore(0);
-    main_semaphore2 = SDL_CreateSemaphore(0);
-    signal_semaphore = SDL_CreateSemaphore(0);
 
     static SDL_MessageBoxButtonData buttons[2] = {
         {SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "No"},
@@ -137,8 +145,8 @@ bool process_input(void)
 
         scene = preScene;
         preScene = Pause_Scene;
-        SDL_SignalSemaphore(main_semaphore1);
-        SDL_SignalSemaphore(main_semaphore2);
+        SDL_SignalSemaphore(allSync.updateSemaphore);
+        SDL_SignalSemaphore(allSync.renderSemaphore);
     }
 
     const bool * keyState = SDL_GetKeyboardState(NULL);
@@ -174,11 +182,11 @@ bool process_input(void)
             if (key == SDLK_ESCAPE)
             {
                 Mix_HaltMusic();
-                SDL_SignalSemaphore(main_semaphore1);
-                SDL_SignalSemaphore(main_semaphore2);
-                SDL_SignalSemaphore(signal_semaphore);
-                SDL_SignalSemaphore(signal_semaphore);
-                SDL_SignalSemaphore(signal_semaphore);
+                SDL_SignalSemaphore(allSync.updateSemaphore);
+                SDL_SignalSemaphore(allSync.renderSemaphore);
+                SDL_SignalSemaphore(allSync.signalSemaphore);
+                SDL_SignalSemaphore(allSync.signalSemaphore);
+                SDL_SignalSemaphore(allSync.signalSemaphore);
                 game_is_running = false;
                 
                 return true;
@@ -229,8 +237,8 @@ bool process_input(void)
                 {
                     scene = preScene;
                     preScene = Pause_Scene;
-                    SDL_SignalSemaphore(main_semaphore1);
-                    SDL_SignalSemaphore(main_semaphore2);
+                    SDL_SignalSemaphore(allSync.updateSemaphore);
+                    SDL_SignalSemaphore(allSync.renderSemaphore);
                 }
                 else
                 {
@@ -408,8 +416,8 @@ bool process_input(void)
 
             if (buttonId == 2)
             {
-                SDL_SignalSemaphore(main_semaphore1);
-                SDL_SignalSemaphore(main_semaphore2);
+                SDL_SignalSemaphore(allSync.updateSemaphore);
+                SDL_SignalSemaphore(allSync.renderSemaphore);
                 game_is_running = false;
 
                 return true;
@@ -418,8 +426,8 @@ bool process_input(void)
             {
                 scene = preScene;
                 preScene = Pause_Scene;
-                SDL_SignalSemaphore(main_semaphore1);
-                SDL_SignalSemaphore(main_semaphore2);
+                SDL_SignalSemaphore(allSync.updateSemaphore);
+                SDL_SignalSemaphore(allSync.renderSemaphore);
             }
             break;
 
@@ -445,9 +453,6 @@ static int test(void * arg)
 
 extern EmptyStack ballStack;
 extern vec2 UVs[MAX_CHARACTERS][FOUR_POINT];
-
-bool offsetDone = false;
-bool vertexCopyDone = false;
 
 // Update function with a fixed time step
 int update(void * arg)
@@ -478,13 +483,13 @@ int update(void * arg)
     SDL_Delay(300);
     
     Uint64 last_frame_time = SDL_GetPerformanceCounter();
-    SDL_SignalSemaphore(main_semaphore1);
-    SDL_SignalSemaphore(main_semaphore2);
+    SDL_SignalSemaphore(allSync.updateSemaphore);
+    SDL_SignalSemaphore(allSync.renderSemaphore);
 
     SDL_Log("update init\n");
     while (game_is_running)
     {
-        SDL_WaitSemaphore(main_semaphore1);
+        SDL_WaitSemaphore(allSync.updateSemaphore);
         if (preScene == Pause_Scene && recovreyPause)
         {
             last_frame_time = SDL_GetPerformanceCounter();
@@ -501,8 +506,6 @@ int update(void * arg)
         currentFrame = *allInOne.pCurrentFrame;
 
         // vertexStart = *allInOne.pVerticesCount;
-        offsetDone = false;
-        vertexCopyDone = false;
 
         // emptyTextureRefCount();
         
@@ -531,13 +534,13 @@ int update(void * arg)
                 leftButtonEnabled = false;
                 if (intervalIsDone(f32_ms_to_ns(58.8), &id_click, 1))
                 {
-                    SDL_LockMutex(sdl_mutex_2);
+                    SDL_LockMutex(allSync.updateMutex);
 
                     leftButtonClickedTimes = 0;
                     leftButtonEnabled = true;
                     id_click = 0;
 
-                    SDL_UnlockMutex(sdl_mutex_2);
+                    SDL_UnlockMutex(allSync.updateMutex);
                 }
             }
 
@@ -679,7 +682,7 @@ int update(void * arg)
 
             vertexEnd = *allInOne.pVerticesCount;
 
-            SDL_LockMutex(sdl_mutex_2);
+            SDL_LockMutex(allSync.updateMutex);
             // if (updateVertex)
             // {
             //     memcpy(*allInOne.ppVertexBufferMemMapped, *allInOne.ppVertices, 2100 * 4 * (sizeof(vec3) + sizeof(vec3) + sizeof(vec2)) * 2);// update vertex buffer
@@ -696,16 +699,17 @@ int update(void * arg)
             //     memcpy((Vertex*)(*allInOne.ppVertexBufferMemMapped)[currentFrame] + vertexStart, *allInOne.ppVertices + vertexStart, (allInOne.maxVerticesCount - vertexStart) * sizeof(Vertex));// update vertex buffer
             //     memcpy((*allInOne.ppVertexBufferMemMapped)[currentFrame], *allInOne.ppVertices, vertexEnd * sizeof(Vertex));
             // }
-            memcpy((*allInOne.ppVertexBufferMemMapped)[currentFrame], *allInOne.ppVertices, vertexEnd * sizeof(Vertex));// update vertex buffer
-            vertexCopyDone = true;
 
             memcpy((*allInOne.pppGraphicUniformBufferMapped)[currentFrame], pGraphicUbo, sizeof(UniformBufferObject));
 
             memcpy((*allInOne.pppComputeUniformBufferMapped)[currentFrame], allInOne.pComputeUbo, sizeof(ComputeUniformBufferObject));
 
+            memcpy((*allInOne.ppVertexBufferMemMapped)[currentFrame], *allInOne.ppVertices, vertexEnd * sizeof(Vertex));// update vertex buffer
+            SDL_SignalSemaphore(allSync.vertexSemaphore);
+
             allInOne.pImageRotate->rotation = totalTime * glm_rad(580.0f);
             
-            SDL_UnlockMutex(sdl_mutex_2);
+            SDL_UnlockMutex(allSync.updateMutex);
 
             //logMessage("test: %lf", testNum);
             //logMessage("delta time:%f", delta_time);
@@ -714,7 +718,7 @@ int update(void * arg)
             update_done = true;
         }
 
-        SDL_SignalSemaphore(signal_semaphore);
+        SDL_SignalSemaphore(allSync.signalSemaphore);
     }
     return 0;
 }
@@ -726,7 +730,7 @@ int render(void * arg)
     Uint32 render_frame = 0;
     while (game_is_running)
     {
-        SDL_WaitSemaphore(main_semaphore2);
+        SDL_WaitSemaphore(allSync.renderSemaphore);
 
         drawFrame(scene);
 
@@ -738,7 +742,7 @@ int render(void * arg)
 
         render_frame++;
 
-        SDL_SignalSemaphore(signal_semaphore);
+        SDL_SignalSemaphore(allSync.signalSemaphore);
     }
     return 0;
 }
@@ -752,17 +756,36 @@ int signal_trans(void * arg)
         {
             // SDL_SignalCondition(done_cond);
             update_done = draw_done = false;
-            SDL_SignalSemaphore(main_semaphore1);
-            SDL_SignalSemaphore(main_semaphore2);
+            SDL_SignalSemaphore(allSync.updateSemaphore);
+            SDL_SignalSemaphore(allSync.renderSemaphore);
         }
 
-        SDL_WaitSemaphore(signal_semaphore);
-        SDL_WaitSemaphore(signal_semaphore);
+        SDL_WaitSemaphore(allSync.signalSemaphore);
+        SDL_WaitSemaphore(allSync.signalSemaphore);
     }
 
     return 0;
 }
 
+static void destroyAllSync(void)
+{
+    SDL_DestroyMutex(allSync.updateMutex);
+    SDL_DestroyMutex(allSync.renderMutex);
+    SDL_DestroyMutex(allSync.logMutex);
+    SDL_DestroyMutex(allSync.printMutex);
+    SDL_DestroyMutex(allSync.popWindowMutex);
+    SDL_DestroyMutex(allSync.textureMutex);
+    SDL_DestroyMutex(allSync.timerMutex);
+    SDL_DestroyMutex(allSync.descriptorUpdateMutex);
+    SDL_DestroyMutex(allSync.vertexMutex);
+
+    SDL_DestroySemaphore(allSync.updateSemaphore);
+    SDL_DestroySemaphore(allSync.renderSemaphore);
+    SDL_DestroySemaphore(allSync.vertexSemaphore);
+    SDL_DestroySemaphore(allSync.signalSemaphore);
+    SDL_DestroySemaphore(allSync.logSemaphore);
+    SDL_DestroySemaphore(allSync.worldSemaphore);
+}
 // Function to destroy SDL window and renderer
 void destroy(void) 
 {
@@ -772,10 +795,6 @@ void destroy(void)
     SDL_Log("update end\n");
     SDL_WaitThread(sdl_pid_draw, NULL);
     SDL_Log("draw end\n");
-    SDL_DestroyMutex(sdl_mutex);
-    SDL_DestroyMutex(sdl_mutex_2);
-    SDL_DestroySemaphore(main_semaphore1);
-    SDL_DestroySemaphore(main_semaphore2);
     
     cleanWorld();
 
@@ -783,11 +802,12 @@ void destroy(void)
 
     deInitMusicManagement();
 
-    deInitVertexMutex();
     cleanVulkan(FuncCodeMax);
 
     deInitPopWindow();
     destroyLog();
+
+    destroyAllSync();
     SDL_Quit();
     exit(0);
 }

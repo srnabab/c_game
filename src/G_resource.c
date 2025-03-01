@@ -1,5 +1,6 @@
 #include "G_constants.h"
 #include "G_resource.h"
+#include "G_struct.h"
 
 #include "vk_code_h/vk_texture.h"
 #include "vk_code_h/vk_struct.h"
@@ -11,9 +12,8 @@
 static G_Texture_P * globalTexture;
 static Uint32 tableCount = 2;
 
-static SDL_Mutex * textureMutex = NULL;
-
 extern VK_ALL allInOne;
+extern G_SYNC allSync;
 
 static void emptyTexture(G_Texture_P * pTexture)
 {
@@ -38,8 +38,6 @@ void initGlobalTexture()
     if (globalTexture == NULL) return;
 
     for (i = 0;i < tableCount;i++) emptyTexture(globalTexture + i);
-
-    textureMutex = SDL_CreateMutex();
 
     allInOne.pGlobalTexture = globalTexture;
 }
@@ -66,7 +64,7 @@ static Uint32 HashID(const char * innerName)
 }
 bool loadTexture(PathType path, VkFormat format, VkImageAspectFlags flags, const char * innerName, VkDescriptorSet * pDescriptorSet)
 {
-    SDL_LockMutex(textureMutex);
+    SDL_LockMutex(allSync.textureMutex);
 
     int i;
     for (i = 0;i < tableCount;i++)
@@ -106,7 +104,7 @@ bool loadTexture(PathType path, VkFormat format, VkImageAspectFlags flags, const
         vkDestroyImageView(*allInOne.pDevice, globalTexture[i].imageView, allInOne.pAllocationCallbacks);
         vkDestroyImage(*allInOne.pDevice, globalTexture[i].image, allInOne.pAllocationCallbacks);
 
-        SDL_UnlockMutex(textureMutex);
+        SDL_UnlockMutex(allSync.textureMutex);
 
         return false;
     }
@@ -117,13 +115,13 @@ bool loadTexture(PathType path, VkFormat format, VkImageAspectFlags flags, const
 
     globalTexture[i].ID = ID;
 
-    SDL_UnlockMutex(textureMutex);
+    SDL_UnlockMutex(allSync.textureMutex);
 
     return true;
 }
 bool loadDepthResource(const char * innerName)
 {
-    SDL_LockMutex(textureMutex);
+    SDL_LockMutex(allSync.textureMutex);
 
     int i;
     for (i = 0;i < tableCount;i++)
@@ -159,13 +157,13 @@ bool loadDepthResource(const char * innerName)
 
     globalTexture[i].ID = ID;
 
-    SDL_UnlockMutex(textureMutex);
+    SDL_UnlockMutex(allSync.textureMutex);
 
     return true;
 }
 G_Texture_P * getTexture(const char * innerName)
 {
-    SDL_LockMutex(textureMutex);
+    SDL_LockMutex(allSync.textureMutex);
     
     Uint32 i;
     Uint32 ID = HashID(innerName);
@@ -177,17 +175,17 @@ G_Texture_P * getTexture(const char * innerName)
 
     if (i == tableCount)
     {
-        SDL_UnlockMutex(textureMutex);
+        SDL_UnlockMutex(allSync.textureMutex);
         return NULL;
     }
 
-    SDL_UnlockMutex(textureMutex);
+    SDL_UnlockMutex(allSync.textureMutex);
 
     return globalTexture + i;
 }
 bool textureOffsetsAdd(G_Texture_P * pTexture, Uint32 offset)
 {
-    SDL_LockMutex(textureMutex);
+    SDL_LockMutex(allSync.textureMutex);
     
     if (pTexture->refCount && (offset == pTexture->offsets[pTexture->refCount - 1].count * 4 + pTexture->offsets[pTexture->refCount - 1].offset))
     {
@@ -204,7 +202,7 @@ bool textureOffsetsAdd(G_Texture_P * pTexture, Uint32 offset)
     
             if (tempPtr == NULL)
             {
-                SDL_UnlockMutex(textureMutex);
+                SDL_UnlockMutex(allSync.textureMutex);
                 return false;
             }
     
@@ -217,24 +215,24 @@ bool textureOffsetsAdd(G_Texture_P * pTexture, Uint32 offset)
         pTexture->refCount++;
     }
 
-    SDL_UnlockMutex(textureMutex);
+    SDL_UnlockMutex(allSync.textureMutex);
 
     return true;
 }
 void emptyTextureRefCount(void)
 {
-    SDL_LockMutex(textureMutex);
+    SDL_LockMutex(allSync.textureMutex);
 
     for (int i = 0;i < tableCount;i++)
     {
         globalTexture[i].refCount = 0;
     }
 
-    SDL_UnlockMutex(textureMutex);
+    SDL_UnlockMutex(allSync.textureMutex);
 }
 bool unloadTexture(const char * innerName)
 {
-    SDL_LockMutex(textureMutex);
+    SDL_LockMutex(allSync.textureMutex);
 
     int i;
     
@@ -257,7 +255,7 @@ bool unloadTexture(const char * innerName)
         return true;
     }
 
-    SDL_UnlockMutex(textureMutex);
+    SDL_UnlockMutex(allSync.textureMutex);
 
     return false;
 }
