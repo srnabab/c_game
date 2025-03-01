@@ -94,11 +94,22 @@ bool loadTexture(PathType path, VkFormat format, VkImageAspectFlags flags, const
 
     createTextureImageFromMem(pixels, globalTexture[i].source_width, globalTexture[i].source_height, imageSize, format, &globalTexture[i].image, &globalTexture[i].imageMem);
     createTextureImageView(&globalTexture[i].image, format, flags, &globalTexture[i].imageView);
+    
+    SDL_free(pixels);
 
     SDL_strlcpy(globalTexture[i].innerName, innerName, 16);
 
-    globalTexture[i].offsets = (Uint32*)SDL_calloc(1, sizeof(Uint32));
-    if (globalTexture[i].offsets == NULL) return false;
+    globalTexture[i].offsets = SDL_calloc(1, offsetof(G_Texture_P, offsets));
+    if (globalTexture[i].offsets == NULL)
+    {
+        vkFreeMemory(*allInOne.pDevice, globalTexture[i].imageMem, allInOne.pAllocationCallbacks);
+        vkDestroyImageView(*allInOne.pDevice, globalTexture[i].imageView, allInOne.pAllocationCallbacks);
+        vkDestroyImage(*allInOne.pDevice, globalTexture[i].image, allInOne.pAllocationCallbacks);
+
+        SDL_UnlockMutex(textureMutex);
+
+        return false;
+    }
 
     globalTexture[i].offsetSize = 1;
 
@@ -177,27 +188,34 @@ G_Texture_P * getTexture(const char * innerName)
 bool textureOffsetsAdd(G_Texture_P * pTexture, Uint32 offset)
 {
     SDL_LockMutex(textureMutex);
-
-    if (pTexture->offsetSize == pTexture->refCount)
+    
+    if (pTexture->refCount && (offset == pTexture->offsets[pTexture->refCount - 1].count * 4 + pTexture->offsets[pTexture->refCount - 1].offset))
     {
-        Uint32 * tempPtr;
-
-        if (pTexture->offsetSize > 127) tempPtr = (Uint32*)SDL_realloc(pTexture->offsets, sizeof(Uint32) * (pTexture->offsetSize + 128));
-        else tempPtr = (Uint32*)SDL_realloc(pTexture->offsets, sizeof(Uint32) * pTexture->offsetSize * 2);
-
-        if (tempPtr == NULL)
-        {
-            SDL_UnlockMutex(textureMutex);
-            return false;
-        }
-
-        pTexture->offsets = tempPtr;
-        if (pTexture->offsetSize > 127) pTexture->offsetSize += 128;
-        else pTexture->offsetSize *= 2;
+        pTexture->offsets[pTexture->refCount - 1].count += 1;
     }
-
-    pTexture->offsets[pTexture->refCount] = offset;
-    pTexture->refCount++;
+    else
+    {
+        if (pTexture->offsetSize == pTexture->refCount)
+        {
+            void * tempPtr;
+    
+            if (pTexture->offsetSize > 127) tempPtr = SDL_realloc(pTexture->offsets, offsetof(G_Texture_P, offsets) * (pTexture->offsetSize + 128));
+            else tempPtr = SDL_realloc(pTexture->offsets, offsetof(G_Texture_P, offsets) * pTexture->offsetSize * 2);
+    
+            if (tempPtr == NULL)
+            {
+                SDL_UnlockMutex(textureMutex);
+                return false;
+            }
+    
+            pTexture->offsets = tempPtr;
+            if (pTexture->offsetSize > 127) pTexture->offsetSize += 128;
+            else pTexture->offsetSize *= 2;
+        }
+        pTexture->offsets[pTexture->refCount].offset = offset;
+        pTexture->offsets[pTexture->refCount].count = 1;
+        pTexture->refCount++;
+    }
 
     SDL_UnlockMutex(textureMutex);
 

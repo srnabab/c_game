@@ -23,7 +23,7 @@ static void drawPic(const char * innerName, Uint32 currentFrame)
     
     for (int i = 0;i < tempTexture->refCount;i++)
     {
-        vkCmdDrawIndexed((*allInOne.ppGraphicCommandBuffer)[currentFrame], 6, 1, 0, tempTexture->offsets[i], 0);
+        vkCmdDrawIndexed((*allInOne.ppGraphicCommandBuffer)[currentFrame], tempTexture->offsets[i].count * 6, 1, 0, tempTexture->offsets[i].offset, 0);
     }
 }
 static void recordCommandBuffer_FirstScene(uint32_t imageIndex)

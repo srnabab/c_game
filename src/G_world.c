@@ -142,12 +142,23 @@ void updateCircle(void)
             int32_t temp = *(int32_t*)(ballStack.popFn(&ballStack));
             createCircle(temp + 8, 288);
         }
+        Uint32 refCount = 0;
+        Uint32 currentOffset = 0;
+        G_Texture_P * tempTexture = getTexture("circle");
         for (uint32_t i = 0;i < boxCount;i++)
         {
             b2Vec2 position = b2Body_GetPosition(bodyIds[i]);
-            // updatePosition((position.x * SCALE_FACTOR_INV - 24.0f) * physicalCoffectY, (position.y * SCALE_FACTOR_INV - 24.0f) * physicalCoffectY, allInOne.ppVertices_Pos, i);
-            texturePosUpdate((position.x * SCALE_FACTOR_INV - 24.0f) * physicalCoffectY, (position.y * SCALE_FACTOR_INV - 24.0f) * physicalCoffectY, *allInOne.ppVertices, getTexture("circle")->offsets, i);
-            // textureVertexInit((position.x * SCALE_FACTOR_INV - 24.0f) * physicalCoffectY, (position.y * SCALE_FACTOR_INV - 24.0f) * physicalCoffectY, 16 * physicalCoffectY, 16 * physicalCoffectY, 0.9, allInOne.pVerticesCount, *allInOne.ppVertices, getTexture("circle"));
+            
+            texturePosUpdate((position.x * SCALE_FACTOR_INV - 24.0f) * physicalCoffectY, (position.y * SCALE_FACTOR_INV - 24.0f) * physicalCoffectY, *allInOne.ppVertices, tempTexture->offsets[refCount].offset + currentOffset * 4);
+            if (tempTexture->offsets[refCount].count == currentOffset + 1)
+            {
+                refCount++;
+                currentOffset = 0;
+            }
+            else
+            {
+                currentOffset++;
+            }
         }
         stepDone = false;
         SDL_SignalSemaphore(worldSemaphore);

@@ -489,7 +489,6 @@ void initVulkan(void)
 
     createVertexBuffer(&physicalDevice, &device, vertexBuffer, vertexBufferMem, vertexBufferMemMapped, vertices, (BALLCOUNT * 4 + MAX_CHARACTERS * 4) * 2);
     createVertexBuffer(&physicalDevice, &device, vertexBuffer + 1, vertexBufferMem + 1, vertexBufferMemMapped + 1, vertices, (BALLCOUNT * 4 + MAX_CHARACTERS * 4) * 2);
-    printf("vertexBuffer: 1 %p, 2 %p\n", vertexBuffer[0], vertexBuffer[1]);
 
     indices_v = (uint16_t *)SDL_calloc(BALLCOUNT * 6 + MAX_CHARACTERS * 6, sizeof(uint16_t));
     indexInitialize(indices_v, BALLCOUNT + MAX_CHARACTERS);

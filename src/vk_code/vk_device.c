@@ -334,8 +334,8 @@ void createLogicalDevice(void)
 
     VkDeviceQueueCreateInfo queueCreateInfo[4];
 
-    float queuePriority = 1.0f;
-    Uint32 queueFamilyCount = configureQueueCreateInfo(queueCreateInfo, indices, &queuePriority);
+    float queuePriority[] = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f};
+    Uint32 queueFamilyCount = configureQueueCreateInfo(queueCreateInfo, indices, queuePriority);
 
     Uint32 layersCount = 1;
     const char * validationLayers[] = {

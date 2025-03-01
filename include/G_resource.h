@@ -23,7 +23,11 @@ struct _G_Texture_P
 	VkDescriptorSet * pDescriptorSet;
 	VkFramebuffer frameBuffer;
 
-	Uint32 * offsets;
+	struct _offsets
+	{
+		Uint32 offset;
+		Uint32 count;
+	} * offsets;
     Uint32 offsetSize;
 	Uint32 refCount;
 };

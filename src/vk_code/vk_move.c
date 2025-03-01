@@ -179,11 +179,7 @@ void textureVertexInit(float x, float y, float width, float height, float depth,
     Uint32 vertexCount = *pVertexCount;
     textureOffsetsAdd(tempTexture, vertexCount);
     if (*pVertexCount < allInOne.maxVerticesCount) *pVertexCount += 4;
-    else 
-    {
-        vertexCount = 0;
-        *pVertexCount = 4;
-    }
+    else return;
 
     SDL_UnlockMutex(vertexMutex);
 
@@ -198,11 +194,7 @@ void textureVertexInit_SetUV(float x, float y, float width, float height, float 
     Uint32 vertexCount = *pVertexCount;
     textureOffsetsAdd(tempTexture, vertexCount);
     if (*pVertexCount < allInOne.maxVerticesCount) *pVertexCount += 4;
-    else 
-    {
-        vertexCount = 0;
-        *pVertexCount = 4;
-    }
+    else return;
 
     SDL_UnlockMutex(vertexMutex);
 
@@ -225,9 +217,9 @@ void textureVertexInit_SetUV(float x, float y, float width, float height, float 
     pVertices[vertexCount].texCoord[1] = UV[3][1];
     SDL_UnlockMutex(vertexMutex);
 }
-void texturePosUpdate(float x, float y, Vertex * pVertices, Uint32 * textureOffsets, Uint32 index)
+void texturePosUpdate(float x, float y, Vertex * pVertices, Uint32 offset)
 {
-    vertexPosUpdate(x, y, pVertices, textureOffsets[index]);
+    vertexPosUpdate(x, y, pVertices, offset);
 }
 void vertexPosUpdate(float x, float y, Vertex * pVertices, Uint32 vertexCount)
 {

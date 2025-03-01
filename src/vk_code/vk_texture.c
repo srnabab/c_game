@@ -70,8 +70,6 @@ void createTextureImageFromMem(void * pixels, Uint32 width, Uint32 height, VkDev
 
     transitionImageLayout(pTextureImage, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     
-    SDL_free(pixels);
-
     vkDestroyBuffer(*allInOne.pDevice, stagingBuffer, allInOne.pAllocationCallbacks);
     vkFreeMemory(*allInOne.pDevice, stagingBufferMemory, allInOne.pAllocationCallbacks);
 }

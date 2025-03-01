@@ -76,7 +76,7 @@ void recreateSwapchain()
     //printf("pDevice: %p\n", allInOne.pDevice);
     VkFramebuffer * oldFrameBuffer = *allInOne.ppSwapchainFramebuffer;
     VkImageView * oldSwapchainImageView = *allInOne.ppSwapchainImageViews;
-    VkImage * oldSwapchainImage = *allInOne.ppSwapchainImages;
+    // VkImage * oldSwapchainImage = *allInOne.ppSwapchainImages;
     Uint32 oldImageCount = *allInOne.pImageCount;
 
     resultVulkan(vkDeviceWaitIdle(*pDevice), code, 0);

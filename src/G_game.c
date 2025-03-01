@@ -468,10 +468,7 @@ int update(void * arg)
     bool recovreyPause = false;
     bool sceneCleaned = false;
 
-    bool updateVertex = false;
-
     Uint32 currentFrame;
-    Uint32 preFrame;
 
     Uint32 vertexStart = 0;
     Uint32 vertexEnd = *allInOne.pVerticesCount;
@@ -502,7 +499,6 @@ int update(void * arg)
         totalTime = totalTimeNs / ((float)S_TO_NS);
 
         currentFrame = *allInOne.pCurrentFrame;
-        preFrame = (currentFrame == 0) ? 1 : 0;
 
         // vertexStart = *allInOne.pVerticesCount;
         offsetDone = false;
@@ -588,7 +584,6 @@ int update(void * arg)
                         {
                             textureVertexInit_SetUV(-300.0 + (float)i * 24.0, -100.0, 24, 24, 0.1f, allInOne.pVerticesCount, *allInOne.ppVertices, UVs[i], getTexture("font"));
                         }
-                        updateVertex = true;
                     }
                     textDisplay = false;
                 }
@@ -629,7 +624,6 @@ int update(void * arg)
                 // }
                 // SDL_UnlockMutex(sdl_mutex_2);
 
-                Uint32 count = *allInOne.pVerticesCount;
                 // size_t bufferSize = sizeof(Vertex) * count;
 
                 // Uint32 indiceCount = *allInOne.pIndicesCount;
@@ -651,7 +645,6 @@ int update(void * arg)
                     //SDL_Log("indices count: %u\n", indiceCount);
                     //*allInOne.ppIndices = (uint16_t *)realloc(*allInOne.ppIndices, indiceCount * sizeof(uint16_t));
 
-                    updateVertex = true;
                     ballAdd = false;
                 }
             
