@@ -28,6 +28,7 @@ add_custom_target(
 #     COMMENT "Running move_lib.lnk before building target"
 # )
 
+add_subdirectory(src/G_tiledMap)
 add_subdirectory(src/content_manager)
 
 add_custom_command(

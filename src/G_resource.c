@@ -245,15 +245,11 @@ bool unloadTexture(const char * innerName)
 
     if (i == tableCount) return false;
 
-    if (globalTexture[i].refCount == 0)
-    {
-        vkFreeMemory(*allInOne.pDevice, globalTexture[i].imageMem, allInOne.pAllocationCallbacks);
-        vkDestroyImageView(*allInOne.pDevice, globalTexture[i].imageView, allInOne.pAllocationCallbacks);
-        vkDestroyImage(*allInOne.pDevice, globalTexture[i].image, allInOne.pAllocationCallbacks);
-        emptyTexture(globalTexture + i);
-
-        return true;
-    }
+    vkFreeMemory(*allInOne.pDevice, globalTexture[i].imageMem, allInOne.pAllocationCallbacks);
+    vkDestroyImageView(*allInOne.pDevice, globalTexture[i].imageView, allInOne.pAllocationCallbacks);
+    vkDestroyImage(*allInOne.pDevice, globalTexture[i].image, allInOne.pAllocationCallbacks);
+    SDL_free(globalTexture[i].offsets);
+    emptyTexture(globalTexture + i);
 
     SDL_UnlockMutex(allSync.textureMutex);
 
@@ -268,6 +264,8 @@ void unloadAllTexture(void)
             vkDestroyImageView(*allInOne.pDevice, globalTexture[i].imageView, allInOne.pAllocationCallbacks);
             vkDestroyImage(*allInOne.pDevice, globalTexture[i].image, allInOne.pAllocationCallbacks);
             vkFreeMemory(*allInOne.pDevice, globalTexture[i].imageMem, allInOne.pAllocationCallbacks);
+            SDL_free(globalTexture[i].offsets);
+            emptyTexture(globalTexture + i);
         }
     }
 }
@@ -317,7 +315,7 @@ void unloadAllTexture(void)
 //     }
 // }
 
-// // test
+// test
 // #ifdef TEST
 
 // #include "SDL3/SDL_test.h"
