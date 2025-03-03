@@ -34,6 +34,7 @@ typedef enum _PathType
     TextTxt,
     CirclePng,
     EmojiPng,
+    H1w1Png,
     IconPng,
     LinePng,
     Loading1Png,
@@ -45,7 +46,9 @@ typedef enum _PathType
     SettingPng,
     StartPng,
     TextRectangle1Png,
-    H1w1Png,
+    TileSet1Png,
+    TileMap1TsdI,
+    TileSet1Tsd,
     MAX_PATH_TYPE = 0x7FFFFFFF
 } PathType;
 

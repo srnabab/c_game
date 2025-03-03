@@ -114,6 +114,10 @@ PathType pathCompare(char * buffer)
     {
         return EmojiPng;
     }
+    else if ((SDL_strcmp(buffer, "[H1w1Png]") == 0))
+    {
+        return H1w1Png;
+    }
     else if ((SDL_strcmp(buffer, "[IconPng]") == 0))
     {
         return IconPng;
@@ -158,9 +162,17 @@ PathType pathCompare(char * buffer)
     {
         return TextRectangle1Png;
     }
-    else if ((SDL_strcmp(buffer, "[H1w1Png]") == 0))
+    else if ((SDL_strcmp(buffer, "[TileSet1Png]") == 0))
     {
-        return H1w1Png;
+        return TileSet1Png;
+    }
+    else if ((SDL_strcmp(buffer, "[TileMap1TsdI]") == 0))
+    {
+        return TileMap1TsdI;
+    }
+    else if ((SDL_strcmp(buffer, "[TileSet1Tsd]") == 0))
+    {
+        return TileSet1Tsd;
     }
 
     return None;

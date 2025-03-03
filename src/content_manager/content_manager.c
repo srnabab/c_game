@@ -402,6 +402,7 @@ static SDL_EnumerationResult SDLCALL createFolderDatabase(void *userdata, const 
         SDL_strlcat(temp_A_Path, fname, 255);
         SDL_GetPathInfo(temp_A_Path, &info);
         // SDL_Log(temp_A_Path);
+        SDL_Log(temp_A_Path + ((DB_Path*)userdata)->R_Begin);
         // SDL_Log("type: %d, size: %llu, dirname:%s, fname:%s, begin: %u", info.type, info.size, dirname, fname, ((DB_Path*)userdata)->R_Begin);
         insertNode(((DB_Path*)userdata)->db, temp_A_Path + ((DB_Path*)userdata)->R_Begin, getID(((DB_Path*)userdata)->db, ((DB_Path*)userdata)->A_path + ((DB_Path*)userdata)->LenGetId),
                      info.modify_time, (int)info.type);
@@ -409,7 +410,7 @@ static SDL_EnumerationResult SDLCALL createFolderDatabase(void *userdata, const 
         {
             DB_Path pack = {0};
             pack.LenGetId = ((DB_Path*)userdata)->R_Begin;
-            pack.R_Begin = pack.LenGetId + SDL_strlen(dirname + ((DB_Path*)userdata)->R_Begin) + 1;
+            pack.R_Begin = pack.LenGetId + SDL_strlen(dirname + ((DB_Path*)userdata)->R_Begin);
             pack.db = ((DB_Path*)userdata)->db;
             pack.A_path = temp_A_Path;
             SDL_EnumerateDirectory(temp_A_Path, createFolderDatabase, &pack);
@@ -437,6 +438,7 @@ static SDL_EnumerationResult SDLCALL updateFolderDatabase(void *userdata, const 
         SDL_strlcat(temp_A_Path, fname, 255);
         SDL_GetPathInfo(temp_A_Path, &info);
         // SDL_Log(temp_A_Path);
+        SDL_Log(temp_A_Path + ((DB_Path*)userdata)->R_Begin);
         // SDL_Log("type: %d, size: %llu, dirname:%s, fname:%s, begin: %u", info.type, info.size, dirname, fname, ((DB_Path*)userdata)->R_Begin);
 
         sqlite3 * tempDB = ((DB_Path*)userdata)->db;
@@ -472,7 +474,7 @@ static SDL_EnumerationResult SDLCALL updateFolderDatabase(void *userdata, const 
         {
             DB_Path pack = {0};
             pack.LenGetId = ((DB_Path*)userdata)->R_Begin;
-            pack.R_Begin = pack.LenGetId + SDL_strlen(dirname + ((DB_Path*)userdata)->R_Begin) + 1;
+            pack.R_Begin = pack.LenGetId + SDL_strlen(dirname + ((DB_Path*)userdata)->R_Begin);
             pack.db = ((DB_Path*)userdata)->db;
             pack.A_path = temp_A_Path;
             SDL_EnumerateDirectory(temp_A_Path, updateFolderDatabase, &pack);

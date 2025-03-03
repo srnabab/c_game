@@ -85,7 +85,6 @@ int main(int argc, char *argv[])
         return 1;
     }
     Uint32 i, j, k, m, n, p;
-    mutex = SDL_CreateMutex();
 
     if (SDL_atoi(argv[1]) == 1)
     {
@@ -109,7 +108,7 @@ int main(int argc, char *argv[])
             setOffset[i * setCol + j] = (Uint32*)SDL_malloc(split_height * sizeof(Uint32));
             for (k = 0;k < split_height;k++)
             {
-                setOffset[i * setCol + j][k] = setWidth * setChannel * k + j * split_width * setChannel;
+                setOffset[i * setCol + j][k] = setWidth * setChannel * k + j * split_width * setChannel + i * setWidth * split_height * setChannel;
                 // SDL_Log("set offset: %u\n", setOffset[i * setCol + j][k]);
             }
         }
@@ -126,10 +125,11 @@ int main(int argc, char *argv[])
         for (i = 0;i < imageRow;i++)
         for (j = 0;j < imageCol;j++)
         {
+            // SDL_Log("image offset index: %u\n", i * imageCol + j);
             imageOffset[i * imageCol + j] = (Uint32*)SDL_malloc(split_height * sizeof(Uint32));
             for (k = 0;k < split_height;k++)
             {
-                imageOffset[i * imageCol + j][k] = imageWidth * imageChannel * k + j * split_width * imageChannel;
+                imageOffset[i * imageCol + j][k] = imageWidth * imageChannel * k + j * split_width * imageChannel + i * imageWidth * split_height * imageChannel;
                 // SDL_Log("image offset: %u\n", imageOffset[i * imageCol + j][k]);
             }
         }
