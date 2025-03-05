@@ -2,6 +2,7 @@
 #include "G_log.h"
 #include "G_graphic.h"
 #include "G_resource.h"
+#include "G_TileMap/G_TileSet.h"
 
 #include "SDL3/SDL_init.h"
 #include "SDL3/SDL_video.h"
@@ -513,10 +514,10 @@ void initVulkan(void)
     //graphic shader
     graphicDescriptorPoolSize = (VkDescriptorPoolSize*)SDL_malloc(2 * sizeof(VkDescriptorPoolSize));
     graphicDescriptorPoolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    graphicDescriptorPoolSize[0].descriptorCount = 6;
+    graphicDescriptorPoolSize[0].descriptorCount = 8;
     graphicDescriptorPoolSize[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    graphicDescriptorPoolSize[1].descriptorCount = 18;
-    createDescriptorPool(&device, 2, graphicDescriptorPoolSize, 6, &graphicDescriptorPool);
+    graphicDescriptorPoolSize[1].descriptorCount = 8;
+    createDescriptorPool(&device, 2, graphicDescriptorPoolSize, 8, &graphicDescriptorPool);
 
     PathType graphicTypes[] = {TriangleVertShader, TriangleFragShader};
     VkShaderModule * graphicTempModule = NULL;
@@ -525,7 +526,7 @@ void initVulkan(void)
     vertShaderCode = graphicTempModule[0];
     fragShaderCode = graphicTempModule[1];
 
-    createDescriptorSets(&graphicDescriptorPool, graphicDescriptorSetLayout, graphicSetCount, 3, &graphicDescriptorSets);
+    createDescriptorSets(&graphicDescriptorPool, graphicDescriptorSetLayout, graphicSetCount, 4, &graphicDescriptorSets);
 
     createGraphicsPipeline(&device, &extent2D, 2, graphciShaderStageCreateInfo, &graphicPipelineLayout, &renderPass, &graphicPipeline);
 
@@ -583,20 +584,24 @@ void initVulkan(void)
 
     createFenceByBuffering(&computeInFlightFences);
     
+    loadTileSet(TileSet1Png, TileSet1Tsd, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "tileSet", graphicDescriptorSets + 6);
     loadTexture(Loading1Png, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "loading", graphicDescriptorSets);
     loadTexture(CirclePng, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "circle", graphicDescriptorSets + 2);
     loadTexture(MainFontPng, VK_FORMAT_R8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, "font", graphicDescriptorSets + 4);
     
-    G_Texture_P const * loadingTexture = getTexture("loading");
-    G_Texture_P const * circleTexture = getTexture("circle");
-    G_Texture_P const * fontTexture = getTexture("font");
+    G_Texture_P * loadingTexture = getTexture("loading");
+    G_Texture_P * circleTexture = getTexture("circle");
+    G_Texture_P * fontTexture = getTexture("font");
+    G_Texture_P * tileSetTexture = getTexture("tileSet");
 
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, loadingTexture->pDescriptorSet, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, circleTexture->pDescriptorSet, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, fontTexture->pDescriptorSet, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, tileSetTexture->pDescriptorSet, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, "loading", textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, "circle", textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, "font", textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, "tileSet", textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, particleDescriptorSets, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, computeDescriptorSets, computeUniformBuffers, 0, sizeof(ComputeUniformBufferObject));
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, computeDescriptorSets, shaderStorageBuffers, 0, sizeof(Particle) * PARTICLE_COUNT);

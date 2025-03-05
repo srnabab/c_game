@@ -26,6 +26,8 @@ struct _G_SYNC
     SDL_Mutex * descriptorUpdateMutex;
     // for vertex data set
     SDL_Mutex * vertexMutex;
+    // for tile set load
+    SDL_Mutex * tileSetMutex;
 
     // for update sync
     SDL_Semaphore * updateSemaphore;

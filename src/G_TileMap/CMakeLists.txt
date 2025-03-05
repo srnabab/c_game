@@ -4,7 +4,7 @@ project(tileSet VERSION 0.1.0 LANGUAGES C)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED TRUE)
 
-add_executable(tileSet G_TileSet.c)
+add_executable(tileSet G_TileSetGenerate.c)
 
 target_include_directories(tileSet PUBLIC ${CMAKE_SOURCE_DIR}/include)
 target_link_libraries(tileSet PUBLIC SDL3.a SDL3_image.a

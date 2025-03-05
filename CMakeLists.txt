@@ -28,7 +28,7 @@ add_custom_target(
 #     COMMENT "Running move_lib.lnk before building target"
 # )
 
-add_subdirectory(src/G_tiledMap)
+add_subdirectory(src/G_TileMap)
 add_subdirectory(src/content_manager)
 
 add_custom_command(
@@ -69,6 +69,7 @@ add_executable(game ${SRC_ROOT}/main.c
                     ${SRC_ROOT}/G_pop_window.c
                     ${SRC_ROOT}/G_scene.c
                     ${SRC_ROOT}/G_resource.c
+                    ${SRC_ROOT}/G_TileMap/G_TileSet.c
                     ${SRC_ROOT}/SDL_complement.c
                     ${SRC_ROOT}/spirv_reflect/spirv_reflect.c
                     ${SRC_ROOT}/spirv_reflect/shader_resolve.c

@@ -4,9 +4,12 @@
 // #include <stdio.h>
 
 // .tsd format
+// 4byte image width
+// 4byte image height
 // 4byte tile width
 // 4byte tile height
 // 4byte tile property <count>
+// 4byte data len
 // sequently 4byte index <count>byte properties
 // 4byte crc32 for index and properties
 
@@ -90,6 +93,7 @@ int main(int argc, char *argv[])
     {
         SDL_IOStream * tsd = SDL_IOFromFile(argv[3], "rb");
         Uint32 split_width, split_height;
+        SDL_SeekIO(tsd, 2 * sizeof(Uint32), SDL_IO_SEEK_SET);
         SDL_ReadIO(tsd, &split_width, sizeof(Uint32));
         SDL_ReadIO(tsd, &split_height, sizeof(Uint32));
         SDL_CloseIO(tsd);
@@ -259,6 +263,7 @@ int main(int argc, char *argv[])
 
         Uint32 col = width / split_width;
         Uint32 row = height / split_height;
+        Uint32 tileCount = row * col;
 
         char path[255];
         SDL_strlcpy(path, argv[0], strlen(argv[0]));
@@ -284,7 +289,7 @@ int main(int argc, char *argv[])
         }
         else
         {
-            SDL_SeekIO(file, 3 * sizeof(Uint32), SDL_IO_SEEK_SET);
+            SDL_SeekIO(file, 6 * sizeof(Uint32), SDL_IO_SEEK_SET);
             SDL_ReadIO(file, data, (sizeof(Uint32) + sizeof(bool) * 1) * row * col);
             Uint32 crc = SDL_crc32(0, data, (sizeof(Uint32) + sizeof(bool) * 1) * row * col);
             Uint32 crc_check;
@@ -367,20 +372,24 @@ int main(int argc, char *argv[])
         }
 
         SDL_SeekIO(file, 0, SDL_IO_SEEK_SET);
+        SDL_WriteIO(file, &width, sizeof(Uint32));
+        SDL_WriteIO(file, &height, sizeof(Uint32));
         SDL_WriteIO(file, &split_width, sizeof(Uint32));
         SDL_WriteIO(file, &split_height, sizeof(Uint32));
         Uint32 propertyCount = PROPERTY_COUNT;
         SDL_WriteIO(file, &propertyCount, sizeof(Uint32));
+        SDL_WriteIO(file, &tileCount, sizeof(Uint32));
+        Uint32 crc32 = 0;
         for (i = 0;i < row * col;i++)
         {
             SDL_WriteIO(file, &i, sizeof(Uint32));
             SDL_WriteIO(file, properties[i], sizeof(bool) * PROPERTY_COUNT);
             SDL_free(properties[i]);
         }
-        SDL_SeekIO(file, 2 * sizeof(Uint32), SDL_IO_SEEK_SET);
-        SDL_ReadIO(file, data, (sizeof(Uint32) + sizeof(bool) * PROPERTY_COUNT) * row * col);
 
-        Uint32 crc32 = SDL_crc32(0, data, (sizeof(Uint32) + sizeof(bool) * PROPERTY_COUNT) * row * col);
+        SDL_SeekIO(file, 6 * sizeof(Uint32), SDL_IO_SEEK_SET);
+        SDL_ReadIO(file, data, row * col * (sizeof(Uint32) + sizeof(bool) * PROPERTY_COUNT));
+        crc32 = SDL_crc32(0, data, row * col * (sizeof(Uint32) + sizeof(bool) * PROPERTY_COUNT));
         SDL_WriteIO(file, &crc32, sizeof(Uint32));
 
         SDL_free(properties);

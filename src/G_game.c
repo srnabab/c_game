@@ -50,6 +50,7 @@ static void initAllSync(void)
     allSync.timerMutex = SDL_CreateMutex();
     allSync.descriptorUpdateMutex = SDL_CreateMutex();
     allSync.vertexMutex = SDL_CreateMutex();
+    allSync.tileSetMutex = SDL_CreateMutex();
 
     allSync.updateSemaphore = SDL_CreateSemaphore(0);
     allSync.renderSemaphore = SDL_CreateSemaphore(0);
@@ -778,6 +779,7 @@ static void destroyAllSync(void)
     SDL_DestroyMutex(allSync.timerMutex);
     SDL_DestroyMutex(allSync.descriptorUpdateMutex);
     SDL_DestroyMutex(allSync.vertexMutex);
+    SDL_DestroyMutex(allSync.tileSetMutex);
 
     SDL_DestroySemaphore(allSync.updateSemaphore);
     SDL_DestroySemaphore(allSync.renderSemaphore);
