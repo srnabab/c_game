@@ -70,6 +70,7 @@ struct _G_DescriptorSet_Update
 };
 typedef struct _G_DescriptorSet_Update G_DescriptorSet_Update;
 
+extern void SDLCALL logAllTexture(void);
 extern void SDLCALL initGlobalTexture(void);
 extern bool SDLCALL loadTexture(PathType path, VkFormat format, VkImageAspectFlags flags, const char * innerName, VkDescriptorSet * pDescriptorSet);
 extern G_Texture_P * SDLCALL getTexture(const char * innerName);

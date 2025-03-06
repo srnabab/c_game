@@ -13,41 +13,18 @@ void resultVulkan(VkResult result, FuncCode code, uint32_t num, ...)
         break;
 
         case VK_SUBOPTIMAL_KHR:
-        if (code == queuePresentF)
-        {
-            recreateSwapchain();
-            //SDL_Log("VK_SUBOPTIMAL_KHR(queuePresent)\n");
-        }
-        else if (code == acquireNextImageF)
-        {
-            // logMessage("VK_SUBOPTIMAL_KHR(acquireNext)");
-        }
+        logMessage("result: %d", result);
+        recreateSwapchain();
         break;
 
         case VK_ERROR_OUT_OF_DATE_KHR:
-        if (code == acquireNextImageF)
-        {
-            //SDL_Log("VK_ERROR_OUT_OF_DATE_KHR(acquireNExt)\n");
-            recreateSwapchain();
-        }
-        if (code == queuePresentF)
-        {
-            recreateSwapchain();
-            //SDL_Log("VK_ERROR_OUT_OF_DATE_KHR(queuePresent)\n");
-        }
+        logMessage("result: %d", result);
+        recreateSwapchain();
         break;
 
         case VK_ERROR_SURFACE_LOST_KHR:
-        if (code == acquireNextImageF)
-        {
-            logMessage("VK_ERROR_SURFACE_LOST_KHR(acquireNExt)");
-            recreateSwapchain();
-        }
-        if (code == queuePresentF)
-        {
-            recreateSwapchain();
-            logMessage("VK_ERROR_SURFACE_LOST_KHR(queuePresent)");
-        }
+        logMessage("result: %d", result);
+        recreateSwapchain();
         break;
 
         default:

@@ -13,6 +13,7 @@ extern void SDL_UNUSED SDLCALL initializeMovingBuffer(VkPhysicalDevice * pPhysic
 extern void SDLCALL vertexInitialize(float x, float y, float width, float height, float depth, Uint32 vertexCount, Vertex * pVertices);
 extern void SDLCALL textureVertexInit(float x, float y, float width, float height, float depth, Uint32 * pVertexCount, Vertex * pVertices, G_Texture_P * tempTexture);
 extern void SDLCALL textureVertexInit_SetUV(float x, float y, float width, float height, float depth, Uint32 * pVertexCount, Vertex * pVertices, vec2 * UV, G_Texture_P * tempTexture);
+extern void SDLCALL tileMapVertexInit(Uint32 * pVertexCount, Vertex * pVertices);
 extern void SDLCALL indexInitialize(Uint16 * indices, Uint32 indicesCount);
 extern void SDLCALL texturePosUpdate(float x, float y, Vertex * pVertices, Uint32 offset);
 extern void SDLCALL vertexPosUpdate(float x, float y, Vertex * pVertices, Uint32 vertexCount);

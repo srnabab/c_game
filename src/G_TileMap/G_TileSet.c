@@ -3,6 +3,7 @@
 #include "G_struct.h"
 
 #include "SDL3/SDL_iostream.h"
+#include "SDL3/SDL_log.h"
 
 static TILE_SET * tileSets = NULL;
 static Uint32 tileSetCount = 0;
@@ -14,6 +15,23 @@ void initTileMapSystem(void)
 {
     tileCap++;
     tileSets = SDL_calloc(tileCap, sizeof(TILE_SET));
+    memset(tileSets, 0, sizeof(TILE_SET));
+}
+void getTileSetCount(Uint32 * pTileSetCount)
+{
+    SDL_LockMutex(allSync.tileSetMutex);
+
+    *pTileSetCount = tileSetCount;
+
+    SDL_UnlockMutex(allSync.tileSetMutex);
+}
+void getTileSetPtr(TILE_SET ** ppSet)
+{
+    SDL_LockMutex(allSync.tileSetMutex);
+
+    *ppSet = tileSets;
+
+    SDL_UnlockMutex(allSync.tileSetMutex);
 }
 static unsigned char* readTileSetData(PathType path, Uint32 * pTileWidth, Uint32 * pTileHeight, Uint32 * pTilePropertyCount, Uint32 * pTileCount, Uint32 * pImageWidth, Uint32 * pImageHeight)
 {
@@ -70,6 +88,7 @@ static TILE_SET * loadTileSetData(PathType setDataPath, const char * innerName)
         tileCap++;
         tileSets = (TILE_SET*)SDL_realloc(tileSets, tileCap * sizeof(TILE_SET));
         if (tileSets == NULL) goto unlockMutex;
+        memset(tileSets + tileSetCount, 0, sizeof(TILE_SET));
     }
     unsigned char * data = readTileSetData(setDataPath, &tileSets[tileSetCount].tileWidth, &tileSets[tileSetCount].tileHeight, &tilePropertyCount, &tileSets[tileSetCount].tileCount, &imageWidth, &imageHeight);
     if (data == NULL) goto freeData;
@@ -129,7 +148,7 @@ static TILE_SET * loadTileSetData(PathType setDataPath, const char * innerName)
 
     normal:
     SDL_free(data);
-    SDL_strlcpy(tileSets[tileSetCount].innerName, innerName, SDL_strlen(innerName));
+    SDL_strlcpy(tileSets[tileSetCount].innerName, innerName, SDL_strlen(innerName) + 1);
 
     tileSetCount++;
     SDL_UnlockMutex(allSync.tileSetMutex);
@@ -137,26 +156,100 @@ static TILE_SET * loadTileSetData(PathType setDataPath, const char * innerName)
 }
 bool loadTileSet(PathType setImagePath, PathType setDataPath, VkFormat format, VkImageAspectFlags flags, const char * innerName, VkDescriptorSet * pDescriptorSet)
 {
-    TILE_SET * pSet = loadTileSetData(setDataPath, innerName);
-    if (pSet == NULL) return false;
-
     bool res = loadTexture(setImagePath, format, flags, innerName, pDescriptorSet);
     if (res == false) return false;
 
-    SDL_LockMutex(allSync.tileSetMutex);
-    pSet->pTexture = getTexture(innerName);
-    SDL_UnlockMutex(allSync.tileSetMutex);
+    TILE_SET * pSet = loadTileSetData(setDataPath, innerName);
+    if (pSet == NULL) 
+    {
+        unloadTexture(innerName);
+        return false;
+    }
 
     return true;
 }
-TILE_SET * getTileSet(const char * innerName)
+static TILE_SET * getTileSet(const char * innerName)
 {
     for (Uint32 i = 0;i < tileSetCount;i++)
     {
-        if (SDL_strcmp(innerName, tileSets[i].innerName) == 0) return tileSets + i;
+        if (SDL_strcmp(innerName, tileSets[i].innerName) == 0) 
+        {
+            return tileSets + i;
+        }
     }
 
     return NULL;
+}
+static Uint32 * loadTileMapData(PathType tileMapData, Uint32 * pRow, Uint32 * pCol)
+{
+    SDL_IOStream * tsdI = SDL_IOFromFile(getPath(tileMapData), "rb");
+    if (tsdI == NULL);
+
+    SDL_ReadIO(tsdI, pRow, sizeof(Uint32));
+    SDL_ReadIO(tsdI, pCol, sizeof(Uint32));
+    Uint32 tileCount = *pRow * *pCol;
+
+    Uint32 * data = (Uint32*)SDL_malloc(tileCount * sizeof(Uint32));
+    if (data == NULL)
+    {
+        SDL_CloseIO(tsdI);
+
+        return NULL;
+    }
+    SDL_ReadIO(tsdI, data, tileCount * sizeof(Uint32));
+
+    Uint32 crc32 = SDL_crc32(0, data, tileCount * sizeof(Uint32));
+    Uint32 crc32_check;
+    SDL_ReadIO(tsdI, &crc32_check, sizeof(Uint32));
+    if (crc32 != crc32_check) 
+    {
+        SDL_free(data);
+        SDL_CloseIO(tsdI);
+
+        return NULL;
+    }
+
+    SDL_CloseIO(tsdI);
+
+    return data;
+}
+bool loadTileMap(PathType tileMapData, int32_t x, int32_t y, const char * innerName)
+{
+    SDL_LockMutex(allSync.tileSetMutex);
+
+    TILE_SET * pSet = getTileSet(innerName);
+
+    Uint32 row, col;
+    Uint32 * temp = loadTileMapData(tileMapData, &row, &col);
+    if (temp == NULL) 
+    {
+        SDL_UnlockMutex(allSync.tileSetMutex);
+
+        return false;
+    }
+
+    void * ptr = SDL_realloc(pSet->maps, (pSet->mapCount + 1) * sizeof(TILE_MAP));
+    if (ptr == NULL)
+    {
+        SDL_free(temp);
+
+        SDL_UnlockMutex(allSync.tileSetMutex);
+
+        return false;
+    }
+    pSet->maps = ptr;
+    pSet->maps[pSet->mapCount].rowCount = row;
+    pSet->maps[pSet->mapCount].colCount = col;
+    pSet->maps[pSet->mapCount].x = x;
+    pSet->maps[pSet->mapCount].y = y;
+    pSet->maps[pSet->mapCount].indeices = temp;
+
+    pSet->mapCount++;
+    // SDL_Log("row: %u, col: %u, x: %d, y: %d", pSet->maps[pSet->mapCount].rowCount, pSet->maps[pSet->mapCount].colCount, pSet->maps[pSet->mapCount].x, pSet->maps[pSet->mapCount].y);
+
+    SDL_UnlockMutex(allSync.tileSetMutex);
+
+    return true;
 }
 void deInitTileMapSystem(void)
 {
@@ -166,8 +259,13 @@ void deInitTileMapSystem(void)
         {
             SDL_free(tileSets[i].tileUV[j]);
         }
+        for (Uint32 j = 0;j < tileSets[i].mapCount;j++)
+        {
+            SDL_free(tileSets[i].maps[j].indeices);
+        }
+        SDL_free(tileSets[i].maps);
         SDL_free(tileSets[i].tileUV);
         SDL_free(tileSets[i].properties);
-        SDL_free(tileSets);
     }
+    SDL_free(tileSets);
 }

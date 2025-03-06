@@ -124,11 +124,14 @@ target_link_libraries(game PRIVATE
                     unistring.a
                     "${LIB_ROOT}/vulkan/vulkan-1.lib"
                     freetyped.a
-                    bz2.a z.a setupapi.a winmm.a imm32.a version.a)
+                    bz2.a z.a setupapi.a winmm.a imm32.a version.a
+                    )
 
 # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mwindows")
 
-target_compile_options(game PUBLIC -O0 -Wall)
+target_compile_options(game PUBLIC -static-libgcc -gdwarf-2 -O0 -Wall)
+# target_compile_options(game PUBLIC -fsanitize=address -fno-omit-frame-pointer -g)
+# target_link_options(game PRIVATE -fsanitize=address)
 # target_compile_options(game PUBLIC -O0 -Wall -Wextra)
 # target_compile_options(game PUBLIC -Os -Wall)
 

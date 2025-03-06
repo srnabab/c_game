@@ -23,7 +23,7 @@ void main()
     fragColor = inColor;
     fragTexCoord = inTexCoord;
     fragDepth = inPosition.z;
-    if (inPosition.z == 0.0)
+    if (inPosition.z == 0.1)
     {
         mat2 rotationMatrix = mat2(
             cos(ImageRotation.rotation), -sin(ImageRotation.rotation),

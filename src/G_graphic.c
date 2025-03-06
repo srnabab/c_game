@@ -216,9 +216,9 @@ static Vertex * vertices = NULL;
 // static vec3 * vertices_Color = NULL;
 // static vec2 * vertices_TexCoord = NULL;
 
-static VkBuffer indexBuffer[MAX_FRAMES_IN_FLIGHT];
-static VkDeviceMemory indexBufferMem[MAX_FRAMES_IN_FLIGHT];
-static void * indexBufferMemMapped [MAX_FRAMES_IN_FLIGHT];
+static VkBuffer indexBuffer[1];
+static VkDeviceMemory indexBufferMem[1];
+static void * indexBufferMemMapped[1];
 static uint16_t * indices_v = NULL;
 
 static VkBuffer graphicUniformBuffers[MAX_FRAMES_IN_FLIGHT];
@@ -488,11 +488,10 @@ void initVulkan(void)
     createVertexBuffer(&physicalDevice, &device, vertexBuffer, vertexBufferMem, vertexBufferMemMapped, vertices, (BALLCOUNT * 4 + MAX_CHARACTERS * 4) * 2);
     createVertexBuffer(&physicalDevice, &device, vertexBuffer + 1, vertexBufferMem + 1, vertexBufferMemMapped + 1, vertices, (BALLCOUNT * 4 + MAX_CHARACTERS * 4) * 2);
 
-    indices_v = (uint16_t *)SDL_calloc(BALLCOUNT * 6 + MAX_CHARACTERS * 6, sizeof(uint16_t));
-    indexInitialize(indices_v, BALLCOUNT + MAX_CHARACTERS);
+    indices_v = (uint16_t *)SDL_calloc((BALLCOUNT * 6 + MAX_CHARACTERS * 6) * 2, sizeof(uint16_t));
+    indexInitialize(indices_v, (BALLCOUNT + MAX_CHARACTERS) * 2);
 
-    createIndexBuffer(&physicalDevice, &device, indexBuffer, indexBufferMem, indexBufferMemMapped, indices_v, BALLCOUNT * 6 + MAX_CHARACTERS * 6);
-    createIndexBuffer(&physicalDevice, &device, indexBuffer + 1, indexBufferMem + 1, indexBufferMemMapped + 1, indices_v, BALLCOUNT * 6 + MAX_CHARACTERS * 6);
+    createIndexBuffer(&physicalDevice, &device, indexBuffer, indexBufferMem, indexBufferMemMapped, indices_v, (BALLCOUNT * 6 + MAX_CHARACTERS * 6) * 2);
 
     SDL_free(indices_v);
 
@@ -585,6 +584,15 @@ void initVulkan(void)
     createFenceByBuffering(&computeInFlightFences);
     
     loadTileSet(TileSet1Png, TileSet1Tsd, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "tileSet", graphicDescriptorSets + 6);
+    loadTileMap(TileMap1TsdI, -400, -300, "tileSet");
+    // loadTileMap(TileMap1TsdI, -1200, -1100, "tileSet");
+    // loadTileMap(TileMap1TsdI, -1200, -300, "tileSet");
+    // loadTileMap(TileMap1TsdI, -1200, 500, "tileSet");
+    // loadTileMap(TileMap1TsdI, -400, 500, "tileSet");
+    // loadTileMap(TileMap1TsdI, 400, 500, "tileSet");
+    // loadTileMap(TileMap1TsdI, 400, -300, "tileSet");
+    // loadTileMap(TileMap1TsdI, 400, -1100, "tileSet");
+    // loadTileMap(TileMap1TsdI, -400, -1100, "tileSet");
     loadTexture(Loading1Png, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "loading", graphicDescriptorSets);
     loadTexture(CirclePng, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "circle", graphicDescriptorSets + 2);
     loadTexture(MainFontPng, VK_FORMAT_R8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, "font", graphicDescriptorSets + 4);
@@ -791,11 +799,9 @@ void cleanVulkan(FuncCode code)
 
         case createUniformBuffersF:
         vkDestroyBuffer(device, indexBuffer[0], allInOne.pAllocationCallbacks);
-        vkDestroyBuffer(device, indexBuffer[1], allInOne.pAllocationCallbacks);
         logMessage("index buffer destroyed");
 
         vkFreeMemory(device, indexBufferMem[0], allInOne.pAllocationCallbacks);
-        vkFreeMemory(device, indexBufferMem[1], allInOne.pAllocationCallbacks);
         logMessage("index buffer memory freed");
         /*fall through*/
 

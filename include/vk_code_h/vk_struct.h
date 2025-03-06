@@ -134,11 +134,11 @@ struct _VK_ALL
     VkDeviceMemory (*pVertexBufferMem)[MAX_FRAMES_IN_FLIGHT];
     void* (*ppVertexBufferMemMapped)[MAX_FRAMES_IN_FLIGHT];
 
-    VkBuffer (*pIndexBuffer)[MAX_FRAMES_IN_FLIGHT];
+    VkBuffer (*pIndexBuffer)[1];
     Uint16 ** ppIndices;
     Uint32 * pIndicesCount;
-    VkDeviceMemory (*pIndexBufferMem)[MAX_FRAMES_IN_FLIGHT];
-    void* (*ppIndexBufferMemMapped)[MAX_FRAMES_IN_FLIGHT];
+    VkDeviceMemory (*pIndexBufferMem)[1];
+    void* (*ppIndexBufferMemMapped)[1];
 
     VkSampler * pTextureSampler;
 

@@ -14,6 +14,17 @@ struct _TILE_PROPERTY
 };
 typedef struct _TILE_PROPERTY TILE_PROPERTY;
 
+/* x , y is point of top-left*/
+struct _TILE_MAP
+{
+    Uint32 rowCount;
+    Uint32 colCount;
+    int32_t x;
+    int32_t y;
+    Uint32 * indeices;
+};
+typedef struct _TILE_MAP TILE_MAP;
+
 struct _TILE_SET
 {
     char innerName[16];
@@ -22,13 +33,16 @@ struct _TILE_SET
     Uint32 tileHeight;
     TILE_PROPERTY * properties;
     vec2 ** tileUV;
-    G_Texture_P * pTexture;
+    TILE_MAP * maps;
+    Uint32 mapCount;
 };
 typedef struct _TILE_SET TILE_SET;
 
-extern void initTileMapSystem(void);
+extern void SDLCALL initTileMapSystem(void);
+extern void SDLCALL getTileSetCount(Uint32 * pTileSetCount);
+extern void SDLCALL getTileSetPtr(TILE_SET ** ppSet);
 extern bool SDLCALL loadTileSet(PathType setImagePath, PathType setDataPath, VkFormat format, VkImageAspectFlags flags, const char * innerName, VkDescriptorSet * pDescriptorSet);
-extern TILE_SET * SDLCALL getTileSet(const char * innerName);
+extern bool SDLCALL loadTileMap(PathType tileMapData, int32_t x, int32_t y, const char * innerName);
 extern void SDLCALL deInitTileMapSystem(void);
 
 #include "SDL3/SDL_close_code.h"

@@ -2,6 +2,9 @@
 #include "vk_code_h/vk_buffer.h"
 
 #include "G_struct.h"
+#include "G_TileMap/G_TileSet.h"
+
+#include "SDL3/SDL_log.h"
 
 extern VK_ALL allInOne;
 
@@ -211,6 +214,39 @@ void textureVertexInit_SetUV(float x, float y, float width, float height, float 
     vertexCount++;
     pVertices[vertexCount].texCoord[0] = UV[3][0];
     pVertices[vertexCount].texCoord[1] = UV[3][1];
+    SDL_UnlockMutex(allSync.vertexMutex);
+}
+void tileMapVertexInit(Uint32 * pVertexCount, Vertex * pVertices)
+{
+    Uint32 tileSetCount = 0;
+    getTileSetCount(&tileSetCount);
+    SDL_Log("tile set count: %u", tileSetCount);
+
+    TILE_SET * pSet = NULL;
+    getTileSetPtr(&pSet);
+
+    SDL_LockMutex(allSync.vertexMutex);
+    Uint32 tileWidth, tileHeight, mapRowCount, mapColCount, i, j, k, m;
+    for (i = 0;i < tileSetCount;i++)
+    {
+        tileWidth = pSet[i].tileWidth;
+        tileHeight = pSet[i].tileHeight;
+        G_Texture_P * pTexture = getTexture(pSet->innerName);
+
+        for (j = 0;j < pSet[i].mapCount;j++)
+        {
+            mapRowCount = pSet[i].maps[j].rowCount;
+            mapColCount = pSet[i].maps[j].colCount;
+
+            for (k = 0;k < mapRowCount;k++)
+            for (m = 0;m < mapColCount;m++)
+            {
+                // SDL_Log("texture ID: %u", pTexture->ID);
+                // SDL_Log("texture refCount: %u", pTexture->refCount);
+                textureVertexInit_SetUV((float)pSet[i].maps[j].x + (float)tileWidth * m, (float)pSet[i].maps[j].y + (float)tileHeight * k, tileWidth, tileHeight, 0.0f, pVertexCount, pVertices, pSet[i].tileUV[pSet[i].maps[j].indeices[k * mapColCount + m]], pTexture);
+            }
+        }
+    }
     SDL_UnlockMutex(allSync.vertexMutex);
 }
 void texturePosUpdate(float x, float y, Vertex * pVertices, Uint32 offset)

@@ -18,6 +18,7 @@
 #include "G_log.h"
 #include "G_file/G_file.h"
 #include "G_struct.h"
+#include "G_TileMap/G_TileSet.h"
 
 // Global variables
 bool game_is_running = false;
@@ -92,6 +93,7 @@ void setup(int argc, char* argv[])
 
     initTimerSystem();
     initTextSystem();
+    initTileMapSystem();
 
     initVulkan();
     initPopWindow();
@@ -479,8 +481,10 @@ int update(void * arg)
     Uint32 vertexStart = 0;
     Uint32 vertexEnd = *allInOne.pVerticesCount;
 
-    textureVertexInit(-32, -32, 64, 64, 0.0f, allInOne.pVerticesCount, *allInOne.ppVertices, getTexture("loading"));
+    textureVertexInit(-32, -32, 64, 64, 0.1f, allInOne.pVerticesCount, *allInOne.ppVertices, getTexture("loading"));
     
+    tileMapVertexInit(allInOne.pVerticesCount, *allInOne.ppVertices);
+        
     SDL_Delay(300);
     
     Uint64 last_frame_time = SDL_GetPerformanceCounter();
@@ -802,6 +806,8 @@ void destroy(void)
 
     deInitTimerSystem();
 
+    deInitTileMapSystem();
+
     deInitMusicManagement();
 
     cleanVulkan(FuncCodeMax);
@@ -809,6 +815,7 @@ void destroy(void)
     deInitPopWindow();
     destroyLog();
 
+    SDL_Delay(1000);
     destroyAllSync();
     SDL_Quit();
     exit(0);

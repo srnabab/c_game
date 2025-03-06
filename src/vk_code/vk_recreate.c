@@ -67,9 +67,10 @@ static void newSwapchain(VkDevice * pDevice, VkSurfaceCapabilitiesKHR * pSurface
     
     vkDestroySwapchainKHR(*pDevice, oldSwapchain, allInOne.pAllocationCallbacks);
 }
-void recreateSwapchain()
+void recreateSwapchain(void)
 {
     FuncCode code = recreateSwapchainF; 
+
     VkDevice * pDevice = allInOne.pDevice;
     // VkPhysicalDevice * pPhysicalDevice = allInOne.pPhysicalDevice;
     //printf("wait\n");
@@ -79,6 +80,7 @@ void recreateSwapchain()
     // VkImage * oldSwapchainImage = *allInOne.ppSwapchainImages;
     Uint32 oldImageCount = *allInOne.pImageCount;
 
+    // resultVulkan(vkWaitForFences(*pDevice, ))
     resultVulkan(vkDeviceWaitIdle(*pDevice), code, 0);
     //printf("wait done\n");
     

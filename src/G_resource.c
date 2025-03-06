@@ -7,6 +7,8 @@
 #include "vk_code_h/vk_depth.h"
 #include "vk_code_h/vk_image.h"
 
+#include "SDL3/SDL_log.h"
+
 #define UINT32_MAX_PRIME 4294967291
 
 static G_Texture_P * globalTexture;
@@ -31,7 +33,18 @@ static void emptyTexture(G_Texture_P * pTexture)
     pTexture->offsetSize = 0;
     pTexture->refCount = 0;
 }
-void initGlobalTexture()
+void logAllTexture(void)
+{
+    for (Uint32 i = 0;i < tableCount;i++)
+    {
+        SDL_Log("i: %u, address: %p", i, globalTexture + i);
+        SDL_Log("innerName: %s", globalTexture[i].innerName);
+        SDL_Log("ID: %u", globalTexture[i].ID);
+        SDL_Log("offsets: %p", globalTexture[i].offsets);
+        SDL_Log("refcount: %u", globalTexture[i].refCount);
+    }
+}
+void initGlobalTexture(void)
 {
     int i;
     globalTexture = (G_Texture_P*)SDL_calloc(tableCount, sizeof(G_Texture_P));
@@ -96,6 +109,7 @@ bool loadTexture(PathType path, VkFormat format, VkImageAspectFlags flags, const
     SDL_free(pixels);
 
     SDL_strlcpy(globalTexture[i].innerName, innerName, 16);
+    SDL_Log(globalTexture[i].innerName);
 
     globalTexture[i].offsets = SDL_calloc(1, offsetof(G_Texture_P, offsets));
     if (globalTexture[i].offsets == NULL)
@@ -114,6 +128,8 @@ bool loadTexture(PathType path, VkFormat format, VkImageAspectFlags flags, const
     globalTexture[i].pDescriptorSet = pDescriptorSet;
 
     globalTexture[i].ID = ID;
+
+    globalTexture[i].refCount = 0;
 
     SDL_UnlockMutex(allSync.textureMutex);
 
