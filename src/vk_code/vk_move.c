@@ -8,12 +8,12 @@
 
 extern VK_ALL allInOne;
 
-static vec3 vertices_Color[4] = {
-    {1.0f, 0.0f, 0.0f},
-    {0.0f, 1.0f, 0.0f},
-    {0.0f, 0.0f, 1.0f},
-    {1.0f, 1.0f, 1.0f}
-};
+// static vec3 vertices_Color[4] = {
+//     {1.0f, 0.0f, 0.0f},
+//     {0.0f, 1.0f, 0.0f},
+//     {0.0f, 0.0f, 1.0f},
+//     {1.0f, 1.0f, 1.0f}
+// };
 
 extern G_SYNC allSync;
 

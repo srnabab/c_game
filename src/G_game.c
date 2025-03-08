@@ -226,6 +226,10 @@ bool process_input(void)
             {
                 logMessage("F10");
 
+                preScene = scene;
+                scene = Pause_Scene;
+                SDL_Delay(50);
+
                 SDL_DisplayMode displayMode = {0};
 
                 SDL_GetClosestFullscreenDisplayMode(displayId, allInOne.pExtent2D->width, allInOne.pExtent2D->height, 0, false, &displayMode);
@@ -233,11 +237,22 @@ bool process_input(void)
                 SDL_SetWindowFullscreenMode(window, &displayMode);
                 SDL_RaiseWindow(window);
 
+                resolutionChanged = true;
+
                 logMessage("fullscreen");
+
+                scene = preScene;
+                preScene = Pause_Scene;
+                SDL_SignalSemaphore(allSync.updateSemaphore);
+                SDL_SignalSemaphore(allSync.renderSemaphore);
             }
             if (key == SDLK_F9)
             {
                 logMessage("F9");
+
+                preScene = scene;
+                scene = Pause_Scene;
+                SDL_Delay(50);
 
                 SDL_SetWindowFullscreen(window, 0);
                 allInOne.pOldExtent2D->width = allInOne.pExtent2D->width;
@@ -246,7 +261,14 @@ bool process_input(void)
                 SDL_SetWindowSize(window, allInOne.pExtent2D->width, allInOne.pExtent2D->height);
                 SDL_RaiseWindow(window);
 
+                resolutionChanged = true;
+
                 logMessage("windowed");
+
+                scene = preScene;
+                preScene = Pause_Scene;
+                SDL_SignalSemaphore(allSync.updateSemaphore);
+                SDL_SignalSemaphore(allSync.renderSemaphore);
             }
             if (key == SDLK_PAUSE)
             {
