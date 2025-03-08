@@ -3,6 +3,8 @@
 
 #include "G_log.h"
 
+#include "SDL3/SDL_log.h"
+
 extern bool game_is_running;
 
 void resultVulkan(VkResult result, FuncCode code, uint32_t num, ...)
@@ -13,22 +15,22 @@ void resultVulkan(VkResult result, FuncCode code, uint32_t num, ...)
         break;
 
         case VK_SUBOPTIMAL_KHR:
-        logMessage("result: %d", result);
+        SDL_Log("result: %d", result);
         recreateSwapchain();
         break;
 
         case VK_ERROR_OUT_OF_DATE_KHR:
-        logMessage("result: %d", result);
+        SDL_Log("result: %d", result);
         recreateSwapchain();
         break;
 
         case VK_ERROR_SURFACE_LOST_KHR:
-        logMessage("result: %d", result);
+        SDL_Log("result: %d", result);
         recreateSwapchain();
         break;
 
         default:
-        logMessage("result: %d", result);
+        SDL_Log("result: %d", result);
         if (num > 0)
         {
             va_list ap;
@@ -36,182 +38,182 @@ void resultVulkan(VkResult result, FuncCode code, uint32_t num, ...)
             for (uint32_t i = 0;i < num;i++)
             {
                 SDL_free(va_arg(ap, void *));
-                logMessage("freed(%u)", i);
+                SDL_Log("freed(%u)", i);
             }
             va_end(ap);
         }
         switch(code)
         {
             case vulkanVersionF:
-            logMessage("\ncan't detect vulkan support");
+            SDL_Log("\ncan't detect vulkan support");
             goto end;
 
             case createInstanceF:
-            logMessage("\ncreate instance error");
+            SDL_Log("\ncreate instance error");
             goto end;
 
             case createSurfaceF:
-            logMessage("\ncreate surface error");
+            SDL_Log("\ncreate surface error");
             goto end;
 
             case pickPhysicalDeviceF:
-            logMessage("\npick physical device error");
+            SDL_Log("\npick physical device error");
             goto end;
 
             case findQueueFamiliesF:
-            logMessage("\nget SurfaceSupport error");
+            SDL_Log("\nget SurfaceSupport error");
             goto end;
 
             case checkDeviceExtensionSupportF:
-            logMessage("\nenumerate device extension properties error");
+            SDL_Log("\nenumerate device extension properties error");
             goto end;
 
             case createLogicalDeviceF:
-            logMessage("\ncreate logical device failed");
+            SDL_Log("\ncreate logical device failed");
             goto end;
 
             case getSurfaceFormatsF:
-            logMessage("\nget surface format failed");
+            SDL_Log("\nget surface format failed");
             goto end;
 
             case getPresentModesF:
-            logMessage("\nget present modes failed");
+            SDL_Log("\nget present modes failed");
             goto end;
 
             case getSurfaceCapabilitiesF:
-            logMessage("\nget surface capabilitues failed");
+            SDL_Log("\nget surface capabilitues failed");
             goto end;
 
             case createSwapchainF:
-            logMessage("\ncreate swapchain failed");
+            SDL_Log("\ncreate swapchain failed");
             goto end;
 
             case getSwapchainNumberF:
-            logMessage("\nget swapchain number failed");
+            SDL_Log("\nget swapchain number failed");
             goto end;
 
             case createSwapchainImageF:
-            logMessage("\ncreate swapchain image failed");
+            SDL_Log("\ncreate swapchain image failed");
             goto end;
 
             case createSwapchainImageViewsF:
-            logMessage("\ncreate image view failed");
+            SDL_Log("\ncreate image view failed");
             goto end;
 
             case createShaderModuleF:
-            logMessage("\nshaderModule created failed");
+            SDL_Log("\nshaderModule created failed");
             goto end;
 
             case createDescriptorSetLayoutF:
-            logMessage("\ncreate descriptoy set layout failed");
+            SDL_Log("\ncreate descriptoy set layout failed");
             goto end;
 
             case createPipelineLayoutF:
-            logMessage("\ncreate pipeline layout failed");
+            SDL_Log("\ncreate pipeline layout failed");
             goto end;
 
             case createRenderPassF:
-            logMessage("\ncreate render pass failed");
+            SDL_Log("\ncreate render pass failed");
             goto end;
 
             case createGraphicsPipelineF:
-            logMessage("\ncreate graphic pipeline failed");
+            SDL_Log("\ncreate graphic pipeline failed");
             goto end;
 
             case createCommandPoolF:
-            logMessage("\ncreate command pool failed");
+            SDL_Log("\ncreate command pool failed");
             goto end;
 
             case createDepthResouresF:
-            logMessage("\ncreate depth resoures failed");
+            SDL_Log("\ncreate depth resoures failed");
             goto end;
 
             case createFrameBufferF:
-            logMessage("\ncreate frame buffer failed");
+            SDL_Log("\ncreate frame buffer failed");
             goto end;
 
             case createTextureImageF:
-            logMessage("\ncreate texture image failed");
+            SDL_Log("\ncreate texture image failed");
             goto end;
 
             case createTextureImageViewF:
-            logMessage("\ncreate texture image view failed");
+            SDL_Log("\ncreate texture image view failed");
             goto end;
 
             case createTextureSamplerF:
-            logMessage("\ncreate texture sampler failed");
+            SDL_Log("\ncreate texture sampler failed");
             goto end;
 
             case createVertexBufferF:
-            logMessage("\ncreate vertex buffer failed");
+            SDL_Log("\ncreate vertex buffer failed");
             goto end;
 
             case createIndexBufferF:
-            logMessage("\ncreate index buffer failed");
+            SDL_Log("\ncreate index buffer failed");
             goto end;
 
             case createUniformBuffersF:
-            logMessage("\ncreate uniform buffers failed");
+            SDL_Log("\ncreate uniform buffers failed");
             goto end;
 
             case createDescriptorPoolF:
-            logMessage("\ncreate descriptor poo l failed");
+            SDL_Log("\ncreate descriptor poo l failed");
             goto end;
 
             case createDescriptorSetsF:
-            logMessage("\ncreate descriptor sets failed");
+            SDL_Log("\ncreate descriptor sets failed");
             goto end;
 
             case createCommandbufferByBufferingF:
-            logMessage("\ncreate command buffer failed");
+            SDL_Log("\ncreate command buffer failed");
             goto end;
 
             case createSemaphoreF:
-            logMessage("\ncreate semaphore failed");
+            SDL_Log("\ncreate semaphore failed");
             goto end;
 
             case createFenceF:
-            logMessage("\ncreate fence failed");
+            SDL_Log("\ncreate fence failed");
             goto end;
 
             case recordCommandBufferF:
-            logMessage("\nrecord command buffer failed");
+            SDL_Log("\nrecord command buffer failed");
             goto end;
 
             case drawFrameF:
-            logMessage("\ndraw error");
+            SDL_Log("\ndraw error");
             goto end;
 
             case waitForFencesF:
-            logMessage("\nwait for fences failed");
+            SDL_Log("\nwait for fences failed");
             goto end;
 
             case resetFencesF:
-            logMessage("\nreset fences failed");
+            SDL_Log("\nreset fences failed");
             goto end;
 
             case acquireNextImageF:
-            logMessage("\nacquire next images failed");
+            SDL_Log("\nacquire next images failed");
             goto end;
 
             case resetCommandBufferF:
-            logMessage("\nreset command buffer failed");
+            SDL_Log("\nreset command buffer failed");
             goto end;
 
             case endCommandBufferF:
-            logMessage("\nend command buffer failed");
+            SDL_Log("\nend command buffer failed");
             goto end;
 
             case queueSumbitF:
-            logMessage("\nqueue submit failed");
+            SDL_Log("\nqueue submit failed");
             goto end;
 
             case queuePresentF:
-            logMessage("\nqueue present failed");
+            SDL_Log("\nqueue present failed");
             goto end;
 
             default:
-            logMessage("\nunprocessed value");
+            SDL_Log("\nunprocessed value");
         }
     }
 
