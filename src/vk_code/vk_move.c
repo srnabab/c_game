@@ -3,8 +3,7 @@
 
 #include "G_struct.h"
 #include "G_TileMap/G_TileSet.h"
-
-#include "SDL3/SDL_log.h"
+#include "G_log.h"
 
 extern VK_ALL allInOne;
 
@@ -220,7 +219,7 @@ void tileMapVertexInit(Uint32 * pVertexCount, Vertex * pVertices)
 {
     Uint32 tileSetCount = 0;
     getTileSetCount(&tileSetCount);
-    SDL_Log("tile set count: %u", tileSetCount);
+    print("tile set count: %u", tileSetCount);
 
     TILE_SET * pSet = NULL;
     getTileSetPtr(&pSet);
@@ -241,8 +240,8 @@ void tileMapVertexInit(Uint32 * pVertexCount, Vertex * pVertices)
             for (k = 0;k < mapRowCount;k++)
             for (m = 0;m < mapColCount;m++)
             {
-                // SDL_Log("texture ID: %u", pTexture->ID);
-                // SDL_Log("texture refCount: %u", pTexture->refCount);
+                // print("texture ID: %u", pTexture->ID);
+                // print("texture refCount: %u", pTexture->refCount);
                 textureVertexInit_SetUV((float)pSet[i].maps[j].x + (float)tileWidth * m, (float)pSet[i].maps[j].y + (float)tileHeight * k, tileWidth, tileHeight, 0.0f, pVertexCount, pVertices, pSet[i].tileUV[pSet[i].maps[j].indeices[k * mapColCount + m]], pTexture);
             }
         }

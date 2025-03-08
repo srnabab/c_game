@@ -42,6 +42,14 @@ PathType pathCompare(char * buffer)
     {
         return PathPath;
     }
+    else if ((SDL_strcmp(buffer, "[TilemapFragShader]") == 0))
+    {
+        return TilemapFragShader;
+    }
+    else if ((SDL_strcmp(buffer, "[TilemapVertShader]") == 0))
+    {
+        return TilemapVertShader;
+    }
     else if ((SDL_strcmp(buffer, "[MainBackgroundMusic1Wav]") == 0))
     {
         return MainBackgroundMusic1Wav;

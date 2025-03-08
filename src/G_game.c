@@ -486,7 +486,7 @@ bool process_input(void)
 
 static int test(void * arg)
 {
-    SDL_Log("test test: %d\n", *((int *)arg));
+    print("test test: %d\n", *((int *)arg));
     return 0;
 }
 
@@ -527,7 +527,7 @@ int update(void * arg)
     SDL_SignalSemaphore(allSync.updateSemaphore);
     SDL_SignalSemaphore(allSync.renderSemaphore);
 
-    SDL_Log("update init\n");
+    print("update init\n");
     while (game_is_running)
     {
         SDL_WaitSemaphore(allSync.updateSemaphore);
@@ -626,7 +626,7 @@ int update(void * arg)
                         getTexture("font")->refCount = 0;
                         for (Uint32 i = 0;i < textLen;i++)
                         {
-                            textureVertexInit_SetUV(-300.0 + (float)i * 24.0, -100.0, 24, 24, 0.1f, allInOne.pVerticesCount, *allInOne.ppVertices, UVs[i], getTexture("font"));
+                            textureVertexInit_SetUV(-300.0 + (float)i * 24.0, -100.0, 24, 24, 0.2f, allInOne.pVerticesCount, *allInOne.ppVertices, UVs[i], getTexture("font"));
                         }
                     }
                     textDisplay = false;
@@ -686,7 +686,7 @@ int update(void * arg)
 
                     ballStack.pushFn(&ballStack, &x);
 
-                    //SDL_Log("indices count: %u\n", indiceCount);
+                    //print("indices count: %u\n", indiceCount);
                     //*allInOne.ppIndices = (uint16_t *)realloc(*allInOne.ppIndices, indiceCount * sizeof(uint16_t));
 
                     ballAdd = false;
@@ -704,7 +704,7 @@ int update(void * arg)
             }
 
             //updateUniformBuffer(*allInOne.pCurrentFrame, allInOne.pExtent2D, allInOne.pGraphicUbo, allInOne.pppGraphicUniformBufferMapped, *allInOne.pCamera_X, *allInOne.pCamera_Y, allInOne.pComputeUbo, allInOne.pppComputeUniformBufferMapped, delta_time);   
-            //SDL_Log("time: %.2f\n", time);
+            //print("time: %.2f\n", time);
 
             glm_mat4_identity(pGraphicUbo->model);
             //glm_rotate(pUbo->model, time * glm_rad(90.0f), (vec3){0.0f, 0.0f, 1.0f});
@@ -767,7 +767,7 @@ int update(void * arg)
 // Render function to draw game objects in the SDL window
 int render(void * arg) 
 {
-    SDL_Log("render init\n");
+    print("render init\n");
     Uint32 render_frame = 0;
     while (game_is_running)
     {
@@ -796,7 +796,7 @@ int render(void * arg)
 
 int signal_trans(void * arg)
 {
-    SDL_Log("signal init\n");
+    print("signal init\n");
     while (game_is_running)
     {
         if (update_done && draw_done)
@@ -838,11 +838,11 @@ static void destroyAllSync(void)
 void destroy(void) 
 {
     SDL_WaitThread(sdl_pid_signal, NULL);
-    SDL_Log("signal end\n");
+    print("signal end\n");
     SDL_WaitThread(sdl_pid_update, NULL);
-    SDL_Log("update end\n");
+    print("update end\n");
     SDL_WaitThread(sdl_pid_draw, NULL);
-    SDL_Log("draw end\n");
+    print("draw end\n");
     
     cleanWorld();
 

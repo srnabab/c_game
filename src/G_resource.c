@@ -1,13 +1,12 @@
 #include "G_constants.h"
 #include "G_resource.h"
 #include "G_struct.h"
+#include "G_log.h"
 
 #include "vk_code_h/vk_texture.h"
 #include "vk_code_h/vk_struct.h"
 #include "vk_code_h/vk_depth.h"
 #include "vk_code_h/vk_image.h"
-
-#include "SDL3/SDL_log.h"
 
 #define UINT32_MAX_PRIME 4294967291
 
@@ -37,11 +36,11 @@ void logAllTexture(void)
 {
     for (Uint32 i = 0;i < tableCount;i++)
     {
-        SDL_Log("i: %u, address: %p", i, globalTexture + i);
-        SDL_Log("innerName: %s", globalTexture[i].innerName);
-        SDL_Log("ID: %u", globalTexture[i].ID);
-        SDL_Log("offsets: %p", globalTexture[i].offsets);
-        SDL_Log("refcount: %u", globalTexture[i].refCount);
+        print("i: %u, address: %p", i, globalTexture + i);
+        print("innerName: %s", globalTexture[i].innerName);
+        print("ID: %u", globalTexture[i].ID);
+        print("offsets: %p", globalTexture[i].offsets);
+        print("refcount: %u", globalTexture[i].refCount);
     }
 }
 void initGlobalTexture(void)
@@ -109,7 +108,7 @@ bool loadTexture(PathType path, VkFormat format, VkImageAspectFlags flags, const
     SDL_free(pixels);
 
     SDL_strlcpy(globalTexture[i].innerName, innerName, 16);
-    SDL_Log(globalTexture[i].innerName);
+    print(globalTexture[i].innerName);
 
     globalTexture[i].offsets = SDL_calloc(1, offsetof(G_Texture_P, offsets));
     if (globalTexture[i].offsets == NULL)

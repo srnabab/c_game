@@ -4,7 +4,6 @@
 #include "G_log.h"
 #include "G_file/G_file.h"
 
-#include "SDL3/SDL_log.h"
 #include "SDL3/SDL_iostream.h"
 #include <unistr.h>
 
@@ -35,7 +34,7 @@ bool initTextSystem(void)
     if ((fp = SDL_IOFromFile(getPath(EmojiHashTable), "rb")) == NULL)
     {
         int code = textureGenerate(getPath(EmojiFont), getPath(EmojiHashTable), getPath(EmojiPng), 4, 132, &failed);
-        SDL_Log("%d\n", code);
+        print("%d\n", code);
         if (failed)
         {
             logMessage("font error(%d)", failed);

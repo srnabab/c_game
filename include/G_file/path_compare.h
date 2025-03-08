@@ -16,6 +16,8 @@ typedef enum _PathType
     CustomePath4,
     LogPath,
     PathPath,
+    TilemapFragShader,
+    TilemapVertShader,
     MainBackgroundMusic1Wav,
     TestWav,
     EmojiHashTable,
