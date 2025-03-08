@@ -72,48 +72,27 @@ void recreateSwapchain(void)
     FuncCode code = recreateSwapchainF; 
 
     VkDevice * pDevice = allInOne.pDevice;
-    // VkPhysicalDevice * pPhysicalDevice = allInOne.pPhysicalDevice;
-    //printf("wait\n");
-    //printf("pDevice: %p\n", allInOne.pDevice);
+
     VkFramebuffer * oldFrameBuffer = *allInOne.ppSwapchainFramebuffer;
     VkImageView * oldSwapchainImageView = *allInOne.ppSwapchainImageViews;
-    // VkImage * oldSwapchainImage = *allInOne.ppSwapchainImages;
     Uint32 oldImageCount = *allInOne.pImageCount;
 
-    // resultVulkan(vkWaitForFences(*pDevice, ))
     resultVulkan(vkDeviceWaitIdle(*pDevice), code, 0);
-    //printf("wait done\n");
-    
-    // SDL_Log("ppSwaapchainFramebuffer: %p\n", allInOne.ppSwapchainFramebuffer);
-
-    // vkDestroyImageView(*pDevice, *allInOne.pDepthImageView, NULL);
-    // *allInOne.pDepthImageView = NULL;
-    // vkDestroyImage(*pDevice, *allInOne.pDepthImage, NULL);
-    // *allInOne.pDepthImage = NULL;
-    // vkFreeMemory(*pDevice, *allInOne.pDepthImageMem, NULL);
-    // *allInOne.pDepthImageMem = NULL;
 
     unloadTexture("depth");
     
-    //cleanupSwapchain(allInOne.pDevice, *allInOne.ImageCount, *allInOne.pSwapchainFramebuffer, *allInOne.pSwapchainImageViews, allInOne.pSwapchain);
-    //printf("imageCOunt: %u\n", *allInOne.ImageCount);
-
     getSurfaceCapabilities();
     getSurfaceFormats();
-    //chooseSwapExtent(pPhysicalDevice, allInOne.pSurface, allInOne.pSurfaceCapabilities, allInOne.pExtent2D);
 
     newSwapchain(pDevice, allInOne.pSurfaceCapabilities, allInOne.pSurface, allInOne.pSurfaceFormat, allInOne.pExtent2D, allInOne.pPresentMode, *allInOne.pQueueFamilyIndices, allInOne.pSwapchain);
     
     getSwapchainNumber();
-    //printf("imageCOunt: %u\n", *allInOne.ImageCount);
 
     createSwapchainImage();
     createImageViews(allInOne.ppSwapchainImages, *allInOne.pImageCount, allInOne.pSurfaceFormat->format, VK_IMAGE_ASPECT_COLOR_BIT, allInOne.ppSwapchainImageViews);
 
     loadDepthResource("depth");
-    // SDL_Log("depth resoures created\n");
     createFrameBuffer(*allInOne.pImageCount, *allInOne.ppSwapchainImageViews, &getTexture("depth")->imageView, allInOne.pRenderPass, allInOne.ppSwapchainFramebuffer);
-    // SDL_Log("swapchain framebuffer created\n");
 
     destroyedFrameBuffer(oldImageCount, oldFrameBuffer);
 

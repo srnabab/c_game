@@ -16,17 +16,17 @@ void resultVulkan(VkResult result, FuncCode code, uint32_t num, ...)
 
         case VK_SUBOPTIMAL_KHR:
         SDL_Log("result: %d", result);
-        recreateSwapchain();
+        // recreateSwapchain();
         break;
 
         case VK_ERROR_OUT_OF_DATE_KHR:
         SDL_Log("result: %d", result);
-        recreateSwapchain();
+        // recreateSwapchain();
         break;
 
         case VK_ERROR_SURFACE_LOST_KHR:
         SDL_Log("result: %d", result);
-        recreateSwapchain();
+        // recreateSwapchain();
         break;
 
         default:

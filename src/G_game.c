@@ -3,6 +3,7 @@
 
 #include "vk_code_h/vk_present.h"
 #include "vk_code_h/vk_move.h"
+#include "vk_code_h/vk_recreate.h"
 #include "vk_code_h/vk_judge.h"
 
 #include "G_custom_math.h"
@@ -132,6 +133,8 @@ static bool sceneChanged = false;
 static Scene scene = First_Scene;
 static Scene preScene = Pause_Scene;
 
+static bool resolutionChanged = false; 
+
 // Function to poll SDL events and process keyboard input
 bool process_input(void)
 {
@@ -196,6 +199,10 @@ bool process_input(void)
             }
             if (key == SDLK_F11)
             {
+                preScene = scene;
+                scene = Pause_Scene;
+                SDL_Delay(50);
+
                 allInOne.pOldExtent2D->width = allInOne.pExtent2D->width;
                 allInOne.pOldExtent2D->height = allInOne.pExtent2D->height;
                 allInOne.pExtent2D->width = 1600;
@@ -203,10 +210,17 @@ bool process_input(void)
                 
                 SDL_SetWindowSize(window, allInOne.pExtent2D->width, allInOne.pExtent2D->height);
 
+                resolutionChanged = true;
+
                 physicalCoffectX = (float)allInOne.pExtent2D->width / LOGICAL_WIDTH;
                 physicalCoffectY = (float)allInOne.pExtent2D->height / LOGICAL_HEIGHT;
                 
                 logMessage("sdl width: %u, height: %u", allInOne.pExtent2D->width, allInOne.pExtent2D->height);
+
+                scene = preScene;
+                preScene = Pause_Scene;
+                SDL_SignalSemaphore(allSync.updateSemaphore);
+                SDL_SignalSemaphore(allSync.renderSemaphore);
             }
             if (key == SDLK_F10)
             {
@@ -736,6 +750,12 @@ int render(void * arg)
     while (game_is_running)
     {
         SDL_WaitSemaphore(allSync.renderSemaphore);
+
+        if (resolutionChanged)
+        {
+            recreateSwapchain();
+            resolutionChanged = false;
+        }
 
         drawFrame(scene);
 
