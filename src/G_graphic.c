@@ -272,7 +272,7 @@ static float pictureY = 0;
 static VkBuffer shaderStorageBuffers[MAX_FRAMES_IN_FLIGHT];
 static VkDeviceMemory shaderStorageBuffersMem[MAX_FRAMES_IN_FLIGHT];
 
-static ImageRotate pictureImageRotate = {0.0f};
+static PushConstants picturePushConstants = {0.0f, 0.0f};
 
 //store all compoents for initialize vulkan in a struct
 VK_ALL allInOne = {};
@@ -389,7 +389,7 @@ static void initializeAllInOne(void)
     allInOne.pPictureX = &pictureX;
     allInOne.pPictureY = &pictureY;
 
-    allInOne.pImageRotate = &pictureImageRotate;
+    allInOne.pPushConstants = &picturePushConstants;
 }
 
 void initVulkan(void)
@@ -584,7 +584,7 @@ void initVulkan(void)
     createFenceByBuffering(&computeInFlightFences);
     
     loadTileSet(TileSet1Png, TileSet1Tsd, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "tileSet", graphicDescriptorSets + 6);
-    loadTileMap(TileMap1TsdI, -400, -300, "tileSet");
+    loadTileMap(TileMap1TsdI, -400, -500, "tileSet");
     // loadTileMap(TileMap1TsdI, -1200, -1100, "tileSet");
     // loadTileMap(TileMap1TsdI, -1200, -300, "tileSet");
     // loadTileMap(TileMap1TsdI, -1200, 500, "tileSet");

@@ -709,15 +709,12 @@ int update(void * arg)
             glm_mat4_identity(pGraphicUbo->model);
             //glm_rotate(pUbo->model, time * glm_rad(90.0f), (vec3){0.0f, 0.0f, 1.0f});
 
-            glm_lookat((vec3){*pCamera_X, *pCamera_Y, 1.5f}, (vec3){*pCamera_X, *pCamera_Y, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pGraphicUbo->view);
+            glm_lookat((vec3){*pCamera_X, *pCamera_Y, 100.0f}, (vec3){*pCamera_X, *pCamera_Y, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pGraphicUbo->view);
 
-            float aspect = (float)allInOne.pExtent2D->width / allInOne.pExtent2D->height;
+            float aspect = ((float)allInOne.pExtent2D->width / allInOne.pExtent2D->height);
+            float aspect2 = 1.0f  * ((float)allInOne.pExtent2D->height / 600.0f);
             
-            glm_mat4_identity(pGraphicUbo->proj);
-            //glm_perspective(glm_rad(45.0f), aspect, 0.1f, 10.0f, pUbo->proj);
             glm_ortho_vulkan(-aspect, aspect, -1.0f, 1.0f, 0.1f, 100.0f, pGraphicUbo->proj);
-
-            pGraphicUbo->proj[1][1] *= -1;
 
             allInOne.pComputeUbo->deltaTime = delta_time;
 
@@ -748,7 +745,8 @@ int update(void * arg)
             memcpy((*allInOne.ppVertexBufferMemMapped)[currentFrame], *allInOne.ppVertices, vertexEnd * sizeof(Vertex));// update vertex buffer
             SDL_SignalSemaphore(allSync.vertexSemaphore);
 
-            allInOne.pImageRotate->rotation = totalTime * glm_rad(580.0f);
+            allInOne.pPushConstants->rotation = totalTime * glm_rad(580.0f);
+            allInOne.pPushConstants->height_to_fix_height_ratio = aspect2;
             
             SDL_UnlockMutex(allSync.updateMutex);
 

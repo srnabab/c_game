@@ -1,8 +1,9 @@
 #version 450
 
-layout(push_constant) uniform _ImageRotation {
+layout(push_constant) uniform _PushConstans{
     float rotation;
-} ImageRotation;
+    float height_to_fix_height_ratio;
+} PushConstants;
 
 layout(set = 0, binding = 0) uniform UniformBufferObject {
     mat4 model;
@@ -23,18 +24,27 @@ void main()
     fragColor = inColor;
     fragTexCoord = inTexCoord;
     fragDepth = inPosition.z;
+
     if (inPosition.z == 0.1)
     {
         mat2 rotationMatrix = mat2(
-            cos(ImageRotation.rotation), -sin(ImageRotation.rotation),
-            sin(ImageRotation.rotation), cos(ImageRotation.rotation)
+            cos(PushConstants.rotation), -sin(PushConstants.rotation),
+            sin(PushConstants.rotation), cos(PushConstants.rotation)
         );
         vec2 rotatedPosition = rotationMatrix * inPosition.xy;
 
         gl_Position = ubo.proj * ubo.view * ubo.model * vec4(rotatedPosition, inPosition.z, 1.0);
     }
-    else
+    else if (inPosition.z == 0.2)
     {
         gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 1.0);
+    }
+    else
+    {
+        mat4 temp = ubo.proj;
+        temp[0].r = ubo.proj[0].r / PushConstants.height_to_fix_height_ratio;
+        temp[1].g = ubo.proj[1].g / PushConstants.height_to_fix_height_ratio;
+
+        gl_Position = temp * ubo.view * ubo.model * vec4(inPosition, 1.0);
     }
 }

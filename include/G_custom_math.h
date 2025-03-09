@@ -16,7 +16,7 @@ CGLM_INLINE void SDLCALL glm_ortho_vulkan(float left, float right, float bottom,
     fn = 1.0f / (farZ - nearZ);  // 修改：Vulkan 使用 [0, 1] 范围
 
     dest[0][0] = 2.0f * rl;
-    dest[1][1] = 2.0f * tb;
+    dest[1][1] = -2.0f * tb;
     dest[2][2] = fn;  // 修改：Z 值映射到 [0, 1]
     dest[3][0] = -(right  + left) * rl;
     dest[3][1] = -(top    + bottom) * tb;

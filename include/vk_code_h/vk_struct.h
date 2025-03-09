@@ -51,10 +51,11 @@ typedef struct _Particle
     vec4 color;
 }Particle;
 
-typedef struct _ImageRotate
+typedef struct _PushConstants
 {
     float rotation;
-} ImageRotate;
+    float height_to_fix_height_ratio;
+} PushConstants;
 
 enum _FormatQualifier
 {
@@ -181,7 +182,7 @@ struct _VK_ALL
     float * pPictureX;
     float * pPictureY;
 
-    ImageRotate * pImageRotate;
+    PushConstants * pPushConstants;
 
     G_Texture_P * pGlobalTexture;
 };

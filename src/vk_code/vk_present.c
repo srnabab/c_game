@@ -83,8 +83,7 @@ static void recordCommandBuffer_FirstScene(uint32_t imageIndex)
 
     vkCmdBindPipeline((*allInOne.ppGraphicCommandBuffer)[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pGraphicPipeline);
 
-    vkCmdPushConstants((*allInOne.ppGraphicCommandBuffer)[currentFrame], *allInOne.pGraphicPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ImageRotate), allInOne.pImageRotate);
-
+    vkCmdPushConstants((*allInOne.ppGraphicCommandBuffer)[currentFrame], *allInOne.pGraphicPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstants), allInOne.pPushConstants);
 
     VkBuffer vertexBuffer[] = {(*allInOne.pVertexBuffer)[currentFrame]};
     // VkDeviceSize vertexOffsets1[] = {0, allInOne.maxVerticesCount * sizeof(vec3), allInOne.maxVerticesCount * sizeof(vec3) + allInOne.maxVerticesCount * sizeof(vec3)};
@@ -304,7 +303,7 @@ static void recoreCommandBuffer_MenuScene(void)
 
     // vkCmdBindPipeline((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pGraphicPipeline);
 
-    // vkCmdPushConstants((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], *allInOne.pGraphicPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ImageRotate), allInOne.pImageRotate);
+    // vkCmdPushConstants((*allInOne.ppGraphicCommandBuffer)[*pCurrentFrame], *allInOne.pGraphicPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstants), allInOne.pPushConstants);
 
     // VkBuffer vertexBuffer[] = {*allInOne.pVertexBuffer, *allInOne.pVertexBuffer, *allInOne.pVertexBuffer};
     // VkDeviceSize vertexOffsets1[] = {0, allInOne.maxVerticesCount * sizeof(vec3), allInOne.maxVerticesCount * sizeof(vec3) + allInOne.maxVerticesCount * sizeof(vec3)};
