@@ -20,6 +20,7 @@
 #include "G_file/G_file.h"
 #include "G_struct.h"
 #include "G_TileMap/G_TileSet.h"
+#include "G_test.h"
 
 // Global variables
 bool game_is_running = false;
@@ -64,6 +65,8 @@ static void initAllSync(void)
 // Setup function that runs once at the beginning of our program
 void setup(int argc, char* argv[]) 
 {
+    TestAll();
+
     int arg = initFileSystem(argc, argv);
     initAllSync();
 
@@ -685,7 +688,6 @@ int update(void * arg)
                     textureVertexInit(x * physicalCoffectX, 280 * physicalCoffectY, 16 * physicalCoffectY, 16 * physicalCoffectY, 0.9, allInOne.pVerticesCount, *allInOne.ppVertices, getTexture("circle"));
 
                     ballStack.pushFn(&ballStack, &x);
-
                     //print("indices count: %u\n", indiceCount);
                     //*allInOne.ppIndices = (uint16_t *)realloc(*allInOne.ppIndices, indiceCount * sizeof(uint16_t));
 

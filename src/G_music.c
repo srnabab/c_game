@@ -41,7 +41,7 @@ bool loadMusic(char * fileName, char * reName)
     }
     else
     {
-        index = *(uint8_t*)(stack.popFn(&stack));
+        stack.popFn(&stack, &index);
     }
 
     musics[index].music = Mix_LoadMUS(getPath(MainBackgroundMusic1Wav));
@@ -91,7 +91,7 @@ bool unloadMusic(char * name)
 }
 bool initMusicManagement(void)
 {
-    if (!initStack(&stack, u8, NULL, NULL, NULL))
+    if (!initStack(&stack, sizeof(Uint8), NULL, NULL))
         return false;
 
     Mix_OpenAudio(0, NULL);

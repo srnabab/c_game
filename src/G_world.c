@@ -6,6 +6,8 @@
 #include "G_struct.h"
 #include "G_stack.h"
 
+#include "SDL3/SDL_assert.h"
+
 static b2WorldDef worldDef = {};
 static b2WorldId worldId = {};
 
@@ -33,9 +35,15 @@ static void box2d_SDL_Free(void * memory)
 {
     SDL_aligned_free(memory);
 }
+int AssertFcn( const char* condition, const char* fileName, int lineNumber )
+{
+	printf( "SAMPLE ASSERTION: %s, %s, line %d\n", condition, fileName, lineNumber );
+	return 1;
+}
 void initWorld(void)
 {
     b2SetAllocator(box2d_SDL_Alloc, box2d_SDL_Free);
+    b2SetAssertFcn(AssertFcn);
 
     worldDef = b2DefaultWorldDef();
     worldDef.gravity = (b2Vec2){0.0f, -100.0f * SCALE_FACTOR};
@@ -86,7 +94,7 @@ void initWorld(void)
 
     groundShapeDef[3] = b2DefaultShapeDef();
     groundShapeId[3] = b2CreatePolygonShape(groundId[3], &groundShapeDef[3], &groundBox[3]);*/
-    initStack(&ballStack, i32, NULL, NULL, NULL);
+    initStack(&ballStack, sizeof(int), NULL, NULL);
 
     worldThread = SDL_CreateThread(stepWorld, "physical", NULL);
 }
@@ -134,8 +142,9 @@ void updateCircle(void)
         // float averagePhysicalCoffect = (physicalCoffectX + physicalCoffectY) / 2.0f;
         while (ballStack.top != -1)
         {
-            int32_t temp = *(int32_t*)(ballStack.popFn(&ballStack));
-            createCircle(temp + 8, 288);
+            int temp;
+            ballStack.popFn(&ballStack, &temp);
+            createCircle((float)temp + (float)8, (float)288);
         }
         Uint32 refCount = 0;
         Uint32 currentOffset = 0;
