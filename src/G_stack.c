@@ -2,7 +2,7 @@
 
 static bool defaultPushFn(EmptyStack * pStack, void * data)
 {
-    if (isFull(*pStack)) return false;
+    if (StackIsFull(*pStack)) return false;
 
     SDL_LockMutex(pStack->mutex);
     pStack->top++;
@@ -13,7 +13,7 @@ static bool defaultPushFn(EmptyStack * pStack, void * data)
 }
 static void defaultPopFn(EmptyStack * pStack, void * data)
 {
-    if (isEmpty(*pStack)) return;
+    if (StackIsEmpty(*pStack)) return;
 
     SDL_LockMutex(pStack->mutex);
     pStack->top--;
@@ -40,18 +40,30 @@ bool initStack(EmptyStack * stack, size_t dataSize, Push pushFn, Pop popFn)
 
     return true;
 }
-bool isEmpty(EmptyStack stack)
+bool StackIsEmpty(EmptyStack stack)
 {
+    SDL_LockMutex(stack.mutex);
     if (stack.top == -1)
+    {
+        SDL_UnlockMutex(stack.mutex);
         return true;
+    }
+
+    SDL_UnlockMutex(stack.mutex);
 
     return false;
 }
-bool isFull(EmptyStack stack)
+bool StackIsFull(EmptyStack stack)
 {
+    SDL_LockMutex(stack.mutex);
     if (stack.top == MAX_STACKS - 1)
+    {
+        SDL_UnlockMutex(stack.mutex);
         return true;
+    }
     
+    SDL_UnlockMutex(stack.mutex);
+
     return false;
 }
 void getTop(EmptyStack * stack, void * data)

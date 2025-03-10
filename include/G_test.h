@@ -3,7 +3,7 @@
 
 #include "SDL3/SDL_begin_code.h"
 
-extern void SDLCALL TestAll(void);
+extern int SDLCALL TestAll(void);
 
 #include "SDL3/SDL_close_code.h"
 

@@ -34,7 +34,7 @@ bool loadMusic(char * fileName, char * reName)
     }
 
     uint8_t index;
-    if (isEmpty(stack))
+    if (StackIsEmpty(stack))
     {
         index = songs;
         songs++;

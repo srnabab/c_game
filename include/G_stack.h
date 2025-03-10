@@ -17,7 +17,7 @@ typedef struct _EmptyStack
 {
     void * data;
     int top;
-    Uint32 dataSize;
+    size_t dataSize;
 
     SDL_Mutex * mutex;
     Push pushFn;
@@ -30,8 +30,8 @@ typedef struct _EmptyStack
  * \param popFn custome pop func , NULL form empty
 */
 extern bool SDLCALL initStack(EmptyStack * stack, size_t dataSize, Push pushFn, Pop popFn);
-extern bool SDLCALL isEmpty(EmptyStack stack);
-extern bool SDLCALL isFull(EmptyStack stack);
+extern bool SDLCALL StackIsEmpty(EmptyStack stack);
+extern bool SDLCALL StackIsFull(EmptyStack stack);
 extern void SDLCALL getTop(EmptyStack * stack, void * data);
 extern void SDLCALL deInitStack(EmptyStack * stack);
 
@@ -39,18 +39,22 @@ extern void SDLCALL deInitStack(EmptyStack * stack);
 
 #endif
 
-#ifdef STACK_TEST
+#if defined(STACK_TEST)
 #include "SDL3/SDL_test.h"
 
-void stackTest(void)
+int stackTest(void)
 {
-    SDL_Log("--------------------------\n");
+    int res, passed, total, failed;
+    passed = total = failed = 0;
+    SDL_Log("-------------------------------------------------------------");
+    SDL_Log("stack test\n");
 
+    total++;
     EmptyStack stack = {};
     initStack(&stack, sizeof(Uint32), NULL, NULL);
 
-    SDL_assert(isEmpty(stack) == true);
-    SDL_assert(isFull(stack) == false);
+    SDLTest_AssertCheck(StackIsEmpty(stack) == true, "StackIsEmpty Uint32 test");
+    SDLTest_AssertCheck(StackIsFull(stack) == false, "StackIsFull Uint32 test");
 
     Uint32 a = 1;
     for (Uint32 i = 0;i < 128;i++)
@@ -59,24 +63,36 @@ void stackTest(void)
         a++;
     }
 
-    SDL_assert(isFull(stack) == true);
-    SDL_assert(isEmpty(stack) == false);
+    SDLTest_AssertCheck(StackIsFull(stack) == true, "StackIsFull Uint32 test");
+    SDLTest_AssertCheck(StackIsEmpty(stack) == false, "StackIsEmpty Uint32 test");
+
 
     for (Uint32 i = 128;i > 0;i--)
     {
         Uint32 b;
         stack.popFn(&stack, &b);
 
-        SDL_assert(b == i);
+        SDLTest_AssertCheck(b == i, "defaultPopFn Uint32 test");
     }
     deInitStack(&stack);
 
-    SDL_Log("Uint32 test passed (1 / 3)\n");
+    res = SDLTest_AssertSummaryToTestResult();
+    if (res == TEST_RESULT_PASSED) 
+    {
+        SDL_Log("stack Uint32 test passed");
+        passed++;
+    }
+    else 
+    {
+        SDL_Log("stack Uint32 test failed");
+        if (!failed) failed = passed + 1;
+    }
 
+    total++;
     initStack(&stack, sizeof(float), NULL, NULL);
 
-    SDL_assert(isEmpty(stack) == true);
-    SDL_assert(isFull(stack) == false);
+    SDLTest_AssertCheck(StackIsEmpty(stack) == true, "StackIsEmpty float test");
+    SDLTest_AssertCheck(StackIsFull(stack) == false, "StackIsFull float test");
 
     for (Uint32 i = 0;i < 128;i++)
     {
@@ -84,45 +100,71 @@ void stackTest(void)
         stack.pushFn(&stack, &c);
     }
 
-    SDL_assert(isFull(stack) == true);
-    SDL_assert(isEmpty(stack) == false);
+    SDLTest_AssertCheck(StackIsFull(stack) == true, "StackIsFull float test");
+    SDLTest_AssertCheck(StackIsEmpty(stack) == false, "StackIsEmpty float test");
 
     for (Uint32 i = 128;i > 0;i--)
     {
         float c;
         stack.popFn(&stack, &c);
 
-        SDL_assert(c - (float)i <= 0.0000001f);
+        SDLTest_AssertCheck(c - (float)i <= 0.0000001f, "defaultPopFn float test");
     }
     deInitStack(&stack);
 
-    SDL_Log("float test passed (2 / 3)\n");
+    res = SDLTest_AssertSummaryToTestResult();
+    if (res == TEST_RESULT_PASSED) 
+    {
+        passed++;
+        SDL_Log("stack float test passed");
+    }
+    else 
+    {
+        SDL_Log("stack float test failed");
+        if (!failed) failed = passed + 1;
+    }
 
+    total++;
     initStack(&stack, sizeof(int), NULL, NULL);
 
-    SDL_assert(isEmpty(stack) == true);
-    SDL_assert(isFull(stack) == false);
+    SDLTest_AssertCheck(StackIsEmpty(stack) == true, "StackIsFull int test");
+    SDLTest_AssertCheck(StackIsFull(stack) == false, "StackIsEmpty int test");
 
     for (int i = 0;i < 128;i++)
     {
         stack.pushFn(&stack, &i);
     }
 
-    SDL_assert(isFull(stack) == true);
-    SDL_assert(isEmpty(stack) == false);
+    SDLTest_AssertCheck(StackIsFull(stack) == true, "StackIsEmpty int test");
+    SDLTest_AssertCheck(StackIsEmpty(stack) == false, "StackIsFull int test");
 
     for (int i = 127;i >= 0;i--)
     {
         int c;
         stack.popFn(&stack, &c);
 
-        SDL_assert(c == i);
+        SDLTest_AssertCheck(c == i, "defaultPopFn int test");
     }
     deInitStack(&stack);
 
-    SDL_Log("int test passed (3 / 3)\n");
+    res = SDLTest_AssertSummaryToTestResult();
+    if (res == TEST_RESULT_PASSED) 
+    {
+        SDL_Log("stack int test passed");
+        passed++;
+    }
+    else 
+    {
+        SDL_Log("stack int test failed");
+        if (!failed) failed = passed + 1;
+    }
 
-    SDL_Log("stack test passed\n");
-    SDL_Log("--------------------------");
+    SDLTest_LogAssertSummary();
+    if (res == TEST_RESULT_PASSED) SDL_Log("\nstack test passed(%d / %d)", passed, total);
+    else SDL_Log("\nstack test failed(%d / %d), first failed: %d", passed, total, failed);
+
+    SDL_Log("-------------------------------------------------------------\n");
+
+    return res;
 }
 #endif

@@ -65,7 +65,13 @@ static void initAllSync(void)
 // Setup function that runs once at the beginning of our program
 void setup(int argc, char* argv[]) 
 {
-    TestAll();
+#ifdef TEST
+    int res = TestAll();
+    if (res != 0) 
+    {
+        exit(-1);
+    }
+#endif
 
     int arg = initFileSystem(argc, argv);
     initAllSync();
@@ -841,6 +847,7 @@ void destroy(void)
     print("signal end\n");
     SDL_WaitThread(sdl_pid_update, NULL);
     print("update end\n");
+    SDL_SignalSemaphore(allSync.vertexSemaphore);
     SDL_WaitThread(sdl_pid_draw, NULL);
     print("draw end\n");
     

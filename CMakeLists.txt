@@ -64,6 +64,7 @@ add_executable(game ${SRC_ROOT}/main.c
                     ${SRC_ROOT}/G_world.c
                     ${SRC_ROOT}/G_list.c
                     ${SRC_ROOT}/G_stack.c
+                    ${SRC_ROOT}/G_queue.c
                     ${SRC_ROOT}/G_timer.c
                     ${SRC_ROOT}/G_text.c
                     ${SRC_ROOT}/G_pop_window.c
@@ -121,6 +122,7 @@ target_link_libraries(game PRIVATE
                     SDL3.a
                     SDL3_mixer.a
                     SDL3_image.a
+                    SDL3_test.a
                     box2d.a
                     unistring.a
                     "${LIB_ROOT}/vulkan/vulkan-1.lib"
