@@ -27,12 +27,14 @@ typedef struct _G_Queue G_Queue;
 extern bool SDLCALL initQueue(G_Queue * queue, size_t dataSize, int32_t capacity, QueueOp addTail, QueueOp getHead, QueueOp addHead, QueueOp getTail);
 extern bool SDLCALL G_QueueIsFull(G_Queue queue);
 extern bool SDLCALL G_QueueIsEmpty(G_Queue queue);
+extern bool SDLCALL G_QueueResize(G_Queue * queue, int newCapacity);
 extern void SDLCALL G_deInitQueue(G_Queue * queue);
 
 #endif // G_queue.h
 
 #if defined(QUEUE_TEST)
 #include "SDL3/SDL_test.h"
+#include <stdio.h>
 
 // Struct Test
 typedef struct {
@@ -886,5 +888,307 @@ int queueTest(void)
     SDL_Log("-------------------------------------------------------------\n");
 
     return res;
+}
+int queueReiszeTest(void)
+{
+    int res, passed, total, failed;
+    passed = total = failed = 0;
+    SDL_Log("-------------------------------------------------------------");
+    SDL_Log("queue test\n");
+
+    G_Queue queue = {};
+    // test 1 tail < head 0-tail len >= head-max len full
+    total++;
+    initQueue(&queue, sizeof(Uint32), 1024, NULL, NULL, NULL, NULL);
+
+    for (Uint32 i = 0;i < 512;i++)
+    {
+        queue.addTail(&queue, &i);
+        i++;
+        queue.addHead(&queue, &i);
+        i--;
+    }
+
+    // for (Uint32 i = 0;i < 1024;i++)
+    // {
+    //     printf("i: %5u ", ((Uint32*)queue.data)[i]);
+    // }
+    // puts("\n");
+
+    SDLTest_AssertCheck(G_QueueIsFull(queue) == true, "G_QueueIsFull struct test");
+
+    G_QueueResize(&queue, 2048);
+    // for (Uint32 i = 0;i < 1024;i++)
+    // {
+    //     printf("i: %5u ", ((Uint32*)queue.data)[i]);
+    // }
+    // puts("\n");
+
+    for (Uint32 i = 512;i > 0;i--)
+    {
+        Uint32 b;
+        queue.getTail(&queue, &b);
+        SDLTest_AssertCheck(b == i - 1, "queue resize Uint32 test");
+    }
+    for (Uint32 i = 1;i <= 512;i++)
+    {
+        Uint32 b;
+        queue.getTail(&queue, &b);
+        SDLTest_AssertCheck(b == i, "queue resize Uint32 test");
+    }
+    
+    SDLTest_AssertCheck(G_QueueIsEmpty(queue) == true, "G_QueueIsEmpty struct test");
+    SDLTest_AssertCheck(G_QueueIsFull(queue) == false, "G_QueueIsFull struct test");
+    
+
+    for (Uint32 i = 0;i < 2048;i++)
+    {
+        queue.addTail(&queue, &i);
+    }
+
+    SDLTest_AssertCheck(G_QueueIsFull(queue) == true, "G_QueueIsFull Uint32 test");
+    SDLTest_AssertCheck(G_QueueIsEmpty(queue) == false, "G_QueueIsEmpty Uint32 test");
+
+    for (Uint32 i = 0;i < 2048;i++)
+    {
+        Uint32 b;
+        queue.getHead(&queue, &b);
+
+        SDLTest_AssertCheck(b == i, "defaultGetHandFunc Uint32 test");
+    }
+    
+    G_deInitQueue(&queue);
+    res = SDLTest_AssertSummaryToTestResult();
+    if (res == TEST_RESULT_PASSED)
+    {
+        SDL_Log("queue resize tail < head 0-tail len >= head-max len full passed");
+        passed++;
+    }
+    else
+    {
+        SDL_Log("queue resize tail < head 0-tail len >= head-max len full failed");
+        if (!failed) failed = passed + 1;
+    }
+
+    // test 2 tail < head 0-tail len < head - max len full
+    total++;
+    initQueue(&queue, sizeof(Uint32), 1024, NULL, NULL, NULL, NULL);
+
+    for (Uint32 i = 0;i < 200;i++)
+    {
+        queue.addTail(&queue, &i);
+    }
+
+    for (Uint32 i = 0;i < 824;i++)
+    {
+        queue.addHead(&queue, &i);
+    }
+    // for (Uint32 i = 0;i < 1024;i++)
+    // {
+    //     printf("i: %5u ", ((Uint32*)queue.data)[i]);
+    // }
+    // puts("\n");
+
+    SDLTest_AssertCheck(G_QueueIsFull(queue) == true, "G_QueueIsFull struct test");
+
+    G_QueueResize(&queue, 2048);
+    // for (Uint32 i = 0;i < 1024;i++)
+    // {
+    //     printf("i: %5u ", ((Uint32*)queue.data)[i]);
+    // }
+    // puts("\n");
+
+    for (Uint32 i = 200;i > 0;i--)
+    {
+        Uint32 b;
+        queue.getTail(&queue, &b);
+        SDLTest_AssertCheck(b == i - 1, "queue resize Uint32 test");
+    }
+    for (Uint32 i = 0;i < 824;i++)
+    {
+        Uint32 b;
+        queue.getTail(&queue, &b);
+        SDLTest_AssertCheck(b == i, "queue resize Uint32 test");
+    }
+    
+    SDLTest_AssertCheck(G_QueueIsEmpty(queue) == true, "G_QueueIsEmpty struct test");
+    SDLTest_AssertCheck(G_QueueIsFull(queue) == false, "G_QueueIsFull struct test");
+    
+
+    for (Uint32 i = 0;i < 2048;i++)
+    {
+        queue.addTail(&queue, &i);
+    }
+
+    SDLTest_AssertCheck(G_QueueIsFull(queue) == true, "G_QueueIsFull Uint32 test");
+    SDLTest_AssertCheck(G_QueueIsEmpty(queue) == false, "G_QueueIsEmpty Uint32 test");
+
+    for (Uint32 i = 0;i < 2048;i++)
+    {
+        Uint32 b;
+        queue.getHead(&queue, &b);
+
+        SDLTest_AssertCheck(b == i, "defaultGetHandFunc Uint32 test");
+    }
+    
+    G_deInitQueue(&queue);
+
+
+    res = SDLTest_AssertSummaryToTestResult();
+    if (res == TEST_RESULT_PASSED)
+    {
+        SDL_Log("queue resize tail < head 0-tail len < head - max len full passed");
+        passed++;
+    }
+    else
+    {
+        SDL_Log("queue resize tail < head 0-tail len < head - max len full test failed");
+        if (!failed) failed = passed + 1;
+    }
+    
+    // test 3 tail > head not full
+    total++;
+    initQueue(&queue, sizeof(Uint32), 1024, NULL, NULL, NULL, NULL);
+
+    for (Uint32 i = 0;i < 800;i++)
+    {
+        queue.addTail(&queue, &i);
+    }
+    {
+        Uint32 c;
+        queue.getHead(&queue, &c);
+    }
+
+    // for (Uint32 i = 1;i < 800;i++)
+    // {
+        // printf("i:%u : %5u ", i, ((Uint32*)queue.data)[i]);
+    // }
+    // puts("\n");
+
+    SDLTest_AssertCheck(G_QueueIsFull(queue) == false, "G_QueueIsFull struct test");
+
+    G_QueueResize(&queue, 2048);
+
+    // for (Uint32 i = 0;i < 799;i++)
+    // {
+        // printf("i:%u: %5u ", i, ((Uint32*)queue.data)[i]);
+    // }
+    // puts("\n");
+
+    for (Uint32 i = 1;i < 800;i++)
+    {
+        Uint32 b;
+        queue.getHead(&queue, &b);
+        SDLTest_AssertCheck(b == i, "queue resize Uint32 test");
+    }
+    
+    SDLTest_AssertCheck(G_QueueIsEmpty(queue) == true, "G_QueueIsEmpty struct test");
+    SDLTest_AssertCheck(G_QueueIsFull(queue) == false, "G_QueueIsFull struct test");
+    
+
+    for (Uint32 i = 0;i < 2048;i++)
+    {
+        queue.addTail(&queue, &i);
+    }
+
+    SDLTest_AssertCheck(G_QueueIsFull(queue) == true, "G_QueueIsFull Uint32 test");
+    SDLTest_AssertCheck(G_QueueIsEmpty(queue) == false, "G_QueueIsEmpty Uint32 test");
+
+    for (Uint32 i = 0;i < 2048;i++)
+    {
+        Uint32 b;
+        queue.getHead(&queue, &b);
+
+        SDLTest_AssertCheck(b == i, "defaultGetHandFunc Uint32 test");
+    }
+    
+    G_deInitQueue(&queue);
+
+    res = SDLTest_AssertSummaryToTestResult();
+    if (res == TEST_RESULT_PASSED)
+    {
+        SDL_Log("queue resize tail > head no full test passed");
+        passed++;
+    }
+    else
+    {
+        SDL_Log("queue resize tail > head no full test failed");
+        if (!failed) failed = passed + 1;
+    }
+
+    // test 4 single
+    total++;
+    initQueue(&queue, sizeof(Uint32), 1024, NULL, NULL, NULL, NULL);
+
+    for (Uint32 i = 0;i < 800;i++)
+    {
+        queue.addTail(&queue, &i);
+    }
+    for (Uint32 i = 0;i < 799;i++)
+    {
+        Uint32 c;
+        queue.getHead(&queue, &c);
+    }
+
+    // {
+    //     printf("i: %5u ", ((Uint32*)queue.data)[799]);
+    // }
+    // puts("\n");
+
+    SDLTest_AssertCheck(G_QueueIsFull(queue) == false, "G_QueueIsFull struct test");
+
+    G_QueueResize(&queue, 2048);
+
+    // {
+    //     printf("i: %5u ", ((Uint32*)queue.data)[0]);
+    // }
+    // puts("\n");
+
+    {
+        Uint32 b;
+        queue.getTail(&queue, &b);
+        SDLTest_AssertCheck(b == 799, "queue resize Uint32 test");
+    }
+    
+    SDLTest_AssertCheck(G_QueueIsEmpty(queue) == true, "G_QueueIsEmpty struct test");
+    SDLTest_AssertCheck(G_QueueIsFull(queue) == false, "G_QueueIsFull struct test");
+    
+
+    for (Uint32 i = 0;i < 2048;i++)
+    {
+        queue.addTail(&queue, &i);
+    }
+
+    SDLTest_AssertCheck(G_QueueIsFull(queue) == true, "G_QueueIsFull Uint32 test");
+    SDLTest_AssertCheck(G_QueueIsEmpty(queue) == false, "G_QueueIsEmpty Uint32 test");
+
+    for (Uint32 i = 0;i < 2048;i++)
+    {
+        Uint32 b;
+        queue.getHead(&queue, &b);
+
+        SDLTest_AssertCheck(b == i, "defaultGetHandFunc Uint32 test");
+    }
+    
+    G_deInitQueue(&queue);
+
+    res = SDLTest_AssertSummaryToTestResult();
+    if (res == TEST_RESULT_PASSED)
+    {
+        SDL_Log("queue resize single test passed");
+        passed++;
+    }
+    else
+    {
+        SDL_Log("queue resize single test failed");
+        if (!failed) failed = passed + 1;
+    }
+    SDLTest_LogAssertSummary();
+    if (res == TEST_RESULT_PASSED) SDL_Log("\nqueue addTail getHead test passed(%d / %d)", passed, total);
+    else SDL_Log("\nqueue addTail getHead test failed(%d / %d), first failed: %d", passed, total, failed);
+
+    SDL_Log("-------------------------------------------------------------\n");
+
+    return  res;
 }
 #endif

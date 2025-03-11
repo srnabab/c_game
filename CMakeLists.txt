@@ -65,6 +65,7 @@ add_executable(game ${SRC_ROOT}/main.c
                     ${SRC_ROOT}/G_list.c
                     ${SRC_ROOT}/G_stack.c
                     ${SRC_ROOT}/G_queue.c
+                    ${SRC_ROOT}/G_threadPool.c
                     ${SRC_ROOT}/G_timer.c
                     ${SRC_ROOT}/G_text.c
                     ${SRC_ROOT}/G_pop_window.c

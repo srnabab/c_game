@@ -132,6 +132,92 @@ bool G_QueueIsFull(G_Queue queue)
 
     return false;
 }
+bool G_QueueResize(G_Queue * queue, int newCapacity)
+{
+    SDL_LockMutex(queue->mutex);
+    if (queue->head != 0)
+    {
+        if (queue->tail > queue->head) 
+        {
+            size_t length = 0;
+            length = queue->tail - queue->head;
+            memmove(queue->data, (char*)queue->data + (queue->head * queue->dataSize), (length + 1) * queue->dataSize);
+
+            queue->head = 0;
+            queue->tail = length;
+        }
+        else if (queue->tail < queue->head)
+        {
+            size_t length0, length1;
+            length0 = length1 = 0;
+
+            length0 = queue->tail;
+            length1 = queue->capacity - queue->head - 1;
+
+            void * temp;
+            if (length0 >= length1)
+            {
+                temp = SDL_malloc((length1 + 1) * queue->dataSize);
+                if (temp == NULL)
+                {
+                    SDL_UnlockMutex(queue->mutex);
+                    return false;
+                }
+
+                memcpy(temp, (char*)queue->data + (queue->head * queue->dataSize), (length1 + 1) * queue->dataSize);
+
+                memmove((char*)queue->data + ((length1 + 1) * queue->dataSize), queue->data, (length0 + 1) * queue->dataSize);
+                memcpy(queue->data, temp, (length1 + 1) * queue->dataSize);
+
+                SDL_free(temp);
+
+                queue->head = 0;
+                queue->tail = length0 + length1 + 1;
+            }
+            else
+            {
+                temp = SDL_malloc((length0 + 1) * queue->dataSize);
+                if (temp == NULL) 
+                {
+                    SDL_UnlockMutex(queue->mutex);
+                    return false;
+                }
+
+                memcpy(temp, queue->data, (length0 + 1) * queue->dataSize);
+
+                memcpy(queue->data, (char*)queue->data + (queue->head * queue->dataSize), (length1 + 1) * queue->dataSize);
+                memcpy((char*)queue->data + ((length1 + 1)* queue->dataSize), temp, (length0 + 1) * queue->dataSize);
+
+                SDL_free(temp);
+
+                queue->head = 0;
+                queue->tail = length0 + length1 + 1;
+            }
+        }
+        else
+        {
+            memcpy(queue->data, (char*)queue->data + (queue->head * queue->dataSize), queue->dataSize);
+
+            queue->head = queue->tail = 0;
+        }
+    }
+
+    void * tempPtr = queue->data;
+    queue->data = SDL_realloc(queue->data, newCapacity * queue->dataSize);
+    if (queue->data == NULL) 
+    {
+        queue->data = tempPtr;
+
+        SDL_UnlockMutex(queue->mutex);
+        return false;
+    }
+
+    queue->capacity = newCapacity;
+
+    SDL_UnlockMutex(queue->mutex);
+
+    return true;
+}
 void G_deInitQueue(G_Queue * queue)
 {
     SDL_free(queue->data);
