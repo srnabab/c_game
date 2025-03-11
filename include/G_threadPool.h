@@ -71,6 +71,15 @@ static void execute1(void * arg)
     void (*func)(int, float, int*) = (void (*)(int, float, int*))((G_Task*)arg)->func;
     func(((task1Arg*)((G_Task*)arg)->arg)->a, ((task1Arg*)((G_Task*)arg)->arg)->b, ((task1Arg*)((G_Task*)arg)->arg)->res);
 }
+static void task2(void)
+{
+    SDL_Delay(1000);
+}
+static void execute2(void * arg)
+{
+    (void)arg;
+    task2();
+}
 int threadPoolTest(void)
 {
     int res, passed, total, failed;
@@ -126,7 +135,70 @@ int threadPoolTest(void)
     }
 
     total++;
+    pIndex = G_AddTask(&threadPool, &tasks);
+    G_Task tasks2 = {0};
+    tasks2.executeFunc = execute2;
+    tasks2.func = NULL;
+    tasks2.arg = NULL;
+    int * pIndex2 = G_AddTask(&threadPool, &tasks2);
 
+    G_Task tasks3 = {0};
+    tasks3.executeFunc = execute2;
+    tasks3.func = NULL;
+    tasks3.arg = NULL;
+    int * pIndex3 = G_AddTask(&threadPool, &tasks3);
+
+    G_Task tasks4 = {0};
+    tasks4.executeFunc = execute2;
+    tasks4.func = NULL;
+    tasks4.arg = NULL;
+    int * pIndex4 = G_AddTask(&threadPool, &tasks4);
+
+    G_Task tasks5 = {0};
+    tasks5.executeFunc = execute2;
+    tasks5.func = NULL;
+    tasks5.arg = NULL;
+    int * pIndex5 = G_AddTask(&threadPool, &tasks5);
+
+    G_Task tasks6 = {0};
+    tasks6.executeFunc = execute2;
+    tasks6.func = NULL;
+    tasks6.arg = NULL;
+    int * pIndex6 = G_AddTask(&threadPool, &tasks6);
+
+    G_Task tasks7 = {0};
+    tasks7.executeFunc = execute2;
+    tasks7.func = NULL;
+    tasks7.arg = NULL;
+    int * pIndex7 = G_AddTask(&threadPool, &tasks7);
+
+    G_Task tasks8 = {0};
+    tasks8.executeFunc = execute2;
+    tasks8.func = NULL;
+    tasks8.arg = NULL;
+    int * pIndex8 = G_AddTask(&threadPool, &tasks8);
+
+    G_WaitTask(&threadPool, *pIndex8);
+    G_WaitTask(&threadPool, *pIndex7);
+    G_WaitTask(&threadPool, *pIndex6);
+    G_WaitTask(&threadPool, *pIndex5);
+    G_WaitTask(&threadPool, *pIndex4);
+    G_WaitTask(&threadPool, *pIndex3);
+    G_WaitTask(&threadPool, *pIndex2);
+    G_WaitTask(&threadPool, *pIndex);
+    SDLTest_AssertCheck(taskRes == 10, "task execute test");
+
+    res = SDLTest_AssertSummaryToTestResult();
+    if (res == TEST_RESULT_PASSED) 
+    {
+        SDL_Log("many task test with result passed");
+        passed++;
+    }
+    else 
+    {
+        SDL_Log("many task test with result passed");
+        if (!failed) failed = passed + 1;
+    }
     destroyThreadPool(&threadPool);
 
     SDLTest_LogAssertSummary();

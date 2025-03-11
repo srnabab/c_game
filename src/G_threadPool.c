@@ -23,7 +23,10 @@ static int threadFunc(void * data)
         SDL_UnlockMutex(mutex);
 
         // run task
-        if (res) task.executeFunc(&task);
+        if (res) 
+        {
+            task.executeFunc(&task);
+        }
 
         SDL_LockMutex(pThreadPool->ThreadPoolMutex);
 
