@@ -23,3 +23,4 @@ move_lib.ps1
 .VSCodeCounter/
 examples/
 examples.7z
+box2d_src/

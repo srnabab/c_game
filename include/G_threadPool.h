@@ -11,11 +11,20 @@
 
 typedef void (*TaskExecute)(void *);
 
+struct _Range
+{
+    int startIndex;
+    int endIndex;
+};
+typedef struct _Range Range;
+
 struct _G_Task
 {
     TaskExecute executeFunc;
     void * func;
     void * arg;
+    bool canRun;
+    Range indexRange;
 };
 typedef struct _G_Task G_Task;
 
@@ -23,16 +32,15 @@ struct _G_Thread_Pool
 {
     SDL_Thread ** pThreads;
     SDL_Semaphore ** pThreadSeamphore;
+    SDL_Semaphore ** pWaitTaskSemaphore;
     bool * leisureThread;
 
     SDL_Mutex * ThreadPoolMutex;
-    G_Queue  taskQueue;
+    G_Task * tasks;
 
     bool expandable;
     bool running;
     int threadPoolSize;
-
-    int * indices;
 };
 typedef struct _G_Thread_Pool G_Thread_Pool;
 
@@ -44,9 +52,9 @@ struct _Thread_Func_Arg
 typedef struct _Thread_Func_Arg Thread_Func_Arg;
 
 extern bool SDLCALL createThreadPool(G_Thread_Pool * pThreadPool, Uint32 threadCount, bool expandable);
-extern int* SDLCALL G_AddTask(G_Thread_Pool * pThreadPool, G_Task * pTask);
+extern int* SDLCALL G_AddTask(G_Thread_Pool * pThreadPool, int itemCount, int minRange, G_Task * pTask);
 extern void SDLCALL destroyThreadPool(G_Thread_Pool * pThreadPool);
-extern void SDLCALL G_WaitTask(G_Thread_Pool * pThreadPool, int taskIndex);
+extern void SDLCALL G_WaitTask(G_Thread_Pool * pThreadPool, int * taskIndex);
 
 #include "SDL3/SDL_close_code.h"
 
@@ -71,14 +79,13 @@ static void execute1(void * arg)
     void (*func)(int, float, int*) = (void (*)(int, float, int*))((G_Task*)arg)->func;
     func(((task1Arg*)((G_Task*)arg)->arg)->a, ((task1Arg*)((G_Task*)arg)->arg)->b, ((task1Arg*)((G_Task*)arg)->arg)->res);
 }
-static void task2(void)
+static void task2(int a)
 {
     SDL_Delay(1000);
 }
 static void execute2(void * arg)
 {
-    (void)arg;
-    task2();
+    task2(*(int*)((G_Task*)arg)->arg);
 }
 int threadPoolTest(void)
 {
@@ -116,9 +123,9 @@ int threadPoolTest(void)
     int taskRes = 0;
     task1Arg task1Args = { 3, 3.6, &taskRes };
     tasks.arg = (void *)&task1Args;
-    int * pIndex = G_AddTask(&threadPool, &tasks);
+    int * pIndex = G_AddTask(&threadPool, 1, 1, &tasks);
 
-    G_WaitTask(&threadPool, *pIndex); 
+    G_WaitTask(&threadPool, pIndex); 
 
     SDLTest_AssertCheck(taskRes == 10, "task execute test");
 
@@ -135,58 +142,62 @@ int threadPoolTest(void)
     }
 
     total++;
-    pIndex = G_AddTask(&threadPool, &tasks);
     G_Task tasks2 = {0};
     tasks2.executeFunc = execute2;
     tasks2.func = NULL;
-    tasks2.arg = NULL;
-    int * pIndex2 = G_AddTask(&threadPool, &tasks2);
+    int arg2 = 2;
+    tasks2.arg = &arg2;
+    int * pIndex2 = G_AddTask(&threadPool, 1, 1, &tasks2);
 
     G_Task tasks3 = {0};
     tasks3.executeFunc = execute2;
     tasks3.func = NULL;
-    tasks3.arg = NULL;
-    int * pIndex3 = G_AddTask(&threadPool, &tasks3);
+    int arg3 = 3;
+    tasks3.arg = &arg3;
+    int * pIndex3 = G_AddTask(&threadPool, 1, 1, &tasks3);
 
     G_Task tasks4 = {0};
     tasks4.executeFunc = execute2;
     tasks4.func = NULL;
-    tasks4.arg = NULL;
-    int * pIndex4 = G_AddTask(&threadPool, &tasks4);
+    int arg4 = 4;
+    tasks4.arg =&arg4;
+    int * pIndex4 = G_AddTask(&threadPool, 1, 1, &tasks4);
 
     G_Task tasks5 = {0};
     tasks5.executeFunc = execute2;
     tasks5.func = NULL;
-    tasks5.arg = NULL;
-    int * pIndex5 = G_AddTask(&threadPool, &tasks5);
+    int arg5 = 5;
+    tasks5.arg = &arg5;
+    int * pIndex5 = G_AddTask(&threadPool, 1, 1, &tasks5);
 
     G_Task tasks6 = {0};
     tasks6.executeFunc = execute2;
     tasks6.func = NULL;
-    tasks6.arg = NULL;
-    int * pIndex6 = G_AddTask(&threadPool, &tasks6);
+    int arg6 = 6;
+    tasks6.arg = &arg6;
+    int * pIndex6 = G_AddTask(&threadPool, 1, 1, &tasks6);
 
     G_Task tasks7 = {0};
     tasks7.executeFunc = execute2;
     tasks7.func = NULL;
-    tasks7.arg = NULL;
-    int * pIndex7 = G_AddTask(&threadPool, &tasks7);
+    int arg7 = 7;
+    tasks7.arg = &arg7;
+    int * pIndex7 = G_AddTask(&threadPool, 1, 1, &tasks7);
 
     G_Task tasks8 = {0};
     tasks8.executeFunc = execute2;
     tasks8.func = NULL;
-    tasks8.arg = NULL;
-    int * pIndex8 = G_AddTask(&threadPool, &tasks8);
+    int arg8 = 8;
+    tasks8.arg = &arg8;
+    int * pIndex8 = G_AddTask(&threadPool, 1, 1, &tasks8);
 
-    G_WaitTask(&threadPool, *pIndex8);
-    G_WaitTask(&threadPool, *pIndex7);
-    G_WaitTask(&threadPool, *pIndex6);
-    G_WaitTask(&threadPool, *pIndex5);
-    G_WaitTask(&threadPool, *pIndex4);
-    G_WaitTask(&threadPool, *pIndex3);
-    G_WaitTask(&threadPool, *pIndex2);
-    G_WaitTask(&threadPool, *pIndex);
-    SDLTest_AssertCheck(taskRes == 10, "task execute test");
+    G_WaitTask(&threadPool, pIndex8);
+    G_WaitTask(&threadPool, pIndex7);
+    G_WaitTask(&threadPool, pIndex6);
+    G_WaitTask(&threadPool, pIndex5);
+    G_WaitTask(&threadPool, pIndex4);
+    G_WaitTask(&threadPool, pIndex3);
+    G_WaitTask(&threadPool, pIndex2);
 
     res = SDLTest_AssertSummaryToTestResult();
     if (res == TEST_RESULT_PASSED) 

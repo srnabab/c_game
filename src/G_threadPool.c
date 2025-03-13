@@ -1,5 +1,6 @@
 #include "G_threadPool.h"
 #include "SDL3/SDL_timer.h"
+#include "SDL3/SDL_log.h"
 
 static int threadFunc(void * data)
 {
@@ -7,33 +8,33 @@ static int threadFunc(void * data)
     G_Thread_Pool * pThreadPool = ((Thread_Func_Arg*)data)->pThreadPool;
     bool running = pThreadPool->running;
     SDL_Semaphore * semaphore = pThreadPool->pThreadSeamphore[index];
-    SDL_Mutex * mutex = pThreadPool->ThreadPoolMutex;
+    SDL_Semaphore * waitSemaphore = pThreadPool->pWaitTaskSemaphore[index];
     G_Task task;
-    bool res;
+    int i;
 
     while (running)
     {
         SDL_WaitSemaphore(semaphore);
 
-        SDL_LockMutex(mutex);
-
         // get task
-        res = pThreadPool->taskQueue.getHead(&pThreadPool->taskQueue, &task);
-
-        SDL_UnlockMutex(mutex);
+        memcpy(&task, pThreadPool->tasks + index, sizeof(G_Task));
 
         // run task
-        if (res) 
+        if (task.canRun) 
         {
+            for (i = task.indexRange.startIndex;i < task.indexRange.endIndex;i++)
             task.executeFunc(&task);
         }
 
         SDL_LockMutex(pThreadPool->ThreadPoolMutex);
 
+        pThreadPool->tasks[index].canRun = false;
         pThreadPool->leisureThread[index] = true;
         running = pThreadPool->running;
 
         SDL_UnlockMutex(pThreadPool->ThreadPoolMutex);
+
+        SDL_SignalSemaphore(waitSemaphore);
     }
 
     return 0;
@@ -51,29 +52,28 @@ bool createThreadPool(G_Thread_Pool * pThreadPool, Uint32 threadCount, bool expa
         SDL_free(pThreadPool->pThreads);
         return false;
     }
+    pThreadPool->pWaitTaskSemaphore = (SDL_Semaphore**)SDL_malloc(threadCount * sizeof(SDL_Semaphore*));
+    if (pThreadPool->pWaitTaskSemaphore  == NULL)
+    {
+        SDL_free(pThreadPool->pThreads);
+        SDL_free(pThreadPool->pThreadSeamphore);
+        return false;
+    }
+    pThreadPool->tasks = (G_Task*)SDL_malloc(threadCount * sizeof(G_Task));
+    if (pThreadPool->tasks == NULL)
+    {
+        SDL_free(pThreadPool->pThreads);
+        SDL_free(pThreadPool->pThreadSeamphore);
+        SDL_free(pThreadPool->pWaitTaskSemaphore);
+        return false;
+    }
     pThreadPool->leisureThread = (bool*)SDL_malloc(threadCount * sizeof(bool));
     if (pThreadPool->leisureThread == NULL)
     {
+        SDL_free(pThreadPool->tasks);
         SDL_free(pThreadPool->pThreads);
         SDL_free(pThreadPool->pThreadSeamphore);
-        return false;
-    }
-    pThreadPool->indices = (int*)SDL_malloc(threadCount * sizeof(int));
-    if (pThreadPool->leisureThread == NULL)
-    {
-        SDL_free(pThreadPool->pThreads);
-        SDL_free(pThreadPool->pThreadSeamphore);
-        SDL_free(pThreadPool->leisureThread);
-        return false;
-    }
-
-    bool res = initQueue(&pThreadPool->taskQueue, sizeof(G_Task), threadCount, NULL, NULL, NULL, NULL);
-    if (res == false)
-    {
-        SDL_free(pThreadPool->pThreads);
-        SDL_free(pThreadPool->pThreadSeamphore);
-        SDL_free(pThreadPool->leisureThread);
-        SDL_free(pThreadPool->indices);
+        SDL_free(pThreadPool->pWaitTaskSemaphore);
         return false;
     }
     
@@ -83,12 +83,13 @@ bool createThreadPool(G_Thread_Pool * pThreadPool, Uint32 threadCount, bool expa
     pThreadPool->running = true;
     for (Uint32 i = 0;i < threadCount;i++)
     {
-        pThreadPool->indices[i] = i;
+        pThreadPool->tasks[i].canRun = false;
         Thread_Func_Arg data = {0};
         data.index = i;
         data.pThreadPool = pThreadPool;
 
         pThreadPool->pThreadSeamphore[i] = SDL_CreateSemaphore(0);
+        pThreadPool->pWaitTaskSemaphore[i] = SDL_CreateSemaphore(0);
         pThreadPool->pThreads[i] = SDL_CreateThread(threadFunc, "threadPool", &data);
 
         pThreadPool->leisureThread[i] = true;
@@ -106,6 +107,7 @@ static int getActiveThread(G_Thread_Pool * pThreadPool)
     {
         if (pThreadPool->leisureThread[i]) 
         {
+            pThreadPool->leisureThread[i] = false;
             SDL_UnlockMutex(pThreadPool->ThreadPoolMutex);
             return i;
         }
@@ -115,42 +117,94 @@ static int getActiveThread(G_Thread_Pool * pThreadPool)
 
     return -1;
 }
-int * G_AddTask(G_Thread_Pool * pThreadPool, G_Task * pTask)
+int * G_AddTask(G_Thread_Pool * pThreadPool, int itemCount, int minRange, G_Task * pTask)
 {
-    SDL_LockMutex(pThreadPool->ThreadPoolMutex);
-
-    bool res = pThreadPool->taskQueue.addTail(&pThreadPool->taskQueue, pTask);
-    if (!res)
+    int threadsNeedCount = 0;
+    Range * startIndex = (Range*)SDL_malloc(pThreadPool->threadPoolSize * sizeof(Range));
+    if (itemCount <= minRange)
     {
-        SDL_UnlockMutex(pThreadPool->ThreadPoolMutex);
-        return NULL;
+       threadsNeedCount = 1; 
+       startIndex[0].startIndex = 0;
+       startIndex[0].endIndex = itemCount;
     }
-    int index = getActiveThread(pThreadPool);
-    if (index == -1) 
+    else
     {
-        pThreadPool->taskQueue.getTail(&pThreadPool->taskQueue, pTask);
-        SDL_UnlockMutex(pThreadPool->ThreadPoolMutex);
-        return NULL;
-    }
-
-    pThreadPool->leisureThread[index] = false;
-
-    SDL_SignalSemaphore(pThreadPool->pThreadSeamphore[index]);
-
-    SDL_UnlockMutex(pThreadPool->ThreadPoolMutex);
-    return pThreadPool->indices + index;
-}
-void G_WaitTask(G_Thread_Pool * pThreadPool, int taskIndex)
-{
-    while (1)
-    {
-        SDL_LockMutex(pThreadPool->ThreadPoolMutex);
-        if (pThreadPool->leisureThread[taskIndex]) 
+        if (itemCount <= pThreadPool->threadPoolSize * minRange)
         {
-            SDL_UnlockMutex(pThreadPool->ThreadPoolMutex);
-            break;
+            int itemCount2 = itemCount;
+            int i = 0;
+
+            while (itemCount2 - minRange > 0)
+            {
+                startIndex[i].startIndex = threadsNeedCount * minRange; 
+                threadsNeedCount++;
+                startIndex[i].endIndex = threadsNeedCount * minRange;
+                i++;
+                itemCount2 -= minRange;
+            }
+            if (itemCount2 > 0)
+            {
+                startIndex[i].startIndex = threadsNeedCount * minRange; 
+                threadsNeedCount++;
+                startIndex[i].endIndex = startIndex[i].startIndex + itemCount2;
+            }
         }
-        SDL_UnlockMutex(pThreadPool->ThreadPoolMutex);
+        else
+        {
+            threadsNeedCount = pThreadPool->threadPoolSize;
+
+            int mod = itemCount % threadsNeedCount;
+            int preThread = itemCount / threadsNeedCount;
+            if (mod < threadsNeedCount / 2)
+            {
+                startIndex[0].startIndex = 0;
+                startIndex[0].endIndex = preThread;
+                for (int i = 1;i < threadsNeedCount;i++)
+                {
+                    startIndex[i].startIndex = startIndex[i - 1].endIndex;
+                    startIndex[i].endIndex = startIndex[i].startIndex + preThread;
+
+                    if (threadsNeedCount - i <= mod)
+                    {
+                        startIndex[i].endIndex++;
+                    }
+                }
+            }
+        }
+    }
+
+    int * indices = (int*)SDL_malloc((threadsNeedCount + 1) * sizeof(int));
+    indices[0] = threadsNeedCount;
+    indices = indices + 1;
+    G_Task tempTask;
+    memcpy(&tempTask, pTask, sizeof(G_Task));
+
+    for (int i = 0;i < threadsNeedCount;i++)
+    {
+        indices[i] = getActiveThread(pThreadPool);
+        if (indices[i] == -1)
+        {
+            indices[i] = getActiveThread(pThreadPool);
+            while (indices[i] == -1)
+            {
+                indices[i] = getActiveThread(pThreadPool);
+            }
+        }
+        SDL_Log("thread index: %d", indices[i]);
+
+        tempTask.canRun = true;
+        tempTask.indexRange = startIndex[i];
+        memcpy(pThreadPool->tasks + indices[i], &tempTask, sizeof(G_Task));
+        SDL_SignalSemaphore(pThreadPool->pThreadSeamphore[indices[i]]);
+    }
+
+    return indices - 1;
+}
+void G_WaitTask(G_Thread_Pool * pThreadPool, int * taskIndex)
+{
+    for(int i = 1;i < taskIndex[0] + 1;i++)
+    { 
+        SDL_WaitSemaphore(pThreadPool->pWaitTaskSemaphore[taskIndex[i]]);
     }
 }
 void destroyThreadPool(G_Thread_Pool * pThreadPool)
@@ -175,10 +229,9 @@ void destroyThreadPool(G_Thread_Pool * pThreadPool)
     SDL_free(pThreadPool->pThreads);
     SDL_free(pThreadPool->pThreadSeamphore);
     SDL_free(pThreadPool->leisureThread);
+    SDL_free(pThreadPool->tasks);
 
     SDL_UnlockMutex(pThreadPool->ThreadPoolMutex);
-
-    G_deInitQueue(&pThreadPool->taskQueue);
 
     SDL_DestroyMutex(pThreadPool->ThreadPoolMutex);
 }

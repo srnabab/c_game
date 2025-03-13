@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10.0)
 project(game VERSION 0.1.0 LANGUAGES C)
 
-set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_STANDARD_REQUIRED TRUE)
 
 # set(CMAKE_SYSTEM_NAME Windows)
@@ -124,7 +124,7 @@ target_link_libraries(game PRIVATE
                     SDL3_mixer.a
                     SDL3_image.a
                     SDL3_test.a
-                    box2d.a
+                    box2dd.a
                     unistring.a
                     "${LIB_ROOT}/vulkan/vulkan-1.lib"
                     freetyped.a

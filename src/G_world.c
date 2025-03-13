@@ -2,6 +2,7 @@
 
 #include "vk_code_h/vk_move.h"
 
+#include "G_log.h"
 #include "G_world.h"
 #include "G_struct.h"
 #include "G_stack.h"
@@ -37,7 +38,7 @@ static void box2d_SDL_Free(void * memory)
 }
 int AssertFcn( const char* condition, const char* fileName, int lineNumber )
 {
-	printf( "SAMPLE ASSERTION: %s, %s, line %d\n", condition, fileName, lineNumber );
+	print( "ASSERTION: %s, %s, line %d\n", condition, fileName, lineNumber );
 	return 1;
 }
 void initWorld(void)
@@ -46,6 +47,8 @@ void initWorld(void)
     b2SetAssertFcn(AssertFcn);
 
     worldDef = b2DefaultWorldDef();
+    worldDef.enqueueTask = NULL;
+    worldDef.finishTask = NULL;
     worldDef.gravity = (b2Vec2){0.0f, -100.0f * SCALE_FACTOR};
     worldDef.restitutionThreshold = 0.5f;
 
@@ -196,6 +199,6 @@ void cleanWorld(void)
 }
 void destroyFloor(void)
 {
-    b2DestroyShape(groundShapeId[3]);
+    b2DestroyShape(groundShapeId[3], true);
     b2DestroyBody(groundId[3]);
 }
