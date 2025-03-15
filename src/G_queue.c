@@ -2,9 +2,12 @@
 
 static bool defaultAddTailFunc(G_Queue * queue, void * data)
 {
-    if (G_QueueIsFull(*queue)) return false;
-
     SDL_LockMutex(queue->mutex);
+    if (G_QueueIsFull(*queue))
+    {
+        SDL_UnlockMutex(queue->mutex);
+        return false;
+    }
 
     if (queue->tail != -1)
     {
@@ -18,9 +21,12 @@ static bool defaultAddTailFunc(G_Queue * queue, void * data)
 }
 static bool defaultAddHeadFunc(G_Queue * queue, void * data)
 {
-    if (G_QueueIsFull(*queue)) return false;
-
     SDL_LockMutex(queue->mutex);
+    if (G_QueueIsFull(*queue))
+    {
+        SDL_UnlockMutex(queue->mutex);
+        return false;
+    }
 
     if (queue->head == -1)
     {
@@ -41,10 +47,13 @@ static bool defaultAddHeadFunc(G_Queue * queue, void * data)
 }
 static bool defaultGetHeadFunc(G_Queue * queue, void * data)
 {
-    if (G_QueueIsEmpty(*queue)) return false;
-
     SDL_LockMutex(queue->mutex);
-
+    if (G_QueueIsEmpty(*queue))
+    {
+        SDL_UnlockMutex(queue->mutex);
+        return false;
+    }
+    
     memcpy(data, (char*)queue->data + (queue->head * queue->dataSize), queue->dataSize);
 
     queue->head = (queue->head + 1) % queue->capacity;
@@ -60,10 +69,13 @@ static bool defaultGetHeadFunc(G_Queue * queue, void * data)
 }
 static bool defaultGetTailFunc(G_Queue * queue, void * data)
 {
-    if (G_QueueIsEmpty(*queue)) return false;
-
     SDL_LockMutex(queue->mutex);
-
+    if (G_QueueIsEmpty(*queue))
+    {
+        SDL_UnlockMutex(queue->mutex);
+        return false;
+    }
+    
     memcpy(data, (char*)queue->data + (queue->tail * queue->dataSize), queue->dataSize);
 
     if (queue->tail == 0)

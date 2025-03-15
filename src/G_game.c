@@ -319,7 +319,7 @@ bool process_input(void)
                     changeScene = false;
                     sceneChanged = true;
                 }
-                else if (leftButtonEnabled && (ballCount < BALLCOUNT))
+                else if (leftButtonEnabled && (ballCount < 2000/*ball count*/))
                 {
                     if (event.button.button == SDL_BUTTON_LEFT)
                     {

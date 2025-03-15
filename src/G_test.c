@@ -1,7 +1,7 @@
 #include "G_test.h"
 // #define STACK_TEST 1
 // #define QUEUE_TEST 1
-#define THREAD_POOL_TEST 1
+// #define THREAD_POOL_TEST 1
 
 #include "G_stack.h"
 #include "G_queue.h"

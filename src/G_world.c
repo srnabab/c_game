@@ -6,8 +6,7 @@
 #include "G_world.h"
 #include "G_struct.h"
 #include "G_stack.h"
-
-#include "SDL3/SDL_assert.h"
+#include "G_threadPool.h"
 
 static b2WorldDef worldDef = {};
 static b2WorldId worldId = {};
@@ -20,6 +19,8 @@ static b2ShapeDef groundShapeDef[4];
 static b2ShapeId groundShapeId[4];
 
 static SDL_Thread * worldThread;
+
+static G_Thread_Pool worldThreadPool = {};
 
 EmptyStack ballStack;
 
@@ -36,19 +37,45 @@ static void box2d_SDL_Free(void * memory)
 {
     SDL_aligned_free(memory);
 }
-int AssertFcn( const char* condition, const char* fileName, int lineNumber )
+static int AssertFcn( const char* condition, const char* fileName, int lineNumber )
 {
 	print( "ASSERTION: %s, %s, line %d\n", condition, fileName, lineNumber );
 	return 1;
+}
+static void G_b2_EnqueueTaskCallback_Execute(void * arg)
+{
+    G_Task * task = arg;
+    b2TaskCallback * func = task->func;
+    func(task->indexRange.startIndex, task->indexRange.endIndex, task->threadIndex, task->arg);
+}
+static void * G_b2_EnqueueTaskCallback(b2TaskCallback * task, int itemCount, int minRange, void * taskContext, void* userContext)
+{
+    G_Task tempTask = {};
+    tempTask.arg = taskContext;
+    tempTask.func = task;
+    tempTask.executeFunc = G_b2_EnqueueTaskCallback_Execute;
+
+    G_Thread_Pool * pThreadPool = userContext;
+    int * trace = G_AddTask(pThreadPool, itemCount, minRange, &tempTask);
+
+    return trace;
+}
+static void G_b2_FinishTaskCallback(void * userTask, void * userContext)
+{
+    G_WaitTask(userContext, userTask);
 }
 void initWorld(void)
 {
     b2SetAllocator(box2d_SDL_Alloc, box2d_SDL_Free);
     b2SetAssertFcn(AssertFcn);
 
+    createThreadPool(&worldThreadPool, 8, false);
+
     worldDef = b2DefaultWorldDef();
-    worldDef.enqueueTask = NULL;
-    worldDef.finishTask = NULL;
+    worldDef.enqueueTask = G_b2_EnqueueTaskCallback;
+    worldDef.finishTask = G_b2_FinishTaskCallback;
+    worldDef.workerCount = 8;
+    worldDef.userTaskContext = &worldThreadPool;
     worldDef.gravity = (b2Vec2){0.0f, -100.0f * SCALE_FACTOR};
     worldDef.restitutionThreshold = 0.5f;
 
@@ -195,6 +222,7 @@ void cleanWorld(void)
     SDL_SignalSemaphore(allSync.worldSemaphore);
     deInitStack(&ballStack);
     SDL_WaitThread(worldThread, NULL);
+    destroyThreadPool(&worldThreadPool);
     b2DestroyWorld(worldId);
 }
 void destroyFloor(void)

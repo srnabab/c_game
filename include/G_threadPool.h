@@ -9,6 +9,10 @@
 
 #include "SDL3/SDL_begin_code.h"
 
+#define TRACE_USED 1
+#define TRACE_FREE 0
+#define TRACE_DONE 2
+
 typedef void (*TaskExecute)(void *);
 
 struct _Range
@@ -18,6 +22,14 @@ struct _Range
 };
 typedef struct _Range Range;
 
+struct _Trace
+{
+    int threadUsedCount;
+    int * threadIndices;
+    int * taskAllDone;
+};
+typedef struct _Trace Trace;
+
 struct _G_Task
 {
     TaskExecute executeFunc;
@@ -25,6 +37,7 @@ struct _G_Task
     void * arg;
     bool canRun;
     Range indexRange;
+    int threadIndex;
 };
 typedef struct _G_Task G_Task;
 
@@ -37,6 +50,8 @@ struct _G_Thread_Pool
 
     SDL_Mutex * ThreadPoolMutex;
     G_Task * tasks;
+    G_Queue traceQueue;
+    int * doneWatch;
 
     bool expandable;
     bool running;
@@ -48,6 +63,7 @@ struct _Thread_Func_Arg
 {
     G_Thread_Pool * pThreadPool;
     Uint32 index;
+    SDL_Semaphore * tempSemaphore;
 };
 typedef struct _Thread_Func_Arg Thread_Func_Arg;
 
