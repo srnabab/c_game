@@ -456,9 +456,8 @@ void initVulkan(void)
     
     createTextureSampler(&physicalDevice, &device, &textureSampler);
 
-    // vertices = SDL_calloc((BALLCOUNT * 4 + MAX_CHARACTERS * 4) * 2, sizeof(vec3) + sizeof(vec3) + sizeof(vec2));
-    vertices = (Vertex*)SDL_calloc((BALLCOUNT * 4 + MAX_CHARACTERS * 4) * 2, sizeof(Vertex));
-    allInOne.maxVerticesCount = (BALLCOUNT + MAX_CHARACTERS) * 4 * 2;
+    vertices = (Vertex*)SDL_calloc(VERTEX_COUNT_IN_BUFFER, sizeof(Vertex));
+    allInOne.maxVerticesCount = VERTEX_COUNT_IN_BUFFER;
     // vertices_Pos = (vec3 *)vertices;
     // vertices_Color = (vec3 *)(vertices + allInOne.maxVerticesCount * sizeof(vec3));
     // vertices_TexCoord = (vec2 *)(vertices + allInOne.maxVerticesCount * (sizeof(vec3) + sizeof(vec3)));
@@ -485,22 +484,15 @@ void initVulkan(void)
 
     //positionInitialize(-24, -24, 16, 16, extent2D, &vertices, 1);
 
-    createVertexBuffer(&physicalDevice, &device, vertexBuffer, vertexBufferMem, vertexBufferMemMapped, vertices, (BALLCOUNT * 4 + MAX_CHARACTERS * 4) * 2);
-    createVertexBuffer(&physicalDevice, &device, vertexBuffer + 1, vertexBufferMem + 1, vertexBufferMemMapped + 1, vertices, (BALLCOUNT * 4 + MAX_CHARACTERS * 4) * 2);
+    createVertexBuffer(&physicalDevice, &device, vertexBuffer, vertexBufferMem, vertexBufferMemMapped, vertices, VERTEX_COUNT_IN_BUFFER);
+    createVertexBuffer(&physicalDevice, &device, vertexBuffer + 1, vertexBufferMem + 1, vertexBufferMemMapped + 1, vertices, VERTEX_COUNT_IN_BUFFER);
 
-    indices_v = (uint16_t *)SDL_calloc((BALLCOUNT * 6 + MAX_CHARACTERS * 6) * 2, sizeof(uint16_t));
-    indexInitialize(indices_v, (BALLCOUNT + MAX_CHARACTERS) * 2);
+    indices_v = (uint16_t *)SDL_calloc(INDEX_COUNT_IN_BUFFER, sizeof(uint16_t));
+    indexInitialize(indices_v, MAX_UNIT_COUNT);
 
-    createIndexBuffer(&physicalDevice, &device, indexBuffer, indexBufferMem, indexBufferMemMapped, indices_v, (BALLCOUNT * 6 + MAX_CHARACTERS * 6) * 2);
+    createIndexBuffer(&physicalDevice, &device, indexBuffer, indexBufferMem, indexBufferMemMapped, indices_v, INDEX_COUNT_IN_BUFFER);
 
     SDL_free(indices_v);
-
-    // for (int i = 0;i < MAX_CHARACTERS;i++)
-    // {
-    //     vertexInitialize(-300 + i * 24, -100, 24, 24, 0.1f, true, i + BALLCOUNT, allInOne.ppVertices_Pos, allInOne.ppVertices_Color, allInOne.ppVertices_TexCoord);
-    // }
-
-    // initializeMovingBuffer(&physicalDevice, &device, &graphicCommandPool, &graphicQueue, &movingStagingBuffer, &movingStagingMemory, &movingBufferMapped, vertices, verticesCount);
 
     createUniformBufferByBuffering(&physicalDevice, &device, &graphicUniformBuffers, &graphicUniformBuffersMemory, &graphicUniformBufferMapped, sizeof(UniformBufferObject));
 
