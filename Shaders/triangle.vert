@@ -25,7 +25,7 @@ void main()
     fragTexCoord = inTexCoord;
     fragDepth = inPosition.z;
 
-    if (inPosition.z == 0.1)
+    if (inPosition.z == 0.2)
     {
         mat2 rotationMatrix = mat2(
             cos(PushConstants.rotation), -sin(PushConstants.rotation),
@@ -35,7 +35,7 @@ void main()
 
         gl_Position = ubo.proj * ubo.view * ubo.model * vec4(rotatedPosition, inPosition.z, 1.0);
     }
-    else if (inPosition.z == 0.2)
+    else if (inPosition.z == 0.1)
     {
         gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 1.0);
     }

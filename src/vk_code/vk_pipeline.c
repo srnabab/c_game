@@ -344,8 +344,6 @@ void createGraphicsPipeline(VkDevice * pDevice, VkExtent2D * pExtent2D, uint32_t
     pipelineDepthStencilStateCreateInfo.minDepthBounds = 0.0f;
     pipelineDepthStencilStateCreateInfo.maxDepthBounds = 1.0f;
     // configurePipelineDepthStencilStateCreateInfo(&pipelineDepthStencilStateCreateInfo);
-    pipelineDepthStencilStateCreateInfo.depthTestEnable = VK_FALSE;
-    pipelineDepthStencilStateCreateInfo.depthWriteEnable = VK_FALSE;
 
     VkPipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo = {};
     Uint32 attachmentCount = 1;

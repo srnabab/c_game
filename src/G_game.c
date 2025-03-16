@@ -526,7 +526,7 @@ int update(void * arg)
     Uint32 vertexStart = 0;
     Uint32 vertexEnd = *allInOne.pVerticesCount;
 
-    textureVertexInit(-32, -32, 64, 64, 0.1f, allInOne.pVerticesCount, *allInOne.ppVertices, getTexture("loading"));
+    textureVertexInit(-32, -32, 64, 64, 0.2f, allInOne.pVerticesCount, *allInOne.ppVertices, getTexture("loading"));
     
     tileMapVertexInit(allInOne.pVerticesCount, *allInOne.ppVertices);
         
@@ -635,7 +635,7 @@ int update(void * arg)
                         getTexture("font")->refCount = 0;
                         for (Uint32 i = 0;i < textLen;i++)
                         {
-                            textureVertexInit_SetUV(-300.0 + (float)i * 24.0, -100.0, 24, 24, 0.2f, allInOne.pVerticesCount, *allInOne.ppVertices, UVs[i], getTexture("font"));
+                            textureVertexInit_SetUV(-300.0 + (float)i * 24.0, -100.0, 24, 24, 0.1f, allInOne.pVerticesCount, *allInOne.ppVertices, UVs[i], getTexture("font"));
                         }
                     }
                     textDisplay = false;

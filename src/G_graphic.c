@@ -482,8 +482,6 @@ void initVulkan(void)
     vertices[6] = (Vertex){{1.0f, 1.0f, 0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}};
     vertices[7] = (Vertex){{-0.0f, 1.0f, 0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}};*/
 
-    //positionInitialize(-24, -24, 16, 16, extent2D, &vertices, 1);
-
     createVertexBuffer(&physicalDevice, &device, vertexBuffer, vertexBufferMem, vertexBufferMemMapped, vertices, VERTEX_COUNT_IN_BUFFER);
     createVertexBuffer(&physicalDevice, &device, vertexBuffer + 1, vertexBufferMem + 1, vertexBufferMemMapped + 1, vertices, VERTEX_COUNT_IN_BUFFER);
 

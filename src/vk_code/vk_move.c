@@ -6,14 +6,6 @@
 #include "G_log.h"
 
 extern VK_ALL allInOne;
-
-// static vec3 vertices_Color[4] = {
-//     {1.0f, 0.0f, 0.0f},
-//     {0.0f, 1.0f, 0.0f},
-//     {0.0f, 0.0f, 1.0f},
-//     {1.0f, 1.0f, 1.0f}
-// };
-
 extern G_SYNC allSync;
 
 void initializeMovingBuffer(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkBuffer * pMoveBuffer, VkDeviceMemory * pMoveBufferMemory, void ** ppMovingBufferMapped, Vertex * vertices, Uint32 verticesCount)
@@ -25,89 +17,6 @@ void initializeMovingBuffer(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevi
     vkMapMemory(*pDevice, *pMoveBufferMemory, 0, bufferSize, 0, ppMovingBufferMapped);
     memcpy(*ppMovingBufferMapped, vertices, (size_t)bufferSize);
 }
-// void vertexPosInit(float x, float y, float width, float height, float depth, Uint32 vertexCount, vec3 ** ppVertices_Pos)
-// {
-//     // int WindowWidth = extent2D.width;
-//     float WindowHeight = (float)allInOne.pExtent2D->height;
-//     float xOffset = width / (WindowHeight / 2);
-//     float yOffset = height / (WindowHeight / 2);
-
-//     vec2 leftUp;
-//     leftUp[0] = x / (WindowHeight / 2);
-//     leftUp[1] = y / (WindowHeight / 2);
-//     // vec2 rightUp; 
-//     // rightUp[0] = leftUp[0] + xOffset;
-//     // rightUp[1] = leftUp[1];
-//     // vec2 rightDown;
-//     // rightDown[0] = rightUp[0];
-//     // rightDown[1] = rightUp[1] + yOffset;
-//     // vec2 leftDown;
-//     // leftDown[0] = leftUp[0];
-//     // leftDown[1] = leftUp[1] + yOffset;
-
-//     //left-up
-//     (*ppVertices_Pos)[vertexCount][0] = leftUp[0];
-//     (*ppVertices_Pos)[vertexCount][1] = leftUp[1];
-//     //printf("x, y: %.2f, %.2f\n", (*ppVertices)[startNumber].pos[0], (*ppVertices)[startNumber].pos[1]);
-
-//     //right-up
-//     (*ppVertices_Pos)[vertexCount + 1][0] = leftUp[0] + xOffset;
-//     (*ppVertices_Pos)[vertexCount + 1][1] = leftUp[1];
-//     //printf("x, y: %.2f, %.2f\n", (*ppVertices)[startNumber + 1].pos[0], (*ppVertices)[startNumber + 1].pos[1]);
-
-//     //right-dowm
-//     (*ppVertices_Pos)[vertexCount + 2][0] = leftUp[0] + xOffset;
-//     (*ppVertices_Pos)[vertexCount + 2][1] = leftUp[1] + yOffset;
-//     //printf("x, y: %.2f, %.2f\n", (*ppVertices)[startNumber + 2].pos[0], (*ppVertices)[startNumber + 2].pos[1]);
-
-//     //left-down
-//     (*ppVertices_Pos)[vertexCount + 3][0] = leftUp[0];
-//     (*ppVertices_Pos)[vertexCount + 3][1] = leftUp[1] + yOffset;
-//     //printf("x, y: %.2f, %.2f\n", (*ppVertices)[startNumber + 3].pos[0], (*ppVertices)[startNumber + 3].pos[1]);
-    
-//     for (Uint32 i = vertexCount;i < vertexCount + 4;i++)
-//     {
-//         (*ppVertices_Pos)[i][2] = depth;
-//     }
-// }
-// void vertexColorInit(Uint32 vertexCount, vec3 ** ppVertices_Color)
-// {
-//     memcpy((*ppVertices_Color) + vertexCount, vertices_Color, 4 * sizeof(vec3));
-// }
-// void vertexTexCoordInit(bool setUVZero, Uint32 vertexCount, vec2 ** ppVertices_TexCoord)
-// {
-//     if (setUVZero)
-//     {
-//         for (int i = vertexCount;i < 4 + vertexCount;i++)
-//         {
-//             (*ppVertices_TexCoord)[i][0] = 0.0f;
-//             (*ppVertices_TexCoord)[i][1] = 0.0f;
-//         }
-//     }
-//     else
-//     {
-//         (*ppVertices_TexCoord)[vertexCount][0] = 0.0f;
-//         (*ppVertices_TexCoord)[vertexCount][1] = 1.0f;
-
-//         (*ppVertices_TexCoord)[vertexCount + 1][0] = 1.0f;
-//         (*ppVertices_TexCoord)[vertexCount + 1][1] = 1.0f;
-
-//         (*ppVertices_TexCoord)[vertexCount + 2][0] = 1.0f;
-//         (*ppVertices_TexCoord)[vertexCount + 2][1] = 0.0f;
-
-//         (*ppVertices_TexCoord)[vertexCount + 3][0] = 0.0f;
-//         (*ppVertices_TexCoord)[vertexCount + 3][1] = 0.0f;
-//     }
-// }
-// void vertexInitialize(float x, float y, float width, float height, float depth, bool setUVZero, Uint32 pictureSequence, vec3 ** ppVertices_Pos, vec3 ** ppVertices_Color, vec2 ** ppVertices_TexCoord)
-// {
-//     vertexPosInit(x, y, width, height, depth, *pVertexCount, ppVertices_Pos);
-
-//     vertexColorInit(vertexCount, allInOne.ppVertices_Color);
-
-//     vertexTexCoordInit(setUVZero, vertexCount, allInOne.ppVertices_TexCoord);
-// }
-
 void vertexInitialize(float x, float y, float width, float height, float depth, Uint32 vertexCount, Vertex * pVertices)
 {
     float WindowHeight = (float)allInOne.pExtent2D->height;
@@ -242,7 +151,7 @@ void tileMapVertexInit(Uint32 * pVertexCount, Vertex * pVertices)
             {
                 // print("texture ID: %u", pTexture->ID);
                 // print("texture refCount: %u", pTexture->refCount);
-                textureVertexInit_SetUV((float)pSet[i].maps[j].x + (float)tileWidth * m, (float)pSet[i].maps[j].y + (float)tileHeight * k, tileWidth, tileHeight, 0.0f, pVertexCount, pVertices, pSet[i].tileUV[pSet[i].maps[j].indeices[k * mapColCount + m]], pTexture);
+                textureVertexInit_SetUV((float)pSet[i].maps[j].x + (float)tileWidth * m, (float)pSet[i].maps[j].y + (float)tileHeight * k, tileWidth, tileHeight, 1.0f, pVertexCount, pVertices, pSet[i].tileUV[pSet[i].maps[j].indeices[k * mapColCount + m]], pTexture);
             }
         }
     }
@@ -291,21 +200,5 @@ void indexInitialize(Uint16 * indices, Uint32 indicesCount)
         indices[index + 3] = serial + 2;
         indices[index + 4] = serial + 3;
         indices[index + 5] = serial;
-    }
-}
-void updatePosition(float x, float y, vec3 ** ppVertices_Pos, uint32_t pictureSequence)
-{
-    uint32_t startNumber = pictureSequence * 4;
-
-    float NDCx = x / (allInOne.pExtent2D->height / 2);
-    float NDCy = y / (allInOne.pExtent2D->height / 2);
-
-    float offSetX = NDCx - (*ppVertices_Pos)[startNumber][0];
-    float offSetY = NDCy - (*ppVertices_Pos)[startNumber][1];
-
-    for (Uint32 i = startNumber;i < startNumber + 4;i++)
-    {
-        (*ppVertices_Pos)[i][0] += offSetX;
-        (*ppVertices_Pos)[i][1] += offSetY;
     }
 }

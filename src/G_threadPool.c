@@ -173,60 +173,67 @@ static int getActiveThread(G_Thread_Pool * pThreadPool)
 
     return -1;
 }
-int * G_AddTask(G_Thread_Pool * pThreadPool, int itemCount, int minRange, G_Task * pTask)
+static void splitTask(int maxThreadCount, int itemCount, int minRange, int * pThreadsNeed, Range * pTaskRange)
 {
     int threadsNeedCount = 0;
-    Range * startIndex = (Range*)SDL_malloc(pThreadPool->threadPoolSize * sizeof(Range));
     if (itemCount <= minRange)
     {
        threadsNeedCount = 1; 
-       startIndex[0].startIndex = 0;
-       startIndex[0].endIndex = itemCount;
+       pTaskRange[0].startIndex = 0;
+       pTaskRange[0].endIndex = itemCount;
     }
     else
     {
-        if (itemCount <= pThreadPool->threadPoolSize * minRange)
+        if (itemCount <= maxThreadCount * minRange)
         {
             int itemCount2 = itemCount;
             int i = 0;
 
             while (itemCount2 - minRange > 0)
             {
-                startIndex[i].startIndex = threadsNeedCount * minRange; 
+                pTaskRange[i].startIndex = threadsNeedCount * minRange; 
                 threadsNeedCount++;
-                startIndex[i].endIndex = threadsNeedCount * minRange;
+                pTaskRange[i].endIndex = threadsNeedCount * minRange;
                 i++;
                 itemCount2 -= minRange;
             }
             if (itemCount2 > 0)
             {
-                startIndex[i].startIndex = threadsNeedCount * minRange; 
+                pTaskRange[i].startIndex = threadsNeedCount * minRange; 
                 threadsNeedCount++;
-                startIndex[i].endIndex = startIndex[i].startIndex + itemCount2;
+                pTaskRange[i].endIndex = pTaskRange[i].startIndex + itemCount2;
             }
         }
         else
         {
-            threadsNeedCount = pThreadPool->threadPoolSize;
+            threadsNeedCount = maxThreadCount;
 
             int mod = itemCount % threadsNeedCount;
             int preThread = itemCount / threadsNeedCount;
-            startIndex[0].startIndex = 0;
-            startIndex[0].endIndex = preThread;
-            // SDL_Log("TIME: %10llu--index: 0 start: %d, end: %d", SDL_GetTicksNS(), startIndex[0].startIndex, startIndex[0].endIndex);
+            pTaskRange[0].startIndex = 0;
+            pTaskRange[0].endIndex = preThread;
+            // SDL_Log("TIME: %10llu--index: 0 start: %d, end: %d", SDL_GetTicksNS(), pTaskRange[0].startIndex, pTaskRange[0].endIndex);
             for (int i = 1;i < threadsNeedCount;i++)
             {
-                startIndex[i].startIndex = startIndex[i - 1].endIndex;
-                startIndex[i].endIndex = startIndex[i].startIndex + preThread;
-                // SDL_Log("TIME: %10llu--index: %d start: %d, end: %d", SDL_GetTicksNS(), i, startIndex[i].startIndex, startIndex[i].endIndex);
+                pTaskRange[i].startIndex = pTaskRange[i - 1].endIndex;
+                pTaskRange[i].endIndex = pTaskRange[i].startIndex + preThread;
+                // SDL_Log("TIME: %10llu--index: %d start: %d, end: %d", SDL_GetTicksNS(), i, pTaskRange[i].startIndex, pTaskRange[i].endIndex);
 
                 if (threadsNeedCount - i <= mod)
                 {
-                    startIndex[i].endIndex++;
+                    pTaskRange[i].endIndex++;
                 }
             }
         }
     }
+
+    *pThreadsNeed = threadsNeedCount;
+}
+int * G_AddTask(G_Thread_Pool * pThreadPool, int itemCount, int minRange, G_Task * pTask)
+{
+    int threadsNeedCount = 0;
+    Range * pRange = (Range*)SDL_malloc(pThreadPool->threadPoolSize * sizeof(Range));
+    splitTask(pThreadPool->threadPoolSize, itemCount, minRange, &threadsNeedCount, pRange);
 
     Trace tempTrace = {};
     tempTrace.threadUsedCount = threadsNeedCount;
@@ -258,14 +265,14 @@ int * G_AddTask(G_Thread_Pool * pThreadPool, int itemCount, int minRange, G_Task
         }
 
         tempTask.canRun = true;
-        tempTask.indexRange = startIndex[i];
+        tempTask.indexRange = pRange[i];
         tempTask.threadIndex = tempTrace.threadIndices[i];
         memcpy(pThreadPool->tasks + tempTrace.threadIndices[i], &tempTask, sizeof(G_Task));
         SDL_SignalSemaphore(pThreadPool->pThreadSeamphore[tempTrace.threadIndices[i]]);
     }
     pThreadPool->traceQueue.addTail(&pThreadPool->traceQueue, &tempTrace);
 
-    SDL_free(startIndex);
+    SDL_free(pRange);
 
     return tempTrace.taskAllDone;
 }
