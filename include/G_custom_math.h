@@ -23,43 +23,6 @@ CGLM_INLINE void SDLCALL glm_ortho_vulkan(float left, float right, float bottom,
     dest[3][2] = (farZ + nearZ) * fn;  // 修改：适配 Vulkan 深度范围
     dest[3][3] = 1.0f;
 }
-CGLM_INLINE void SDLCALL glm_scale_self(Vertex ** ppVertices, float scale, Uint32 pictureSequence)
-{
-    Uint32 index = pictureSequence * 4;
-
-    float actural_scale = scale - 1.0f;
-
-    float half_width_scaled = (SDL_fabsf((*ppVertices)[index].pos[0] - (*ppVertices)[index + 1].pos[0]) / 2) * actural_scale;\
-    float half_height_scaled = (SDL_fabsf((*ppVertices)[index].pos[1] - (*ppVertices)[index + 3].pos[1]) / 2) * actural_scale;
-
-    (*ppVertices)[index].pos[1] -= half_height_scaled;
-    (*ppVertices)[index + 1].pos[1] -= half_height_scaled;
-    (*ppVertices)[index + 2].pos[1] += half_height_scaled;
-    (*ppVertices)[index + 3].pos[1] += half_height_scaled;
-
-    (*ppVertices)[index].pos[0] -= half_width_scaled;
-    (*ppVertices)[index + 3].pos[0] -= half_width_scaled;
-    (*ppVertices)[index + 2].pos[0] += half_width_scaled;
-    (*ppVertices)[index + 1].pos[0] += half_width_scaled;
-}
-CGLM_INLINE void fix_ratio(Vertex ** ppVertices, VkExtent2D oldExtent2D, VkExtent2D extent2D, Uint32 pictureSequence)
-{
-    Uint32 index = pictureSequence * 4;
-
-    float scale = extent2D.width / (float)oldExtent2D.width;
-
-    float aspect_width = (oldExtent2D.width / (float)extent2D.width) * scale;
-    float aspect_height = (oldExtent2D.height / (float)extent2D.height) * scale;
-
-    (*ppVertices)[index].pos[0] *= aspect_width;
-    (*ppVertices)[index].pos[1] *= aspect_height;
-    (*ppVertices)[index + 1].pos[0] *= aspect_width;
-    (*ppVertices)[index + 1].pos[1] *= aspect_height;
-    (*ppVertices)[index + 2].pos[0] *= aspect_width;
-    (*ppVertices)[index + 2].pos[1] *= aspect_height;
-    (*ppVertices)[index + 3].pos[0] *= aspect_width;
-    (*ppVertices)[index + 3].pos[1] *= aspect_height;
-}
 
 #include "SDL3/SDL_close_code.h"
 
