@@ -206,21 +206,21 @@ static VkFramebuffer * swapchainFramebuffer = NULL;
 
 static VkSampler textureSampler = NULL;
 
-static VkBuffer vertexBuffer[MAX_FRAMES_IN_FLIGHT];
-static VkDeviceMemory vertexBufferMem[MAX_FRAMES_IN_FLIGHT];
-static void * vertexBufferMemMapped[MAX_FRAMES_IN_FLIGHT];
-static uint32_t verticesCount = 0;
+static VkBuffer vertexBuffer2D[MAX_FRAMES_IN_FLIGHT];
+static VkDeviceMemory vertexBuffer2DMem[MAX_FRAMES_IN_FLIGHT];
+static void * vertexBuffer2DMemMapped[MAX_FRAMES_IN_FLIGHT];
+static uint32_t vertices2DCount = 0;
 
-//three vertices of a triangle and color
-static Vertex * vertices = NULL;
+//three vertices2D of a triangle and color
+static Vertex * vertices2D = NULL;
 // static vec3 * vertices_Pos = NULL;
 // static vec3 * vertices_Color = NULL;
 // static vec2 * vertices_TexCoord = NULL;
 
-static VkBuffer indexBuffer[1];
-static VkDeviceMemory indexBufferMem[1];
-static void * indexBufferMemMapped[1];
-static uint16_t * indices_v = NULL;
+static VkBuffer indexBuffer2D[1];
+static VkDeviceMemory indexBuffer2DMem[1];
+static void * indexBuffer2DMemMapped[1];
+static uint16_t * indices2D = NULL;
 
 static VkBuffer graphicUniformBuffers[MAX_FRAMES_IN_FLIGHT];
 static VkDeviceMemory graphicUniformBuffersMemory[MAX_FRAMES_IN_FLIGHT];
@@ -334,20 +334,20 @@ static void initializeAllInOne(void)
     // allInOne.pDepthImageView = &depthImageView;
     // allInOne.pDepthImageMem = &depthImageMemory;
 
-    allInOne.pVertexBuffer = &vertexBuffer;
-    allInOne.maxVerticesCount = (BALLCOUNT + MAX_CHARACTERS) * 4 * 2;
-    allInOne.ppVertices = &vertices;
+    allInOne.pVertexBuffer2D = &vertexBuffer2D;
+    allInOne.maxVertices2DCount = (BALLCOUNT + MAX_CHARACTERS) * 4 * 2;
+    allInOne.ppVertices2D = &vertices2D;
     // allInOne.ppVertices_Pos = &vertices_Pos;
     // allInOne.ppVertices_Color = &vertices_Color;
     // allInOne.ppVertices_TexCoord = &vertices_TexCoord;
-    allInOne.pVerticesCount = &verticesCount;
-    allInOne.pVertexBufferMem = &vertexBufferMem;
-    allInOne.ppVertexBufferMemMapped = &vertexBufferMemMapped;
+    allInOne.pVertices2DCount = &vertices2DCount;
+    allInOne.pVertexBuffer2DMem = &vertexBuffer2DMem;
+    allInOne.ppVertexBuffer2DMemMapped = &vertexBuffer2DMemMapped;
 
-    allInOne.pIndexBuffer = &indexBuffer;
-    allInOne.ppIndices = &indices_v;
-    allInOne.pIndexBufferMem = &indexBufferMem;
-    allInOne.ppIndexBufferMemMapped = &indexBufferMemMapped;
+    allInOne.pIndexBuffer2D = &indexBuffer2D;
+    allInOne.ppIndices2D = &indices2D;
+    allInOne.pIndexBuffer2DMem = &indexBuffer2DMem;
+    allInOne.ppIndexBuffer2DMemMapped = &indexBuffer2DMemMapped;
 
     allInOne.pTextureSampler = &textureSampler;
 
@@ -432,9 +432,9 @@ void initVulkan(void)
     createCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, queueIndices.computeFamily.familyIndice, &computeCommandPool);
     createCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, queueIndices.transferFamily.familyIndice, &transferCommandPool);
 
-    getSurfaceFormats();
-    getPresentModes();
-    getSurfaceCapabilities();
+    getSurfaceFormats(&surfaceFormat);
+    getPresentModes(&presentMode);
+    getSurfaceCapabilities(&surfaceCapabilities);
     
     extent2D.width = width;
     extent2D.height = height;
@@ -459,11 +459,11 @@ void initVulkan(void)
     
     createTextureSampler(&physicalDevice, &device, &textureSampler);
 
-    vertices = (Vertex*)SDL_calloc(VERTEX_COUNT_IN_BUFFER, sizeof(Vertex));
-    allInOne.maxVerticesCount = VERTEX_COUNT_IN_BUFFER;
-    // vertices_Pos = (vec3 *)vertices;
-    // vertices_Color = (vec3 *)(vertices + allInOne.maxVerticesCount * sizeof(vec3));
-    // vertices_TexCoord = (vec2 *)(vertices + allInOne.maxVerticesCount * (sizeof(vec3) + sizeof(vec3)));
+    vertices2D = (Vertex*)SDL_calloc(VERTEX_COUNT_IN_BUFFER_2D, sizeof(Vertex));
+    allInOne.maxVertices2DCount = VERTEX_COUNT_IN_BUFFER_2D;
+    // vertices_Pos = (vec3 *)vertices2D;
+    // vertices_Color = (vec3 *)(vertices2D + allInOne.maxVerticesCount * sizeof(vec3));
+    // vertices_TexCoord = (vec2 *)(vertices2D + allInOne.maxVerticesCount * (sizeof(vec3) + sizeof(vec3)));
 
     // vertices_Pos[0] = (vec3){-0.5f, -0.5f, 0.0f};
     // vertices_Pos[1] = (vec3){0.5f, -0.5f, 0.0f};
@@ -480,20 +480,20 @@ void initVulkan(void)
     // vertices_TexCoord[2] = (vec2){1.0f, 0.0f};
     // vertices_TexCoord[3] = (vec2){0.0f, 0.0f};
 
-    /*vertices[4] = (Vertex){{-0.0f, -0.0f, 0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}};
-    vertices[5] = (Vertex){{1.0f, -0.0f, 0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}};
-    vertices[6] = (Vertex){{1.0f, 1.0f, 0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}};
-    vertices[7] = (Vertex){{-0.0f, 1.0f, 0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}};*/
+    /*vertices2D[4] = (Vertex){{-0.0f, -0.0f, 0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}};
+    vertices2D[5] = (Vertex){{1.0f, -0.0f, 0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}};
+    vertices2D[6] = (Vertex){{1.0f, 1.0f, 0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}};
+    vertices2D[7] = (Vertex){{-0.0f, 1.0f, 0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}};*/
 
-    createVertexBuffer(&physicalDevice, &device, vertexBuffer, vertexBufferMem, vertexBufferMemMapped, vertices, VERTEX_COUNT_IN_BUFFER);
-    createVertexBuffer(&physicalDevice, &device, vertexBuffer + 1, vertexBufferMem + 1, vertexBufferMemMapped + 1, vertices, VERTEX_COUNT_IN_BUFFER);
+    createVertexBuffer(&physicalDevice, &device, vertexBuffer2D, vertexBuffer2DMem, vertexBuffer2DMemMapped, vertices2D, VERTEX_COUNT_IN_BUFFER_2D);
+    createVertexBuffer(&physicalDevice, &device, vertexBuffer2D + 1, vertexBuffer2DMem + 1, vertexBuffer2DMemMapped + 1, vertices2D, VERTEX_COUNT_IN_BUFFER_2D);
 
-    indices_v = (uint16_t *)SDL_calloc(INDEX_COUNT_IN_BUFFER, sizeof(uint16_t));
-    indexInitialize(indices_v, MAX_UNIT_COUNT);
+    indices2D = (uint16_t *)SDL_calloc(INDEX_COUNT_IN_BUFFER_2D, sizeof(uint16_t));
+    indexInitialize(indices2D, MAX_UNIT_COUNT_2D);
 
-    createIndexBuffer(&physicalDevice, &device, indexBuffer, indexBufferMem, indexBufferMemMapped, indices_v, INDEX_COUNT_IN_BUFFER);
+    createIndexBuffer(&physicalDevice, &device, indexBuffer2D, indexBuffer2DMem, indexBuffer2DMemMapped, indices2D, INDEX_COUNT_IN_BUFFER_2D);
 
-    SDL_free(indices_v);
+    SDL_free(indices2D);
 
     createUniformBufferByBuffering(&physicalDevice, &device, &graphicUniformBuffers, &graphicUniformBuffersMemory, &graphicUniformBufferMapped, sizeof(UniformBufferObject));
 
@@ -791,25 +791,25 @@ void cleanVulkan(FuncCode code)
         /*fall through*/
 
         case createUniformBuffersF:
-        vkDestroyBuffer(device, indexBuffer[0], allInOne.pAllocationCallbacks);
+        vkDestroyBuffer(device, indexBuffer2D[0], allInOne.pAllocationCallbacks);
         logMessage("index buffer destroyed");
 
-        vkFreeMemory(device, indexBufferMem[0], allInOne.pAllocationCallbacks);
+        vkFreeMemory(device, indexBuffer2DMem[0], allInOne.pAllocationCallbacks);
         logMessage("index buffer memory freed");
         /*fall through*/
 
         case createIndexBufferF:
-        SDL_free(vertices);
+        SDL_free(vertices2D);
         
-        vkUnmapMemory(device, vertexBufferMem[1]);
-        vkUnmapMemory(device, vertexBufferMem[0]);
+        vkUnmapMemory(device, vertexBuffer2DMem[1]);
+        vkUnmapMemory(device, vertexBuffer2DMem[0]);
 
-        vkDestroyBuffer(device, vertexBuffer[1], allInOne.pAllocationCallbacks);
-        vkDestroyBuffer(device, vertexBuffer[0], allInOne.pAllocationCallbacks);
+        vkDestroyBuffer(device, vertexBuffer2D[1], allInOne.pAllocationCallbacks);
+        vkDestroyBuffer(device, vertexBuffer2D[0], allInOne.pAllocationCallbacks);
         logMessage("vertex buffer destroyed");
 
-        vkFreeMemory(device, vertexBufferMem[0], allInOne.pAllocationCallbacks);
-        vkFreeMemory(device, vertexBufferMem[1], allInOne.pAllocationCallbacks);
+        vkFreeMemory(device, vertexBuffer2DMem[0], allInOne.pAllocationCallbacks);
+        vkFreeMemory(device, vertexBuffer2DMem[1], allInOne.pAllocationCallbacks);
         logMessage("vertex buffer memory freed");
         /*fall through*/
 

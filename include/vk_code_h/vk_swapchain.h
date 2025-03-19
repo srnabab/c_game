@@ -5,9 +5,9 @@
 
 #include "SDL3/SDL_begin_code.h"
 
-extern void SDLCALL getSurfaceFormats(void);
-extern void SDLCALL getPresentModes(void);
-extern void SDLCALL getSurfaceCapabilities(void);
+extern void getSurfaceFormats(VkSurfaceFormatKHR * pSurfaceFormat);
+extern void getPresentModes(VkPresentModeKHR * pPresentMode);
+extern void getSurfaceCapabilities(VkSurfaceCapabilitiesKHR * pSurfaceCapabilities);
 // extern void SDLCALL chooseSwapExtent(VkPhysicalDevice * pPhysicalDevice, VkSurfaceKHR * pSurface, VkSurfaceCapabilitiesKHR * pSurfaceCapabilities, VkExtent2D * pExtent2D);
 extern void SDLCALL createSwapchain(void);
 extern void SDLCALL getSwapchainNumber(void);

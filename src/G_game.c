@@ -524,11 +524,11 @@ int update(void * arg)
     Uint32 currentFrame;
 
     Uint32 vertexStart = 0;
-    Uint32 vertexEnd = *allInOne.pVerticesCount;
+    Uint32 vertexEnd = *allInOne.pVertices2DCount;
 
-    textureVertexInit(-32, -32, 64, 64, 0.2f, allInOne.pVerticesCount, *allInOne.ppVertices, getTexture("loading"));
+    textureVertexInit(-32, -32, 64, 64, 0.2f, allInOne.pVertices2DCount, *allInOne.ppVertices2D, getTexture("loading"));
     
-    tileMapVertexInit(allInOne.pVerticesCount, *allInOne.ppVertices);
+    tileMapVertexInit(allInOne.pVertices2DCount, *allInOne.ppVertices2D);
         
     SDL_Delay(300);
     
@@ -635,7 +635,7 @@ int update(void * arg)
                         getTexture("font")->refCount = 0;
                         for (Uint32 i = 0;i < textLen;i++)
                         {
-                            textureVertexInit_SetUV(-300.0 + (float)i * 24.0, -100.0, 24, 24, 0.1f, allInOne.pVerticesCount, *allInOne.ppVertices, UVs[i], getTexture("font"));
+                            textureVertexInit_SetUV(-300.0 + (float)i * 24.0, -100.0, 24, 24, 0.1f, allInOne.pVertices2DCount, *allInOne.ppVertices2D, UVs[i], getTexture("font"));
                         }
                     }
                     textDisplay = false;
@@ -668,11 +668,11 @@ int update(void * arg)
                 // }
                 // if (scale)
                 // {
-                //     glm_scale_self(allInOne.ppVertices, 2.0f, 1);
+                //     glm_scale_self(allInOne.ppVertices2D, 2.0f, 1);
                 // }
                 // if (pictureMove[0] | pictureMove[1] | pictureMove[2] | pictureMove[3] | scale)
                 // {
-                //     updatePosition(*allInOne.pPictureX, *allInOne.pPictureY, allInOne.pExtent2D, allInOne.ppVertices, 1);
+                //     updatePosition(*allInOne.pPictureX, *allInOne.pPictureY, allInOne.pExtent2D, allInOne.ppVertices2D, 1);
                 //     scale = false;
                 // }
                 // SDL_UnlockMutex(sdl_mutex_2);
@@ -684,14 +684,14 @@ int update(void * arg)
 
                 if (ballAdd)
                 {
-                    //*allInOne.ppVertices = (Vertex *)realloc(*allInOne.ppVertices, count * sizeof(Vertex));
+                    //*allInOne.ppVertices2D = (Vertex *)realloc(*allInOne.ppVertices2D, count * sizeof(Vertex));
                     int x = SDL_rand(250);
                     if (SDL_rand(2))
                     {
                         x *= -1;
                     }
                     // float averagePhysicalCoffect = (physicalCoffectX + physicalCoffectY) / 2.0f;
-                    textureVertexInit(x * physicalCoffectX, 280 * physicalCoffectY, 16 * physicalCoffectY, 16 * physicalCoffectY, 0.9, allInOne.pVerticesCount, *allInOne.ppVertices, getTexture("circle"));
+                    textureVertexInit(x * physicalCoffectX, 280 * physicalCoffectY, 16 * physicalCoffectY, 16 * physicalCoffectY, 0.9, allInOne.pVertices2DCount, *allInOne.ppVertices2D, getTexture("circle"));
 
                     ballStack.pushFn(&ballStack, &x);
                     //print("indices count: %u\n", indiceCount);
@@ -717,7 +717,8 @@ int update(void * arg)
             glm_mat4_identity(pGraphicUbo->model);
             //glm_rotate(pUbo->model, time * glm_rad(90.0f), (vec3){0.0f, 0.0f, 1.0f});
 
-            glm_lookat((vec3){*pCamera_X, *pCamera_Y, 13.0f}, (vec3){*pCamera_X, *pCamera_Y, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pGraphicUbo->view);
+            // glm_lookat((vec3){*pCamera_X, *pCamera_Y, 100.0f}, (vec3){*pCamera_X, *pCamera_Y, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pGraphicUbo->view);
+            glm_lookat((vec3){2.0f, 2.0f, 2.0f}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, pGraphicUbo->view);
 
             float aspect = ((float)allInOne.pExtent2D->width / allInOne.pExtent2D->height);
             float aspect2 = 1.0f  * ((float)allInOne.pExtent2D->height / 600.0f);
@@ -728,12 +729,12 @@ int update(void * arg)
 
             allInOne.pComputeUbo->deltaTime = delta_time;
 
-            vertexEnd = *allInOne.pVerticesCount;
+            vertexEnd = *allInOne.pVertices2DCount;
 
             SDL_LockMutex(allSync.updateMutex);
             // if (updateVertex)
             // {
-            //     memcpy(*allInOne.ppVertexBufferMemMapped, *allInOne.ppVertices, 2100 * 4 * (sizeof(vec3) + sizeof(vec3) + sizeof(vec2)) * 2);// update vertex buffer
+            //     memcpy(*allInOne.ppVertexBufferMemMapped, *allInOne.ppVertices2D, 2100 * 4 * (sizeof(vec3) + sizeof(vec3) + sizeof(vec2)) * 2);// update vertex buffer
             //     updateVertex = false;
             // }
             // else
@@ -741,18 +742,18 @@ int update(void * arg)
             //     memcpy((*allInOne.ppVertexBufferMemMapped)[*allInOne.pCurrentFrame], *allInOne.ppVertices_Pos, 2100 * 4 * sizeof(vec3));// update position
             // }
 
-            // if (vertexEnd > vertexStart) memcpy((Vertex*)(*allInOne.ppVertexBufferMemMapped)[currentFrame] + vertexStart, *allInOne.ppVertices + vertexStart, (vertexEnd - vertexStart) * sizeof(Vertex));// update vertex buffer
+            // if (vertexEnd > vertexStart) memcpy((Vertex*)(*allInOne.ppVertexBufferMemMapped)[currentFrame] + vertexStart, *allInOne.ppVertices2D + vertexStart, (vertexEnd - vertexStart) * sizeof(Vertex));// update vertex buffer
             // else if (vertexEnd < vertexStart) 
             // {
-            //     memcpy((Vertex*)(*allInOne.ppVertexBufferMemMapped)[currentFrame] + vertexStart, *allInOne.ppVertices + vertexStart, (allInOne.maxVerticesCount - vertexStart) * sizeof(Vertex));// update vertex buffer
-            //     memcpy((*allInOne.ppVertexBufferMemMapped)[currentFrame], *allInOne.ppVertices, vertexEnd * sizeof(Vertex));
+            //     memcpy((Vertex*)(*allInOne.ppVertexBufferMemMapped)[currentFrame] + vertexStart, *allInOne.ppVertices2D + vertexStart, (allInOne.maxVerticesCount - vertexStart) * sizeof(Vertex));// update vertex buffer
+            //     memcpy((*allInOne.ppVertexBufferMemMapped)[currentFrame], *allInOne.ppVertices2D, vertexEnd * sizeof(Vertex));
             // }
 
             memcpy((*allInOne.pppGraphicUniformBufferMapped)[currentFrame], pGraphicUbo, sizeof(UniformBufferObject));
 
             memcpy((*allInOne.pppComputeUniformBufferMapped)[currentFrame], allInOne.pComputeUbo, sizeof(ComputeUniformBufferObject));
 
-            memcpy((*allInOne.ppVertexBufferMemMapped)[currentFrame], *allInOne.ppVertices, vertexEnd * sizeof(Vertex));// update vertex buffer
+            memcpy((*allInOne.ppVertexBuffer2DMemMapped)[currentFrame], *allInOne.ppVertices2D, vertexEnd * sizeof(Vertex));// update vertex buffer
             SDL_SignalSemaphore(allSync.vertexSemaphore);
 
             allInOne.pPushConstants->rotation = totalTime * glm_rad(580.0f);

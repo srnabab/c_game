@@ -85,7 +85,7 @@ void textureVertexInit(float x, float y, float width, float height, float depth,
 
     Uint32 vertexCount = *pVertexCount;
     textureOffsetsAdd(tempTexture, vertexCount);
-    if (*pVertexCount < allInOne.maxVerticesCount) *pVertexCount += 4;
+    if (*pVertexCount < allInOne.maxVertices2DCount) *pVertexCount += 4;
     else return;
 
     SDL_UnlockMutex(allSync.vertexMutex);
@@ -100,7 +100,7 @@ void textureVertexInit_SetUV(float x, float y, float width, float height, float 
 
     Uint32 vertexCount = *pVertexCount;
     textureOffsetsAdd(tempTexture, vertexCount);
-    if (*pVertexCount < allInOne.maxVerticesCount) *pVertexCount += 4;
+    if (*pVertexCount < allInOne.maxVertices2DCount) *pVertexCount += 4;
     else return;
 
     SDL_UnlockMutex(allSync.vertexMutex);
@@ -151,7 +151,7 @@ void tileMapVertexInit(Uint32 * pVertexCount, Vertex * pVertices)
             {
                 // print("texture ID: %u", pTexture->ID);
                 // print("texture refCount: %u", pTexture->refCount);
-                textureVertexInit_SetUV((float)pSet[i].maps[j].x + (float)tileWidth * m, (float)pSet[i].maps[j].y + (float)tileHeight * k, tileWidth, tileHeight, 1.0f, pVertexCount, pVertices, pSet[i].tileUV[pSet[i].maps[j].indeices[k * mapColCount + m]], pTexture);
+                textureVertexInit_SetUV((float)pSet[i].maps[j].x + (float)tileWidth * m, (float)pSet[i].maps[j].y + (float)tileHeight * k, tileWidth, tileHeight, 0.0f, pVertexCount, pVertices, pSet[i].tileUV[pSet[i].maps[j].indeices[k * mapColCount + m]], pTexture);
             }
         }
     }

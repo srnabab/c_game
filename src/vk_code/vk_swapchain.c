@@ -6,7 +6,7 @@
 
 extern VK_ALL allInOne;
 
-void getSurfaceFormats(void)
+void getSurfaceFormats(VkSurfaceFormatKHR * pSurfaceFormat)
 {
     FuncCode code = getSurfaceFormatsF;
     uint32_t surfaceFormatCount = 0;
@@ -24,17 +24,17 @@ void getSurfaceFormats(void)
         //printf("format: %u\n", surfaceFormat[i]);
         if (surfaceFormat[i].colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR && surfaceFormat[i].format == VK_FORMAT_R8G8B8A8_SRGB)
         {
-            *allInOne.pSurfaceFormat = surfaceFormat[i];
+            *pSurfaceFormat = surfaceFormat[i];
             selected = true;
         }
     }
 
     if (!selected)
-        *allInOne.pSurfaceFormat = surfaceFormat[0];
+        *pSurfaceFormat = surfaceFormat[0];
 
     SDL_free(surfaceFormat);
 }
-void getPresentModes(void)
+void getPresentModes(VkPresentModeKHR * pPresentMode)
 {
     FuncCode code = getPresentModesF;
     uint32_t presentModeCount;
@@ -49,20 +49,20 @@ void getPresentModes(void)
         {
             //printf("present mode%u\n", presentModes[i]);
             if (presentModes[i] == VK_PRESENT_MODE_MAILBOX_KHR)
-                *allInOne.pPresentMode = presentModes[i];
+                *pPresentMode = presentModes[i];
         }
     }
     else
     {
-        *allInOne.pPresentMode = VK_PRESENT_MODE_FIFO_KHR;
+        *pPresentMode = VK_PRESENT_MODE_FIFO_KHR;
     }
 
     SDL_free(presentModes);
 }
-void getSurfaceCapabilities(void)
+void getSurfaceCapabilities(VkSurfaceCapabilitiesKHR * pSurfaceCapabilities)
 {
     FuncCode code = getSurfaceCapabilitiesF;
-    resultVulkan(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(*allInOne.pPhysicalDevice, *allInOne.pSurface, allInOne.pSurfaceCapabilities), code, 0);
+    resultVulkan(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(*allInOne.pPhysicalDevice, *allInOne.pSurface, pSurfaceCapabilities), code, 0);
 }
 void createSwapchain(void)
 {

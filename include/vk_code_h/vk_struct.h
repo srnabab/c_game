@@ -125,21 +125,21 @@ struct _VK_ALL
     // VkImageView * pDepthImageView;
     // VkDeviceMemory * pDepthImageMem;
 
-    VkBuffer (*pVertexBuffer)[MAX_FRAMES_IN_FLIGHT];
-    Uint32 maxVerticesCount;
-    Vertex ** ppVertices;
+    VkBuffer (*pVertexBuffer2D)[MAX_FRAMES_IN_FLIGHT];
+    Uint32 maxVertices2DCount;
+    Vertex ** ppVertices2D;
     // vec3 ** ppVertices_Pos;
     // vec3 ** ppVertices_Color;
     // vec2 ** ppVertices_TexCoord;
-    Uint32 * pVerticesCount;
-    VkDeviceMemory (*pVertexBufferMem)[MAX_FRAMES_IN_FLIGHT];
-    void* (*ppVertexBufferMemMapped)[MAX_FRAMES_IN_FLIGHT];
+    Uint32 * pVertices2DCount;
+    VkDeviceMemory (*pVertexBuffer2DMem)[MAX_FRAMES_IN_FLIGHT];
+    void* (*ppVertexBuffer2DMemMapped)[MAX_FRAMES_IN_FLIGHT];
 
-    VkBuffer (*pIndexBuffer)[1];
-    Uint16 ** ppIndices;
-    Uint32 * pIndicesCount;
-    VkDeviceMemory (*pIndexBufferMem)[1];
-    void* (*ppIndexBufferMemMapped)[1];
+    VkBuffer (*pIndexBuffer2D)[1];
+    Uint16 ** ppIndices2D;
+    Uint32 * pIndices2DCount;
+    VkDeviceMemory (*pIndexBuffer2DMem)[1];
+    void* (*ppIndexBuffer2DMemMapped)[1];
 
     VkSampler * pTextureSampler;
 

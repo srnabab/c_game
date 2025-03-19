@@ -81,8 +81,8 @@ void recreateSwapchain(void)
 
     unloadTexture("depth");
     
-    getSurfaceCapabilities();
-    getSurfaceFormats();
+    getSurfaceCapabilities(allInOne.pSurfaceCapabilities);
+    getSurfaceFormats(allInOne.pSurfaceFormat);
 
     newSwapchain(pDevice, allInOne.pSurfaceCapabilities, allInOne.pSurface, allInOne.pSurfaceFormat, allInOne.pExtent2D, allInOne.pPresentMode, *allInOne.pQueueFamilyIndices, allInOne.pSwapchain);
     
