@@ -11,6 +11,7 @@ include/vulkan/
 include/freetype/
 include/cglm/
 include/box2d/
+include/tinyobj_loader/
 lib/
 out/
 run/

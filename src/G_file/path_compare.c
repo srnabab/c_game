@@ -50,6 +50,14 @@ PathType pathCompare(char * buffer)
     {
         return TilemapVertShader;
     }
+    else if ((SDL_strcmp(buffer, "[Cornell_boxMtl]") == 0))
+    {
+        return Cornell_boxMtl;
+    }
+    else if ((SDL_strcmp(buffer, "[Cornell_boxObj]") == 0))
+    {
+        return Cornell_boxObj;
+    }
     else if ((SDL_strcmp(buffer, "[MainBackgroundMusic1Wav]") == 0))
     {
         return MainBackgroundMusic1Wav;

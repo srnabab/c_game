@@ -31,6 +31,7 @@
 #include "vk_code_h/vk_surface.h"
 #include "vk_code_h/vk_instance.h"
 #include "vk_code_h/vk_move.h"
+#include "vk_code_h/vk_load_model.h"
 #include "vk_code_h/vk_judge.h"
 
 #include "spirv_reflect/shader_resolve.h"
@@ -398,6 +399,8 @@ void initVulkan(void)
     logMessage("initializing...");
 
     initGlobalTexture();
+
+    loadModel(getPath(Cornell_boxObj));
 
     initializeAllInOne();
 

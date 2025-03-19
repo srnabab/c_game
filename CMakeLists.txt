@@ -100,7 +100,8 @@ add_executable(game ${SRC_ROOT}/main.c
                     ${SRC_ROOT}/vk_code/vk_synchronize.c
                     ${SRC_ROOT}/vk_code/vk_shader.c
                     ${SRC_ROOT}/vk_code/vk_recreate.c
-                    ${SRC_ROOT}/vk_code/vk_present.c)
+                    ${SRC_ROOT}/vk_code/vk_present.c
+                    ${SRC_ROOT}/vk_code/vk_load_model.c)
 
 target_include_directories(game PUBLIC ${INCLUDE_ROOT}
                             "${INCLUDE_ROOT}/cglm"
@@ -113,6 +114,7 @@ target_include_directories(game PUBLIC ${INCLUDE_ROOT}
                             "${INCLUDE_ROOT}/vulkan"
                             "${INCLUDE_ROOT}/vk_video"
                             "${INCLUDE_ROOT}/spirv_reflect"
+                            "${INCLUDE_ROOT}/tinyobj_loader"
                             "${INCLUDE_ROOT}/zlib"
                             "${INCLUDE_ROOT}/textureG"
                             "${INCLUDE_ROOT}/G_file"
