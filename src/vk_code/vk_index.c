@@ -5,7 +5,7 @@
 
 extern VK_ALL allInOne;
 
-// void createIndexBuffer(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkBuffer * pIndexBuffer, VkDeviceMemory * pIndexBufferMemory, void ** pIndexBufferMemMapped, uint16_t * indices, uint32_t indicesCount)
+// void createIndexBuffer(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkBuffer * pIndexBuffer, VkDeviceMemory * pIndexBufferMemory, void ** pIndexBufferMemMapped, Uint16 * indices, Uint32 indicesCount)
 // {
 //     FuncCode code = createIndexBufferF;
 
@@ -17,11 +17,11 @@ extern VK_ALL allInOne;
 //     memcpy(*pIndexBufferMemMapped, indices, (size_t)bufferSize);
 // }
 
-void createIndexBuffer(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkBuffer * pIndexBuffer, VkDeviceMemory * pIndexBufferMemory, void ** pIndexBufferMemMapped, uint16_t * indices, uint32_t indicesCount)
+void createIndexBuffer(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkBuffer * pIndexBuffer, VkDeviceMemory * pIndexBufferMemory, void ** pIndexBufferMemMapped, void * indices, Uint32 indicesCount, size_t indexSize)
 {
     FuncCode code = createIndexBufferF;
 
-    VkDeviceSize bufferSize = sizeof(indices[0]) * indicesCount;
+    VkDeviceSize bufferSize = indexSize * indicesCount;
     
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;

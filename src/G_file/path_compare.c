@@ -58,6 +58,14 @@ PathType pathCompare(char * buffer)
     {
         return Cornell_boxObj;
     }
+    else if ((SDL_strcmp(buffer, "[Viking_roomObj]") == 0))
+    {
+        return Viking_roomObj;
+    }
+    else if ((SDL_strcmp(buffer, "[Viking_roomPng]") == 0))
+    {
+        return Viking_roomPng;
+    }
     else if ((SDL_strcmp(buffer, "[MainBackgroundMusic1Wav]") == 0))
     {
         return MainBackgroundMusic1Wav;

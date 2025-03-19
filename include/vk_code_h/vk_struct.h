@@ -128,9 +128,6 @@ struct _VK_ALL
     VkBuffer (*pVertexBuffer2D)[MAX_FRAMES_IN_FLIGHT];
     Uint32 maxVertices2DCount;
     Vertex ** ppVertices2D;
-    // vec3 ** ppVertices_Pos;
-    // vec3 ** ppVertices_Color;
-    // vec2 ** ppVertices_TexCoord;
     Uint32 * pVertices2DCount;
     VkDeviceMemory (*pVertexBuffer2DMem)[MAX_FRAMES_IN_FLIGHT];
     void* (*ppVertexBuffer2DMemMapped)[MAX_FRAMES_IN_FLIGHT];
@@ -140,6 +137,19 @@ struct _VK_ALL
     Uint32 * pIndices2DCount;
     VkDeviceMemory (*pIndexBuffer2DMem)[1];
     void* (*ppIndexBuffer2DMemMapped)[1];
+
+    VkBuffer (*pVertexBuffer3D)[MAX_FRAMES_IN_FLIGHT];
+    Uint32 maxVertices3DCount;
+    Vertex ** ppVertices3D;
+    Uint32 * pVertices3DCount;
+    VkDeviceMemory (*pVertexBuffer3DMem)[MAX_FRAMES_IN_FLIGHT];
+    void* (*ppVertexBuffer3DMemMapped)[MAX_FRAMES_IN_FLIGHT];
+
+    VkBuffer (*pIndexBuffer3D)[MAX_FRAMES_IN_FLIGHT];
+    Uint32 ** ppIndices3D;
+    Uint32 * pIndices3DCount;
+    VkDeviceMemory (*pIndexBuffer3DMem)[MAX_FRAMES_IN_FLIGHT];
+    void* (*ppIndexBuffer3DMemMapped)[MAX_FRAMES_IN_FLIGHT];
 
     VkSampler * pTextureSampler;
 

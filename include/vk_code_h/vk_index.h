@@ -6,7 +6,7 @@
 
 #include "SDL3/SDL_begin_code.h"
 
-extern void SDLCALL createIndexBuffer(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkBuffer * pIndexBuffer, VkDeviceMemory * pIndexBufferMemory, void ** ppIndexBufferMemMapped, uint16_t * indices, uint32_t indicesCount);
+extern void createIndexBuffer(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkBuffer * pIndexBuffer, VkDeviceMemory * pIndexBufferMemory, void ** pIndexBufferMemMapped, void * indices, Uint32 indicesCount, size_t indexSize);
 
 #include "SDL3/SDL_close_code.h"
 

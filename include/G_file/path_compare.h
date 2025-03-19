@@ -20,6 +20,8 @@ typedef enum _PathType
     TilemapVertShader,
     Cornell_boxMtl,
     Cornell_boxObj,
+    Viking_roomObj,
+    Viking_roomPng,
     MainBackgroundMusic1Wav,
     TestWav,
     EmojiHashTable,

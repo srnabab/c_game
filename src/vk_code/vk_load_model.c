@@ -53,7 +53,7 @@ static void tinyobj_SDL_readFile(void *ctx, const char *filename, int is_mtl, co
     *buf = buffer;
     *len = size;
 }
-void loadModel(const char * filePath)
+void loadModel(const char * filePath, Vertex * vertices, Uint32 * pVertexIndex, Uint32 * indices, Uint32 * pIndexIndex)
 {
     tinyobj_attrib_t attrib;
     tinyobj_shape_t * shapes;
@@ -63,7 +63,36 @@ void loadModel(const char * filePath)
 
     int res = tinyobj_parse_obj(&attrib, &shapes, &num_shapes, &materials, &num_materials, filePath, tinyobj_SDL_readFile, NULL, TINYOBJ_FLAG_TRIANGULATE);
 
-    if (res == TINYOBJ_SUCCESS) print("Load model success");
+    if (res == TINYOBJ_SUCCESS) 
+    {
+        print("Load model success");
+        Uint32 vertexIndex = *pVertexIndex;
+        Uint32 indexIndex = *pIndexIndex;
+        int i;
+        for (i = 0;i < attrib.num_vertices;i++)
+        {
+            vertices[vertexIndex].pos[0] = attrib.vertices[i * 3 + 0];
+            vertices[vertexIndex].pos[1] = attrib.vertices[i * 3 + 1];
+            vertices[vertexIndex].pos[2] = attrib.vertices[i * 3 + 2];
+
+            vertices[vertexIndex].texCoord[0] = attrib.texcoords[i * 2 + 0];
+            vertices[vertexIndex].texCoord[1] = attrib.texcoords[i * 2 + 1];
+
+            vertices[vertexIndex].color[0] = 1.0f;
+            vertices[vertexIndex].color[1] = 1.0f;
+            vertices[vertexIndex].color[2] = 1.0f;
+
+            vertexIndex++;
+        }
+        *pVertexIndex = vertexIndex;
+        for (i = 0;i < attrib.num_faces;i++)
+        {
+            indices[indexIndex] = attrib.faces[i].v_idx - 1;
+
+            indexIndex++;
+        }
+        *pIndexIndex = indexIndex;
+    }
     else print("tiny obj load fail: %d", res);
 
     tinyobj_attrib_free(&attrib);
