@@ -33,8 +33,8 @@ void recreateSwapchain(void)
     
     getSwapchainNumber(*allInOne.pSwapchain2D, allInOne.pImageCount2D);
 
-    createSwapchainImage();
-    createImageViews(allInOne.ppSwapchain2DImages, *allInOne.pImageCount2D, allInOne.pSurface2DFormat->format, VK_IMAGE_ASPECT_COLOR_BIT, allInOne.ppSwapchain2DImageViews);
+    createSwapchainImage(*allInOne.pSwapchain2D, allInOne.pImageCount2D, allInOne.ppSwapchain2DImages);
+    createImageViews(*allInOne.ppSwapchain2DImages, *allInOne.pImageCount2D, allInOne.pSurface2DFormat->format, VK_IMAGE_ASPECT_COLOR_BIT, allInOne.ppSwapchain2DImageViews);
 
     loadDepthResource("depth");
     createFrameBuffer(*allInOne.pImageCount2D, *allInOne.ppSwapchain2DImageViews, &getTexture("depth")->imageView, allInOne.pRenderPass, allInOne.ppSwapchain2DFramebuffer);

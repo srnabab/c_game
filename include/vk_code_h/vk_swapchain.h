@@ -11,8 +11,8 @@ extern void getSurfaceCapabilities(VkSurfaceKHR surface, VkSurfaceCapabilitiesKH
 // extern void SDLCALL chooseSwapExtent(VkPhysicalDevice * pPhysicalDevice, VkSurfaceKHR * pSurface, VkSurfaceCapabilitiesKHR * pSurfaceCapabilities, VkExtent2D * pExtent2D);
 extern void SDLCALL createSwapchain(VkSurfaceKHR surface, VkSurfaceCapabilitiesKHR surfaceCapabilities, VkSurfaceFormatKHR surfaceFormat, VkPresentModeKHR presentMode, VkSwapchainKHR * pSwapchain, VkSwapchainKHR oldSwapchain);
 extern void SDLCALL getSwapchainNumber(VkSwapchainKHR swapchain, Uint32 * pImageCount);
-extern void SDLCALL createSwapchainImage(void);
-extern void SDLCALL createSwapchainImageView(VkImageAspectFlags aspectFlags);
+extern void SDLCALL createSwapchainImage(VkSwapchainKHR swapchain, Uint32 * pImageCount, VkImage ** ppSwapchainImages);
+extern void SDLCALL createSwapchainImageView(VkImage * pSwapchainImages, Uint32 imageCount, VkFormat swapchainFormat, VkImageAspectFlags aspectFlags, VkImageView ** ppSwapchainImageViews);
 
 #include "SDL3/SDL_close_code.h"
 

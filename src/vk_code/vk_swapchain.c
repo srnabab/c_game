@@ -118,20 +118,20 @@ void getSwapchainNumber(VkSwapchainKHR swapchain, Uint32 * pImageCount)
     FuncCode code = getSwapchainNumberF;
     resultVulkan(vkGetSwapchainImagesKHR(*allInOne.pDevice, swapchain, pImageCount, NULL), code, 0);
 }
-void createSwapchainImage(void)
+void createSwapchainImage(VkSwapchainKHR swapchain, Uint32 * pImageCount, VkImage ** ppSwapchainImages)
 {
     FuncCode code = createSwapchainImageF;
-    if (*allInOne.ppSwapchain2DImages != NULL)
+    if (*ppSwapchainImages != NULL)
     {
-        SDL_free(*allInOne.ppSwapchain2DImages);
-        *allInOne.ppSwapchain2DImages = NULL;
+        SDL_free(*ppSwapchainImages);
+        *ppSwapchainImages = NULL;
     }
-    *allInOne.ppSwapchain2DImages = (VkImage *)SDL_malloc(*allInOne.pImageCount2D * sizeof(VkImage));
-    resultVulkan(vkGetSwapchainImagesKHR(*allInOne.pDevice, *allInOne.pSwapchain2D, allInOne.pImageCount2D, *allInOne.ppSwapchain2DImages), code, 0);
+    *ppSwapchainImages = (VkImage *)SDL_malloc(*pImageCount * sizeof(VkImage));
+    resultVulkan(vkGetSwapchainImagesKHR(*allInOne.pDevice, swapchain, pImageCount, *ppSwapchainImages), code, 0);
 }
-void createSwapchainImageView(VkImageAspectFlags aspectFlags)
+void createSwapchainImageView(VkImage * pSwapchainImages, Uint32 imageCount, VkFormat swapchainFormat, VkImageAspectFlags aspectFlags, VkImageView ** ppSwapchainImageViews)
 {
     FuncCode code = createSwapchainImageViewsF;
 
-    resultVulkan(createImageViews(allInOne.ppSwapchain2DImages, *allInOne.pImageCount2D, allInOne.pSurface2DFormat->format, aspectFlags, allInOne.ppSwapchain2DImageViews), code, 0);   
+    resultVulkan(createImageViews(pSwapchainImages, imageCount, swapchainFormat, aspectFlags, ppSwapchainImageViews), code, 0);   
 }

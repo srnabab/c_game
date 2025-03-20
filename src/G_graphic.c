@@ -485,12 +485,12 @@ void initVulkan(void)
     createSwapchain(surface2D, surface2DCapabilities, surface2DFormat, presentMode2D, &swapchain2D, NULL);
 
     getSwapchainNumber(swapchain2D, &imageCount2D);
-    createSwapchainImage();
+    createSwapchainImage(swapchain2D, &imageCount2D, &swapchain2DImages);
 
     swapchainFormat = surface2DFormat.format;
 
     //swapchain2D image view
-    createSwapchainImageView(VK_IMAGE_ASPECT_COLOR_BIT);
+    createSwapchainImageView(swapchain2DImages, imageCount2D, swapchainFormat, VK_IMAGE_ASPECT_COLOR_BIT, &swapchain2DImageViews);
 
     loadDepthResource("depth");
     G_Texture_P const * depthTexutre = getTexture("depth");
@@ -500,6 +500,17 @@ void initVulkan(void)
 
     createFrameBuffer(imageCount2D, swapchain2DImageViews, &depthTexutre->imageView, &renderPass, &swapchain2DFramebuffer);
     
+// #if WINDOW_3D_DEBUG
+
+//     createSurface(window_3D);
+//     getSurfaceFormats(surface3D, &surface3DFormat);
+//     getPresentModes(&presentMode3D);
+//     getSurfaceCapabilities(surface3D, &surface3DCapabilities);
+//     createSwapchain(surface3D, surface3DCapabilities, surface3DFormat, presentMode3D, &swapchain3D, NULL);
+//     getSwapchainNumber(swapchain3D, &imageCount3D);
+//     createSwapchainImage(swapchain3D, &imageCount3D, &swapchain3DImages);
+//     // createSwapchainImageView
+// #endif
     createTextureSampler(&physicalDevice, &device, &textureSampler);
 
     vertices2D = (Vertex*)SDL_calloc(VERTEX_COUNT_IN_BUFFER_2D, sizeof(Vertex));

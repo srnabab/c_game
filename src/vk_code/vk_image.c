@@ -68,7 +68,7 @@ VkResult createImageView(VkImage * pImage, VkFormat format, VkImageAspectFlags a
 
     return result;
 }
-VkResult createImageViews(VkImage ** ppImages, uint32_t imageCount, VkFormat format, VkImageAspectFlags aspectFlags, VkImageView ** ppImageView)
+VkResult createImageViews(VkImage * pImages, uint32_t imageCount, VkFormat format, VkImageAspectFlags aspectFlags, VkImageView ** ppImageView)
 {
     VkResult result = VK_SUCCESS;
 
@@ -80,7 +80,7 @@ VkResult createImageViews(VkImage ** ppImages, uint32_t imageCount, VkFormat for
 
     for (uint32_t i = 0;i < imageCount;i++)
     {
-        result |= createImageView(&(*ppImages)[i], format, aspectFlags, &(*ppImageView)[i]);
+        result |= createImageView(pImages + i, format, aspectFlags, &(*ppImageView)[i]);
     }
 
     SDL_free(imageViewCreatInfo);
