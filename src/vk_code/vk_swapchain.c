@@ -64,13 +64,13 @@ void getSurfaceCapabilities(VkSurfaceCapabilitiesKHR * pSurfaceCapabilities)
     FuncCode code = getSurfaceCapabilitiesF;
     resultVulkan(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(*allInOne.pPhysicalDevice, *allInOne.pSurface, pSurfaceCapabilities), code, 0);
 }
-void createSwapchain(void)
+void createSwapchain(VkSurfaceKHR surface, VkSurfaceCapabilitiesKHR surfaceCapabilities, VkSurfaceFormatKHR surfaceFormat, VkPresentModeKHR presentMode, VkSwapchainKHR * pSwapchain, VkSwapchainKHR oldSwapchain)
 {
     FuncCode code = createSwapchainF;
-    uint32_t imageCount = allInOne.pSurfaceCapabilities->minImageCount + 1;
+    uint32_t imageCount = surfaceCapabilities.minImageCount + 1;
 
-    if (allInOne.pSurfaceCapabilities->maxImageCount > 0 && imageCount > allInOne.pSurfaceCapabilities->maxImageCount)
-        imageCount = allInOne.pSurfaceCapabilities->maxImageCount;
+    if (surfaceCapabilities.maxImageCount > 0 && imageCount > surfaceCapabilities.maxImageCount)
+        imageCount = surfaceCapabilities.maxImageCount;
         
     if (*allInOne.pSwapchain == NULL)
     {
@@ -81,21 +81,21 @@ void createSwapchain(void)
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
     createInfo.pNext = NULL;
     createInfo.flags = 0;
-    createInfo.surface = *allInOne.pSurface;
+    createInfo.surface = surface;
     createInfo.minImageCount = imageCount;
-    createInfo.imageFormat = allInOne.pSurfaceFormat->format;
-    createInfo.imageColorSpace = allInOne.pSurfaceFormat->colorSpace;
+    createInfo.imageFormat = surfaceFormat.format;
+    createInfo.imageColorSpace = surfaceFormat.colorSpace;
     createInfo.imageExtent = *allInOne.pExtent2D;
     createInfo.imageArrayLayers = 1;
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
     createInfo.imageSharingMode = 0;
     createInfo.queueFamilyIndexCount = 0;
     createInfo.pQueueFamilyIndices = NULL;
-    createInfo.preTransform = (*allInOne.pSurfaceCapabilities).currentTransform;
+    createInfo.preTransform = surfaceCapabilities.currentTransform;
     createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-    createInfo.presentMode = *allInOne.pPresentMode;
+    createInfo.presentMode = presentMode;
     createInfo.clipped = VK_TRUE;
-    createInfo.oldSwapchain = NULL;
+    createInfo.oldSwapchain = oldSwapchain;
 
     uint32_t queueFamilyIndices[3] = {allInOne.pQueueFamilyIndices->graphicsFamily.familyIndice, allInOne.pQueueFamilyIndices->presentFamily.familyIndice, allInOne.pQueueFamilyIndices->computeFamily.familyIndice};
     if (allInOne.pQueueFamilyIndices->graphicsFamily.familyIndice != allInOne.pQueueFamilyIndices->presentFamily.familyIndice) 
@@ -111,7 +111,7 @@ void createSwapchain(void)
         createInfo.pQueueFamilyIndices = NULL; // Optional
     }
 
-    resultVulkan(vkCreateSwapchainKHR(*allInOne.pDevice, &createInfo, allInOne.pAllocationCallbacks, allInOne.pSwapchain), code, 0);
+    resultVulkan(vkCreateSwapchainKHR(*allInOne.pDevice, &createInfo, allInOne.pAllocationCallbacks, pSwapchain), code, 0);
 }
 void getSwapchainNumber(void)
 {

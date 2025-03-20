@@ -120,10 +120,17 @@ struct _VK_ALL
     VkImageView ** ppSwapchainImageViews;
     VkFramebuffer ** ppSwapchainFramebuffer;
 
-    // VkFormat * pDepthFormat;
-    // VkImage * pDepthImage;
-    // VkImageView * pDepthImageView;
-    // VkDeviceMemory * pDepthImageMem;
+#if WINDOW_3D_DEBUG
+    
+    VkSurfaceKHR * pSurface3D;
+
+    VkSwapchainKHR * pSwapchain3D;
+    Uint32 * pImageCount3D;
+
+    VkImage ** ppSwapchain3DImages;
+    VkImageView ** ppSwapchain3DImageViews;
+    VkFramebuffer ** ppSwapchain3DFramebuffer;
+#endif
 
     VkBuffer (*pVertexBuffer2D)[MAX_FRAMES_IN_FLIGHT];
     Uint32 maxVertices2DCount;

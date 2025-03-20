@@ -163,6 +163,7 @@ static VkFormat swapchainFormat = 0;
 
 static VkImage * swapchainImages = NULL;
 static VkImageView * swapchainImageViews = NULL;
+static VkFramebuffer * swapchainFramebuffer = NULL;
 
 static VkShaderModule vertShaderCode = NULL;
 static VkShaderModule fragShaderCode = NULL;
@@ -207,28 +208,6 @@ static VkCommandPool presentCommandPool = NULL;
 static VkCommandPool transferCommandPool = NULL;
 
 static VkCommandPool computeCommandPool = NULL;
-
-// static VkImage depthImage = NULL;
-// static VkDeviceMemory depthImageMemory = NULL;
-// static VkImageView depthImageView = NULL;
-// static VkFormat depthFormat = 0;
-
-static VkFramebuffer * swapchainFramebuffer = NULL;
-
-// //circle.png
-// static VkImage texturesImage = NULL;
-// static VkDeviceMemory textureImageMem = NULL;
-// static VkImageView textureImageView = NULL;
-
-// //loading1.png
-// static VkImage loadingImage = NULL;
-// static VkDeviceMemory loadingImageMem = NULL;
-// static VkImageView loadingImageView = NULL;
-
-// //MainFont.png
-// static VkImage textImage = NULL;
-// static VkDeviceMemory textImageMem = NULL;
-// static VkImageView textImageView = NULL;
 
 static VkSampler textureSampler = NULL;
 
@@ -305,6 +284,17 @@ static VkDeviceMemory shaderStorageBuffersMem[MAX_FRAMES_IN_FLIGHT];
 
 static PushConstants picturePushConstants = {0.0f, 0.0f};
 
+#if WINDOW_3D_DEBUG
+static VkSurfaceKHR surface3D = NULL;
+
+static VkSwapchainKHR swapchain3D = NULL;
+static Uint32 imageCount3D = 0;
+
+static VkImage * swapchain3DImages = NULL;
+static VkImageView * swapchain3DImageViews = NULL;
+static VkFramebuffer * swapchain3DFramebuffer = NULL;
+#endif
+
 //store all compoents for initialize vulkan in a struct
 VK_ALL allInOne = {};
 
@@ -359,10 +349,16 @@ static void initializeAllInOne(void)
     allInOne.ppSwapchainImageViews = &swapchainImageViews;
     allInOne.ppSwapchainFramebuffer = &swapchainFramebuffer;
     
-    // allInOne.pDepthFormat = &depthFormat;
-    // allInOne.pDepthImage = &depthImage;
-    // allInOne.pDepthImageView = &depthImageView;
-    // allInOne.pDepthImageMem = &depthImageMemory;
+#if WINDOW_3D_DEBUG
+
+    allInOne.pSurface3D = &surface3D;
+    allInOne.pSwapchain3D = &swapchain3D;
+    allInOne.pImageCount3D = &imageCount3D;
+    allInOne.ppSwapchain3DImages = &swapchain3DImages;
+    allInOne.ppSwapchain3DImageViews = &swapchain3DImageViews;
+    allInOne.ppSwapchain3DFramebuffer = &swapchain3DFramebuffer;
+
+#endif
 
     allInOne.pVertexBuffer2D = &vertexBuffer2D;
     allInOne.maxVertices2DCount = (BALLCOUNT + MAX_CHARACTERS) * 4 * 2;
@@ -479,7 +475,7 @@ void initVulkan(void)
     extent2D.width = width;
     extent2D.height = height;
 
-    createSwapchain();
+    createSwapchain(surface, surfaceCapabilities, surfaceFormat, presentMode, &swapchain, NULL);
 
     getSwapchainNumber();
     createSwapchainImage();
