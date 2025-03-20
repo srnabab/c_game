@@ -32,7 +32,7 @@ extern void SDLCALL G_deInitQueue(G_Queue * queue);
 
 #endif // G_queue.h
 
-#if defined(QUEUE_TEST)
+#if QUEUE_TEST
 #include "SDL3/SDL_test.h"
 #include <stdio.h>
 

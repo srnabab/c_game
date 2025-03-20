@@ -1,7 +1,7 @@
 #ifndef G_CONSTANTS_H
 #define G_CONSTANTS_H 1
 
-#define TEST 1
+#define TEST 0
 
 #define VERTEX_UNIT_SIZE_2D 32
 #define INDEX_UNIT_SIZE_2D 2
@@ -44,5 +44,7 @@
 
 #define LOGICAL_WIDTH 800
 #define LOGICAL_HEIGHT 600
+
+#define WINDOW_3D_DEBUG 1
 
 #endif

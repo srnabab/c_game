@@ -1,7 +1,7 @@
 #include "G_pop_window.h"
 #include "G_struct.h"
 
-extern SDL_Window * window;
+extern SDL_Window * window_2D;
 extern G_SYNC allSync;
 
 typedef struct _PopWindow
@@ -103,7 +103,7 @@ void popWindow(void)
     PopList * next = root;
     while (next->node != NULL)
     {
-        SDL_ShowSimpleMessageBox(next->node->flags, next->node->title, next->node->message, window);
+        SDL_ShowSimpleMessageBox(next->node->flags, next->node->title, next->node->message, window_2D);
         next = next->next;
     }
     cleanList();

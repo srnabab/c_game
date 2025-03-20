@@ -25,7 +25,7 @@
 // Global variables
 bool game_is_running = false;
 
-extern SDL_Window * window;
+extern SDL_Window * window_2D;
 extern SDL_DisplayID displayId;
 extern VK_ALL allInOne;
 
@@ -65,7 +65,7 @@ static void initAllSync(void)
 // Setup function that runs once at the beginning of our program
 void setup(int argc, char* argv[]) 
 {
-#ifdef TEST
+#if TEST
     int res = TestAll();
     if (res != 0) 
     {
@@ -78,10 +78,11 @@ void setup(int argc, char* argv[])
 
     initLog(arg);
 
-    game_is_running = initWindow();
+    game_is_running = initWindow_2D();
     logMessage("game_is_running: %d", game_is_running);
+    if (game_is_running == false) return;
 
-    SDL_StopTextInput(window);
+    SDL_StopTextInput(window_2D);
 
     static SDL_MessageBoxButtonData buttons[2] = {
         {SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "No"},
@@ -90,7 +91,7 @@ void setup(int argc, char* argv[])
 
     static SDL_MessageBoxData messageBoxData = {0};
     messageBoxData.flags = SDL_MESSAGEBOX_WARNING;
-    messageBoxData.window = window;
+    messageBoxData.window = window_2D;
     messageBoxData.title = "Do you want to quit?";
     messageBoxData.message = "Yes or No?";
     messageBoxData.numbuttons = 2;
@@ -185,7 +186,7 @@ bool process_input(void)
 
         if (event.type == SDL_EVENT_WINDOW_RESTORED)
         {
-            SDL_RaiseWindow(window);
+            SDL_RaiseWindow(window_2D);
         }
         
         if (event.type == SDL_EVENT_KEY_DOWN)
@@ -217,7 +218,7 @@ bool process_input(void)
                 allInOne.pExtent2D->width = 1600;
                 allInOne.pExtent2D->height = 900;
                 
-                SDL_SetWindowSize(window, allInOne.pExtent2D->width, allInOne.pExtent2D->height);
+                SDL_SetWindowSize(window_2D, allInOne.pExtent2D->width, allInOne.pExtent2D->height);
 
                 resolutionChanged = true;
 
@@ -242,9 +243,9 @@ bool process_input(void)
                 SDL_DisplayMode displayMode = {0};
 
                 SDL_GetClosestFullscreenDisplayMode(displayId, allInOne.pExtent2D->width, allInOne.pExtent2D->height, 0, false, &displayMode);
-                SDL_SetWindowFullscreen(window, 1);
-                SDL_SetWindowFullscreenMode(window, &displayMode);
-                SDL_RaiseWindow(window);
+                SDL_SetWindowFullscreen(window_2D, 1);
+                SDL_SetWindowFullscreenMode(window_2D, &displayMode);
+                SDL_RaiseWindow(window_2D);
 
                 resolutionChanged = true;
 
@@ -263,12 +264,12 @@ bool process_input(void)
                 scene = Pause_Scene;
                 SDL_Delay(50);
 
-                SDL_SetWindowFullscreen(window, 0);
+                SDL_SetWindowFullscreen(window_2D, 0);
                 allInOne.pOldExtent2D->width = allInOne.pExtent2D->width;
                 allInOne.pOldExtent2D->height = allInOne.pExtent2D->height;
 
-                SDL_SetWindowSize(window, allInOne.pExtent2D->width, allInOne.pExtent2D->height);
-                SDL_RaiseWindow(window);
+                SDL_SetWindowSize(window_2D, allInOne.pExtent2D->width, allInOne.pExtent2D->height);
+                SDL_RaiseWindow(window_2D);
 
                 resolutionChanged = true;
 
@@ -715,17 +716,17 @@ int update(void * arg)
             //print("time: %.2f\n", time);
 
             glm_mat4_identity(pGraphicUbo->model);
-            glm_rotate(pGraphicUbo->model, totalTime * glm_rad(90.0f), (vec3){0.0f, 0.0f, 1.0f});
+            // glm_rotate(pGraphicUbo->model, totalTime * glm_rad(90.0f), (vec3){0.0f, 0.0f, 1.0f});
 
-            // glm_lookat((vec3){*pCamera_X, *pCamera_Y, 100.0f}, (vec3){*pCamera_X, *pCamera_Y, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pGraphicUbo->view);
-            glm_lookat((vec3){2.0f, 2.0f, 2.0f}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, pGraphicUbo->view);
+            glm_lookat((vec3){*pCamera_X, *pCamera_Y, 100.0f}, (vec3){*pCamera_X, *pCamera_Y, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pGraphicUbo->view);
+            // glm_lookat((vec3){2.0f, 2.0f, 2.0f}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, pGraphicUbo->view);
 
             float aspect = ((float)allInOne.pExtent2D->width / allInOne.pExtent2D->height);
             float aspect2 = 1.0f  * ((float)allInOne.pExtent2D->height / 600.0f);
             
-            // glm_ortho_vulkan(-aspect, aspect, -1.0f, 1.0f, 0.1f, 100.0f, pGraphicUbo->proj);
-            glm_perspective(glm_rad(45.0f), aspect, 0.1f, 100.0f, pGraphicUbo->proj);
-            pGraphicUbo->proj[1][1] *= -1;
+            glm_ortho_vulkan(-aspect, aspect, -1.0f, 1.0f, 0.1f, 100.0f, pGraphicUbo->proj);
+            // glm_perspective(glm_rad(45.0f), aspect, 0.1f, 100.0f, pGraphicUbo->proj);
+            // pGraphicUbo->proj[1][1] *= -1;
 
             allInOne.pComputeUbo->deltaTime = delta_time;
 
@@ -774,7 +775,7 @@ int update(void * arg)
     return 0;
 }
 
-// Render function to draw game objects in the SDL window
+// Render function to draw game objects in the SDL window_2D
 int render(void * arg) 
 {
     print("render init\n");
@@ -844,11 +845,12 @@ static void destroyAllSync(void)
     SDL_DestroySemaphore(allSync.logSemaphore);
     SDL_DestroySemaphore(allSync.worldSemaphore);
 }
-// Function to destroy SDL window and renderer
+// Function to destroy SDL window_2D and renderer
 void destroy(void) 
 {
     SDL_WaitThread(sdl_pid_signal, NULL);
     print("signal end\n");
+    SDL_SignalSemaphore(allSync.updateSemaphore);
     SDL_WaitThread(sdl_pid_update, NULL);
     print("update end\n");
     SDL_SignalSemaphore(allSync.vertexSemaphore);

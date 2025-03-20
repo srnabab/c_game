@@ -76,7 +76,7 @@ extern void SDLCALL G_WaitTask(G_Thread_Pool * pThreadPool, int * taskIndex);
 
 #endif //G_THREAD_POOL_H
 
-#if defined(THREAD_POOL_TEST)
+#if THREAD_POOL_TEST
 
 #include "SDL3/SDL_test.h"
 

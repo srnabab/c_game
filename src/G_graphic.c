@@ -36,18 +36,18 @@
 
 #include "spirv_reflect/shader_resolve.h"
 
-//declare a sdl window
-SDL_Window * window = NULL;
+// declare a sdl window_2D
+SDL_Window * window_2D = NULL;
 SDL_DisplayID displayId = 0;
 
-//window's width and height
+// windows' width and height
 Uint32 width = 800;
 Uint32 height = 600;
 
 float physicalCoffectX = 1.0f;
 float physicalCoffectY = 1.0f;
 
-bool initWindow(void)
+static bool initSDL(void)
 {
     /*initialize sdl
     timer, audio, video, event, joysitck, haptic, gamecontroller, sensor*/
@@ -65,9 +65,31 @@ bool initWindow(void)
         }
         return false;
     }
-    //create sdl window and sign window as a vulkan window
-    window = SDL_CreateWindow("Vulkan", width, height, SDL_WINDOW_VULKAN | SDL_WINDOW_HIGH_PIXEL_DENSITY);
-    if (window == NULL)
+
+    return true;
+}
+
+#if WINDOW_3D_DEBUG
+SDL_Window * window_3D = NULL;
+static bool initWindow_3D(void)
+{
+   //create sdl window_2D and sign window_2D as a vulkan window_2D
+    window_3D = SDL_CreateWindow("Vulkan_3D", width, height, SDL_WINDOW_VULKAN | SDL_WINDOW_HIGH_PIXEL_DENSITY);
+    if (window_3D == NULL)
+        return false;
+    
+    logMessage("window_3D initialized");
+
+    return true;
+}
+#endif
+
+bool initWindow_2D(void)
+{
+   //create sdl window_2D and sign window_2D as a vulkan window_2D
+    if (!initSDL()) return false;
+    window_2D = SDL_CreateWindow("Vulkan_2D", width, height, SDL_WINDOW_VULKAN | SDL_WINDOW_HIGH_PIXEL_DENSITY);
+    if (window_2D == NULL)
         return false;
     
     int count = 0;
@@ -87,7 +109,7 @@ bool initWindow(void)
     physicalCoffectX = (float)width / LOGICAL_WIDTH;
     physicalCoffectY = (float)height / LOGICAL_HEIGHT;
 
-    logMessage("window initialized");
+    logMessage("window_2D initialized");
 
     Uint32 iconWidth, iconHeight;
     iconWidth = iconHeight = 0;         
@@ -100,12 +122,16 @@ bool initWindow(void)
         return false;
     }
 
-    if (!SDL_SetWindowIcon(window, iconSurface))
+    if (!SDL_SetWindowIcon(window_2D, iconSurface))
         return false;
 
     SDL_DestroySurface(iconSurface);
     SDL_free(iconPixels);
-    //glfwTerminate();
+
+#if WINDOW_3D_DEBUG
+    bool res_3d = initWindow_3D();
+    if (!res_3d) return false;
+#endif
 
     return true;
 }
@@ -429,7 +455,7 @@ void initVulkan(void)
 
     createInstance();
 
-    createSurface(window);
+    createSurface(window_2D);
 
     pickPhysicalDevice();
 
@@ -923,8 +949,8 @@ void cleanVulkan(FuncCode code)
 
         case createInstanceF:
         case vulkanVersionF:
-        SDL_DestroyWindow(window);
-        logMessage("window destroyed");
+        SDL_DestroyWindow(window_2D);
+        logMessage("window_2D destroyed");
         break;
 
         default:

@@ -5,7 +5,7 @@
 
 #include "SDL3/SDL_begin_code.h"
 
-extern bool SDLCALL initWindow(void);
+extern bool SDLCALL initWindow_2D(void);
 extern void SDLCALL initVulkan(void);
 
 #include "SDL3/SDL_close_code.h"

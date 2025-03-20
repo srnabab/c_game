@@ -39,7 +39,7 @@ extern void SDLCALL deInitStack(EmptyStack * stack);
 
 #endif
 
-#if defined(STACK_TEST)
+#if STACK_TEST
 #include "SDL3/SDL_test.h"
 
 int stackTest(void)
