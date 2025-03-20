@@ -509,7 +509,7 @@ void initVulkan(void)
     createSwapchain(surface3D, surface3DCapabilities, surface3DFormat, presentMode3D, &swapchain3D, NULL);
     getSwapchainNumber(swapchain3D, &imageCount3D);
     createSwapchainImage(swapchain3D, &imageCount3D, &swapchain3DImages);
-    createSwapchainImageView(swapchain2DImages, imageCount2D, swapchainFormat, VK_IMAGE_ASPECT_COLOR_BIT, &swapchain3DImageViews);
+    createSwapchainImageView(swapchain3DImages, imageCount3D, swapchainFormat, VK_IMAGE_ASPECT_COLOR_BIT, &swapchain3DImageViews);
     createFrameBuffer(imageCount3D, swapchain3DImageViews, &depthTexutre->imageView, &renderPass, &swapchain3DFramebuffer);
 #endif
     createTextureSampler(&physicalDevice, &device, &textureSampler);
