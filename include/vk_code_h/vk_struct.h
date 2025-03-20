@@ -79,11 +79,11 @@ struct _VK_ALL
 
     VkDevice * pDevice;
 
-    VkSurfaceCapabilitiesKHR * pSurfaceCapabilities;
-    VkSurfaceFormatKHR * pSurfaceFormat;
-    VkPresentModeKHR * pPresentMode;
+    VkSurfaceCapabilitiesKHR * pSurface2DCapabilities;
+    VkSurfaceFormatKHR * pSurface2DFormat;
+    VkPresentModeKHR * pPresentMode2D;
 
-    VkSurfaceKHR * pSurface;
+    VkSurfaceKHR * pSurface2D;
     
     QueueFamilyIndices * pQueueFamilyIndices;
     VkQueue * pGraphicQueue;
@@ -98,9 +98,9 @@ struct _VK_ALL
 
     VkExtent2D * pExtent2D;
     VkExtent2D * pOldExtent2D;
-    Uint32 * pImageCount;
+    Uint32 * pImageCount2D;
 
-    VkSwapchainKHR * pSwapchain;
+    VkSwapchainKHR * pSwapchain2D;
 
     VkPipelineLayout * pGraphicPipelineLayout;
 
@@ -116,13 +116,17 @@ struct _VK_ALL
 
     VkPipeline * pComputePipeline;
 
-    VkImage ** ppSwapchainImages;
-    VkImageView ** ppSwapchainImageViews;
-    VkFramebuffer ** ppSwapchainFramebuffer;
+    VkImage ** ppSwapchain2DImages;
+    VkImageView ** ppSwapchain2DImageViews;
+    VkFramebuffer ** ppSwapchain2DFramebuffer;
 
 #if WINDOW_3D_DEBUG
     
     VkSurfaceKHR * pSurface3D;
+
+    VkSurfaceCapabilitiesKHR * pSurface3DCapabilities;
+    VkSurfaceFormatKHR * pSurface3DFormat;
+    VkPresentModeKHR * pPresentMode3D;
 
     VkSwapchainKHR * pSwapchain3D;
     Uint32 * pImageCount3D;

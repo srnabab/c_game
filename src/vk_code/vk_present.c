@@ -72,7 +72,7 @@ static void recordCommandBuffer_FirstScene(uint32_t imageIndex)
     renderBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderBeginInfo.pNext = NULL;
     renderBeginInfo.renderPass = *allInOne.pRenderPass;
-    renderBeginInfo.framebuffer = (*allInOne.ppSwapchainFramebuffer)[imageIndex];
+    renderBeginInfo.framebuffer = (*allInOne.ppSwapchain2DFramebuffer)[imageIndex];
     renderBeginInfo.renderArea = renderArea;
     renderBeginInfo.clearValueCount = 2;
     renderBeginInfo.pClearValues = clearValue;
@@ -203,7 +203,7 @@ static void drawFirstScene(void)
 
 
     uint32_t imageIndex;
-    resultVulkan(vkAcquireNextImageKHR(*allInOne.pDevice, *allInOne.pSwapchain, UINT64_MAX, (*allInOne.ppImageAvailableSemaphore)[*allInOne.pCurrentFrame], NULL, &imageIndex), acquireNextImageF, 0);
+    resultVulkan(vkAcquireNextImageKHR(*allInOne.pDevice, *allInOne.pSwapchain2D, UINT64_MAX, (*allInOne.ppImageAvailableSemaphore)[*allInOne.pCurrentFrame], NULL, &imageIndex), acquireNextImageF, 0);
     //printf("acquire next image index\n"); 
 
 
@@ -249,7 +249,7 @@ static void drawFirstScene(void)
     presentInfo.waitSemaphoreCount = 1;
     presentInfo.pWaitSemaphores = &(*allInOne.ppRenderFinishedSemaphore)[*allInOne.pCurrentFrame];
     presentInfo.swapchainCount = 1;
-    presentInfo.pSwapchains = allInOne.pSwapchain;
+    presentInfo.pSwapchains = allInOne.pSwapchain2D;
     presentInfo.pImageIndices = &imageIndex;
     presentInfo.pResults = NULL;
 

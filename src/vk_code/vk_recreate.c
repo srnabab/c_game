@@ -7,7 +7,6 @@
 #include "vk_code_h/vk_judge.h"
 #include "vk_code_h/vk_struct.h"
 
-#include "G_custom_math.h"
 #include "G_log.h"
 
 extern VK_ALL allInOne;
@@ -18,31 +17,31 @@ void recreateSwapchain(void)
 
     VkDevice * pDevice = allInOne.pDevice;
 
-    VkFramebuffer * oldFrameBuffer = *allInOne.ppSwapchainFramebuffer;
-    VkImageView * oldSwapchainImageView = *allInOne.ppSwapchainImageViews;
-    Uint32 oldImageCount = *allInOne.pImageCount;
-    VkSwapchainKHR oldSwapchain = *allInOne.pSwapchain;
+    VkFramebuffer * oldFrameBuffer = *allInOne.ppSwapchain2DFramebuffer;
+    VkImageView * oldSwapchainImageView = *allInOne.ppSwapchain2DImageViews;
+    Uint32 oldImageCount = *allInOne.pImageCount2D;
+    VkSwapchainKHR oldSwapchain = *allInOne.pSwapchain2D;
 
     resultVulkan(vkDeviceWaitIdle(*pDevice), code, 0);
 
     unloadTexture("depth");
     
-    getSurfaceCapabilities(allInOne.pSurfaceCapabilities);
-    getSurfaceFormats(allInOne.pSurfaceFormat);
+    getSurfaceCapabilities(*allInOne.pSurface2D, allInOne.pSurface2DCapabilities);
+    getSurfaceFormats(*allInOne.pSurface2D, allInOne.pSurface2DFormat);
 
-    createSwapchain(*allInOne.pSurface, *allInOne.pSurfaceCapabilities, *allInOne.pSurfaceFormat, *allInOne.pPresentMode, allInOne.pSwapchain, oldSwapchain);
+    createSwapchain(*allInOne.pSurface2D, *allInOne.pSurface2DCapabilities, *allInOne.pSurface2DFormat, *allInOne.pPresentMode2D, allInOne.pSwapchain2D, oldSwapchain);
     
-    getSwapchainNumber();
+    getSwapchainNumber(*allInOne.pSwapchain2D, allInOne.pImageCount2D);
 
     createSwapchainImage();
-    createImageViews(allInOne.ppSwapchainImages, *allInOne.pImageCount, allInOne.pSurfaceFormat->format, VK_IMAGE_ASPECT_COLOR_BIT, allInOne.ppSwapchainImageViews);
+    createImageViews(allInOne.ppSwapchain2DImages, *allInOne.pImageCount2D, allInOne.pSurface2DFormat->format, VK_IMAGE_ASPECT_COLOR_BIT, allInOne.ppSwapchain2DImageViews);
 
     loadDepthResource("depth");
-    createFrameBuffer(*allInOne.pImageCount, *allInOne.ppSwapchainImageViews, &getTexture("depth")->imageView, allInOne.pRenderPass, allInOne.ppSwapchainFramebuffer);
+    createFrameBuffer(*allInOne.pImageCount2D, *allInOne.ppSwapchain2DImageViews, &getTexture("depth")->imageView, allInOne.pRenderPass, allInOne.ppSwapchain2DFramebuffer);
 
     destroyedFrameBuffer(oldImageCount, oldFrameBuffer);
     destroyImageViews(oldSwapchainImageView, oldImageCount);
     vkDestroySwapchainKHR(*pDevice, oldSwapchain, allInOne.pAllocationCallbacks);
     
-    logMessage("recreate swapchain");
+    print("recreate swapchain");
 }

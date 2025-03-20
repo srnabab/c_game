@@ -138,7 +138,7 @@ bool initWindow_2D(void)
 
 static VkInstance instance = NULL;
 
-static VkSurfaceKHR surface = NULL;
+static VkSurfaceKHR surface2D = NULL;
 
 static VkPhysicalDevice physicalDevice = NULL;
 
@@ -151,19 +151,19 @@ static VkQueue transferQueue = NULL;
 
 static VkAllocationCallbacks SDL_allocationCallBacks = {};
 
-static VkSurfaceFormatKHR surfaceFormat = {};
-static VkPresentModeKHR presentMode = 0;
-static VkSurfaceCapabilitiesKHR surfaceCapabilities = {};
+static VkSurfaceFormatKHR surface2DFormat = {};
+static VkPresentModeKHR presentMode2D = 0;
+static VkSurfaceCapabilitiesKHR surface2DCapabilities = {};
 static VkExtent2D extent2D = {};
 static VkExtent2D oldExtent2D = {};
-static VkSwapchainKHR swapchain = NULL;
+static VkSwapchainKHR swapchain2D = NULL;
 
-static Uint32 imageCount = 0;
+static Uint32 imageCount2D = 0;
 static VkFormat swapchainFormat = 0;
 
-static VkImage * swapchainImages = NULL;
-static VkImageView * swapchainImageViews = NULL;
-static VkFramebuffer * swapchainFramebuffer = NULL;
+static VkImage * swapchain2DImages = NULL;
+static VkImageView * swapchain2DImageViews = NULL;
+static VkFramebuffer * swapchain2DFramebuffer = NULL;
 
 static VkShaderModule vertShaderCode = NULL;
 static VkShaderModule fragShaderCode = NULL;
@@ -287,6 +287,10 @@ static PushConstants picturePushConstants = {0.0f, 0.0f};
 #if WINDOW_3D_DEBUG
 static VkSurfaceKHR surface3D = NULL;
 
+static VkSurfaceFormatKHR surface3DFormat = {};
+static VkPresentModeKHR presentMode3D = 0;
+static VkSurfaceCapabilitiesKHR surface3DCapabilities = {};
+
 static VkSwapchainKHR swapchain3D = NULL;
 static Uint32 imageCount3D = 0;
 
@@ -308,11 +312,11 @@ static void initializeAllInOne(void)
 
     allInOne.pDevice = &device;
 
-    allInOne.pSurfaceCapabilities = &surfaceCapabilities;
-    allInOne.pSurfaceFormat = &surfaceFormat;
-    allInOne.pPresentMode = &presentMode;
+    allInOne.pSurface2DCapabilities = &surface2DCapabilities;
+    allInOne.pSurface2DFormat = &surface2DFormat;
+    allInOne.pPresentMode2D = &presentMode2D;
 
-    allInOne.pSurface = &surface;
+    allInOne.pSurface2D = &surface2D;
 
     allInOne.pQueueFamilyIndices = &queueIndices;
     allInOne.pGraphicQueue = &graphicQueue;
@@ -327,9 +331,9 @@ static void initializeAllInOne(void)
 
     allInOne.pExtent2D = &extent2D;
     allInOne.pOldExtent2D = &oldExtent2D;
-    allInOne.pImageCount = &imageCount;
+    allInOne.pImageCount2D = &imageCount2D;
 
-    allInOne.pSwapchain = &swapchain;
+    allInOne.pSwapchain2D = &swapchain2D;
 
     allInOne.pGraphicPipelineLayout = &graphicPipelineLayout;
 
@@ -345,13 +349,16 @@ static void initializeAllInOne(void)
 
     allInOne.pComputePipeline = &computePipeline;
 
-    allInOne.ppSwapchainImages = &swapchainImages;
-    allInOne.ppSwapchainImageViews = &swapchainImageViews;
-    allInOne.ppSwapchainFramebuffer = &swapchainFramebuffer;
+    allInOne.ppSwapchain2DImages = &swapchain2DImages;
+    allInOne.ppSwapchain2DImageViews = &swapchain2DImageViews;
+    allInOne.ppSwapchain2DFramebuffer = &swapchain2DFramebuffer;
     
 #if WINDOW_3D_DEBUG
 
     allInOne.pSurface3D = &surface3D;
+    allInOne.pSurface3DFormat = &surface3DFormat;
+    allInOne.pSurface3DCapabilities = &surface3DCapabilities;
+    allInOne.pPresentMode3D = &presentMode3D;
     allInOne.pSwapchain3D = &swapchain3D;
     allInOne.pImageCount3D = &imageCount3D;
     allInOne.ppSwapchain3DImages = &swapchain3DImages;
@@ -468,21 +475,21 @@ void initVulkan(void)
     createCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, queueIndices.computeFamily.familyIndice, &computeCommandPool);
     createCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, queueIndices.transferFamily.familyIndice, &transferCommandPool);
 
-    getSurfaceFormats(&surfaceFormat);
-    getPresentModes(&presentMode);
-    getSurfaceCapabilities(&surfaceCapabilities);
+    getSurfaceFormats(surface2D, &surface2DFormat);
+    getPresentModes(&presentMode2D);
+    getSurfaceCapabilities(surface2D, &surface2DCapabilities);
     
     extent2D.width = width;
     extent2D.height = height;
 
-    createSwapchain(surface, surfaceCapabilities, surfaceFormat, presentMode, &swapchain, NULL);
+    createSwapchain(surface2D, surface2DCapabilities, surface2DFormat, presentMode2D, &swapchain2D, NULL);
 
-    getSwapchainNumber();
+    getSwapchainNumber(swapchain2D, &imageCount2D);
     createSwapchainImage();
 
-    swapchainFormat = surfaceFormat.format;
+    swapchainFormat = surface2DFormat.format;
 
-    //swapchain image view
+    //swapchain2D image view
     createSwapchainImageView(VK_IMAGE_ASPECT_COLOR_BIT);
 
     loadDepthResource("depth");
@@ -491,7 +498,7 @@ void initVulkan(void)
 
     // createDepthResoures(&depthImage, &depthImageMemory, &depthImageView);
 
-    createFrameBuffer(imageCount, swapchainImageViews, &depthTexutre->imageView, &renderPass, &swapchainFramebuffer);
+    createFrameBuffer(imageCount2D, swapchain2DImageViews, &depthTexutre->imageView, &renderPass, &swapchain2DFramebuffer);
     
     createTextureSampler(&physicalDevice, &device, &textureSampler);
 
@@ -871,8 +878,8 @@ void cleanVulkan(FuncCode code)
 
         case createTextureImageViewF:
         case createTextureImageF:
-        destroyedFrameBuffer(imageCount, swapchainFramebuffer);
-        SDL_free(swapchainFramebuffer);
+        destroyedFrameBuffer(imageCount2D, swapchain2DFramebuffer);
+        SDL_free(swapchain2DFramebuffer);
         logMessage("framebuffer destroyed");
         /*fall through*/
 
@@ -907,20 +914,20 @@ void cleanVulkan(FuncCode code)
         /*fall through*/
 
         case createRenderPassF:
-        destroyImageViews(swapchainImageViews, imageCount);
-        SDL_free(swapchainImageViews);
-        logMessage("swapchain image views destroyed");
+        destroyImageViews(swapchain2DImageViews, imageCount2D);
+        SDL_free(swapchain2DImageViews);
+        logMessage("swapchain2D image views destroyed");
         /*fall through*/
 
         case createSwapchainImageViewsF:
-        SDL_free(swapchainImages);
+        SDL_free(swapchain2DImages);
         logMessage("swapchainImages freed");
         /*fall through*/
 
         case createSwapchainImageF:
         case getSwapchainNumberF:
-        vkDestroySwapchainKHR(device, swapchain, allInOne.pAllocationCallbacks);
-        logMessage("swapchain destroyed");
+        vkDestroySwapchainKHR(device, swapchain2D, allInOne.pAllocationCallbacks);
+        logMessage("swapchain2D destroyed");
         /*fall through*/
 
         case createSwapchainF:
@@ -934,7 +941,7 @@ void cleanVulkan(FuncCode code)
         case createLogicalDeviceF:
         case findQueueFamiliesF:
         case pickPhysicalDeviceF:
-        vkDestroySurfaceKHR(instance, surface, allInOne.pAllocationCallbacks);
+        vkDestroySurfaceKHR(instance, surface2D, allInOne.pAllocationCallbacks);
         logMessage("surface destroyed");
         /*fall through*/
 
