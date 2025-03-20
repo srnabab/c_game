@@ -19,5 +19,6 @@ void main()
         // vec4 temp = texture(texSampler, fragTexCoord);
         // outColor = vec4(temp.rgb * fragColor, temp.a);
         outColor = texture(texSampler, fragTexCoord);
+        // outColor = vec4(fragColor, 1.0);
     }
 }

@@ -19,6 +19,7 @@ typedef enum _PathType
     TilemapFragShader,
     TilemapVertShader,
     Cornell_boxMtl,
+    Viking_room_CopyPng,
     Cornell_boxObj,
     Viking_roomObj,
     Viking_roomPng,

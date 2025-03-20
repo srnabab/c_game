@@ -470,8 +470,8 @@ void createParticlePipeline(VkDevice * pDevice, VkExtent2D * pExtent2D, uint32_t
 
     VkPipelineDepthStencilStateCreateInfo pipelineDepthStencilStateCreateInfo = {};
     configurePipelineDepthStencilStateCreateInfo(&pipelineDepthStencilStateCreateInfo);
-    /*pipelineDepthStencilStateCreateInfo.depthTestEnable = VK_FALSE;
-    pipelineDepthStencilStateCreateInfo.depthWriteEnable = VK_FALSE;*/
+    // pipelineDepthStencilStateCreateInfo.depthTestEnable = VK_FALSE;
+    // pipelineDepthStencilStateCreateInfo.depthWriteEnable = VK_FALSE;
 
     VkPipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo = {};
     configurePipelineColorBlendStateCreateInfo(1, &pipelineColorBlendStateCreateInfo);

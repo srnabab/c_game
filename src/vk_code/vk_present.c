@@ -103,6 +103,21 @@ static void recordCommandBuffer_FirstScene(uint32_t imageIndex)
     // main font png
     drawPic("font", currentFrame);
 
+    // model
+    G_Texture_P * tempTexture = getTexture("model");
+    if (tempTexture == NULL) return;
+    vkCmdBindDescriptorSets((*allInOne.ppGraphicCommandBuffer)[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pGraphicPipelineLayout, 0,
+    1, tempTexture->pDescriptorSet + currentFrame, 0, NULL);
+
+    VkBuffer vertex3DBuffer[] = {(*allInOne.pVertexBuffer3D)[currentFrame]};
+    vkCmdBindVertexBuffers((*allInOne.ppGraphicCommandBuffer)[currentFrame], 0, 1, vertex3DBuffer, offsets);
+
+    vkCmdBindIndexBuffer((*allInOne.ppGraphicCommandBuffer)[currentFrame], (*allInOne.pIndexBuffer3D)[currentFrame], 0, VK_INDEX_TYPE_UINT32);
+
+
+    vkCmdDrawIndexed((*allInOne.ppGraphicCommandBuffer)[currentFrame], *allInOne.pIndices3DCount, 1, 0, 0, 0);
+
+
     vkCmdBindPipeline((*allInOne.ppGraphicCommandBuffer)[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pParticlePipeline);
 
     vkCmdBindVertexBuffers((*allInOne.ppGraphicCommandBuffer)[currentFrame], 0, 1, &(*allInOne.ppShaderStorageBuffers)[currentFrame], offsets);

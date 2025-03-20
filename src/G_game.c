@@ -715,7 +715,7 @@ int update(void * arg)
             //print("time: %.2f\n", time);
 
             glm_mat4_identity(pGraphicUbo->model);
-            //glm_rotate(pUbo->model, time * glm_rad(90.0f), (vec3){0.0f, 0.0f, 1.0f});
+            glm_rotate(pGraphicUbo->model, totalTime * glm_rad(90.0f), (vec3){0.0f, 0.0f, 1.0f});
 
             // glm_lookat((vec3){*pCamera_X, *pCamera_Y, 100.0f}, (vec3){*pCamera_X, *pCamera_Y, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pGraphicUbo->view);
             glm_lookat((vec3){2.0f, 2.0f, 2.0f}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, pGraphicUbo->view);
@@ -754,6 +754,7 @@ int update(void * arg)
             memcpy((*allInOne.pppComputeUniformBufferMapped)[currentFrame], allInOne.pComputeUbo, sizeof(ComputeUniformBufferObject));
 
             memcpy((*allInOne.ppVertexBuffer2DMemMapped)[currentFrame], *allInOne.ppVertices2D, vertexEnd * sizeof(Vertex));// update vertex buffer
+            memcpy((*allInOne.ppVertexBuffer3DMemMapped)[currentFrame], *allInOne.ppVertices3D, 30000 * sizeof(Vertex));
             SDL_SignalSemaphore(allSync.vertexSemaphore);
 
             allInOne.pPushConstants->rotation = totalTime * glm_rad(580.0f);

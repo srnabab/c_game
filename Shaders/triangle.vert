@@ -22,6 +22,7 @@ layout(location = 2) out float fragDepth;
 void main() 
 {
     fragColor = inColor;
+    // fragColor = vec3(inTexCoord, 0.0);
     fragTexCoord = inTexCoord;
     fragDepth = inPosition.z;
 

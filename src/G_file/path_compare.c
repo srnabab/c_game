@@ -54,6 +54,10 @@ PathType pathCompare(char * buffer)
     {
         return Cornell_boxMtl;
     }
+    else if ((SDL_strcmp(buffer, "[Viking_room_CopyPng]") == 0))
+    {
+        return Viking_room_CopyPng;
+    }
     else if ((SDL_strcmp(buffer, "[Cornell_boxObj]") == 0))
     {
         return Cornell_boxObj;
