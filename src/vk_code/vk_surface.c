@@ -6,10 +6,10 @@
 
 extern VK_ALL allInOne;
 
-void createSurface(SDL_Window * pWindow)
+void createSurface(SDL_Window * pWindow, VkSurfaceKHR * pSurface)
 {
     FuncCode code = createSurfaceF;
-    resultVulkan(!SDL_Vulkan_CreateSurface(pWindow, *allInOne.pInstance, allInOne.pAllocationCallbacks, allInOne.pSurface2D), code, 0);
+    resultVulkan(!SDL_Vulkan_CreateSurface(pWindow, *allInOne.pInstance, allInOne.pAllocationCallbacks, pSurface), code, 0);
 
     //printf("surface created\n");
 }

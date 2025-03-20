@@ -458,7 +458,7 @@ void initVulkan(void)
 
     createInstance();
 
-    createSurface(window_2D);
+    createSurface(window_2D, &surface2D);
 
     pickPhysicalDevice();
 
@@ -500,17 +500,18 @@ void initVulkan(void)
 
     createFrameBuffer(imageCount2D, swapchain2DImageViews, &depthTexutre->imageView, &renderPass, &swapchain2DFramebuffer);
     
-// #if WINDOW_3D_DEBUG
+#if WINDOW_3D_DEBUG
 
-//     createSurface(window_3D);
-//     getSurfaceFormats(surface3D, &surface3DFormat);
-//     getPresentModes(&presentMode3D);
-//     getSurfaceCapabilities(surface3D, &surface3DCapabilities);
-//     createSwapchain(surface3D, surface3DCapabilities, surface3DFormat, presentMode3D, &swapchain3D, NULL);
-//     getSwapchainNumber(swapchain3D, &imageCount3D);
-//     createSwapchainImage(swapchain3D, &imageCount3D, &swapchain3DImages);
-//     // createSwapchainImageView
-// #endif
+    createSurface(window_3D, &surface3D);
+    getSurfaceFormats(surface3D, &surface3DFormat);
+    getPresentModes(&presentMode3D);
+    getSurfaceCapabilities(surface3D, &surface3DCapabilities);
+    createSwapchain(surface3D, surface3DCapabilities, surface3DFormat, presentMode3D, &swapchain3D, NULL);
+    getSwapchainNumber(swapchain3D, &imageCount3D);
+    createSwapchainImage(swapchain3D, &imageCount3D, &swapchain3DImages);
+    createSwapchainImageView(swapchain2DImages, imageCount2D, swapchainFormat, VK_IMAGE_ASPECT_COLOR_BIT, &swapchain3DImageViews);
+    createFrameBuffer(imageCount3D, swapchain3DImageViews, &depthTexutre->imageView, &renderPass, &swapchain3DFramebuffer);
+#endif
     createTextureSampler(&physicalDevice, &device, &textureSampler);
 
     vertices2D = (Vertex*)SDL_calloc(VERTEX_COUNT_IN_BUFFER_2D, sizeof(Vertex));
@@ -891,6 +892,9 @@ void cleanVulkan(FuncCode code)
         case createTextureImageF:
         destroyedFrameBuffer(imageCount2D, swapchain2DFramebuffer);
         SDL_free(swapchain2DFramebuffer);
+        
+        destroyedFrameBuffer(imageCount3D, swapchain3DFramebuffer);
+        SDL_free(swapchain3DFramebuffer);
         logMessage("framebuffer destroyed");
         /*fall through*/
 
@@ -927,17 +931,24 @@ void cleanVulkan(FuncCode code)
         case createRenderPassF:
         destroyImageViews(swapchain2DImageViews, imageCount2D);
         SDL_free(swapchain2DImageViews);
+        
+        destroyImageViews(swapchain3DImageViews, imageCount3D);
+        SDL_free(swapchain3DImageViews);
         logMessage("swapchain2D image views destroyed");
         /*fall through*/
 
         case createSwapchainImageViewsF:
         SDL_free(swapchain2DImages);
+        
+        SDL_free(swapchain3DImages);
         logMessage("swapchainImages freed");
         /*fall through*/
 
         case createSwapchainImageF:
         case getSwapchainNumberF:
         vkDestroySwapchainKHR(device, swapchain2D, allInOne.pAllocationCallbacks);
+        
+        vkDestroySwapchainKHR(device, swapchain3D, allInOne.pAllocationCallbacks);
         logMessage("swapchain2D destroyed");
         /*fall through*/
 
@@ -953,6 +964,8 @@ void cleanVulkan(FuncCode code)
         case findQueueFamiliesF:
         case pickPhysicalDeviceF:
         vkDestroySurfaceKHR(instance, surface2D, allInOne.pAllocationCallbacks);
+        
+        vkDestroySurfaceKHR(instance, surface3D, allInOne.pAllocationCallbacks);
         logMessage("surface destroyed");
         /*fall through*/
 
@@ -964,6 +977,7 @@ void cleanVulkan(FuncCode code)
         case createInstanceF:
         case vulkanVersionF:
         SDL_DestroyWindow(window_2D);
+        SDL_DestroyWindow(window_3D);
         logMessage("window_2D destroyed");
         break;
 
