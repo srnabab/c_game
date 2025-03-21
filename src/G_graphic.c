@@ -75,6 +75,9 @@ static bool initWindow_3D(void)
 {
    //create sdl window_2D and sign window_2D as a vulkan window_2D
     window_3D = SDL_CreateWindow("Vulkan_3D", width, height, SDL_WINDOW_VULKAN | SDL_WINDOW_HIGH_PIXEL_DENSITY);
+    int x, y;
+    SDL_GetWindowPosition(window_3D, &x, &y);
+    SDL_SetWindowPosition(window_3D, x - 800, y);
     if (window_3D == NULL)
         return false;
     

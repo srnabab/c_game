@@ -66,6 +66,18 @@ PathType pathCompare(char * buffer)
     {
         return Viking_roomObj;
     }
+    else if ((SDL_strcmp(buffer, "[BoxObj]") == 0))
+    {
+        return BoxObj;
+    }
+    else if ((SDL_strcmp(buffer, "[BoxPng]") == 0))
+    {
+        return BoxPng;
+    }
+    else if ((SDL_strcmp(buffer, "[BoxMtl]") == 0))
+    {
+        return BoxMtl;
+    }
     else if ((SDL_strcmp(buffer, "[Viking_roomPng]") == 0))
     {
         return Viking_roomPng;
