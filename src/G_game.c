@@ -181,12 +181,19 @@ bool process_input(void)
         
         if (event.type == SDL_EVENT_WINDOW_MINIMIZED)
         {
-            ;
+            preScene = scene;
+            scene = Pause_Scene;
+            SDL_Delay(50);
         }
 
         if (event.type == SDL_EVENT_WINDOW_RESTORED)
         {
             SDL_RaiseWindow(window_2D);
+
+            scene = preScene;
+            preScene = Pause_Scene;
+            SDL_SignalSemaphore(allSync.updateSemaphore);
+            SDL_SignalSemaphore(allSync.renderSemaphore);
         }
         
         if (event.type == SDL_EVENT_KEY_DOWN)
@@ -207,7 +214,7 @@ bool process_input(void)
                 
                 return true;
             }
-            if (key == SDLK_F11)
+            if (key == SDLK_F6)
             {
                 preScene = scene;
                 scene = Pause_Scene;
@@ -508,6 +515,7 @@ int update(void * arg)
 {
     Uint32 update_frame = 0;
     UniformBufferObject * pGraphicUbo = allInOne.pGraphicUbo;
+    UniformBufferObject * pGraphic3DUbo = allInOne.pGraphic3DUbo;
     float * pCamera_X = allInOne.pCamera_X;
     float * pCamera_Y = allInOne.pCamera_Y;
     
@@ -715,18 +723,18 @@ int update(void * arg)
             //updateUniformBuffer(*allInOne.pCurrentFrame, allInOne.pExtent2D, allInOne.pGraphicUbo, allInOne.pppGraphicUniformBufferMapped, *allInOne.pCamera_X, *allInOne.pCamera_Y, allInOne.pComputeUbo, allInOne.pppComputeUniformBufferMapped, delta_time);   
             //print("time: %.2f\n", time);
 
-            glm_mat4_identity(pGraphicUbo->model);
-            // glm_rotate(pGraphicUbo->model, totalTime * glm_rad(90.0f), (vec3){0.0f, 0.0f, 1.0f});
-
-            // glm_lookat((vec3){*pCamera_X, *pCamera_Y, 100.0f}, (vec3){*pCamera_X, *pCamera_Y, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pGraphicUbo->view);
-            glm_lookat((vec3){2.0f, 2.0f, 2.0f}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, pGraphicUbo->view);
-
             float aspect = ((float)allInOne.pExtent2D->width / allInOne.pExtent2D->height);
             float aspect2 = 1.0f  * ((float)allInOne.pExtent2D->height / 600.0f);
-            
-            // glm_ortho_vulkan(-aspect, aspect, -1.0f, 1.0f, 0.1f, 100.0f, pGraphicUbo->proj);
-            glm_perspective(glm_rad(45.0f), aspect, 0.1f, 100.0f, pGraphicUbo->proj);
-            pGraphicUbo->proj[1][1] *= -1;
+
+            glm_mat4_identity(pGraphicUbo->model);
+            // glm_rotate(pGraphicUbo->model, totalTime * glm_rad(90.0f), (vec3){0.0f, 0.0f, 1.0f});
+            glm_lookat((vec3){*pCamera_X, *pCamera_Y, 100.0f}, (vec3){*pCamera_X, *pCamera_Y, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pGraphicUbo->view);
+            glm_ortho_vulkan(-aspect, aspect, -1.0f, 1.0f, 0.1f, 100.0f, pGraphicUbo->proj);
+
+            glm_mat4_identity(pGraphic3DUbo->model);
+            glm_lookat((vec3){2.0f, 2.0f, 2.0f}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, pGraphic3DUbo->view);
+            glm_perspective(glm_rad(45.0f), aspect, 0.1f, 100.0f, pGraphic3DUbo->proj);
+            pGraphic3DUbo->proj[1][1] *= -1;
 
             allInOne.pComputeUbo->deltaTime = delta_time;
 
@@ -751,6 +759,7 @@ int update(void * arg)
             // }
 
             memcpy((*allInOne.pppGraphicUniformBufferMapped)[currentFrame], pGraphicUbo, sizeof(UniformBufferObject));
+            memcpy((*allInOne.pppGraphic3DUniformBufferMapped)[currentFrame], pGraphic3DUbo, sizeof(UniformBufferObject));
 
             memcpy((*allInOne.pppComputeUniformBufferMapped)[currentFrame], allInOne.pComputeUbo, sizeof(ComputeUniformBufferObject));
 

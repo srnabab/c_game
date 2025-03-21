@@ -166,8 +166,12 @@ struct _VK_ALL
 
     VkBuffer (*ppGraphicUniformBuffer)[MAX_FRAMES_IN_FLIGHT];
     void * (*pppGraphicUniformBufferMapped)[MAX_FRAMES_IN_FLIGHT];
-
     UniformBufferObject * pGraphicUbo;
+
+    VkBuffer (*ppGraphic3DUniformBuffer)[MAX_FRAMES_IN_FLIGHT];
+    void * (*pppGraphic3DUniformBufferMapped)[MAX_FRAMES_IN_FLIGHT];
+    UniformBufferObject * pGraphic3DUbo;
+
 
     VkDescriptorSet ** ppGraphicDescriptorSets;
 

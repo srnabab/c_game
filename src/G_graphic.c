@@ -239,6 +239,11 @@ static VkDeviceMemory graphicUniformBuffersMemory[MAX_FRAMES_IN_FLIGHT];
 static void* graphicUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
 static UniformBufferObject ubo = {};
 
+static VkBuffer graphic3DUniformBuffers[MAX_FRAMES_IN_FLIGHT];
+static VkDeviceMemory graphic3DUniformBuffersMemory[MAX_FRAMES_IN_FLIGHT];
+static void* graphic3DUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
+static UniformBufferObject ubo3D = {};
+
 static VkBuffer computeUniformBuffers[MAX_FRAMES_IN_FLIGHT];
 static VkDeviceMemory computeUniformBuffersmemory[MAX_FRAMES_IN_FLIGHT];
 static void* computeUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
@@ -397,8 +402,11 @@ static void initializeAllInOne(void)
 
     allInOne.ppGraphicUniformBuffer = &graphicUniformBuffers;
     allInOne.pppGraphicUniformBufferMapped = &graphicUniformBufferMapped;
-
     allInOne.pGraphicUbo = &ubo;
+
+    allInOne.ppGraphic3DUniformBuffer = &graphic3DUniformBuffers;
+    allInOne.pppGraphic3DUniformBufferMapped = &graphic3DUniformBufferMapped;
+    allInOne.pGraphic3DUbo = &ubo3D;
 
     allInOne.ppGraphicDescriptorSets = &graphicDescriptorSets;
 
@@ -537,6 +545,7 @@ void initVulkan(void)
     createIndexBuffer(&physicalDevice, &device, indexBuffer3D + 1, indexBuffer3DMem + 1, indexBuffer3DMemMapped + 1, indices3D, 45000, sizeof(Uint32));
 
     createUniformBufferByBuffering(&physicalDevice, &device, &graphicUniformBuffers, &graphicUniformBuffersMemory, &graphicUniformBufferMapped, sizeof(UniformBufferObject));
+    createUniformBufferByBuffering(&physicalDevice, &device, &graphic3DUniformBuffers, &graphic3DUniformBuffersMemory, &graphic3DUniformBufferMapped, sizeof(UniformBufferObject));
 
     createUniformBufferByBuffering(&physicalDevice, &device, &computeUniformBuffers, &computeUniformBuffersmemory, &computeUniformBufferMapped, sizeof(ComputeUniformBufferObject));
 
@@ -642,7 +651,7 @@ void initVulkan(void)
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, circleTexture->pDescriptorSet, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, fontTexture->pDescriptorSet, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, tileSetTexture->pDescriptorSet, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, modelTexture->pDescriptorSet, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, modelTexture->pDescriptorSet, graphic3DUniformBuffers, 0, sizeof(UniformBufferObject));
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, "loading", textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, "circle", textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, "font", textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
@@ -808,6 +817,20 @@ void cleanVulkan(FuncCode code)
             vkFreeMemory(device, graphicUniformBuffersMemory[i], allInOne.pAllocationCallbacks);
         }
         logMessage("graphic uniform buffer memory freed");
+
+        for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
+        {
+            vkUnmapMemory(device, graphic3DUniformBuffersMemory[i]);
+            vkDestroyBuffer(device, graphic3DUniformBuffers[i], allInOne.pAllocationCallbacks);
+        }
+        logMessage("graphic 3D uniform buffer destroyed");
+
+        for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
+        {
+            vkFreeMemory(device, graphic3DUniformBuffersMemory[i], allInOne.pAllocationCallbacks);
+        }
+        logMessage("graphic 3D uniform buffer memory freed");
+
 
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
         {
