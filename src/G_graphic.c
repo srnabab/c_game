@@ -541,7 +541,7 @@ void initVulkan(void)
     vertices3D = (Vertex*)SDL_calloc(30000, sizeof(Vertex));
     allInOne.maxVertices3DCount = 30000;
     indices3D = (Uint32*)SDL_calloc(45000, sizeof(Uint32));
-    loadModel(getPath(Viking_roomObj), vertices3D, &vertices3DCount, indices3D, &indices3DCount);
+    loadModel(getPath(BoxObj), vertices3D, &vertices3DCount, indices3D, &indices3DCount);
     createVertexBuffer(&physicalDevice, &device, vertexBuffer3D, vertexBuffer3DMem, vertexBuffer3DMemMapped, vertices3D, 30000);
     createVertexBuffer(&physicalDevice, &device, vertexBuffer3D + 1, vertexBuffer3DMem + 1, vertexBuffer3DMemMapped + 1, vertices3D, 30000);
     createIndexBuffer(&physicalDevice, &device, indexBuffer3D, indexBuffer3DMem, indexBuffer3DMemMapped, indices3D, 45000, sizeof(Uint32));
@@ -639,7 +639,7 @@ void initVulkan(void)
     // loadTileMap(TileMap1TsdI, 400, -300, "tileSet");
     // loadTileMap(TileMap1TsdI, 400, -1100, "tileSet");
     // loadTileMap(TileMap1TsdI, -400, -1100, "tileSet");
-    loadTexture(Viking_roomPng, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "model", graphicDescriptorSets + 8);
+    loadTexture(BoxPng, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "model", graphicDescriptorSets + 8);
     loadTexture(Loading1Png, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "loading", graphicDescriptorSets);
     loadTexture(CirclePng, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "circle", graphicDescriptorSets + 2);
     loadTexture(MainFontPng, VK_FORMAT_R8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, "font", graphicDescriptorSets + 4);

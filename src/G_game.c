@@ -733,8 +733,10 @@ int update(void * arg)
             // pGraphicUbo->proj[1][1] *= -1;
 
             glm_mat4_identity(pGraphic3DUbo->model);
+            glm_scale(pGraphic3DUbo->model, (vec3){0.3f, 0.3f, 0.3f});
             // glm_rotate(pGraphic3DUbo->model, glm_rad(45.0f), (vec3){0.0f, 0.0f, 1.0f});
-            glm_lookat((vec3){2.0f, 2.0f, 2.0f}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, pGraphic3DUbo->view);
+            // glm_translate(pGraphic3DUbo->model, (vec3){1.0f, 1.0f, 0.0f});
+            glm_lookat((vec3){-*pCamera_X, 4.0f + -*pCamera_Y, 4.0f}, (vec3){-*pCamera_X, -*pCamera_Y, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, pGraphic3DUbo->view);
             glm_ortho_vulkan(-aspect, aspect, -1.0f, 1.0f, 0.1f, 100.0f, pGraphic3DUbo->proj);
             // glm_perspective(glm_rad(45.0f), aspect, 0.1f, 100.0f, pGraphic3DUbo->proj);
             // pGraphic3DUbo->proj[1][1] *= -1;
