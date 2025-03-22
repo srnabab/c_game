@@ -3,6 +3,7 @@
 #include "G_graphic.h"
 #include "G_resource.h"
 #include "G_TileMap/G_TileSet.h"
+#include "G_custom_math.h"
 
 #include "SDL3/SDL_init.h"
 #include "SDL3/SDL_video.h"
@@ -41,8 +42,8 @@ SDL_Window * window_2D = NULL;
 SDL_DisplayID displayId = 0;
 
 // windows' width and height
-Uint32 width = 800;
-Uint32 height = 600;
+Uint32 width = 1920;
+Uint32 height = 1080;
 
 float physicalCoffectX = 1.0f;
 float physicalCoffectY = 1.0f;
@@ -247,6 +248,11 @@ static VkDeviceMemory graphic3DUniformBuffersMemory[MAX_FRAMES_IN_FLIGHT];
 static void* graphic3DUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
 static UniformBufferObject ubo3D = {};
 
+static VkBuffer UIUniformBuffers[MAX_FRAMES_IN_FLIGHT];
+static VkDeviceMemory UIUniformBuffersMemory[MAX_FRAMES_IN_FLIGHT];
+static void* UIUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
+static UniformBufferObject uboUI = {};
+
 static VkBuffer computeUniformBuffers[MAX_FRAMES_IN_FLIGHT];
 static VkDeviceMemory computeUniformBuffersmemory[MAX_FRAMES_IN_FLIGHT];
 static void* computeUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
@@ -411,6 +417,10 @@ static void initializeAllInOne(void)
     allInOne.pppGraphic3DUniformBufferMapped = &graphic3DUniformBufferMapped;
     allInOne.pGraphic3DUbo = &ubo3D;
 
+    allInOne.ppUIUniformBuffer = &UIUniformBuffers;
+    allInOne.pppUIUniformBufferMapped = &UIUniformBufferMapped;
+    allInOne.pUIUbo = &uboUI;
+
     allInOne.ppGraphicDescriptorSets = &graphicDescriptorSets;
 
     allInOne.ppParticleDescriptorSets = &particleDescriptorSets;
@@ -542,6 +552,43 @@ void initVulkan(void)
     allInOne.maxVertices3DCount = 30000;
     indices3D = (Uint32*)SDL_calloc(45000, sizeof(Uint32));
     loadModel(getPath(BoxObj), vertices3D, &vertices3DCount, indices3D, &indices3DCount);
+    // UniformBufferObject tempUbo = {};
+    // glm_mat4_identity(tempUbo.model);
+    // // glm_scale(tempUbo.model, (vec3){0.0266666f, 0.0266666f, 0.0266666f});
+    // glm_scale(tempUbo.model, (vec3){0.5f ,0.5f, 0.5f});
+    // glm_lookat((vec3){0.0f, 4.0f, 4.0f}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, tempUbo.view);
+    // glm_ortho_vulkan(-((float)4 / 3), ((float)4 / 3), -1.0f, 1.0f, 0.1f, 100.0f, tempUbo.proj);
+    // vec4 tempVec4;
+    // vec2 * XYs = SDL_malloc(vertices3DCount * sizeof(vec2));
+    // float max_x, max_y, min_x, min_y;
+    // max_x = max_y = -1000000.0f;
+    // min_x = min_y = 1000000.0f;
+    // for (int lk = 0;lk < vertices3DCount;lk++)
+    // {
+    //     glm_mul(tempUbo.proj, tempUbo.view, tempUbo.proj);
+    //     glm_mul(tempUbo.proj, tempUbo.model, tempUbo.proj);
+    //     tempVec4[0] = vertices3D[lk].pos[0];
+    //     tempVec4[1] = vertices3D[lk].pos[1];
+    //     tempVec4[2] = vertices3D[lk].pos[2];
+    //     tempVec4[3] = 1.0f;
+    //     for (int kl = 0;kl < 2;kl++)
+    //     {
+    //         XYs[lk][kl] = glm_vec4_dot(tempUbo.proj[kl], tempVec4);
+    //     }
+    //     XYs[lk][0] = (XYs[lk][0] * width) - width / 2;
+    //     XYs[lk][1] = (XYs[lk][1] * height) - height / 2;
+    //     // XYs[lk][0] = (XYs[lk][0] + 1.0f) * 800.0f;
+    //     // XYs[lk][1] = (XYs[lk][1] + 1.0f) * 600.0f;
+    //     max_x = (XYs[lk][0] > max_x) ? XYs[lk][0] : max_x;
+    //     max_y = (XYs[lk][1] > max_y) ? XYs[lk][1] : max_y;
+    //     min_x = (XYs[lk][0] < min_x) ? XYs[lk][0] : min_x;
+    //     min_y = (XYs[lk][1] < min_y) ? XYs[lk][1] : min_y;
+    //     // print("point:x: %f, y: %f", XYs[lk][0], XYs[lk][1]);
+    // }
+    // SDL_free(XYs);
+    // // print("max point:x: %f, y: %f", max_x, max_y);
+    // // print("min point:x: %f, y: %f", min_x, min_y);
+    // print("width: %f, height: %f", max_x - min_x, (max_y - min_y) * SDL_cosf(M_PI / 4));
     createVertexBuffer(&physicalDevice, &device, vertexBuffer3D, vertexBuffer3DMem, vertexBuffer3DMemMapped, vertices3D, 30000);
     createVertexBuffer(&physicalDevice, &device, vertexBuffer3D + 1, vertexBuffer3DMem + 1, vertexBuffer3DMemMapped + 1, vertices3D, 30000);
     createIndexBuffer(&physicalDevice, &device, indexBuffer3D, indexBuffer3DMem, indexBuffer3DMemMapped, indices3D, 45000, sizeof(Uint32));
@@ -549,6 +596,7 @@ void initVulkan(void)
 
     createUniformBufferByBuffering(&physicalDevice, &device, &graphicUniformBuffers, &graphicUniformBuffersMemory, &graphicUniformBufferMapped, sizeof(UniformBufferObject));
     createUniformBufferByBuffering(&physicalDevice, &device, &graphic3DUniformBuffers, &graphic3DUniformBuffersMemory, &graphic3DUniformBufferMapped, sizeof(UniformBufferObject));
+    createUniformBufferByBuffering(&physicalDevice, &device, &UIUniformBuffers, &UIUniformBuffersMemory, &UIUniformBufferMapped, sizeof(UniformBufferObject));
 
     createUniformBufferByBuffering(&physicalDevice, &device, &computeUniformBuffers, &computeUniformBuffersmemory, &computeUniformBufferMapped, sizeof(ComputeUniformBufferObject));
 
@@ -650,9 +698,9 @@ void initVulkan(void)
     G_Texture_P * tileSetTexture = getTexture("tileSet");
     G_Texture_P * modelTexture = getTexture("model");
 
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, loadingTexture->pDescriptorSet, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, loadingTexture->pDescriptorSet, UIUniformBuffers, 0, sizeof(UniformBufferObject));
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, circleTexture->pDescriptorSet, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, fontTexture->pDescriptorSet, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, fontTexture->pDescriptorSet, UIUniformBuffers, 0, sizeof(UniformBufferObject));
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, tileSetTexture->pDescriptorSet, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, modelTexture->pDescriptorSet, graphic3DUniformBuffers, 0, sizeof(UniformBufferObject));
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, "loading", textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
@@ -833,6 +881,20 @@ void cleanVulkan(FuncCode code)
             vkFreeMemory(device, graphic3DUniformBuffersMemory[i], allInOne.pAllocationCallbacks);
         }
         logMessage("graphic 3D uniform buffer memory freed");
+
+        for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
+        {
+            vkUnmapMemory(device, UIUniformBuffersMemory[i]);
+            vkDestroyBuffer(device, UIUniformBuffers[i], allInOne.pAllocationCallbacks);
+        }
+        logMessage("graphic 3D uniform buffer destroyed");
+
+        for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
+        {
+            vkFreeMemory(device, UIUniformBuffersMemory[i], allInOne.pAllocationCallbacks);
+        }
+        logMessage("graphic 3D uniform buffer memory freed");
+
 
 
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)

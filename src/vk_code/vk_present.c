@@ -132,6 +132,8 @@ static void recordCommandBuffer_3D(uint32_t imageIndex)
     VkViewport viewport = {};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
+    // viewport.width = 200;
+    // viewport.height = 200;
     viewport.width = (float)allInOne.pExtent2D->width;
     viewport.height = (float)allInOne.pExtent2D->height;
     viewport.minDepth = 0.0f;

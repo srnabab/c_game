@@ -516,6 +516,7 @@ int update(void * arg)
     Uint32 update_frame = 0;
     UniformBufferObject * pGraphicUbo = allInOne.pGraphicUbo;
     UniformBufferObject * pGraphic3DUbo = allInOne.pGraphic3DUbo;
+    UniformBufferObject * pUIUbo = allInOne.pUIUbo;
     float * pCamera_X = allInOne.pCamera_X;
     float * pCamera_Y = allInOne.pCamera_Y;
     
@@ -733,7 +734,8 @@ int update(void * arg)
             // pGraphicUbo->proj[1][1] *= -1;
 
             glm_mat4_identity(pGraphic3DUbo->model);
-            glm_scale(pGraphic3DUbo->model, (vec3){0.3f, 0.3f, 0.3f});
+            // glm_scale(pGraphic3DUbo->model, (vec3){0.2266666f, 0.2266666f, 0.2266666f});
+            // glm_scale(pGraphic3DUbo->model, (vec3){0.5f ,0.5f, 0.5f});
             // glm_rotate(pGraphic3DUbo->model, glm_rad(45.0f), (vec3){0.0f, 0.0f, 1.0f});
             // glm_translate(pGraphic3DUbo->model, (vec3){1.0f, 1.0f, 0.0f});
             glm_lookat((vec3){-*pCamera_X, 4.0f + -*pCamera_Y, 4.0f}, (vec3){-*pCamera_X, -*pCamera_Y, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, pGraphic3DUbo->view);
@@ -741,6 +743,10 @@ int update(void * arg)
             // glm_perspective(glm_rad(45.0f), aspect, 0.1f, 100.0f, pGraphic3DUbo->proj);
             // pGraphic3DUbo->proj[1][1] *= -1;
 
+            glm_mat4_identity(pUIUbo->model);
+            glm_lookat((vec3){0.0f, 0.0f, 100.0f}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pUIUbo->view);
+            glm_ortho_vulkan(-aspect, aspect, -1.0f, 1.0f, 0.1f, 100.0f, pUIUbo->proj);
+ 
             allInOne.pComputeUbo->deltaTime = delta_time;
 
             vertexEnd = *allInOne.pVertices2DCount;
@@ -765,6 +771,7 @@ int update(void * arg)
 
             memcpy((*allInOne.pppGraphicUniformBufferMapped)[currentFrame], pGraphicUbo, sizeof(UniformBufferObject));
             memcpy((*allInOne.pppGraphic3DUniformBufferMapped)[currentFrame], pGraphic3DUbo, sizeof(UniformBufferObject));
+            memcpy((*allInOne.pppUIUniformBufferMapped)[currentFrame], pUIUbo, sizeof(UniformBufferObject));
 
             memcpy((*allInOne.pppComputeUniformBufferMapped)[currentFrame], allInOne.pComputeUbo, sizeof(ComputeUniformBufferObject));
 
