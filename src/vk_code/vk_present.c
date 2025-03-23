@@ -115,6 +115,23 @@ static void recordCommandBuffer_FirstScene(uint32_t imageIndex)
 
     vkCmdEndRenderPass((*allInOne.ppGraphicCommandBuffer)[currentFrame]);
 }
+static void drawModel(const char * innerName, Uint32 currentFrame)
+{
+    G_Texture_P * tempTexture = getTexture(innerName);
+    if (tempTexture == NULL) return;
+
+    vkCmdBindDescriptorSets((*allInOne.ppGraphicCommandBuffer)[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pGraphicPipelineLayout, 0,
+    1, tempTexture->pDescriptorSet + currentFrame, 0, NULL);
+
+    SDL_LockMutex(allSync.renderMutex);
+    
+    for (int i = 0;i < tempTexture->refCount;i++)
+    {
+        vkCmdDrawIndexed((*allInOne.ppGraphicCommandBuffer)[currentFrame], tempTexture->offsets[i].count, 1, 0, tempTexture->offsets[i].offset, 0);
+    }
+
+    SDL_UnlockMutex(allSync.renderMutex);
+}
 static void recordCommandBuffer_3D(uint32_t imageIndex)
 {
     FuncCode code = recordCommandBufferF;
@@ -172,20 +189,15 @@ static void recordCommandBuffer_3D(uint32_t imageIndex)
 
     vkCmdPushConstants((*allInOne.ppGraphicCommandBuffer)[currentFrame], *allInOne.pGraphicPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstants), allInOne.pPushConstants);
 
-    // model
-    G_Texture_P * tempTexture = getTexture("model");
-    if (tempTexture == NULL) return;
-    vkCmdBindDescriptorSets((*allInOne.ppGraphicCommandBuffer)[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pGraphicPipelineLayout, 0,
-    1, tempTexture->pDescriptorSet + currentFrame, 0, NULL);
-
     VkBuffer vertex3DBuffer[] = {(*allInOne.pVertexBuffer3D)[currentFrame]};
     vkCmdBindVertexBuffers((*allInOne.ppGraphicCommandBuffer)[currentFrame], 0, 1, vertex3DBuffer, offsets);
 
     vkCmdBindIndexBuffer((*allInOne.ppGraphicCommandBuffer)[currentFrame], (*allInOne.pIndexBuffer3D)[currentFrame], 0, VK_INDEX_TYPE_UINT32);
 
+    // model
+    drawModel("model", currentFrame);
 
-    vkCmdDrawIndexed((*allInOne.ppGraphicCommandBuffer)[currentFrame], *allInOne.pIndices3DCount, 1, 0, 0, 0);
-
+    drawModel("bottom", currentFrame);
 
     vkCmdEndRenderPass((*allInOne.ppGraphicCommandBuffer)[currentFrame]);
 }

@@ -1,4 +1,4 @@
-#include "vk_load_model.h"
+#include "vk_code_h/vk_load_model.h"
 
 #define TINYOBJ_LOADER_C_IMPLEMENTATION
 
@@ -12,6 +12,10 @@
 #include "G_file/G_file.h"
 #include "SDL3/SDL_iostream.h"
 #include "G_log.h"
+#include "G_resource.h"
+#include "G_struct.h"
+
+extern G_SYNC allSync;
 
 static void tinyobj_SDL_readFile(void *ctx, const char *filename, int is_mtl, const char *obj_filename, char **buf, size_t *len)
 {
@@ -53,20 +57,32 @@ static void tinyobj_SDL_readFile(void *ctx, const char *filename, int is_mtl, co
     *buf = buffer;
     *len = size;
 }
-void loadModel(const char * filePath, Vertex * vertices, Uint32 * pVertexIndex, Uint32 * indices, Uint32 * pIndexIndex)
+bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex * vertices, Uint32 * pVertexIndex, Uint32 * indices, Uint32 * pIndexIndex, VkFormat textureFormat, VkImageAspectFlags flags, const char * innerName, VkDescriptorSet * pDescriptorSet)
 {
     tinyobj_attrib_t attrib;
     tinyobj_shape_t * shapes;
     size_t num_shapes;
     tinyobj_material_t * materials;
     size_t num_materials;
+    G_Texture_P * tempTexture;
 
-    int res = tinyobj_parse_obj(&attrib, &shapes, &num_shapes, &materials, &num_materials, filePath, tinyobj_SDL_readFile, NULL, TINYOBJ_FLAG_TRIANGULATE);
+    Uint32 vertexIndex = *pVertexIndex;
+    Uint32 indexIndex = *pIndexIndex;
+
+    bool textureRes = loadTexture(texturePath, textureFormat, flags, innerName, pDescriptorSet);
+    if (textureRes == false) return false;
+
+    tempTexture = getTexture(innerName);
+    SDL_LockMutex(allSync.textureMutex);
+
+    tempTexture->offsets[tempTexture->refCount].offset = indexIndex;
+
+    SDL_UnlockMutex(allSync.textureMutex);
+ 
+    int res = tinyobj_parse_obj(&attrib, &shapes, &num_shapes, &materials, &num_materials, getPath(modelPath), tinyobj_SDL_readFile, NULL, TINYOBJ_FLAG_TRIANGULATE);
 
     if (res == TINYOBJ_SUCCESS) 
     {
-        Uint32 vertexIndex = *pVertexIndex;
-        Uint32 indexIndex = *pIndexIndex;
         int i;
         if (attrib.num_vertices != attrib.num_texcoords)
         {
@@ -129,9 +145,23 @@ void loadModel(const char * filePath, Vertex * vertices, Uint32 * pVertexIndex, 
         }
         print("load model success");
     }
-    else print("tiny obj load fail: %d", res);
+    else 
+    {
+        unloadTexture(innerName);
+        print("tiny obj load fail: %d", res);
+        return false;
+    }
+
+    SDL_LockMutex(allSync.textureMutex);
+
+    tempTexture->offsets[tempTexture->refCount].count = attrib.num_faces;
+    tempTexture->refCount++;
+
+    SDL_UnlockMutex(allSync.textureMutex);
 
     tinyobj_attrib_free(&attrib);
     tinyobj_shapes_free(shapes, num_shapes);
     tinyobj_materials_free(materials, num_materials);
+
+    return true;
 }

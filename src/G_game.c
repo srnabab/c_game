@@ -736,7 +736,7 @@ int update(void * arg)
             glm_mat4_identity(pGraphic3DUbo->model);
             // glm_scale(pGraphic3DUbo->model, (vec3){0.2266666f, 0.2266666f, 0.2266666f});
             // glm_scale(pGraphic3DUbo->model, (vec3){0.5f ,0.5f, 0.5f});
-            // glm_rotate(pGraphic3DUbo->model, glm_rad(45.0f), (vec3){0.0f, 0.0f, 1.0f});
+            glm_rotate(pGraphic3DUbo->model, glm_rad(45.0f) * totalTime, (vec3){0.0f, 0.0f, 1.0f});
             // glm_translate(pGraphic3DUbo->model, (vec3){1.0f, 1.0f, 0.0f});
             glm_lookat((vec3){-*pCamera_X, 4.0f + -*pCamera_Y, 4.0f}, (vec3){-*pCamera_X, -*pCamera_Y, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, pGraphic3DUbo->view);
             glm_ortho_vulkan(-aspect, aspect, -1.0f, 1.0f, 0.1f, 100.0f, pGraphic3DUbo->proj);
@@ -777,6 +777,7 @@ int update(void * arg)
 
             memcpy((*allInOne.ppVertexBuffer2DMemMapped)[currentFrame], *allInOne.ppVertices2D, vertexEnd * sizeof(Vertex));// update vertex buffer
             memcpy((*allInOne.ppVertexBuffer3DMemMapped)[currentFrame], *allInOne.ppVertices3D, 30000 * sizeof(Vertex));
+            memcpy((*allInOne.ppIndexBuffer3DMemMapped)[currentFrame], *allInOne.ppIndices3D, 45000 * sizeof(Uint32));
             SDL_SignalSemaphore(allSync.vertexSemaphore);
 
             allInOne.pPushConstants->rotation = totalTime * glm_rad(580.0f);

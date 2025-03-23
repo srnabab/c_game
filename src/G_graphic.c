@@ -42,8 +42,8 @@ SDL_Window * window_2D = NULL;
 SDL_DisplayID displayId = 0;
 
 // windows' width and height
-Uint32 width = 1920;
-Uint32 height = 1080;
+Uint32 width = 800;
+Uint32 height = 600;
 
 float physicalCoffectX = 1.0f;
 float physicalCoffectY = 1.0f;
@@ -544,14 +544,13 @@ void initVulkan(void)
     indices2D = (Uint16 *)SDL_calloc(INDEX_COUNT_IN_BUFFER_2D, sizeof(Uint16 ));
     indexInitialize(indices2D, MAX_UNIT_COUNT_2D);
 
-    createIndexBuffer(&physicalDevice, &device, indexBuffer2D, indexBuffer2DMem, indexBuffer2DMemMapped, indices2D, INDEX_COUNT_IN_BUFFER_2D, sizeof(Uint16));
+    createIndexBuffer(&physicalDevice, &device, indexBuffer2D, indexBuffer2DMem, indexBuffer2DMemMapped, indices2D, INDEX_COUNT_IN_BUFFER_2D, sizeof(Uint16), false);
 
     SDL_free(indices2D);
 
     vertices3D = (Vertex*)SDL_calloc(30000, sizeof(Vertex));
     allInOne.maxVertices3DCount = 30000;
     indices3D = (Uint32*)SDL_calloc(45000, sizeof(Uint32));
-    loadModel(getPath(BoxObj), vertices3D, &vertices3DCount, indices3D, &indices3DCount);
     // UniformBufferObject tempUbo = {};
     // glm_mat4_identity(tempUbo.model);
     // // glm_scale(tempUbo.model, (vec3){0.0266666f, 0.0266666f, 0.0266666f});
@@ -591,8 +590,8 @@ void initVulkan(void)
     // print("width: %f, height: %f", max_x - min_x, (max_y - min_y) * SDL_cosf(M_PI / 4));
     createVertexBuffer(&physicalDevice, &device, vertexBuffer3D, vertexBuffer3DMem, vertexBuffer3DMemMapped, vertices3D, 30000);
     createVertexBuffer(&physicalDevice, &device, vertexBuffer3D + 1, vertexBuffer3DMem + 1, vertexBuffer3DMemMapped + 1, vertices3D, 30000);
-    createIndexBuffer(&physicalDevice, &device, indexBuffer3D, indexBuffer3DMem, indexBuffer3DMemMapped, indices3D, 45000, sizeof(Uint32));
-    createIndexBuffer(&physicalDevice, &device, indexBuffer3D + 1, indexBuffer3DMem + 1, indexBuffer3DMemMapped + 1, indices3D, 45000, sizeof(Uint32));
+    createIndexBuffer(&physicalDevice, &device, indexBuffer3D, indexBuffer3DMem, indexBuffer3DMemMapped, indices3D, 45000, sizeof(Uint32), true);
+    createIndexBuffer(&physicalDevice, &device, indexBuffer3D + 1, indexBuffer3DMem + 1, indexBuffer3DMemMapped + 1, indices3D, 45000, sizeof(Uint32), true);
 
     createUniformBufferByBuffering(&physicalDevice, &device, &graphicUniformBuffers, &graphicUniformBuffersMemory, &graphicUniformBufferMapped, sizeof(UniformBufferObject));
     createUniformBufferByBuffering(&physicalDevice, &device, &graphic3DUniformBuffers, &graphic3DUniformBuffersMemory, &graphic3DUniformBufferMapped, sizeof(UniformBufferObject));
@@ -607,10 +606,10 @@ void initVulkan(void)
     //graphic shader
     graphicDescriptorPoolSize = (VkDescriptorPoolSize*)SDL_malloc(2 * sizeof(VkDescriptorPoolSize));
     graphicDescriptorPoolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    graphicDescriptorPoolSize[0].descriptorCount = 10;
+    graphicDescriptorPoolSize[0].descriptorCount = 12;
     graphicDescriptorPoolSize[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    graphicDescriptorPoolSize[1].descriptorCount = 10;
-    createDescriptorPool(&device, 2, graphicDescriptorPoolSize, 10, &graphicDescriptorPool);
+    graphicDescriptorPoolSize[1].descriptorCount = 12;
+    createDescriptorPool(&device, 2, graphicDescriptorPoolSize, 12, &graphicDescriptorPool);
 
     PathType graphicTypes[] = {TriangleVertShader, TriangleFragShader};
     VkShaderModule * graphicTempModule = NULL;
@@ -619,7 +618,7 @@ void initVulkan(void)
     vertShaderCode = graphicTempModule[0];
     fragShaderCode = graphicTempModule[1];
 
-    createDescriptorSets(&graphicDescriptorPool, graphicDescriptorSetLayout, graphicSetCount, 5, &graphicDescriptorSets);
+    createDescriptorSets(&graphicDescriptorPool, graphicDescriptorSetLayout, graphicSetCount, 6, &graphicDescriptorSets);
 
     createGraphicsPipeline(&device, &extent2D, 2, graphciShaderStageCreateInfo, &graphicPipelineLayout, &renderPass, &graphicPipeline);
 
@@ -687,7 +686,8 @@ void initVulkan(void)
     // loadTileMap(TileMap1TsdI, 400, -300, "tileSet");
     // loadTileMap(TileMap1TsdI, 400, -1100, "tileSet");
     // loadTileMap(TileMap1TsdI, -400, -1100, "tileSet");
-    loadTexture(BoxPng, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "model", graphicDescriptorSets + 8);
+    loadModelSetVertex(BoxObj, BoxPng, vertices3D, &vertices3DCount, indices3D, &indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "model", graphicDescriptorSets + 8);
+    loadModelSetVertex(BottomObj, BottomPng, vertices3D, &vertices3DCount, indices3D, &indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "bottom", graphicDescriptorSets + 10);
     loadTexture(Loading1Png, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "loading", graphicDescriptorSets);
     loadTexture(CirclePng, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "circle", graphicDescriptorSets + 2);
     loadTexture(MainFontPng, VK_FORMAT_R8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, "font", graphicDescriptorSets + 4);
@@ -697,17 +697,20 @@ void initVulkan(void)
     G_Texture_P * fontTexture = getTexture("font");
     G_Texture_P * tileSetTexture = getTexture("tileSet");
     G_Texture_P * modelTexture = getTexture("model");
+    G_Texture_P * bottomTexture = getTexture("bottom");
 
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, loadingTexture->pDescriptorSet, UIUniformBuffers, 0, sizeof(UniformBufferObject));
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, circleTexture->pDescriptorSet, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, fontTexture->pDescriptorSet, UIUniformBuffers, 0, sizeof(UniformBufferObject));
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, tileSetTexture->pDescriptorSet, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, modelTexture->pDescriptorSet, graphic3DUniformBuffers, 0, sizeof(UniformBufferObject));
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, bottomTexture->pDescriptorSet, graphic3DUniformBuffers, 0, sizeof(UniformBufferObject));
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, "loading", textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, "circle", textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, "font", textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, "tileSet", textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, "model", textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, "bottom", textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, particleDescriptorSets, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, computeDescriptorSets, computeUniformBuffers, 0, sizeof(ComputeUniformBufferObject));
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, computeDescriptorSets, shaderStorageBuffers, 0, sizeof(Particle) * PARTICLE_COUNT);
@@ -856,58 +859,20 @@ void cleanVulkan(FuncCode code)
         /*fall through*/
 
         case createShaderModuleF:
-        for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
-        {
-            vkUnmapMemory(device, graphicUniformBuffersMemory[i]);
-            vkDestroyBuffer(device, graphicUniformBuffers[i], allInOne.pAllocationCallbacks);
-        }
+        destroyUniformBufferByBuffering(graphicUniformBuffers, graphicUniformBuffersMemory);
         logMessage("graphic uniform buffer destroyed");
-
-        for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
-        {
-            vkFreeMemory(device, graphicUniformBuffersMemory[i], allInOne.pAllocationCallbacks);
-        }
         logMessage("graphic uniform buffer memory freed");
 
-        for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
-        {
-            vkUnmapMemory(device, graphic3DUniformBuffersMemory[i]);
-            vkDestroyBuffer(device, graphic3DUniformBuffers[i], allInOne.pAllocationCallbacks);
-        }
+        destroyUniformBufferByBuffering(graphic3DUniformBuffers, graphic3DUniformBuffersMemory);
         logMessage("graphic 3D uniform buffer destroyed");
-
-        for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
-        {
-            vkFreeMemory(device, graphic3DUniformBuffersMemory[i], allInOne.pAllocationCallbacks);
-        }
         logMessage("graphic 3D uniform buffer memory freed");
 
-        for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
-        {
-            vkUnmapMemory(device, UIUniformBuffersMemory[i]);
-            vkDestroyBuffer(device, UIUniformBuffers[i], allInOne.pAllocationCallbacks);
-        }
+        destroyUniformBufferByBuffering(UIUniformBuffers, UIUniformBuffersMemory);
         logMessage("graphic 3D uniform buffer destroyed");
-
-        for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
-        {
-            vkFreeMemory(device, UIUniformBuffersMemory[i], allInOne.pAllocationCallbacks);
-        }
         logMessage("graphic 3D uniform buffer memory freed");
 
-
-
-        for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
-        {
-            vkUnmapMemory(device, computeUniformBuffersmemory[i]);
-            vkDestroyBuffer(device, computeUniformBuffers[i], allInOne.pAllocationCallbacks);
-        }
+        destroyUniformBufferByBuffering(computeUniformBuffers, computeUniformBuffersmemory);
         logMessage("compute uniform buffers destroyed");
-
-        for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
-        {
-            vkFreeMemory(device, computeUniformBuffersmemory[i], allInOne.pAllocationCallbacks);
-        }
         logMessage("compute uniform buffer memory freed");
 
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
@@ -931,6 +896,10 @@ void cleanVulkan(FuncCode code)
         logMessage("index buffer memory freed");
 
         SDL_free(indices3D);
+
+        vkUnmapMemory(device, indexBuffer3DMem[0]);
+        vkUnmapMemory(device, indexBuffer3DMem[1]);
+
         vkDestroyBuffer(device, indexBuffer3D[0], allInOne.pAllocationCallbacks);
         vkDestroyBuffer(device, indexBuffer3D[1], allInOne.pAllocationCallbacks);
         logMessage("index buffer destroyed");

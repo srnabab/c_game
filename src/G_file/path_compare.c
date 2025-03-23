@@ -74,9 +74,13 @@ PathType pathCompare(char * buffer)
     {
         return BoxPng;
     }
-    else if ((SDL_strcmp(buffer, "[BoxMtl]") == 0))
+    else if ((SDL_strcmp(buffer, "[BottomObj]") == 0))
     {
-        return BoxMtl;
+        return BottomObj;
+    }
+    else if ((SDL_strcmp(buffer, "[BottomPng]") == 0))
+    {
+        return BottomPng;
     }
     else if ((SDL_strcmp(buffer, "[Viking_roomPng]") == 0))
     {
