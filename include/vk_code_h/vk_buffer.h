@@ -11,6 +11,7 @@ extern VkResult SDLCALL beginSingleTimeCommands(VkCommandPool * pCommandPool, Vk
 extern VkResult SDLCALL endSingleTimeCommands(VkCommandPool * pCommandPool, VkQueue * pQueue, VkCommandBuffer * pCommandBuffer);
 extern VkResult SDLCALL copyBuffer(VkBuffer * pSrcBuffer, VkBuffer * pDstBuffer, VkDeviceSize size);
 extern int SDLCALL findMemoryType(Uint32 typeFilter, VkMemoryPropertyFlags properties);
+extern void SDLCALL destroyBufferByBuffering(VkBuffer pBuffers[2], VkDeviceMemory pBuffersMem[2]);
 
 #include "SDL3/SDL_close_code.h"
 

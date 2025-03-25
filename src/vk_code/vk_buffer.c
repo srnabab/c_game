@@ -116,3 +116,12 @@ int findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
 
     return -1;
 }
+void destroyBufferByBuffering(VkBuffer pBuffers[2], VkDeviceMemory pBuffersMem[2])
+{
+    for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
+    {
+        vkUnmapMemory(*allInOne.pDevice, pBuffersMem[i]);
+        vkDestroyBuffer(*allInOne.pDevice, pBuffers[i], allInOne.pAllocationCallbacks);
+        vkFreeMemory(*allInOne.pDevice, pBuffersMem[i], allInOne.pAllocationCallbacks);
+    }
+}

@@ -23,12 +23,3 @@ void createUniformBufferByBuffering(VkPhysicalDevice * pPhysicalDevice, VkDevice
         code, 3, *ppUniformBuffers, *ppUniformBuffersMem, *pppUniformBuffersMapped);
     }
 }
-void destroyUniformBufferByBuffering(VkBuffer pUniformBuffers[2], VkDeviceMemory pUniformBuffersMem[2])
-{
-    for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
-    {
-        vkUnmapMemory(*allInOne.pDevice, pUniformBuffersMem[i]);
-        vkDestroyBuffer(*allInOne.pDevice, pUniformBuffers[i], allInOne.pAllocationCallbacks);
-        vkFreeMemory(*allInOne.pDevice, pUniformBuffersMem[i], allInOne.pAllocationCallbacks);
-    }
-}

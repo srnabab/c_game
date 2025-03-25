@@ -26,6 +26,7 @@ static void drawPic(const char * innerName, Uint32 currentFrame)
     for (int i = 0;i < tempTexture->refCount;i++)
     {
         vkCmdDrawIndexed((*allInOne.ppGraphicCommandBuffer)[currentFrame], tempTexture->offsets[i].count * 6, 1, 0, tempTexture->offsets[i].offset, 0);
+        // vkCmdDrawIndexed(CommandBuffer, 6, instanceCount, 0, offset, 0);
     }
 
     SDL_UnlockMutex(allSync.renderMutex);
@@ -195,9 +196,9 @@ static void recordCommandBuffer_3D(uint32_t imageIndex)
     vkCmdBindIndexBuffer((*allInOne.ppGraphicCommandBuffer)[currentFrame], (*allInOne.pIndexBuffer3D)[currentFrame], 0, VK_INDEX_TYPE_UINT32);
 
     // model
-    drawModel("model", currentFrame);
-
     drawModel("bottom", currentFrame);
+
+    drawModel("model", currentFrame);
 
     vkCmdEndRenderPass((*allInOne.ppGraphicCommandBuffer)[currentFrame]);
 }

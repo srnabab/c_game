@@ -9,8 +9,8 @@
 
 #include "tinyobj_loader/tinyobj_loader_c.h"
 
-#include "G_file/G_file.h"
 #include "SDL3/SDL_iostream.h"
+
 #include "G_log.h"
 #include "G_resource.h"
 #include "G_struct.h"
@@ -56,6 +56,8 @@ static void tinyobj_SDL_readFile(void *ctx, const char *filename, int is_mtl, co
 
     *buf = buffer;
     *len = size;
+
+    SDL_CloseIO(stream);
 }
 bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex * vertices, Uint32 * pVertexIndex, Uint32 * indices, Uint32 * pIndexIndex, VkFormat textureFormat, VkImageAspectFlags flags, const char * innerName, VkDescriptorSet * pDescriptorSet)
 {
@@ -66,8 +68,10 @@ bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex * verti
     size_t num_materials;
     G_Texture_P * tempTexture;
 
+    SDL_LockMutex(allSync.textureMutex);
     Uint32 vertexIndex = *pVertexIndex;
     Uint32 indexIndex = *pIndexIndex;
+    SDL_UnlockMutex(allSync.textureMutex);
 
     bool textureRes = loadTexture(texturePath, textureFormat, flags, innerName, pDescriptorSet);
     if (textureRes == false) return false;

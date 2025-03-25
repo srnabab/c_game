@@ -18,6 +18,7 @@
 #include "vk_code_h/vk_synchronize.h"
 #include "vk_code_h/vk_computeShader.h"
 #include "vk_code_h/vk_uniform.h"
+#include "vk_code_h/vk_buffer.h"
 #include "vk_code_h/vk_index.h"
 #include "vk_code_h/vk_vertex.h"
 #include "vk_code_h/vk_texture.h"
@@ -859,19 +860,19 @@ void cleanVulkan(FuncCode code)
         /*fall through*/
 
         case createShaderModuleF:
-        destroyUniformBufferByBuffering(graphicUniformBuffers, graphicUniformBuffersMemory);
+        destroyBufferByBuffering(graphicUniformBuffers, graphicUniformBuffersMemory);
         logMessage("graphic uniform buffer destroyed");
         logMessage("graphic uniform buffer memory freed");
 
-        destroyUniformBufferByBuffering(graphic3DUniformBuffers, graphic3DUniformBuffersMemory);
+        destroyBufferByBuffering(graphic3DUniformBuffers, graphic3DUniformBuffersMemory);
         logMessage("graphic 3D uniform buffer destroyed");
         logMessage("graphic 3D uniform buffer memory freed");
 
-        destroyUniformBufferByBuffering(UIUniformBuffers, UIUniformBuffersMemory);
+        destroyBufferByBuffering(UIUniformBuffers, UIUniformBuffersMemory);
         logMessage("graphic 3D uniform buffer destroyed");
         logMessage("graphic 3D uniform buffer memory freed");
 
-        destroyUniformBufferByBuffering(computeUniformBuffers, computeUniformBuffersmemory);
+        destroyBufferByBuffering(computeUniformBuffers, computeUniformBuffersmemory);
         logMessage("compute uniform buffers destroyed");
         logMessage("compute uniform buffer memory freed");
 
@@ -896,43 +897,20 @@ void cleanVulkan(FuncCode code)
         logMessage("index buffer memory freed");
 
         SDL_free(indices3D);
-
-        vkUnmapMemory(device, indexBuffer3DMem[0]);
-        vkUnmapMemory(device, indexBuffer3DMem[1]);
-
-        vkDestroyBuffer(device, indexBuffer3D[0], allInOne.pAllocationCallbacks);
-        vkDestroyBuffer(device, indexBuffer3D[1], allInOne.pAllocationCallbacks);
+        destroyBufferByBuffering(indexBuffer3D, indexBuffer3DMem);
         logMessage("index buffer destroyed");
-
-        vkFreeMemory(device, indexBuffer3DMem[0], allInOne.pAllocationCallbacks);
-        vkFreeMemory(device, indexBuffer3DMem[1], allInOne.pAllocationCallbacks);
         logMessage("index buffer memory freed");
         /*fall through*/
 
         case createIndexBufferF:
         SDL_free(vertices3D);
-        vkUnmapMemory(device, vertexBuffer3DMem[0]);
-        vkUnmapMemory(device, vertexBuffer3DMem[1]);
-
-        vkDestroyBuffer(device, vertexBuffer3D[1], allInOne.pAllocationCallbacks);
-        vkDestroyBuffer(device, vertexBuffer3D[0], allInOne.pAllocationCallbacks);
+        destroyBufferByBuffering(vertexBuffer3D, vertexBuffer3DMem);
         logMessage("vertex buffer destroyed");
-
-        vkFreeMemory(device, vertexBuffer3DMem[0], allInOne.pAllocationCallbacks);
-        vkFreeMemory(device, vertexBuffer3DMem[1], allInOne.pAllocationCallbacks);
         logMessage("vertex buffer memory freed");
  
         SDL_free(vertices2D);
-        
-        vkUnmapMemory(device, vertexBuffer2DMem[1]);
-        vkUnmapMemory(device, vertexBuffer2DMem[0]);
-
-        vkDestroyBuffer(device, vertexBuffer2D[1], allInOne.pAllocationCallbacks);
-        vkDestroyBuffer(device, vertexBuffer2D[0], allInOne.pAllocationCallbacks);
+        destroyBufferByBuffering(vertexBuffer2D, vertexBuffer2DMem);
         logMessage("vertex buffer destroyed");
-
-        vkFreeMemory(device, vertexBuffer2DMem[0], allInOne.pAllocationCallbacks);
-        vkFreeMemory(device, vertexBuffer2DMem[1], allInOne.pAllocationCallbacks);
         logMessage("vertex buffer memory freed");
         /*fall through*/
 

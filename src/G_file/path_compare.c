@@ -50,10 +50,6 @@ PathType pathCompare(char * buffer)
     {
         return TilemapVertShader;
     }
-    else if ((SDL_strcmp(buffer, "[Cornell_boxMtl]") == 0))
-    {
-        return Cornell_boxMtl;
-    }
     else if ((SDL_strcmp(buffer, "[Viking_room_CopyPng]") == 0))
     {
         return Viking_room_CopyPng;

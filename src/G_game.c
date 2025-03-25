@@ -26,6 +26,7 @@
 bool game_is_running = false;
 
 extern SDL_Window * window_2D;
+extern SDL_Window * window_3D;
 extern SDL_DisplayID displayId;
 extern VK_ALL allInOne;
 
@@ -226,6 +227,7 @@ bool process_input(void)
                 allInOne.pExtent2D->height = 900;
                 
                 SDL_SetWindowSize(window_2D, allInOne.pExtent2D->width, allInOne.pExtent2D->height);
+                SDL_SetWindowSize(window_3D, allInOne.pExtent2D->width, allInOne.pExtent2D->height);
 
                 resolutionChanged = true;
 
@@ -730,22 +732,22 @@ int update(void * arg)
             glm_mat4_identity(pGraphicUbo->model);
             glm_lookat((vec3){*pCamera_X, *pCamera_Y, 100.0f}, (vec3){*pCamera_X, *pCamera_Y, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pGraphicUbo->view);
             glm_ortho_vulkan(-aspect, aspect, -1.0f, 1.0f, 0.1f, 100.0f, pGraphicUbo->proj);
-            // glm_ortho(-aspect, aspect, -1.0f, 1.0f, 0.1f, 100.0f, pGraphicUbo->proj);
+            // glm_ortho(-aspect, aspect, -1.0f, 1.0f, 0.001f, 100.0f, pGraphicUbo->proj);
             // pGraphicUbo->proj[1][1] *= -1;
 
             glm_mat4_identity(pGraphic3DUbo->model);
             // glm_scale(pGraphic3DUbo->model, (vec3){0.2266666f, 0.2266666f, 0.2266666f});
             // glm_scale(pGraphic3DUbo->model, (vec3){0.5f ,0.5f, 0.5f});
-            glm_rotate(pGraphic3DUbo->model, glm_rad(45.0f) * totalTime, (vec3){0.0f, 0.0f, 1.0f});
-            // glm_translate(pGraphic3DUbo->model, (vec3){1.0f, 1.0f, 0.0f});
+            // glm_rotate(pGraphic3DUbo->model, glm_rad(180.0f), (vec3){0.0f, 0.0f, 1.0f});
+            // glm_translate(pGraphic3DUbo->model, (vec3){1.0f, 0.0f, 0.0f});
             glm_lookat((vec3){-*pCamera_X, 4.0f + -*pCamera_Y, 4.0f}, (vec3){-*pCamera_X, -*pCamera_Y, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, pGraphic3DUbo->view);
-            glm_ortho_vulkan(-aspect, aspect, -1.0f, 1.0f, 0.1f, 100.0f, pGraphic3DUbo->proj);
+            glm_ortho_vulkan(-aspect, aspect, -1.0f, 1.0f, 0.001f, 100.0f, pGraphic3DUbo->proj);
             // glm_perspective(glm_rad(45.0f), aspect, 0.1f, 100.0f, pGraphic3DUbo->proj);
             // pGraphic3DUbo->proj[1][1] *= -1;
 
             glm_mat4_identity(pUIUbo->model);
             glm_lookat((vec3){0.0f, 0.0f, 100.0f}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pUIUbo->view);
-            glm_ortho_vulkan(-aspect, aspect, -1.0f, 1.0f, 0.1f, 100.0f, pUIUbo->proj);
+            glm_ortho_vulkan(-aspect, aspect, -1.0f, 1.0f, 0.001f, 100.0f, pUIUbo->proj);
  
             allInOne.pComputeUbo->deltaTime = delta_time;
 
