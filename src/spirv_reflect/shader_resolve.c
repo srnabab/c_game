@@ -62,6 +62,7 @@ VkPipelineShaderStageCreateInfo ** ppShaderStageCreateInfo, VkDescriptorSetLayou
         SDL_ReadIO(shaderFile, shaderCode, sizeof(char) * fileSize);
 
         createShaderModuleFromMem(fileSize, (const Uint32*)shaderCode, (*ppShaderModule) + i);
+        allInOne.shaderModuleStack.pushFn(&allInOne.shaderModuleStack, (*ppShaderModule) + i);
 
         SpvReflectShaderModule module;
         spv_result = spvReflectCreateShaderModule(fileSize, shaderCode, &module);
@@ -169,6 +170,7 @@ VkPipelineShaderStageCreateInfo ** ppShaderStageCreateInfo, VkDescriptorSetLayou
 
     // SDL_free(layouts);
     SDL_free(pPushConstantRange);
+    SDL_free(*ppShaderModule);
 
     return setCount;
 }

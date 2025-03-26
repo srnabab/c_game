@@ -6,7 +6,7 @@ static MusicPack musics[MAX_SONG];
 static uint8_t songs = 0;
 // static uint8_t song_selected = 0;
 
-static EmptyStack stack;
+static G_Stack stack;
 
 static uint8_t findSong(char * name)
 {

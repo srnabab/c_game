@@ -23,7 +23,7 @@ static SDL_Thread * worldThread;
 
 static G_Thread_Pool worldThreadPool = {};
 
-EmptyStack ballStack;
+G_Stack ballStack;
 
 extern float physicalCoffectX;
 extern float physicalCoffectY;

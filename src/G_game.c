@@ -513,7 +513,7 @@ static int test(void * arg)
     return 0;
 }
 
-extern EmptyStack ballStack;
+extern G_Stack ballStack;
 extern vec2 UVs[MAX_CHARACTERS][FOUR_POINT];
 
 // Update function with a fixed time step

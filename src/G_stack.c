@@ -1,6 +1,6 @@
 #include "G_stack.h"
 
-static bool defaultPushFn(EmptyStack * pStack, void * data)
+static bool defaultPushFn(G_Stack * pStack, void * data)
 {
     if (StackIsFull(*pStack)) return false;
 
@@ -11,7 +11,7 @@ static bool defaultPushFn(EmptyStack * pStack, void * data)
 
     return true;
 }
-static void defaultPopFn(EmptyStack * pStack, void * data)
+static void defaultPopFn(G_Stack * pStack, void * data)
 {
     if (StackIsEmpty(*pStack)) return;
 
@@ -20,7 +20,7 @@ static void defaultPopFn(EmptyStack * pStack, void * data)
     memcpy(data, (char*)pStack->data + (pStack->dataSize * (pStack->top + 1)), pStack->dataSize);
     SDL_UnlockMutex(pStack->mutex);
 }
-bool initStack(EmptyStack * stack, size_t dataSize, Push pushFn, Pop popFn)
+bool initStack(G_Stack * stack, size_t dataSize, Push pushFn, Pop popFn)
 {
     stack->top = -1;
 
@@ -40,7 +40,7 @@ bool initStack(EmptyStack * stack, size_t dataSize, Push pushFn, Pop popFn)
 
     return true;
 }
-bool StackIsEmpty(EmptyStack stack)
+bool StackIsEmpty(G_Stack stack)
 {
     SDL_LockMutex(stack.mutex);
     if (stack.top == -1)
@@ -53,7 +53,7 @@ bool StackIsEmpty(EmptyStack stack)
 
     return false;
 }
-bool StackIsFull(EmptyStack stack)
+bool StackIsFull(G_Stack stack)
 {
     SDL_LockMutex(stack.mutex);
     if (stack.top == MAX_STACKS - 1)
@@ -66,13 +66,13 @@ bool StackIsFull(EmptyStack stack)
 
     return false;
 }
-void getTop(EmptyStack * stack, void * data)
+void getTop(G_Stack * stack, void * data)
 {
     SDL_LockMutex(stack->mutex);
     memcpy(data, (char*)stack->data + (stack->dataSize * stack->top), stack->dataSize);
     SDL_UnlockMutex(stack->mutex);
 }
-void deInitStack(EmptyStack * stack)
+void deInitStack(G_Stack * stack)
 {
     SDL_free(stack->data);
     stack->top = -1;

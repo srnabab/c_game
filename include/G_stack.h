@@ -8,12 +8,12 @@
 
 #define MAX_STACKS 128
 
-struct _EmptyStack;
+struct _G_Stack;
 
-typedef bool (*Push)(struct _EmptyStack * stack, void * data);
-typedef void (*Pop)(struct _EmptyStack * stack, void * data);
+typedef bool (*Push)(struct _G_Stack * stack, void * data);
+typedef void (*Pop)(struct _G_Stack * stack, void * data);
 
-typedef struct _EmptyStack
+typedef struct _G_Stack
 {
     void * data;
     int top;
@@ -22,18 +22,18 @@ typedef struct _EmptyStack
     SDL_Mutex * mutex;
     Push pushFn;
     Pop popFn;
-} EmptyStack;
+} G_Stack;
 
 /**
  * \param data for custome data type, you should manage memory yourself , NULL form empty
  * \param pushFn custome push func , NULL form empty
  * \param popFn custome pop func , NULL form empty
 */
-extern bool SDLCALL initStack(EmptyStack * stack, size_t dataSize, Push pushFn, Pop popFn);
-extern bool SDLCALL StackIsEmpty(EmptyStack stack);
-extern bool SDLCALL StackIsFull(EmptyStack stack);
-extern void SDLCALL getTop(EmptyStack * stack, void * data);
-extern void SDLCALL deInitStack(EmptyStack * stack);
+extern bool SDLCALL initStack(G_Stack * stack, size_t dataSize, Push pushFn, Pop popFn);
+extern bool SDLCALL StackIsEmpty(G_Stack stack);
+extern bool SDLCALL StackIsFull(G_Stack stack);
+extern void SDLCALL getTop(G_Stack * stack, void * data);
+extern void SDLCALL deInitStack(G_Stack * stack);
 
 #include "SDL3/SDL_close_code.h"
 

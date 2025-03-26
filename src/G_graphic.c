@@ -172,19 +172,19 @@ static VkImage * swapchain2DImages = NULL;
 static VkImageView * swapchain2DImageViews = NULL;
 static VkFramebuffer * swapchain2DFramebuffer = NULL;
 
-static VkShaderModule vertShaderCode = NULL;
-static VkShaderModule fragShaderCode = NULL;
+// static VkShaderModule vertShaderCode = NULL;
+// static VkShaderModule fragShaderCode = NULL;
 static VkPipelineShaderStageCreateInfo * graphciShaderStageCreateInfo = NULL;
 
-static VkShaderModule modelVertShaderCode = NULL;
-static VkShaderModule modelFragShaderCode = NULL;
+// static VkShaderModule modelVertShaderCode = NULL;
+// static VkShaderModule modelFragShaderCode = NULL;
 static VkPipelineShaderStageCreateInfo * modelShaderStageCreateInfo = NULL;
 
-static VkShaderModule particleVertexShaderCode = NULL;
-static VkShaderModule particleFragmentShaderCode = NULL;
+// static VkShaderModule particleVertexShaderCode = NULL;
+// static VkShaderModule particleFragmentShaderCode = NULL;
 static VkPipelineShaderStageCreateInfo * particleShaderStageCreateInfo = NULL;
 
-static VkShaderModule compShaderCode = NULL;
+// static VkShaderModule compShaderCode = NULL;
 static VkPipelineShaderStageCreateInfo * computeShaderStageCreateInfo = NULL;
 
 static VkDescriptorSetLayout * graphicDescriptorSetLayout = NULL;
@@ -472,6 +472,8 @@ static void initializeAllInOne(void)
     allInOne.pPictureY = &pictureY;
 
     allInOne.pPushConstants = &picturePushConstants;
+
+    initStack(&allInOne.shaderModuleStack, sizeof(VkShaderModule), NULL, NULL);
 }
 
 void initVulkan(void)
@@ -631,8 +633,8 @@ void initVulkan(void)
     VkShaderModule * graphicTempModule = NULL;
     char ** entryName = NULL;
     Uint32 graphicSetCount = CreateShaderModulesAndDescriptorSets(graphicTypes, 2, &graphicTempModule, &graphciShaderStageCreateInfo, &graphicDescriptorSetLayout, &graphicPipelineLayout, &entryName);
-    vertShaderCode = graphicTempModule[0];
-    fragShaderCode = graphicTempModule[1];
+    // vertShaderCode = graphicTempModule[0];
+    // fragShaderCode = graphicTempModule[1];
 
     createDescriptorSets(&graphicDescriptorPool, graphicDescriptorSetLayout, graphicSetCount, 4, &graphicDescriptorSets);
 
@@ -645,8 +647,8 @@ void initVulkan(void)
     VkShaderModule * modelTempModule = NULL;
     entryName = NULL;
     Uint32 modelSetCount = CreateShaderModulesAndDescriptorSets(modelTypes, 2, &modelTempModule, &modelShaderStageCreateInfo, &modelDescriptorSetLayout, &modelPipelineLayout, &entryName);
-    modelVertShaderCode = modelTempModule[0];
-    modelFragShaderCode = modelTempModule[1];
+    // modelVertShaderCode = modelTempModule[0];
+    // modelFragShaderCode = modelTempModule[1];
 
     createDescriptorSets(&graphicDescriptorPool, modelDescriptorSetLayout, modelSetCount, 2, &modelDescriptorSets);
 
@@ -665,8 +667,8 @@ void initVulkan(void)
     VkShaderModule * particleTempModule = NULL;
     entryName = NULL;
     Uint32 particleSetCount = CreateShaderModulesAndDescriptorSets(particleTypes, 2, &particleTempModule, &particleShaderStageCreateInfo, &particleDescriptorSetLayout, &particlePipelineLayout, &entryName);
-    particleVertexShaderCode = particleTempModule[0];
-    particleFragmentShaderCode = particleTempModule[1];
+    // particleVertexShaderCode = particleTempModule[0];
+    // particleFragmentShaderCode = particleTempModule[1];
 
     createDescriptorSets(&particleDescriptorPool, particleDescriptorSetLayout, particleSetCount, 1, &particleDescriptorSets);
 
@@ -685,7 +687,7 @@ void initVulkan(void)
     VkShaderModule * computeTempModule = NULL;
     entryName = NULL;
     Uint32 computeSetCount = CreateShaderModulesAndDescriptorSets(computeTypes, 1, &computeTempModule, &computeShaderStageCreateInfo, &computeDescriptorSetLayout, &computePipelineLayout, &entryName);
-    compShaderCode = computeTempModule[0];
+    // compShaderCode = computeTempModule[0];
     
     createDescriptorSets(&computeDescriptorPool, computeDescriptorSetLayout, computeSetCount, 1, &computeDescriptorSets);
 
@@ -885,22 +887,19 @@ void cleanVulkan(FuncCode code)
         /*fall through*/
 
         case createDescriptorSetLayoutF:
-        vkDestroyShaderModule(device, compShaderCode, allInOne.pAllocationCallbacks);
         SDL_free(computeShaderStageCreateInfo);
-        logMessage("compute shader stage create info destroyed");
-
-        vkDestroyShaderModule(device, particleFragmentShaderCode, allInOne.pAllocationCallbacks);
-        vkDestroyShaderModule(device, particleVertexShaderCode, allInOne.pAllocationCallbacks);
         SDL_free(particleShaderStageCreateInfo);
-        logMessage("particle shader stage create info destroyed");
-
-        vkDestroyShaderModule(device, modelVertShaderCode, allInOne.pAllocationCallbacks);
-        vkDestroyShaderModule(device, modelFragShaderCode, allInOne.pAllocationCallbacks);
         SDL_free(modelShaderStageCreateInfo);
- 
-        vkDestroyShaderModule(device, fragShaderCode, allInOne.pAllocationCallbacks);
-        vkDestroyShaderModule(device, vertShaderCode, allInOne.pAllocationCallbacks);
         SDL_free(graphciShaderStageCreateInfo);
+
+        VkShaderModule tempModule;
+        do
+        {
+            tempModule = NULL;
+            allInOne.shaderModuleStack.popFn(&allInOne.shaderModuleStack, &tempModule);
+            vkDestroyShaderModule(device, tempModule, allInOne.pAllocationCallbacks);
+        } while (tempModule != NULL);
+
         logMessage("shaderCode destroyed");
         /*fall through*/
 

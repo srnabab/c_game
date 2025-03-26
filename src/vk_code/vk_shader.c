@@ -5,9 +5,8 @@
 #include "SDL3/SDL_iostream.h"
 
 #include "G_file/G_file.h"
+#include "G_stack.h"
 #include "G_log.h"
-
-#include <stdlib.h>
 
 extern VK_ALL allInOne;
 
@@ -20,7 +19,6 @@ void createShaderModuleFromFile(PathType type, VkShaderModule * pShaderModule)
     {
         logMessage("open file %s failed", getPath(type));
         cleanVulkan(createShaderModuleF);
-        exit(code + 1000);
     }
 
     SDL_SeekIO(shaderFile, 0, SDL_IO_SEEK_END);

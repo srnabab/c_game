@@ -2,6 +2,7 @@
 
 #include "vk_code_h/vk_struct.h"
 #include "G_staticModel.h"
+#include "G_stack.h"
 
 #ifndef VK_ALL_STRUCT
 #define VK_ALL_STRUCT 1
@@ -154,6 +155,8 @@ struct _VK_ALL
     PushConstants * pPushConstants;
 
     G_Texture_P * pGlobalTexture;
+
+    G_Stack shaderModuleStack;
 };
 typedef struct _VK_ALL VK_ALL;
 
