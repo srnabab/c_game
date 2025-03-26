@@ -2,6 +2,7 @@
 
 #include "vk_code_h/vk_computeShader.h"
 #include "vk_code_h/vk_buffer.h"
+#include "vk_code_h/vk_all_struct.h"
 
 #include "SDL3/SDL_stdinc.h"
 

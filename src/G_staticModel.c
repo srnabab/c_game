@@ -1,0 +1,190 @@
+#include "G_staticModel.h"
+
+#include "vk_code_h/vk_load_model.h"
+#include "vk_code_h/vk_uniform.h"
+#include "vk_code_h/vk_buffer.h"
+#include "vk_code_h/vk_all_struct.h"
+
+#define METER_PER_PIXEL (1.0f / 300)
+
+extern VK_ALL allInOne;
+
+bool createStaticModelPool(G_StaticModelPool * pModelPool, Uint32 totalInstancecount)
+{
+    VkDeviceSize bufferSize = sizeof(mat4) * totalInstancecount;
+
+    createBuffer(pModelPool->instanceBuffer + 0, pModelPool->instanceBufferMem + 0, bufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+    vkMapMemory(*allInOne.pDevice, pModelPool->instanceBufferMem[0], 0, bufferSize, 0, pModelPool->instanceBufferMemMapped + 0);
+
+    memset(pModelPool->instanceBufferMemMapped[0], 0, bufferSize);
+
+    pModelPool->totalInstanceCount = totalInstancecount;
+    pModelPool->usedInstanceCount = 0;
+    pModelPool->models = NULL;
+    pModelPool->modelCount = 0;
+    pModelPool->offsets = (Uint32*)SDL_malloc(sizeof(Uint32));
+    pModelPool->offsets[0] = 0;
+    pModelPool->offsetCount = 1;
+
+    pModelPool->mutex = SDL_CreateMutex();
+
+    return true;
+}
+G_StaticModel * loadStaticModel(G_StaticModelPool * pModelPool, Uint32 instanceCount, PathType modelPath, PathType texturePath, Vertex * vertices, Uint32 * pVertexIndex, Uint32 * indices, Uint32 * pIndexIndex, VkFormat textureFormat, VkImageAspectFlags flags, const char * innerName, VkDescriptorSet * pDescriptorSet)
+{
+    SDL_LockMutex(pModelPool->mutex);
+
+    bool res;
+    void * ptr;
+    Uint32 modelCount = pModelPool->modelCount;
+    Uint32 offsetCount = pModelPool->offsetCount;
+
+    if (pModelPool->usedInstanceCount + instanceCount > pModelPool->totalInstanceCount) 
+    {
+        SDL_UnlockMutex(pModelPool->mutex);
+
+        return NULL;
+    }
+
+    ptr = (G_StaticModel*)SDL_realloc(pModelPool->models, (pModelPool->modelCount + 1) * sizeof(G_StaticModel));
+    if (ptr == NULL)
+    {
+        SDL_UnlockMutex(pModelPool->mutex);
+
+        return NULL;
+    }
+    pModelPool->models = ptr;
+    pModelPool->modelCount++;
+
+    ptr = (Uint32*)SDL_realloc(pModelPool->offsets, (pModelPool->offsetCount + 1) * sizeof(Uint32));
+    if (ptr == NULL)
+    {
+        pModelPool->modelCount--;
+
+        SDL_UnlockMutex(pModelPool->mutex);
+
+        return NULL;
+    }
+    pModelPool->offsets = ptr;
+    pModelPool->offsets[pModelPool->offsetCount] = pModelPool->offsets[pModelPool->offsetCount - 1] + instanceCount; 
+    pModelPool->offsetCount++;
+
+    SDL_UnlockMutex(pModelPool->mutex);
+
+    res = loadModelSetVertex(modelPath, texturePath, vertices, pVertexIndex, indices, pIndexIndex, textureFormat, flags, innerName, pDescriptorSet);
+    if (res == false)
+    {
+        SDL_LockMutex(pModelPool->mutex);
+
+        pModelPool->modelCount--;
+        pModelPool->offsetCount--;
+
+        SDL_UnlockMutex(pModelPool->mutex);
+
+        return NULL;
+    }
+
+    pModelPool->models[modelCount].firstInstance = pModelPool->offsets[offsetCount - 1];
+    pModelPool->models[modelCount].matrix = (mat4*)SDL_malloc(sizeof(mat4) * instanceCount);
+    pModelPool->models[modelCount].matrixCount = 0;
+    SDL_strlcpy(pModelPool->models[modelCount].innerName, innerName, 16);
+
+    return pModelPool->models + modelCount;
+}
+bool addModelMatrix(int32_t x, int32_t y, int32_t z, G_StaticModelPool * pModelPool, const char * innerName)
+{
+    SDL_LockMutex(pModelPool->mutex);
+
+    Uint32 i;
+    Uint32 modelCount = pModelPool->modelCount;
+    G_StaticModel * pModel;
+    vec3 tempVec3;
+    tempVec3[0] = x * METER_PER_PIXEL;
+    tempVec3[1] = y * METER_PER_PIXEL;
+    tempVec3[2] = z * METER_PER_PIXEL;
+
+    for (i = 0;i < modelCount;i++)
+    {
+        if (SDL_strcmp(pModelPool->models[i].innerName, innerName) == 0)
+        {
+            pModel = pModelPool->models + i;
+
+            break;
+        }
+    }
+
+    if (i == modelCount)
+    {
+        SDL_UnlockMutex(pModelPool->mutex);
+        return false;
+    }
+
+    if (pModel->matrixCount == pModelPool->offsets[i + 1])
+    {
+        SDL_UnlockMutex(pModelPool->mutex);
+        return false;
+    }
+
+    glm_mat4_identity(pModel->matrix[pModel->matrixCount]);
+    glm_translate(pModel->matrix[pModel->matrixCount], tempVec3);
+
+    pModel->matrixCount++;
+
+    memcpy((mat4*)pModelPool->instanceBufferMemMapped[0] + pModel->firstInstance, pModel->matrix, sizeof(mat4) * pModel->matrixCount);
+
+    SDL_UnlockMutex(pModelPool->mutex);
+
+    return true;
+}
+bool getStaticModelDrawInfo(G_StaticModelPool * pModelPool, Uint32 * pFirstInstance, Uint32 * pInstanceCount, const char * innerName)
+{
+    SDL_LockMutex(pModelPool->mutex);
+
+    Uint32 i;
+    Uint32 modelCount = pModelPool->modelCount;
+    G_StaticModel * pModel;
+
+    for (i = 0;i < modelCount;i++)
+    {
+        if (SDL_strcmp(pModelPool->models[i].innerName, innerName) == 0)
+        {
+            pModel = pModelPool->models + i;
+
+            break;
+        }
+    }
+
+    if (i == modelCount)
+    {
+        SDL_UnlockMutex(pModelPool->mutex);
+        return false;
+    }
+
+    if (pModel->matrixCount == pModelPool->offsets[i + 1])
+    {
+        SDL_UnlockMutex(pModelPool->mutex);
+        return false;
+    }
+
+    *pFirstInstance = pModel->firstInstance;
+    *pInstanceCount = pModel->matrixCount;
+
+    SDL_UnlockMutex(pModelPool->mutex);
+
+    return true;
+}
+void destroyStaticModelPool(G_StaticModelPool * pModelPool)
+{
+    destroyBuffer(pModelPool->instanceBuffer[0], pModelPool->instanceBufferMem[0]);
+
+    for (Uint32 i = 0;i < pModelPool->modelCount;i++)
+    {
+        SDL_free(pModelPool->models[i].matrix);
+    }
+    SDL_free(pModelPool->models);
+    SDL_free(pModelPool->offsets);
+
+    pModelPool->totalInstanceCount = 0;
+    pModelPool->modelCount = 0;
+}

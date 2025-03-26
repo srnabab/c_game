@@ -4,7 +4,7 @@
 #include "spirv_reflect/spirv_reflect.h"
 
 #include "vk_code_h/vk_shader.h"
-#include "vk_code_h/vk_struct.h"
+#include "vk_code_h/vk_all_struct.h"
 
 #include "SDL3/SDL_iostream.h"
 #include "SDL3/SDL_assert.h"

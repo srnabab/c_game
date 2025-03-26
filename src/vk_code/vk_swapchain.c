@@ -1,6 +1,7 @@
 #include "vk_code_h/vk_swapchain.h"
 #include "vk_code_h/vk_image.h"
 #include "vk_code_h/vk_judge.h"
+#include "vk_code_h/vk_all_struct.h"
 
 #include "SDL3/SDL_vulkan.h"
 

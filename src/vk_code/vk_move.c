@@ -1,5 +1,6 @@
 #include "vk_code_h/vk_move.h"
 #include "vk_code_h/vk_buffer.h"
+#include "vk_code_h/vk_all_struct.h"
 
 #include "G_struct.h"
 #include "G_TileMap/G_TileSet.h"

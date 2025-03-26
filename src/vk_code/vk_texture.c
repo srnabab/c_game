@@ -1,6 +1,7 @@
 #include "vk_code_h/vk_texture.h"
 #include "vk_code_h/vk_image.h"
 #include "vk_code_h/vk_buffer.h"
+#include "vk_code_h/vk_all_struct.h"
 #include "vk_code_h/vk_judge.h"
 
 #include "G_file/G_file.h"

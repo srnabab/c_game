@@ -1,7 +1,7 @@
 #include "G_scene.h"
 
-#include "vk_code_h/vk_struct.h"
 #include "vk_code_h/vk_descriptorPool.h"
+#include "vk_code_h/vk_all_struct.h"
 
 extern VK_ALL allInOne;
 static Scene_Pack pack[3];

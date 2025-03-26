@@ -50,6 +50,10 @@ PathType pathCompare(char * buffer)
     {
         return TilemapVertShader;
     }
+    else if ((SDL_strcmp(buffer, "[Model3dVertShader]") == 0))
+    {
+        return Model3dVertShader;
+    }
     else if ((SDL_strcmp(buffer, "[Viking_room_CopyPng]") == 0))
     {
         return Viking_room_CopyPng;
@@ -77,6 +81,10 @@ PathType pathCompare(char * buffer)
     else if ((SDL_strcmp(buffer, "[BottomPng]") == 0))
     {
         return BottomPng;
+    }
+    else if ((SDL_strcmp(buffer, "[Model3dFragShader]") == 0))
+    {
+        return Model3dFragShader;
     }
     else if ((SDL_strcmp(buffer, "[Viking_roomPng]") == 0))
     {

@@ -3,6 +3,7 @@
 #include "G_graphic.h"
 #include "G_resource.h"
 #include "G_TileMap/G_TileSet.h"
+#include "G_staticModel.h"
 #include "G_custom_math.h"
 
 #include "SDL3/SDL_init.h"
@@ -35,6 +36,7 @@
 #include "vk_code_h/vk_move.h"
 #include "vk_code_h/vk_load_model.h"
 #include "vk_code_h/vk_judge.h"
+#include "vk_code_h/vk_all_struct.h"
 
 #include "spirv_reflect/shader_resolve.h"
 
@@ -174,6 +176,10 @@ static VkShaderModule vertShaderCode = NULL;
 static VkShaderModule fragShaderCode = NULL;
 static VkPipelineShaderStageCreateInfo * graphciShaderStageCreateInfo = NULL;
 
+static VkShaderModule modelVertShaderCode = NULL;
+static VkShaderModule modelFragShaderCode = NULL;
+static VkPipelineShaderStageCreateInfo * modelShaderStageCreateInfo = NULL;
+
 static VkShaderModule particleVertexShaderCode = NULL;
 static VkShaderModule particleFragmentShaderCode = NULL;
 static VkPipelineShaderStageCreateInfo * particleShaderStageCreateInfo = NULL;
@@ -183,6 +189,8 @@ static VkPipelineShaderStageCreateInfo * computeShaderStageCreateInfo = NULL;
 
 static VkDescriptorSetLayout * graphicDescriptorSetLayout = NULL;
 
+static VkDescriptorSetLayout * modelDescriptorSetLayout = NULL;
+
 static VkDescriptorSetLayout * particleDescriptorSetLayout = NULL;
 
 static VkDescriptorSetLayout * computeDescriptorSetLayout = NULL;
@@ -190,6 +198,8 @@ static VkDescriptorSetLayout * computeDescriptorSetLayout = NULL;
 // static Uint32 graphicBinding = 0;
 static VkDescriptorSetLayoutBinding * graphicBindings = NULL;
 static VkPipelineLayout graphicPipelineLayout = NULL;
+
+static VkPipelineLayout modelPipelineLayout = NULL;
 
 static VkDescriptorSetLayoutBinding * particleBindings = NULL;
 static VkPipelineLayout particlePipelineLayout = NULL;
@@ -201,6 +211,7 @@ static VkPipelineLayout computePipelineLayout = NULL;
 static VkRenderPass renderPass = NULL;
 
 static VkPipeline graphicPipeline = NULL;
+static VkPipeline modelPipeline = NULL;
 
 static VkPipeline particlePipeline = NULL;
 
@@ -262,6 +273,7 @@ static ComputeUniformBufferObject computeUbo = {};
 static VkDescriptorPoolSize * graphicDescriptorPoolSize = NULL;
 static VkDescriptorPool graphicDescriptorPool = NULL;
 static VkDescriptorSet * graphicDescriptorSets = NULL;
+static VkDescriptorSet * modelDescriptorSets = NULL;
 
 static VkDescriptorPoolSize * particleDescriptorPoolSize = NULL;
 static VkDescriptorPool particleDescriptorPool = NULL;
@@ -297,7 +309,7 @@ static float pictureY = 0;
 static VkBuffer shaderStorageBuffers[MAX_FRAMES_IN_FLIGHT];
 static VkDeviceMemory shaderStorageBuffersMem[MAX_FRAMES_IN_FLIGHT];
 
-static PushConstants picturePushConstants = {0.0f, 0.0f};
+static PushConstants picturePushConstants = {0.0f};
 
 #if WINDOW_3D_DEBUG
 static VkSurfaceKHR surface3D = NULL;
@@ -313,6 +325,8 @@ static VkImage * swapchain3DImages = NULL;
 static VkImageView * swapchain3DImageViews = NULL;
 static VkFramebuffer * swapchain3DFramebuffer = NULL;
 #endif
+
+static G_StaticModelPool staticModelPool = {};
 
 //store all compoents for initialize vulkan in a struct
 VK_ALL allInOne = {};
@@ -349,25 +363,25 @@ static void initializeAllInOne(void)
     allInOne.pImageCount2D = &imageCount2D;
 
     allInOne.pSwapchain2D = &swapchain2D;
-
-    allInOne.pGraphicPipelineLayout = &graphicPipelineLayout;
-
-    allInOne.pParticlePipelineLayout = &particlePipelineLayout;
-
-    allInOne.pComputePipelineLayout = &computePipelineLayout;
-
-    allInOne.pRenderPass = &renderPass;
-
-    allInOne.pGraphicPipeline = &graphicPipeline;
-
-    allInOne.pParticlePipeline = &particlePipeline;
-
-    allInOne.pComputePipeline = &computePipeline;
-
     allInOne.ppSwapchain2DImages = &swapchain2DImages;
     allInOne.ppSwapchain2DImageViews = &swapchain2DImageViews;
     allInOne.ppSwapchain2DFramebuffer = &swapchain2DFramebuffer;
-    
+ 
+    allInOne.pRenderPass = &renderPass;
+
+    allInOne.pGraphicPipelineLayout = &graphicPipelineLayout;
+    allInOne.pGraphicPipeline = &graphicPipeline;
+
+    allInOne.pParticlePipelineLayout = &particlePipelineLayout;
+    allInOne.pParticlePipeline = &particlePipeline;
+
+    allInOne.pComputePipelineLayout = &computePipelineLayout;
+    allInOne.pComputePipeline = &computePipeline;
+
+    allInOne.pModelPipelineLayout = &modelPipelineLayout;
+    allInOne.pModelPipeline = &modelPipeline;
+
+   
 #if WINDOW_3D_DEBUG
 
     allInOne.pSurface3D = &surface3D;
@@ -407,6 +421,7 @@ static void initializeAllInOne(void)
     allInOne.pIndexBuffer3DMem = &indexBuffer3DMem;
     allInOne.ppIndexBuffer3DMemMapped = &indexBuffer3DMemMapped;
 
+    allInOne.pStaticModelPool = &staticModelPool;
 
     allInOne.pTextureSampler = &textureSampler;
 
@@ -619,9 +634,23 @@ void initVulkan(void)
     vertShaderCode = graphicTempModule[0];
     fragShaderCode = graphicTempModule[1];
 
-    createDescriptorSets(&graphicDescriptorPool, graphicDescriptorSetLayout, graphicSetCount, 6, &graphicDescriptorSets);
+    createDescriptorSets(&graphicDescriptorPool, graphicDescriptorSetLayout, graphicSetCount, 4, &graphicDescriptorSets);
 
     createGraphicsPipeline(&device, &extent2D, 2, graphciShaderStageCreateInfo, &graphicPipelineLayout, &renderPass, &graphicPipeline);
+
+    freeEntryName(2, entryName);
+
+    //3d model shader
+    PathType modelTypes[] = {Model3dVertShader, Model3dFragShader};
+    VkShaderModule * modelTempModule = NULL;
+    entryName = NULL;
+    Uint32 modelSetCount = CreateShaderModulesAndDescriptorSets(modelTypes, 2, &modelTempModule, &modelShaderStageCreateInfo, &modelDescriptorSetLayout, &modelPipelineLayout, &entryName);
+    modelVertShaderCode = modelTempModule[0];
+    modelFragShaderCode = modelTempModule[1];
+
+    createDescriptorSets(&graphicDescriptorPool, modelDescriptorSetLayout, modelSetCount, 2, &modelDescriptorSets);
+
+    createModelPipeline(&device, &extent2D, 2, modelShaderStageCreateInfo, &modelPipelineLayout, &renderPass, &modelPipeline);
 
     freeEntryName(2, entryName);
 
@@ -687,8 +716,10 @@ void initVulkan(void)
     // loadTileMap(TileMap1TsdI, 400, -300, "tileSet");
     // loadTileMap(TileMap1TsdI, 400, -1100, "tileSet");
     // loadTileMap(TileMap1TsdI, -400, -1100, "tileSet");
-    loadModelSetVertex(BoxObj, BoxPng, vertices3D, &vertices3DCount, indices3D, &indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "model", graphicDescriptorSets + 8);
-    loadModelSetVertex(BottomObj, BottomPng, vertices3D, &vertices3DCount, indices3D, &indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "bottom", graphicDescriptorSets + 10);
+    createStaticModelPool(&staticModelPool, 20);
+    loadStaticModel(&staticModelPool, 10, BoxObj, BoxPng, vertices3D, &vertices3DCount, indices3D, &indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "model", modelDescriptorSets);
+    loadStaticModel(&staticModelPool, 10, BottomObj, BottomPng, vertices3D, &vertices3DCount, indices3D, &indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "bottom", modelDescriptorSets + 2);
+
     loadTexture(Loading1Png, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "loading", graphicDescriptorSets);
     loadTexture(CirclePng, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "circle", graphicDescriptorSets + 2);
     loadTexture(MainFontPng, VK_FORMAT_R8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, "font", graphicDescriptorSets + 4);
@@ -811,6 +842,9 @@ void cleanVulkan(FuncCode code)
         vkDestroyPipeline(device, particlePipeline, allInOne.pAllocationCallbacks);
         logMessage("particle pipeline destroyed");
 
+        vkDestroyPipeline(device, modelPipeline, allInOne.pAllocationCallbacks);
+        logMessage("model pipelne destroyed");
+
         vkDestroyPipeline(device, graphicPipeline, allInOne.pAllocationCallbacks);
         logMessage("graphic pipelne destroyed");
         /*fall through*/
@@ -821,6 +855,9 @@ void cleanVulkan(FuncCode code)
 
         vkDestroyPipelineLayout(device, particlePipelineLayout, allInOne.pAllocationCallbacks);
         logMessage("particle pipeline layout destroyed");
+
+        vkDestroyPipelineLayout(device, modelPipelineLayout, allInOne.pAllocationCallbacks);
+        logMessage("model pipeline layout destroyed");
 
         vkDestroyPipelineLayout(device, graphicPipelineLayout, allInOne.pAllocationCallbacks);
         logMessage("graphic pipeline layout destroyed");
@@ -837,6 +874,10 @@ void cleanVulkan(FuncCode code)
         SDL_free(particleBindings);
         logMessage("particle descriptoe set layout destroyed");
 
+        vkDestroyDescriptorSetLayout(device, *modelDescriptorSetLayout, allInOne.pAllocationCallbacks);
+        SDL_free(modelDescriptorSetLayout);
+        logMessage("graphic descriptor set layout destroyed");
+ 
         vkDestroyDescriptorSetLayout(device, *graphicDescriptorSetLayout, allInOne.pAllocationCallbacks);
         SDL_free(graphicDescriptorSetLayout);
         SDL_free(graphicBindings);
@@ -853,6 +894,10 @@ void cleanVulkan(FuncCode code)
         SDL_free(particleShaderStageCreateInfo);
         logMessage("particle shader stage create info destroyed");
 
+        vkDestroyShaderModule(device, modelVertShaderCode, allInOne.pAllocationCallbacks);
+        vkDestroyShaderModule(device, modelFragShaderCode, allInOne.pAllocationCallbacks);
+        SDL_free(modelShaderStageCreateInfo);
+ 
         vkDestroyShaderModule(device, fragShaderCode, allInOne.pAllocationCallbacks);
         vkDestroyShaderModule(device, vertShaderCode, allInOne.pAllocationCallbacks);
         SDL_free(graphciShaderStageCreateInfo);
@@ -907,6 +952,9 @@ void cleanVulkan(FuncCode code)
         destroyBufferByBuffering(vertexBuffer3D, vertexBuffer3DMem);
         logMessage("vertex buffer destroyed");
         logMessage("vertex buffer memory freed");
+
+        destroyStaticModelPool(&staticModelPool);
+        logMessage("static model pool destroyed");
  
         SDL_free(vertices2D);
         destroyBufferByBuffering(vertexBuffer2D, vertexBuffer2DMem);

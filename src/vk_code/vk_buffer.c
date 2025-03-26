@@ -1,5 +1,5 @@
 #include "vk_code_h/vk_buffer.h"
-#include "vk_code_h/vk_struct.h"
+#include "vk_code_h/vk_all_struct.h"
 
 extern VK_ALL allInOne;
 
@@ -124,4 +124,10 @@ void destroyBufferByBuffering(VkBuffer pBuffers[2], VkDeviceMemory pBuffersMem[2
         vkDestroyBuffer(*allInOne.pDevice, pBuffers[i], allInOne.pAllocationCallbacks);
         vkFreeMemory(*allInOne.pDevice, pBuffersMem[i], allInOne.pAllocationCallbacks);
     }
+}
+void destroyBuffer(VkBuffer Buffer, VkDeviceMemory BufferMem)
+{
+    vkUnmapMemory(*allInOne.pDevice, BufferMem);
+    vkDestroyBuffer(*allInOne.pDevice, Buffer, allInOne.pAllocationCallbacks);
+    vkFreeMemory(*allInOne.pDevice, BufferMem, allInOne.pAllocationCallbacks);
 }

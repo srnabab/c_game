@@ -2,7 +2,6 @@
 
 layout(push_constant) uniform _PushConstans{
     float rotation;
-    float height_to_fix_height_ratio;
 } PushConstants;
 
 layout(set = 0, binding = 0) uniform UniformBufferObject {
@@ -42,10 +41,6 @@ void main()
     }
     else
     {
-        mat4 temp = ubo.proj;
-        temp[0].r = ubo.proj[0].r / PushConstants.height_to_fix_height_ratio;
-        temp[1].g = ubo.proj[1].g / PushConstants.height_to_fix_height_ratio;
-
-        gl_Position = temp * ubo.view * ubo.model * vec4(inPosition, 1.0);
+        gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 1.0);
     }
 }

@@ -4,6 +4,7 @@
 #include "vk_code_h/vk_move.h"
 #include "vk_code_h/vk_buffer.h"
 #include "vk_code_h/vk_judge.h"
+#include "vk_code_h/vk_all_struct.h"
 
 #include "SDL3/SDL_timer.h"
 
@@ -121,14 +122,17 @@ static void drawModel(const char * innerName, Uint32 currentFrame)
     G_Texture_P * tempTexture = getTexture(innerName);
     if (tempTexture == NULL) return;
 
-    vkCmdBindDescriptorSets((*allInOne.ppGraphicCommandBuffer)[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pGraphicPipelineLayout, 0,
+    Uint32 firstInstance, instanceCount;
+    getStaticModelDrawInfo(allInOne.pStaticModelPool, &firstInstance, &instanceCount, innerName);
+
+    vkCmdBindDescriptorSets((*allInOne.ppGraphicCommandBuffer)[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pModelPipelineLayout, 0,
     1, tempTexture->pDescriptorSet + currentFrame, 0, NULL);
 
     SDL_LockMutex(allSync.renderMutex);
     
     for (int i = 0;i < tempTexture->refCount;i++)
     {
-        vkCmdDrawIndexed((*allInOne.ppGraphicCommandBuffer)[currentFrame], tempTexture->offsets[i].count, 1, 0, tempTexture->offsets[i].offset, 0);
+        vkCmdDrawIndexed((*allInOne.ppGraphicCommandBuffer)[currentFrame], tempTexture->offsets[i].count, instanceCount, 0, tempTexture->offsets[i].offset, firstInstance);
     }
 
     SDL_UnlockMutex(allSync.renderMutex);
@@ -184,14 +188,12 @@ static void recordCommandBuffer_3D(uint32_t imageIndex)
 
     vkCmdBeginRenderPass((*allInOne.ppGraphicCommandBuffer)[currentFrame], &renderBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-    VkDeviceSize offsets[] = {0};
+    VkDeviceSize offsets[] = {0, 0};
 
-    vkCmdBindPipeline((*allInOne.ppGraphicCommandBuffer)[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pGraphicPipeline);
+    vkCmdBindPipeline((*allInOne.ppGraphicCommandBuffer)[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pModelPipeline);
 
-    vkCmdPushConstants((*allInOne.ppGraphicCommandBuffer)[currentFrame], *allInOne.pGraphicPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstants), allInOne.pPushConstants);
-
-    VkBuffer vertex3DBuffer[] = {(*allInOne.pVertexBuffer3D)[currentFrame]};
-    vkCmdBindVertexBuffers((*allInOne.ppGraphicCommandBuffer)[currentFrame], 0, 1, vertex3DBuffer, offsets);
+    VkBuffer vertex3DBuffer[] = {(*allInOne.pVertexBuffer3D)[currentFrame], allInOne.pStaticModelPool->instanceBuffer[0]};
+    vkCmdBindVertexBuffers((*allInOne.ppGraphicCommandBuffer)[currentFrame], 0, 2, vertex3DBuffer, offsets);
 
     vkCmdBindIndexBuffer((*allInOne.ppGraphicCommandBuffer)[currentFrame], (*allInOne.pIndexBuffer3D)[currentFrame], 0, VK_INDEX_TYPE_UINT32);
 

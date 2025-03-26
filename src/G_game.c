@@ -5,6 +5,7 @@
 #include "vk_code_h/vk_move.h"
 #include "vk_code_h/vk_recreate.h"
 #include "vk_code_h/vk_judge.h"
+#include "vk_code_h/vk_all_struct.h"
 
 #include "G_custom_math.h"
 
@@ -227,7 +228,10 @@ bool process_input(void)
                 allInOne.pExtent2D->height = 900;
                 
                 SDL_SetWindowSize(window_2D, allInOne.pExtent2D->width, allInOne.pExtent2D->height);
+
+#if WINDOW_3D_DEBUG
                 SDL_SetWindowSize(window_3D, allInOne.pExtent2D->width, allInOne.pExtent2D->height);
+#endif
 
                 resolutionChanged = true;
 
@@ -541,6 +545,10 @@ int update(void * arg)
     textureVertexInit(-32, -32, 64, 64, 0.2f, allInOne.pVertices2DCount, *allInOne.ppVertices2D, getTexture("loading"));
     
     tileMapVertexInit(allInOne.pVertices2DCount, *allInOne.ppVertices2D);
+    addModelMatrix(0, 0, -8, allInOne.pStaticModelPool, "model");
+    addModelMatrix(100, 0, -8, allInOne.pStaticModelPool, "model");
+    addModelMatrix(0, 100, -8, allInOne.pStaticModelPool, "model");
+    addModelMatrix(0, 0, 1, allInOne.pStaticModelPool, "bottom");
         
     SDL_Delay(300);
     
@@ -726,12 +734,12 @@ int update(void * arg)
             //updateUniformBuffer(*allInOne.pCurrentFrame, allInOne.pExtent2D, allInOne.pGraphicUbo, allInOne.pppGraphicUniformBufferMapped, *allInOne.pCamera_X, *allInOne.pCamera_Y, allInOne.pComputeUbo, allInOne.pppComputeUniformBufferMapped, delta_time);   
             //print("time: %.2f\n", time);
 
-            float aspect = ((float)allInOne.pExtent2D->width / allInOne.pExtent2D->height);
             float aspect2 = 1.0f  * ((float)allInOne.pExtent2D->height / 600.0f);
+            float aspect = ((float)allInOne.pExtent2D->width / allInOne.pExtent2D->height) * aspect2;
 
             glm_mat4_identity(pGraphicUbo->model);
             glm_lookat((vec3){*pCamera_X, *pCamera_Y, 100.0f}, (vec3){*pCamera_X, *pCamera_Y, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pGraphicUbo->view);
-            glm_ortho_vulkan(-aspect, aspect, -1.0f, 1.0f, 0.1f, 100.0f, pGraphicUbo->proj);
+            glm_ortho_vulkan(-aspect, aspect, -aspect2, aspect2, 0.001f, 100.0f, pGraphicUbo->proj);
             // glm_ortho(-aspect, aspect, -1.0f, 1.0f, 0.001f, 100.0f, pGraphicUbo->proj);
             // pGraphicUbo->proj[1][1] *= -1;
 
@@ -741,13 +749,13 @@ int update(void * arg)
             // glm_rotate(pGraphic3DUbo->model, glm_rad(180.0f), (vec3){0.0f, 0.0f, 1.0f});
             // glm_translate(pGraphic3DUbo->model, (vec3){1.0f, 0.0f, 0.0f});
             glm_lookat((vec3){-*pCamera_X, 4.0f + -*pCamera_Y, 4.0f}, (vec3){-*pCamera_X, -*pCamera_Y, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, pGraphic3DUbo->view);
-            glm_ortho_vulkan(-aspect, aspect, -1.0f, 1.0f, 0.001f, 100.0f, pGraphic3DUbo->proj);
+            glm_ortho_vulkan(-aspect, aspect, -aspect2, aspect2, 0.001f, 100.0f, pGraphic3DUbo->proj);
             // glm_perspective(glm_rad(45.0f), aspect, 0.1f, 100.0f, pGraphic3DUbo->proj);
             // pGraphic3DUbo->proj[1][1] *= -1;
 
             glm_mat4_identity(pUIUbo->model);
             glm_lookat((vec3){0.0f, 0.0f, 100.0f}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pUIUbo->view);
-            glm_ortho_vulkan(-aspect, aspect, -1.0f, 1.0f, 0.001f, 100.0f, pUIUbo->proj);
+            glm_ortho_vulkan(-aspect, aspect, -aspect2, aspect2, 0.001f, 100.0f, pUIUbo->proj);
  
             allInOne.pComputeUbo->deltaTime = delta_time;
 
@@ -783,7 +791,6 @@ int update(void * arg)
             SDL_SignalSemaphore(allSync.vertexSemaphore);
 
             allInOne.pPushConstants->rotation = totalTime * glm_rad(580.0f);
-            allInOne.pPushConstants->height_to_fix_height_ratio = aspect2;
             
             SDL_UnlockMutex(allSync.updateMutex);
 

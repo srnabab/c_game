@@ -1,6 +1,7 @@
 #include "box2d/box2d.h"
 
 #include "vk_code_h/vk_move.h"
+#include "vk_code_h/vk_all_struct.h"
 
 #include "G_log.h"
 #include "G_world.h"

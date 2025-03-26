@@ -2,7 +2,7 @@
 
 #include "vk_code_h/vk_synchronize.h"
 #include "vk_code_h/vk_judge.h"
-#include "vk_code_h/vk_struct.h"
+#include "vk_code_h/vk_all_struct.h"
 
 extern VK_ALL allInOne;
 

@@ -4,9 +4,9 @@
 #include "G_log.h"
 
 #include "vk_code_h/vk_texture.h"
-#include "vk_code_h/vk_struct.h"
 #include "vk_code_h/vk_depth.h"
 #include "vk_code_h/vk_image.h"
+#include "vk_code_h/vk_all_struct.h"
 
 #define UINT32_MAX_PRIME 4294967291
 
