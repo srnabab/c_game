@@ -6,7 +6,7 @@
 
 #include "SDL3/SDL_begin_code.h"
 
-extern bool SDLCALL loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex * vertices, Uint32 * pVertexIndex, Uint32 * indices, Uint32 * pIndexIndex, VkFormat textureFormat, VkImageAspectFlags flags, const char * innerName, VkDescriptorSet * pDescriptorSet);
+extern bool SDLCALL loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex4 * vertices, Uint32 * pVertexIndex, Uint32 * indices, Uint32 * pIndexIndex, VkFormat textureFormat, VkImageAspectFlags flags, const char * innerName, VkDescriptorSet * pDescriptorSet);
 
 #include "SDL3/SDL_close_code.h"
 

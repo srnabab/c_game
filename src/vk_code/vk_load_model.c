@@ -59,7 +59,7 @@ static void tinyobj_SDL_readFile(void *ctx, const char *filename, int is_mtl, co
 
     SDL_CloseIO(stream);
 }
-bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex * vertices, Uint32 * pVertexIndex, Uint32 * indices, Uint32 * pIndexIndex, VkFormat textureFormat, VkImageAspectFlags flags, const char * innerName, VkDescriptorSet * pDescriptorSet)
+bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex4 * vertices, Uint32 * pVertexIndex, Uint32 * indices, Uint32 * pIndexIndex, VkFormat textureFormat, VkImageAspectFlags flags, const char * innerName, VkDescriptorSet * pDescriptorSet)
 {
     tinyobj_attrib_t attrib;
     tinyobj_shape_t * shapes;
@@ -104,6 +104,10 @@ bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex * verti
                 vertices[vertexIndex].color[1] = 1.0f;
                 vertices[vertexIndex].color[2] = 1.0f;
 
+                vertices[vertexIndex].normal[0] = attrib.normals[attrib.faces[i].vn_idx * 3 + 0];
+                vertices[vertexIndex].normal[1] = attrib.normals[attrib.faces[i].vn_idx * 3 + 1];
+                vertices[vertexIndex].normal[2] = attrib.normals[attrib.faces[i].vn_idx * 3 + 2];
+
                 indexIndex++;
                 vertexIndex++;
             }
@@ -114,12 +118,14 @@ bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex * verti
         {
             int i;
             Uint32 * v_vt_index = (Uint32*)SDL_malloc(attrib.num_vertices * sizeof(Uint32));
+            Uint32 * v_vn_index = (Uint32*)SDL_malloc(attrib.num_vertices * sizeof(Uint32));
             for (i = 0;i < attrib.num_faces;i++)
             {
                 indices[indexIndex] = attrib.faces[i].v_idx;
 
                 v_vt_index[attrib.faces[i].v_idx] = attrib.faces[i].vt_idx;
                 // print("v vt: %d, %d", attrib.faces[i].v_idx, attrib.faces[i].vt_idx);
+                v_vn_index[attrib.faces[i].v_idx] = attrib.faces[i].vn_idx;
 
                 indexIndex++;
             }
@@ -141,11 +147,16 @@ bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex * verti
                 vertices[vertexIndex].color[1] = 1.0f;
                 vertices[vertexIndex].color[2] = 1.0f;
 
+                vertices[vertexIndex].normal[0] = attrib.normals[v_vn_index[i] * 3 + 0];
+                vertices[vertexIndex].normal[1] = attrib.normals[v_vn_index[i] * 3 + 1];
+                vertices[vertexIndex].normal[2] = attrib.normals[v_vn_index[i] * 3 + 2];
+
                 vertexIndex++;
             }
             *pVertexIndex = vertexIndex;
 
             SDL_free(v_vt_index);
+            SDL_free(v_vn_index);
         }
         print("load model success");
     }

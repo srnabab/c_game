@@ -90,7 +90,7 @@ struct _VK_ALL
 
     VkBuffer (*pVertexBuffer3D)[MAX_FRAMES_IN_FLIGHT];
     Uint32 maxVertices3DCount;
-    Vertex ** ppVertices3D;
+    Vertex4 ** ppVertices3D;
     Uint32 * pVertices3DCount;
     VkDeviceMemory (*pVertexBuffer3DMem)[MAX_FRAMES_IN_FLIGHT];
     void* (*ppVertexBuffer3DMemMapped)[MAX_FRAMES_IN_FLIGHT];

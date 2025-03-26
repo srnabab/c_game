@@ -242,7 +242,7 @@ static VkBuffer vertexBuffer3D[MAX_FRAMES_IN_FLIGHT];
 static VkDeviceMemory vertexBuffer3DMem[MAX_FRAMES_IN_FLIGHT];
 static void * vertexBuffer3DMemMapped[MAX_FRAMES_IN_FLIGHT];
 static Uint32 vertices3DCount = 0;
-static Vertex * vertices3D = NULL;
+static Vertex4 * vertices3D = NULL;
 
 static VkBuffer indexBuffer3D[MAX_FRAMES_IN_FLIGHT];
 static VkDeviceMemory indexBuffer3DMem[MAX_FRAMES_IN_FLIGHT];
@@ -556,8 +556,8 @@ void initVulkan(void)
     vertices2D = (Vertex*)SDL_calloc(VERTEX_COUNT_IN_BUFFER_2D, sizeof(Vertex));
     allInOne.maxVertices2DCount = VERTEX_COUNT_IN_BUFFER_2D;
 
-    createVertexBuffer(&physicalDevice, &device, vertexBuffer2D, vertexBuffer2DMem, vertexBuffer2DMemMapped, vertices2D, VERTEX_COUNT_IN_BUFFER_2D);
-    createVertexBuffer(&physicalDevice, &device, vertexBuffer2D + 1, vertexBuffer2DMem + 1, vertexBuffer2DMemMapped + 1, vertices2D, VERTEX_COUNT_IN_BUFFER_2D);
+    createVertexBuffer(&physicalDevice, &device, vertexBuffer2D, vertexBuffer2DMem, vertexBuffer2DMemMapped, VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex));
+    createVertexBuffer(&physicalDevice, &device, vertexBuffer2D + 1, vertexBuffer2DMem + 1, vertexBuffer2DMemMapped + 1, VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex));
 
     indices2D = (Uint16 *)SDL_calloc(INDEX_COUNT_IN_BUFFER_2D, sizeof(Uint16 ));
     indexInitialize(indices2D, MAX_UNIT_COUNT_2D);
@@ -566,7 +566,7 @@ void initVulkan(void)
 
     SDL_free(indices2D);
 
-    vertices3D = (Vertex*)SDL_calloc(30000, sizeof(Vertex));
+    vertices3D = (Vertex4*)SDL_calloc(30000, sizeof(Vertex4));
     allInOne.maxVertices3DCount = 30000;
     indices3D = (Uint32*)SDL_calloc(45000, sizeof(Uint32));
     // UniformBufferObject tempUbo = {};
@@ -606,8 +606,8 @@ void initVulkan(void)
     // // print("max point:x: %f, y: %f", max_x, max_y);
     // // print("min point:x: %f, y: %f", min_x, min_y);
     // print("width: %f, height: %f", max_x - min_x, (max_y - min_y) * SDL_cosf(M_PI / 4));
-    createVertexBuffer(&physicalDevice, &device, vertexBuffer3D, vertexBuffer3DMem, vertexBuffer3DMemMapped, vertices3D, 30000);
-    createVertexBuffer(&physicalDevice, &device, vertexBuffer3D + 1, vertexBuffer3DMem + 1, vertexBuffer3DMemMapped + 1, vertices3D, 30000);
+    createVertexBuffer(&physicalDevice, &device, vertexBuffer3D, vertexBuffer3DMem, vertexBuffer3DMemMapped, 30000 * sizeof(Vertex4));
+    createVertexBuffer(&physicalDevice, &device, vertexBuffer3D + 1, vertexBuffer3DMem + 1, vertexBuffer3DMemMapped + 1, 30000 * sizeof(Vertex4));
     createIndexBuffer(&physicalDevice, &device, indexBuffer3D, indexBuffer3DMem, indexBuffer3DMemMapped, indices3D, 45000, sizeof(Uint32), true);
     createIndexBuffer(&physicalDevice, &device, indexBuffer3D + 1, indexBuffer3DMem + 1, indexBuffer3DMemMapped + 1, indices3D, 45000, sizeof(Uint32), true);
 

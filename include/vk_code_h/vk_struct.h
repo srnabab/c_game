@@ -34,6 +34,14 @@ typedef struct _Vertex
     vec2 texCoord;
 }Vertex;
 
+typedef struct _Vertex4
+{
+    vec3 pos;
+    vec3 color;
+    vec2 texCoord;
+    vec3 normal;
+} Vertex4;
+
 typedef struct _UniformBufferObject 
 {
     mat4 model;

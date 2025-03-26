@@ -2,12 +2,9 @@
 #include "vk_code_h/vk_buffer.h"
 #include "vk_code_h/vk_judge.h"
 
-void createVertexBuffer(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkBuffer * pVertexBuffer, VkDeviceMemory * pVertexBufferMemory, void ** ppVertexBufferMemMapped, Vertex * vertices, uint32_t verticesCount)
+void createVertexBuffer(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkBuffer * pVertexBuffer, VkDeviceMemory * pVertexBufferMemory, void ** ppVertexBufferMemMapped, Uint32 bufferSize)
 {
     FuncCode code = createVertexBufferF;
-
-    // need change buffer size calculation
-    VkDeviceSize bufferSize = sizeof(vertices[0]) * verticesCount;
 
     resultVulkan(createBuffer(pVertexBuffer, pVertexBufferMemory, bufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), code, 0);
     

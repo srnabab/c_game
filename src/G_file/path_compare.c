@@ -42,14 +42,6 @@ PathType pathCompare(char * buffer)
     {
         return PathPath;
     }
-    else if ((SDL_strcmp(buffer, "[TilemapFragShader]") == 0))
-    {
-        return TilemapFragShader;
-    }
-    else if ((SDL_strcmp(buffer, "[TilemapVertShader]") == 0))
-    {
-        return TilemapVertShader;
-    }
     else if ((SDL_strcmp(buffer, "[Model3dVertShader]") == 0))
     {
         return Model3dVertShader;
@@ -73,6 +65,10 @@ PathType pathCompare(char * buffer)
     else if ((SDL_strcmp(buffer, "[BoxPng]") == 0))
     {
         return BoxPng;
+    }
+    else if ((SDL_strcmp(buffer, "[SSGICompShader]") == 0))
+    {
+        return SSGICompShader;
     }
     else if ((SDL_strcmp(buffer, "[BottomObj]") == 0))
     {
@@ -137,10 +133,6 @@ PathType pathCompare(char * buffer)
     else if ((SDL_strcmp(buffer, "[StartVertShader]") == 0))
     {
         return StartVertShader;
-    }
-    else if ((SDL_strcmp(buffer, "[TestShaderFragShader]") == 0))
-    {
-        return TestShaderFragShader;
     }
     else if ((SDL_strcmp(buffer, "[TriangleFragShader]") == 0))
     {

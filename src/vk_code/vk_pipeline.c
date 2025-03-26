@@ -256,56 +256,88 @@ void createModelPipeline(VkDevice * pDevice, VkExtent2D * pExtent2D, uint32_t sh
     // configurePipelineVertexInputState(&pipelineVertexInputStateCreateInfo);
     VkVertexInputBindingDescription pBindingDescription[3];
     pBindingDescription[0].binding = 0;
-    pBindingDescription[0].stride = sizeof(Vertex);
+    pBindingDescription[0].stride = sizeof(Vertex4);
     pBindingDescription[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
     pBindingDescription[1].binding = 1;
     pBindingDescription[1].stride = sizeof(mat4);
     pBindingDescription[1].inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
 
-    VkVertexInputAttributeDescription pAttributeDescriptions[8];
+    pBindingDescription[2].binding = 2;
+    pBindingDescription[2].stride = sizeof(mat4);
+    pBindingDescription[2].inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
+
+
+    VkVertexInputAttributeDescription pAttributeDescriptions[12];
     pAttributeDescriptions[0].location = 0;
     pAttributeDescriptions[0].binding = 0;
     pAttributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-    pAttributeDescriptions[0].offset = offsetof(Vertex, pos);
+    pAttributeDescriptions[0].offset = offsetof(Vertex4, pos);
 
     pAttributeDescriptions[1].location = 1;
     pAttributeDescriptions[1].binding = 0;
     pAttributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-    pAttributeDescriptions[1].offset = offsetof(Vertex, color);
+    pAttributeDescriptions[1].offset = offsetof(Vertex4, color);
 
     pAttributeDescriptions[2].location = 2;
     pAttributeDescriptions[2].binding = 0;
     pAttributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
-    pAttributeDescriptions[2].offset = offsetof(Vertex, texCoord);
+    pAttributeDescriptions[2].offset = offsetof(Vertex4, texCoord);
 
     pAttributeDescriptions[3].location = 3;
-    pAttributeDescriptions[3].binding = 1;
-    pAttributeDescriptions[3].format = VK_FORMAT_R32G32B32A32_SFLOAT;
-    pAttributeDescriptions[3].offset = 0;
-    
+    pAttributeDescriptions[3].binding = 0;
+    pAttributeDescriptions[3].format = VK_FORMAT_R32G32B32_SFLOAT;
+    pAttributeDescriptions[3].offset = offsetof(Vertex4, normal);
+
     pAttributeDescriptions[4].location = 4;
     pAttributeDescriptions[4].binding = 1;
     pAttributeDescriptions[4].format = VK_FORMAT_R32G32B32A32_SFLOAT;
-    pAttributeDescriptions[4].offset = sizeof(vec4) * 1;
-
+    pAttributeDescriptions[4].offset = 0;
+    
     pAttributeDescriptions[5].location = 5;
     pAttributeDescriptions[5].binding = 1;
     pAttributeDescriptions[5].format = VK_FORMAT_R32G32B32A32_SFLOAT;
-    pAttributeDescriptions[5].offset = sizeof(vec4) * 2;
+    pAttributeDescriptions[5].offset = sizeof(vec4) * 1;
 
     pAttributeDescriptions[6].location = 6;
     pAttributeDescriptions[6].binding = 1;
     pAttributeDescriptions[6].format = VK_FORMAT_R32G32B32A32_SFLOAT;
-    pAttributeDescriptions[6].offset = sizeof(vec4) * 3;
+    pAttributeDescriptions[6].offset = sizeof(vec4) * 2;
+
+    pAttributeDescriptions[7].location = 7;
+    pAttributeDescriptions[7].binding = 1;
+    pAttributeDescriptions[7].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    pAttributeDescriptions[7].offset = sizeof(vec4) * 3;
+
+    pAttributeDescriptions[8].location = 8;
+    pAttributeDescriptions[8].binding = 2;
+    pAttributeDescriptions[8].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    pAttributeDescriptions[8].offset = 0;
+    
+    pAttributeDescriptions[9].location = 9;
+    pAttributeDescriptions[9].binding = 2;
+    pAttributeDescriptions[9].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    pAttributeDescriptions[9].offset = sizeof(vec4) * 1;
+
+    pAttributeDescriptions[10].location = 10;
+    pAttributeDescriptions[10].binding = 2;
+    pAttributeDescriptions[10].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    pAttributeDescriptions[10].offset = sizeof(vec4) * 2;
+
+    pAttributeDescriptions[11].location = 11;
+    pAttributeDescriptions[11].binding = 2;
+    pAttributeDescriptions[11].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    pAttributeDescriptions[11].offset = sizeof(vec4) * 3;
+
 
     VkPipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo = {};
     pipelineVertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     pipelineVertexInputStateCreateInfo.pNext = NULL;
     pipelineVertexInputStateCreateInfo.flags = 0;
-    pipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = 2;
+    pipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = 3;
     pipelineVertexInputStateCreateInfo.pVertexBindingDescriptions = pBindingDescription;
-    pipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = 7;
+
+    pipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = 12;
     pipelineVertexInputStateCreateInfo.pVertexAttributeDescriptions = pAttributeDescriptions;
 
     VkPipelineInputAssemblyStateCreateInfo pipelineInputAssemblyStateCreateInfo = {};

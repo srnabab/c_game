@@ -188,12 +188,11 @@ static void recordCommandBuffer_3D(uint32_t imageIndex)
 
     vkCmdBeginRenderPass((*allInOne.ppGraphicCommandBuffer)[currentFrame], &renderBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-    VkDeviceSize offsets[] = {0, 0};
-
     vkCmdBindPipeline((*allInOne.ppGraphicCommandBuffer)[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pModelPipeline);
 
-    VkBuffer vertex3DBuffer[] = {(*allInOne.pVertexBuffer3D)[currentFrame], allInOne.pStaticModelPool->instanceBuffer[0]};
-    vkCmdBindVertexBuffers((*allInOne.ppGraphicCommandBuffer)[currentFrame], 0, 2, vertex3DBuffer, offsets);
+    VkBuffer vertex3DBuffer[] = {(*allInOne.pVertexBuffer3D)[currentFrame], allInOne.pStaticModelPool->instanceBuffer[0], allInOne.pStaticModelPool->instanceBuffer[0]};
+    VkDeviceSize offsets[] = {0, 0, allInOne.pStaticModelPool->totalInstanceCount * sizeof(mat4)};
+    vkCmdBindVertexBuffers((*allInOne.ppGraphicCommandBuffer)[currentFrame], 0, 3, vertex3DBuffer, offsets);
 
     vkCmdBindIndexBuffer((*allInOne.ppGraphicCommandBuffer)[currentFrame], (*allInOne.pIndexBuffer3D)[currentFrame], 0, VK_INDEX_TYPE_UINT32);
 
