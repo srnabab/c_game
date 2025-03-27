@@ -94,16 +94,16 @@ static void recordCommandBuffer_FirstScene(uint32_t imageIndex)
     vkCmdBindIndexBuffer((*allInOne.ppGraphicCommandBuffer)[currentFrame], (*allInOne.pIndexBuffer2D)[0], 0, VK_INDEX_TYPE_UINT16);
 
     // tile map
-    drawPic("tileSet", currentFrame);
+    drawPic(TEXTURE_TILE_SET, currentFrame);
 
     //loading1 png
-    drawPic("loading", currentFrame);
+    drawPic(TEXTURE_LOADING, currentFrame);
 
     //circle
-    drawPic("circle", currentFrame);
+    drawPic(TEXTURE_CIRCLE, currentFrame);
 
     // main font png
-    drawPic("font", currentFrame);
+    drawPic(TEXTURE_FONT, currentFrame);
 
 
     vkCmdBindPipeline((*allInOne.ppGraphicCommandBuffer)[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pParticlePipeline);
@@ -197,9 +197,9 @@ static void recordCommandBuffer_3D(uint32_t imageIndex)
     vkCmdBindIndexBuffer((*allInOne.ppGraphicCommandBuffer)[currentFrame], (*allInOne.pIndexBuffer3D)[currentFrame], 0, VK_INDEX_TYPE_UINT32);
 
     // model
-    drawModel("bottom", currentFrame);
+    drawModel(TEXTURE_BOTTOM, currentFrame);
 
-    drawModel("model", currentFrame);
+    drawModel(TEXTURE_MODEL, currentFrame);
 
     vkCmdEndRenderPass((*allInOne.ppGraphicCommandBuffer)[currentFrame]);
 }

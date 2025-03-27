@@ -1,3 +1,5 @@
+#include "G_textureName.h"
+
 #ifndef G_CONSTANTS_H
 #define G_CONSTANTS_H 1
 

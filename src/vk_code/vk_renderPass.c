@@ -5,7 +5,7 @@
 
 extern VK_ALL allInOne;
 
-void createGraphicRenderPass(VkFormat surfaceFormat, VkFormat depthFormat)
+void createGraphicRenderPass(VkFormat surfaceFormat, VkFormat depthFormat, VkRenderPass * pRenderPass)
 {
     FuncCode code = createGraphicRenderPassF;
     VkAttachmentDescription colorAttachment = {};
@@ -72,7 +72,7 @@ void createGraphicRenderPass(VkFormat surfaceFormat, VkFormat depthFormat)
     renderPassCreateInfo.dependencyCount = 1;
     renderPassCreateInfo.pDependencies = &dependency;
 
-    resultVulkan(vkCreateRenderPass(*allInOne.pDevice, &renderPassCreateInfo, allInOne.pAllocationCallbacks, allInOne.pRenderPass), code, 0);
+    resultVulkan(vkCreateRenderPass(*allInOne.pDevice, &renderPassCreateInfo, allInOne.pAllocationCallbacks, pRenderPass), code, 0);
 
     //printf("renderPass created\n");
 }

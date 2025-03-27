@@ -532,9 +532,9 @@ void initVulkan(void)
     //swapchain2D image view
     createSwapchainImageView(swapchain2DImages, imageCount2D, swapchainFormat, VK_IMAGE_ASPECT_COLOR_BIT, &swapchain2DImageViews);
 
-    loadDepthResource("depth");
-    G_Texture_P const * depthTexutre = getTexture("depth");
-    createGraphicRenderPass(swapchainFormat, depthTexutre->format);
+    loadDepthResource(TEXTURE_DEPTH);
+    G_Texture_P const * depthTexutre = getTexture(TEXTURE_DEPTH);
+    createGraphicRenderPass(swapchainFormat, depthTexutre->format, &renderPass);
 
     // createDepthResoures(&depthImage, &depthImageMemory, &depthImageView);
 
@@ -709,30 +709,30 @@ void initVulkan(void)
 
     createFenceByBuffering(&computeInFlightFences);
     
-    loadTileSet(TileSet1Png, TileSet1Tsd, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "tileSet", graphicDescriptorSets + 6);
-    loadTileMap(TileMap1TsdI, -400, -500, "tileSet");
-    // loadTileMap(TileMap1TsdI, -1200, -1100, "tileSet");
-    // loadTileMap(TileMap1TsdI, -1200, -300, "tileSet");
-    // loadTileMap(TileMap1TsdI, -1200, 500, "tileSet");
-    // loadTileMap(TileMap1TsdI, -400, 500, "tileSet");
-    // loadTileMap(TileMap1TsdI, 400, 500, "tileSet");
-    // loadTileMap(TileMap1TsdI, 400, -300, "tileSet");
-    // loadTileMap(TileMap1TsdI, 400, -1100, "tileSet");
-    // loadTileMap(TileMap1TsdI, -400, -1100, "tileSet");
+    loadTileSet(TileSet1Png, TileSet1Tsd, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_TILE_SET, graphicDescriptorSets + 6);
+    loadTileMap(TileMap1TsdI, -400, -500, TEXTURE_TILE_SET);
+    // loadTileMap(TileMap1TsdI, -1200, -1100, TEXTURE_TILE_SET);
+    // loadTileMap(TileMap1TsdI, -1200, -300, TEXTURE_TILE_SET);
+    // loadTileMap(TileMap1TsdI, -1200, 500, TEXTURE_TILE_SET);
+    // loadTileMap(TileMap1TsdI, -400, 500, TEXTURE_TILE_SET);
+    // loadTileMap(TileMap1TsdI, 400, 500, TEXTURE_TILE_SET);
+    // loadTileMap(TileMap1TsdI, 400, -300, TEXTURE_TILE_SET);
+    // loadTileMap(TileMap1TsdI, 400, -1100, TEXTURE_TILE_SET);
+    // loadTileMap(TileMap1TsdI, -400, -1100, TEXTURE_TILE_SET);
     createStaticModelPool(&staticModelPool, 20);
-    loadStaticModel(&staticModelPool, 10, BoxObj, BoxPng, vertices3D, &vertices3DCount, indices3D, &indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "model", modelDescriptorSets);
-    loadStaticModel(&staticModelPool, 10, BottomObj, BottomPng, vertices3D, &vertices3DCount, indices3D, &indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "bottom", modelDescriptorSets + 2);
+    loadStaticModel(&staticModelPool, 10, BoxObj, BoxPng, vertices3D, &vertices3DCount, indices3D, &indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_MODEL, modelDescriptorSets);
+    loadStaticModel(&staticModelPool, 10, BottomObj, BottomPng, vertices3D, &vertices3DCount, indices3D, &indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_BOTTOM, modelDescriptorSets + 2);
 
-    loadTexture(Loading1Png, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "loading", graphicDescriptorSets);
-    loadTexture(CirclePng, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "circle", graphicDescriptorSets + 2);
-    loadTexture(MainFontPng, VK_FORMAT_R8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, "font", graphicDescriptorSets + 4);
+    loadTexture(Loading1Png, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_LOADING, graphicDescriptorSets);
+    loadTexture(CirclePng, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_CIRCLE, graphicDescriptorSets + 2);
+    loadTexture(MainFontPng, VK_FORMAT_R8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_FONT, graphicDescriptorSets + 4);
     
-    G_Texture_P * loadingTexture = getTexture("loading");
-    G_Texture_P * circleTexture = getTexture("circle");
-    G_Texture_P * fontTexture = getTexture("font");
-    G_Texture_P * tileSetTexture = getTexture("tileSet");
-    G_Texture_P * modelTexture = getTexture("model");
-    G_Texture_P * bottomTexture = getTexture("bottom");
+    G_Texture_P * loadingTexture = getTexture(TEXTURE_LOADING);
+    G_Texture_P * circleTexture = getTexture(TEXTURE_CIRCLE);
+    G_Texture_P * fontTexture = getTexture(TEXTURE_FONT);
+    G_Texture_P * tileSetTexture = getTexture(TEXTURE_TILE_SET);
+    G_Texture_P * modelTexture = getTexture(TEXTURE_MODEL);
+    G_Texture_P * bottomTexture = getTexture(TEXTURE_BOTTOM);
 
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, loadingTexture->pDescriptorSet, UIUniformBuffers, 0, sizeof(UniformBufferObject));
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, circleTexture->pDescriptorSet, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
@@ -740,12 +740,12 @@ void initVulkan(void)
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, tileSetTexture->pDescriptorSet, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, modelTexture->pDescriptorSet, graphic3DUniformBuffers, 0, sizeof(UniformBufferObject));
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, bottomTexture->pDescriptorSet, graphic3DUniformBuffers, 0, sizeof(UniformBufferObject));
-    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, "loading", textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, "circle", textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, "font", textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, "tileSet", textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, "model", textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, "bottom", textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_LOADING, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_CIRCLE, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_FONT, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_TILE_SET, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_MODEL, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_BOTTOM, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, particleDescriptorSets, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, computeDescriptorSets, computeUniformBuffers, 0, sizeof(ComputeUniformBufferObject));
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, computeDescriptorSets, shaderStorageBuffers, 0, sizeof(Particle) * PARTICLE_COUNT);

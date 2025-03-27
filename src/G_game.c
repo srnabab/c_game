@@ -542,13 +542,13 @@ int update(void * arg)
     Uint32 vertexStart = 0;
     Uint32 vertexEnd = *allInOne.pVertices2DCount;
 
-    textureVertexInit(-32, -32, 64, 64, 0.2f, allInOne.pVertices2DCount, *allInOne.ppVertices2D, getTexture("loading"));
+    textureVertexInit(-32, -32, 64, 64, 0.2f, allInOne.pVertices2DCount, *allInOne.ppVertices2D, getTexture(TEXTURE_LOADING));
     
     tileMapVertexInit(allInOne.pVertices2DCount, *allInOne.ppVertices2D);
-    addModelMatrix(0, 0, -8, allInOne.pStaticModelPool, "model");
-    addModelMatrix(100, 0, -8, allInOne.pStaticModelPool, "model");
-    addModelMatrix(0, 100, -8, allInOne.pStaticModelPool, "model");
-    addModelMatrix(0, 0, 1, allInOne.pStaticModelPool, "bottom");
+    addModelMatrix(0, 0, -8, allInOne.pStaticModelPool, TEXTURE_MODEL);
+    addModelMatrix(100, 0, -8, allInOne.pStaticModelPool, TEXTURE_MODEL);
+    addModelMatrix(0, 100, -8, allInOne.pStaticModelPool, TEXTURE_MODEL);
+    addModelMatrix(0, 0, 1, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
         
     SDL_Delay(300);
     
@@ -652,10 +652,10 @@ int update(void * arg)
 
                     if (textLine < 3)
                     {
-                        getTexture("font")->refCount = 0;
+                        getTexture(TEXTURE_FONT)->refCount = 0;
                         for (Uint32 i = 0;i < textLen;i++)
                         {
-                            textureVertexInit_SetUV(-300.0 + (float)i * 24.0, -100.0, 24, 24, 0.1f, allInOne.pVertices2DCount, *allInOne.ppVertices2D, UVs[i], getTexture("font"));
+                            textureVertexInit_SetUV(-300.0 + (float)i * 24.0, -100.0, 24, 24, 0.1f, allInOne.pVertices2DCount, *allInOne.ppVertices2D, UVs[i], getTexture(TEXTURE_FONT));
                         }
                     }
                     textDisplay = false;
@@ -711,7 +711,7 @@ int update(void * arg)
                         x *= -1;
                     }
                     // float averagePhysicalCoffect = (physicalCoffectX + physicalCoffectY) / 2.0f;
-                    textureVertexInit(x * physicalCoffectX, 280 * physicalCoffectY, 16 * physicalCoffectY, 16 * physicalCoffectY, 0.9, allInOne.pVertices2DCount, *allInOne.ppVertices2D, getTexture("circle"));
+                    textureVertexInit(x * physicalCoffectX, 280 * physicalCoffectY, 16 * physicalCoffectY, 16 * physicalCoffectY, 0.9, allInOne.pVertices2DCount, *allInOne.ppVertices2D, getTexture(TEXTURE_CIRCLE));
 
                     ballStack.pushFn(&ballStack, &x);
                     //print("indices count: %u\n", indiceCount);

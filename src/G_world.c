@@ -179,7 +179,7 @@ void updateCircle(void)
         }
         Uint32 refCount = 0;
         Uint32 currentOffset = 0;
-        G_Texture_P * tempTexture = getTexture("circle");
+        G_Texture_P * tempTexture = getTexture(TEXTURE_CIRCLE);
         for (uint32_t i = 0;i < boxCount;i++)
         {
             b2Vec2 position = b2Body_GetPosition(bodyIds[i]);
