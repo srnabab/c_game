@@ -25,7 +25,7 @@ typedef enum _FuncCode {
     createShaderModuleF,
     createDescriptorSetLayoutF,
     createPipelineLayoutF,
-    createRenderPassF,
+    createGraphicRenderPassF,
     createGraphicsPipelineF,
     createCommandPoolF,
     createDepthResouresF,

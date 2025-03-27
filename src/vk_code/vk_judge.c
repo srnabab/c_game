@@ -110,7 +110,7 @@ void resultVulkan(VkResult result, FuncCode code, uint32_t num, ...)
             print("\ncreate pipeline layout failed");
             goto end;
 
-            case createRenderPassF:
+            case createGraphicRenderPassF:
             print("\ncreate render pass failed");
             goto end;
 

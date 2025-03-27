@@ -24,6 +24,7 @@
 #include "vk_code_h/vk_vertex.h"
 #include "vk_code_h/vk_texture.h"
 #include "vk_code_h/vk_depth.h"
+#include "vk_code_h/vk_renderPass.h"
 #include "vk_code_h/vk_pipeline.h"
 #include "vk_code_h/vk_shader.h"
 #include "vk_code_h/vk_swapchain.h"
@@ -533,7 +534,7 @@ void initVulkan(void)
 
     loadDepthResource("depth");
     G_Texture_P const * depthTexutre = getTexture("depth");
-    createRenderPass(swapchainFormat, depthTexutre->format);
+    createGraphicRenderPass(swapchainFormat, depthTexutre->format);
 
     // createDepthResoures(&depthImage, &depthImageMemory, &depthImageView);
 
@@ -1010,7 +1011,7 @@ void cleanVulkan(FuncCode code)
         logMessage("renderPass destroyed");
         /*fall through*/
 
-        case createRenderPassF:
+        case createGraphicRenderPassF:
         destroyImageViews(swapchain2DImageViews, imageCount2D);
         SDL_free(swapchain2DImageViews);
         
