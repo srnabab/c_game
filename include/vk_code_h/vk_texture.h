@@ -17,8 +17,7 @@ extern void SDLCALL createTextureImageFromFile(PathType type, VkFormat format, V
 extern void SDLCALL createTextureImageFromMem(void * pixels, Uint32 width, Uint32 height, VkDeviceSize imageSize, VkFormat format, VkImage * pTextureImage, VkDeviceMemory * pTextureImageMem);
 extern void SDLCALL createTextureImageView(VkImage * pTextureImage, VkFormat format, VkImageAspectFlags aspectFlags, VkImageView * pTextureImageView);
 extern unsigned char * SDLCALL readPNG(PathType type, uint32_t * pWidth, uint32_t * pHeight, uint8_t * pChannel);
-extern VkResult SDLCALL copyBufferToImage(VkImage * pImage, uint32_t width, uint32_t height, VkBuffer * pBuffer);
-extern void SDLCALL createTextureSampler(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkSampler * pTextureSampler);
+extern VkResult SDLCALL copyBufferToImage(VkImage * pImage, Uint32 width, Uint32 height, VkBuffer * pBuffer);
 
 #include "SDL3/SDL_close_code.h"
 

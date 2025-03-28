@@ -142,7 +142,7 @@ bool loadTexture(PathType path, VkFormat format, VkImageAspectFlags flags, const
 
     return true;
 }
-bool loadDepthResource(const char * innerName)
+bool loadDepthResource(const char * innerName, bool sample)
 {
     SDL_LockMutex(allSync.textureMutex);
 
@@ -150,7 +150,7 @@ bool loadDepthResource(const char * innerName)
    
     Uint32 ID = HashID(innerName);
 
-    VkFormat depthFormat = createDepthResoures(&globalTexture[i].image, &globalTexture[i].imageMem, &globalTexture[i].imageView);
+    VkFormat depthFormat = createDepthResoures(&globalTexture[i].image, &globalTexture[i].imageMem, &globalTexture[i].imageView, sample);
 
     globalTexture[i].source_width = allInOne.pExtent2D->width;
     globalTexture[i].source_height = allInOne.pExtent2D->height;
@@ -183,6 +183,54 @@ bool loadNormalResource(const char * innerName)
     SDL_UnlockMutex(allSync.textureMutex);
 
     return true;
+}
+bool loadStorageImageResource(VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties\
+, VkImageLayout targetLayout, const char * innerName, VkDescriptorSet * pDescriptorSet)
+{
+    SDL_LockMutex(allSync.textureMutex);
+
+    int i = getEmptyTexture(innerName);
+   
+    Uint32 ID = HashID(innerName);
+
+    createImage(allInOne.pExtent2D->width, allInOne.pExtent2D->height, format, tiling, usage, properties, &globalTexture[i].image, &globalTexture[i].imageMem);
+
+    createImageView(&globalTexture[i].image, format, VK_IMAGE_ASPECT_COLOR_BIT, &globalTexture[i].imageView);
+
+    transitionImageLayout(&globalTexture[i].image, format, VK_IMAGE_LAYOUT_UNDEFINED, targetLayout);
+
+    globalTexture[i].source_width = allInOne.pExtent2D->width;
+    globalTexture[i].source_height = allInOne.pExtent2D->height;
+    globalTexture[i].format = format;
+    SDL_strlcpy(globalTexture[i].innerName, innerName, 16);
+
+    globalTexture[i].pDescriptorSet = pDescriptorSet;
+
+    globalTexture[i].ID = ID;
+
+    SDL_UnlockMutex(allSync.textureMutex);
+
+    return true;
+}
+bool addDescriptorSetToTexture(const char * innerName, VkDescriptorSet * pDescriptorSet)
+{
+    SDL_LockMutex(allSync.textureMutex);
+
+    Uint32 ID = HashID(innerName);
+
+    for (int i = 0;i < tableCount;i++)
+    {
+        if (ID == globalTexture[i].ID)
+        {
+            globalTexture[i].pDescriptorSet = pDescriptorSet;
+            SDL_UnlockMutex(allSync.textureMutex);
+            return true;
+        }
+    }
+
+    SDL_UnlockMutex(allSync.textureMutex);
+
+    return false;
 }
 G_Texture_P * getTexture(const char * innerName)
 {

@@ -55,6 +55,17 @@ typedef struct _ComputeUniformBufferObject
     char align[50];
 }ComputeUniformBufferObject;
 
+struct _SSGIUniformBufferObject
+{
+    mat4 projectionMatrix;
+    mat4 inverseProjectionMatrix;
+    vec3 cameraPosition;
+    float rayStepSize;
+    int32_t maxRaySteps;
+    float ssgiStrength;
+};
+typedef struct _SSGIUniformBufferObject SSGIUniformBufferObject;
+
 typedef struct _Particle
 {
     vec2 position;

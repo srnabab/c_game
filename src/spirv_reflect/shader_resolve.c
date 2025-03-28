@@ -44,7 +44,6 @@ VkPipelineShaderStageCreateInfo ** ppShaderStageCreateInfo, VkDescriptorSetLayou
 
     *ppShaderModule = (VkShaderModule*)SDL_malloc(shaderCount * sizeof(VkShaderModule));
     *ppShaderStageCreateInfo = (VkPipelineShaderStageCreateInfo*)SDL_malloc(shaderCount * sizeof(VkPipelineShaderStageCreateInfo));
-    *ppDescriptorSetLayout = (VkDescriptorSetLayout*)SDL_malloc(sizeof(VkDescriptorSetLayout));
     
     for (i = 0;i < shaderCount;i++)
     {
@@ -125,6 +124,7 @@ VkPipelineShaderStageCreateInfo ** ppShaderStageCreateInfo, VkDescriptorSetLayou
     *ppEntryName = entryName;
 
     setCount = biggestSet + 1;
+    *ppDescriptorSetLayout = (VkDescriptorSetLayout*)SDL_malloc(setCount * sizeof(VkDescriptorSetLayout));
 
     for (i = 0;i < setCount;i++)
     {

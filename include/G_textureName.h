@@ -10,5 +10,6 @@
 #define TEXTURE_DEPTH "depth"
 #define TEXTURE_MODEL_DEPTH "modelDepth"
 #define TEXTURE_NORMAL "normal"
+#define TEXTURE_SSGI_STORAGE_IMAGE "ssgi"
 
 #endif

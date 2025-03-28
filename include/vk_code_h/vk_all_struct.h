@@ -59,6 +59,9 @@ struct _VK_ALL
     VkPipelineLayout * pModelPipelineLayout;
     VkPipeline * pModelPipeline;
 
+    VkPipelineLayout * pSSGIPipelineLayout;
+    VkPipeline * pSSGIPipeline;
+
 
 #if WINDOW_3D_DEBUG
     

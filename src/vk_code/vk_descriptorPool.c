@@ -8,11 +8,13 @@
 #include "G_log.h"
 #include "G_struct.h"
 
+#define MAX_UPDATE_COUNT 40
+
 extern VK_ALL allInOne;
 extern G_SYNC allSync;
 
-#warning "descriptor set update is fixed to 20"
-static G_DescriptorSet_Update updates[20];
+#warning "descriptor set update is fixed to 40"
+static G_DescriptorSet_Update updates[MAX_UPDATE_COUNT];
 static Uint32 updatesCount = 0;
 
 void createDescriptorPool(VkDevice * pDevice, Uint32 poolSizeCount, VkDescriptorPoolSize * pPoolSizes, Uint32 maxSets, VkDescriptorPool * pDescriptorPool)
@@ -136,7 +138,7 @@ void addDescriptorUpdate_Buffer(VkDescriptorType descriptorType, Uint32 binding,
 
     SDL_LockMutex(allSync.descriptorUpdateMutex);
 
-    if (updatesCount == 20) return;
+    if (updatesCount == MAX_UPDATE_COUNT) return;
 
     updates[updatesCount].descriptorType = descriptorType;
     updates[updatesCount].binding = binding;
@@ -155,7 +157,7 @@ void addDescriptorUpdate_Texture(VkDescriptorType descriptorType, Uint32 binding
 
     SDL_LockMutex(allSync.descriptorUpdateMutex);
 
-    if (updatesCount == 20) return;
+    if (updatesCount == MAX_UPDATE_COUNT) return;
 
     updates[updatesCount].descriptorType = descriptorType;
     updates[updatesCount].binding = binding;
@@ -172,7 +174,7 @@ void addDescriptorUpdate_TexelBuffer(VkDescriptorType descriptorType, Uint32 bin
 
     SDL_LockMutex(allSync.descriptorUpdateMutex);
 
-    if (updatesCount == 20) return;
+    if (updatesCount == MAX_UPDATE_COUNT) return;
 
     updates[updatesCount].descriptorType = descriptorType;
     updates[updatesCount].binding = binding;
