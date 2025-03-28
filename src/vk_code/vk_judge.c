@@ -10,7 +10,7 @@ void resultVulkan(VkResult result, FuncCode code, uint32_t num, ...)
     switch (result)
     {
         case VK_SUCCESS:
-        break;
+        return;
 
         case VK_SUBOPTIMAL_KHR:
         print("result: %d", result);

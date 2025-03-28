@@ -345,7 +345,7 @@ void createModelPipeline(VkDevice * pDevice, VkExtent2D * pExtent2D, uint32_t sh
     // configurePipelineDepthStencilStateCreateInfo(&pipelineDepthStencilStateCreateInfo);
 
     VkPipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo = {};
-    Uint32 attachmentCount = 1;
+    Uint32 attachmentCount = 2;
     VkPipelineColorBlendAttachmentState * colorBlendAttachmentState = (VkPipelineColorBlendAttachmentState *)SDL_malloc(attachmentCount * sizeof(VkPipelineColorBlendAttachmentState));
     
     for (uint32_t i = 0;i < attachmentCount;i++)

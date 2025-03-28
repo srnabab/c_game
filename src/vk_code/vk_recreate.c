@@ -39,7 +39,8 @@ void recreateSwapchain(void)
     createImageViews(*allInOne.ppSwapchain2DImages, *allInOne.pImageCount2D, allInOne.pSurface2DFormat->format, VK_IMAGE_ASPECT_COLOR_BIT, allInOne.ppSwapchain2DImageViews);
 
     loadDepthResource(TEXTURE_DEPTH);
-    createFrameBuffer(*allInOne.pImageCount2D, *allInOne.ppSwapchain2DImageViews, &getTexture(TEXTURE_DEPTH)->imageView, allInOne.pRenderPass, allInOne.ppSwapchain2DFramebuffer);
+    VkImageView graphicImageViews[1] = {getTexture(TEXTURE_DEPTH)->imageView};
+    createFrameBuffer(*allInOne.pImageCount2D, 2, graphicImageViews, *allInOne.ppSwapchain2DImageViews, allInOne.pRenderPass, allInOne.ppSwapchain2DFramebuffer);
 
     destroyedFrameBuffer(oldImageCount, oldFrameBuffer);
     destroyImageViews(oldSwapchainImageView, oldImageCount);
@@ -60,8 +61,11 @@ void recreateSwapchain(void)
 
     createSwapchainImage(*allInOne.pSwapchain3D, allInOne.pImageCount3D, allInOne.ppSwapchain3DImages);
     createImageViews(*allInOne.ppSwapchain3DImages, *allInOne.pImageCount3D, allInOne.pSurface3DFormat->format, VK_IMAGE_ASPECT_COLOR_BIT, allInOne.ppSwapchain3DImageViews);
-
-    createFrameBuffer(*allInOne.pImageCount3D, *allInOne.ppSwapchain3DImageViews, &getTexture(TEXTURE_DEPTH)->imageView, allInOne.pRenderPass, allInOne.ppSwapchain3DFramebuffer);
+ 
+    loadDepthResource(TEXTURE_MODEL_DEPTH);
+    loadNormalResource(TEXTURE_NORMAL);
+    VkImageView modelImageViews[2] = {getTexture(TEXTURE_NORMAL)->imageView, getTexture(TEXTURE_MODEL_DEPTH)->imageView};
+    createFrameBuffer(*allInOne.pImageCount3D, 3, modelImageViews, *allInOne.ppSwapchain3DImageViews, allInOne.pRenderPass, allInOne.ppSwapchain3DFramebuffer);
 
     destroyedFrameBuffer(oldImageCount3D, oldFrameBuffer3D);
     destroyImageViews(oldSwapchainImageView3D, oldImageCount3D);

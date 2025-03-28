@@ -45,6 +45,7 @@ struct _VK_ALL
 
 
     VkRenderPass * pRenderPass;
+    VkRenderPass * pModelRenderPass;
 
     VkPipelineLayout * pGraphicPipelineLayout;
     VkPipeline * pGraphicPipeline;

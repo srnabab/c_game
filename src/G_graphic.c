@@ -211,6 +211,8 @@ static VkPipelineLayout computePipelineLayout = NULL;
 
 static VkRenderPass renderPass = NULL;
 
+static VkRenderPass modelRenderPass = NULL;
+
 static VkPipeline graphicPipeline = NULL;
 static VkPipeline modelPipeline = NULL;
 
@@ -369,6 +371,7 @@ static void initializeAllInOne(void)
     allInOne.ppSwapchain2DFramebuffer = &swapchain2DFramebuffer;
  
     allInOne.pRenderPass = &renderPass;
+    allInOne.pModelRenderPass = &modelRenderPass;
 
     allInOne.pGraphicPipelineLayout = &graphicPipelineLayout;
     allInOne.pGraphicPipeline = &graphicPipeline;
@@ -535,11 +538,15 @@ void initVulkan(void)
     loadDepthResource(TEXTURE_DEPTH);
     G_Texture_P const * depthTexutre = getTexture(TEXTURE_DEPTH);
     createGraphicRenderPass(swapchainFormat, depthTexutre->format, &renderPass);
+    VkImageView graphicImageViews[1] = {depthTexutre->imageView};
+    createFrameBuffer(imageCount2D, 2, graphicImageViews, swapchain2DImageViews, &renderPass, &swapchain2DFramebuffer);
+ 
+    loadDepthResource(TEXTURE_MODEL_DEPTH);
+    loadNormalResource(TEXTURE_NORMAL);
+    G_Texture_P const * modelDepthTexutre = getTexture(TEXTURE_MODEL_DEPTH);
+    G_Texture_P const * modelNormalTexture = getTexture(TEXTURE_NORMAL);
+    createModelRenderPass(swapchainFormat, modelNormalTexture->format, modelDepthTexutre->format, &modelRenderPass);
 
-    // createDepthResoures(&depthImage, &depthImageMemory, &depthImageView);
-
-    createFrameBuffer(imageCount2D, swapchain2DImageViews, &depthTexutre->imageView, &renderPass, &swapchain2DFramebuffer);
-    
 #if WINDOW_3D_DEBUG
 
     createSurface(window_3D, &surface3D);
@@ -550,8 +557,10 @@ void initVulkan(void)
     getSwapchainNumber(swapchain3D, &imageCount3D);
     createSwapchainImage(swapchain3D, &imageCount3D, &swapchain3DImages);
     createSwapchainImageView(swapchain3DImages, imageCount3D, swapchainFormat, VK_IMAGE_ASPECT_COLOR_BIT, &swapchain3DImageViews);
-    createFrameBuffer(imageCount3D, swapchain3DImageViews, &depthTexutre->imageView, &renderPass, &swapchain3DFramebuffer);
+    VkImageView modelImageViews[2] = {modelNormalTexture->imageView, modelDepthTexutre->imageView};
+    createFrameBuffer(imageCount3D, 3, modelImageViews, swapchain3DImageViews, &modelRenderPass, &swapchain3DFramebuffer);
 #endif
+
     createTextureSampler(&physicalDevice, &device, &textureSampler);
 
     vertices2D = (Vertex*)SDL_calloc(VERTEX_COUNT_IN_BUFFER_2D, sizeof(Vertex));
@@ -653,7 +662,7 @@ void initVulkan(void)
 
     createDescriptorSets(&graphicDescriptorPool, modelDescriptorSetLayout, modelSetCount, 2, &modelDescriptorSets);
 
-    createModelPipeline(&device, &extent2D, 2, modelShaderStageCreateInfo, &modelPipelineLayout, &renderPass, &modelPipeline);
+    createModelPipeline(&device, &extent2D, 2, modelShaderStageCreateInfo, &modelPipelineLayout, &modelRenderPass, &modelPipeline);
 
     freeEntryName(2, entryName);
 
@@ -1009,6 +1018,8 @@ void cleanVulkan(FuncCode code)
         case createCommandPoolF:
         vkDestroyRenderPass(device, renderPass, allInOne.pAllocationCallbacks);
         logMessage("renderPass destroyed");
+
+        vkDestroyRenderPass(device, modelRenderPass, allInOne.pAllocationCallbacks);
         /*fall through*/
 
         case createGraphicRenderPassF:

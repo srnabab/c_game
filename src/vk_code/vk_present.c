@@ -173,17 +173,18 @@ static void recordCommandBuffer_3D(uint32_t imageIndex)
     VkOffset2D offset = {0, 0};
     VkRect2D renderArea = {offset, *allInOne.pExtent2D};
 
-    VkClearValue clearValue[2];
-    clearValue[0].color= (VkClearColorValue){{0.0f, 0.0f, 0.0f, 1.0f}};
-    clearValue[1].depthStencil = (VkClearDepthStencilValue){1.0f, 0};
+    VkClearValue clearValue[3];
+    clearValue[0].color = (VkClearColorValue){{0.0f, 0.0f, 0.0f, 1.0f}};
+    clearValue[1].color = (VkClearColorValue){{0.0f, 0.0f, 0.0f, 1.0f}};
+    clearValue[2].depthStencil = (VkClearDepthStencilValue){1.0f, 0};
 
     VkRenderPassBeginInfo renderBeginInfo = {};
     renderBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderBeginInfo.pNext = NULL;
-    renderBeginInfo.renderPass = *allInOne.pRenderPass;
+    renderBeginInfo.renderPass = *allInOne.pModelRenderPass;
     renderBeginInfo.framebuffer = (*allInOne.ppSwapchain3DFramebuffer)[imageIndex];
     renderBeginInfo.renderArea = renderArea;
-    renderBeginInfo.clearValueCount = 2;
+    renderBeginInfo.clearValueCount = 3;
     renderBeginInfo.pClearValues = clearValue;
 
     vkCmdBeginRenderPass((*allInOne.ppGraphicCommandBuffer)[currentFrame], &renderBeginInfo, VK_SUBPASS_CONTENTS_INLINE);

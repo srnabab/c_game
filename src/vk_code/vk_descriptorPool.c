@@ -11,6 +11,7 @@
 extern VK_ALL allInOne;
 extern G_SYNC allSync;
 
+#warning "descriptor set update is fixed to 20"
 static G_DescriptorSet_Update updates[20];
 static Uint32 updatesCount = 0;
 

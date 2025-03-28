@@ -5,6 +5,7 @@
 
 #include "vk_code_h/vk_texture.h"
 #include "vk_code_h/vk_depth.h"
+#include "vk_code_h/vk_normal.h"
 #include "vk_code_h/vk_image.h"
 #include "vk_code_h/vk_all_struct.h"
 
@@ -74,11 +75,10 @@ static Uint32 HashID(const char * innerName)
 
     return hash;
 }
-bool loadTexture(PathType path, VkFormat format, VkImageAspectFlags flags, const char * innerName, VkDescriptorSet * pDescriptorSet)
+static int getEmptyTexture(const char * innerName)
 {
-    SDL_LockMutex(allSync.textureMutex);
-
     int i;
+
     for (i = 0;i < tableCount;i++)
     {
         if (SDL_strcmp(innerName, globalTexture[i].innerName) == 0) return false;
@@ -93,7 +93,15 @@ bool loadTexture(PathType path, VkFormat format, VkImageAspectFlags flags, const
         if (!resizeTexture(tableCount * 2)) return false;
         tableCount *= 2;
     }
-    
+
+    return i;
+}
+bool loadTexture(PathType path, VkFormat format, VkImageAspectFlags flags, const char * innerName, VkDescriptorSet * pDescriptorSet)
+{
+    SDL_LockMutex(allSync.textureMutex);
+
+    int i = getEmptyTexture(innerName);
+   
     Uint32 ID = HashID(innerName);
 
     Uint8 channel;
@@ -138,36 +146,36 @@ bool loadDepthResource(const char * innerName)
 {
     SDL_LockMutex(allSync.textureMutex);
 
-    int i;
-    for (i = 0;i < tableCount;i++)
-    {
-        if (SDL_strcmp(innerName, globalTexture[i].innerName) == 0) return false;
-    }
-    for (i = 0;i < tableCount;i++)
-    {
-        if (globalTexture[i].innerName[0] == '\0') break;
-    }
-
-    if (i == tableCount)
-    {
-        if (!resizeTexture(tableCount * 2)) return false;
-        tableCount *= 2;
-    }
-    
+    int i = getEmptyTexture(innerName);
+   
     Uint32 ID = HashID(innerName);
 
-    VkFormat depthFormat;
-    findDepthFormat(VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT, &depthFormat);
-    
-    createImage(allInOne.pExtent2D->width, allInOne.pExtent2D->height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &globalTexture[i].image, &globalTexture[i].imageMem);
-
-    createImageView(&globalTexture[i].image, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, &globalTexture[i].imageView);
-
-    transitionImageLayout(&globalTexture[i].image, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+    VkFormat depthFormat = createDepthResoures(&globalTexture[i].image, &globalTexture[i].imageMem, &globalTexture[i].imageView);
 
     globalTexture[i].source_width = allInOne.pExtent2D->width;
     globalTexture[i].source_height = allInOne.pExtent2D->height;
     globalTexture[i].format = depthFormat;
+    SDL_strlcpy(globalTexture[i].innerName, innerName, 16);
+
+    globalTexture[i].ID = ID;
+
+    SDL_UnlockMutex(allSync.textureMutex);
+
+    return true;
+}
+bool loadNormalResource(const char * innerName)
+{
+    SDL_LockMutex(allSync.textureMutex);
+
+    int i = getEmptyTexture(innerName);
+   
+    Uint32 ID = HashID(innerName);
+
+    VkFormat normalFormat = createNormalResoures(&globalTexture[i].image, &globalTexture[i].imageMem, &globalTexture[i].imageView);
+
+    globalTexture[i].source_width = allInOne.pExtent2D->width;
+    globalTexture[i].source_height = allInOne.pExtent2D->height;
+    globalTexture[i].format = normalFormat;
     SDL_strlcpy(globalTexture[i].innerName, innerName, 16);
 
     globalTexture[i].ID = ID;

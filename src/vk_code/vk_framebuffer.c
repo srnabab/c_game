@@ -6,31 +6,65 @@
 
 extern VK_ALL allInOne;
 
-void createFrameBuffer(uint32_t imageCount, VkImageView * pSwapchainImageView, VkImageView const * pDepthImageView, VkRenderPass * pRenderPass, VkFramebuffer ** pSwapchainFramebuffer)
+void createFrameBuffer(uint32_t imageCount, Uint32 attachmentCount, VkImageView * pImageViews, VkImageView * pSwapchainImageView, VkRenderPass * pRenderPass, VkFramebuffer ** pSwapchainFramebuffer)
 {
     FuncCode code = createFrameBufferF;
+
+    Uint32 i;
+    VkImageView * pImageViewAttachments = (VkImageView *)SDL_malloc(attachmentCount * sizeof(VkImageView));
 
     *pSwapchainFramebuffer = (VkFramebuffer *)SDL_calloc(imageCount, sizeof(VkFramebuffer));
     logMessage("framebuffer width: %u, height: %u\n", allInOne.pExtent2D->width, allInOne.pExtent2D->height);
 
-    for (uint32_t i = 0;i < imageCount;i++)
+    if (pSwapchainImageView == NULL)
     {
-        VkImageView attachments[2] = {pSwapchainImageView[i], *pDepthImageView};
+        for (i = 0;i < attachmentCount;i++)
+        {
+            pImageViewAttachments[i] = pImageViews[i];
+        }
 
-        VkFramebufferCreateInfo framebufferInfo = {};
-        framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        framebufferInfo.pNext = NULL;
-        framebufferInfo.flags = 0;
-        framebufferInfo.renderPass = *pRenderPass;
-        framebufferInfo.attachmentCount = 2;
-        framebufferInfo.pAttachments = attachments;
-        framebufferInfo.width = allInOne.pExtent2D->width;
-        framebufferInfo.height = allInOne.pExtent2D->height;
-        framebufferInfo.layers = 1;
+        for (i = 0;i < imageCount;i++)
+        {
 
-        resultVulkan(vkCreateFramebuffer(*allInOne.pDevice, &framebufferInfo, allInOne.pAllocationCallbacks, &((*pSwapchainFramebuffer)[i])), code, 0);
+            VkFramebufferCreateInfo framebufferInfo = {};
+            framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+            framebufferInfo.pNext = NULL;
+            framebufferInfo.flags = 0;
+            framebufferInfo.renderPass = *pRenderPass;
+            framebufferInfo.attachmentCount = attachmentCount;
+            framebufferInfo.pAttachments = pImageViewAttachments;
+            framebufferInfo.width = allInOne.pExtent2D->width;
+            framebufferInfo.height = allInOne.pExtent2D->height;
+            framebufferInfo.layers = 1;
+
+            resultVulkan(vkCreateFramebuffer(*allInOne.pDevice, &framebufferInfo, allInOne.pAllocationCallbacks, &((*pSwapchainFramebuffer)[i])), code, 2, pImageViewAttachments, *pSwapchainFramebuffer);
+        }
     }
+    else
+    {
+        for (i = 1;i < attachmentCount;i++)
+        {
+            pImageViewAttachments[i] = pImageViews[i - 1];
+        }
 
+        for (i = 0;i < imageCount;i++)
+        {
+            pImageViewAttachments[0] = pSwapchainImageView[i];
+
+            VkFramebufferCreateInfo framebufferInfo = {};
+            framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+            framebufferInfo.pNext = NULL;
+            framebufferInfo.flags = 0;
+            framebufferInfo.renderPass = *pRenderPass;
+            framebufferInfo.attachmentCount = attachmentCount;
+            framebufferInfo.pAttachments = pImageViewAttachments;
+            framebufferInfo.width = allInOne.pExtent2D->width;
+            framebufferInfo.height = allInOne.pExtent2D->height;
+            framebufferInfo.layers = 1;
+
+            resultVulkan(vkCreateFramebuffer(*allInOne.pDevice, &framebufferInfo, allInOne.pAllocationCallbacks, &((*pSwapchainFramebuffer)[i])), code, 2, pImageViewAttachments, *pSwapchainFramebuffer);
+        }
+    }
     //printf("swapchain framebuffer created\n");
 }
 void destroyedFrameBuffer(uint32_t imageCount, VkFramebuffer * pSwapchainFramebuffer)

@@ -8,5 +8,7 @@
 #define TEXTURE_MODEL "model"
 #define TEXTURE_BOTTOM "bottom"
 #define TEXTURE_DEPTH "depth"
+#define TEXTURE_MODEL_DEPTH "modelDepth"
+#define TEXTURE_NORMAL "normal"
 
 #endif

@@ -5,9 +5,8 @@
 
 #include "SDL3/SDL_begin_code.h"
 
-extern void SDLCALL findSupportFormat(VkFormat * candiates, VkPhysicalDevice * pPhysicalDevice, VkImageTiling tiling, VkFormatFeatureFlags features, VkFormat * pFormat);
 extern void SDLCALL findDepthFormat(VkImageTiling tiling, VkFormatFeatureFlags features, VkFormat * pDepthFormat);
-extern void SDLCALL createDepthResoures(VkImage * pDepthImage, VkDeviceMemory * pDepthImageMem, VkImageView * pDepthImageView);
+extern VkFormat SDLCALL createDepthResoures(VkImage * pDepthImage, VkDeviceMemory * pDepthImageMem, VkImageView * pDepthImageView);
 
 #include "SDL3/SDL_close_code.h"
 
