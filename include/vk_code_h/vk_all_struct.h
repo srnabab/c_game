@@ -132,6 +132,10 @@ struct _VK_ALL
     void * (*pppSSGIUniformBufferMapped)[MAX_FRAMES_IN_FLIGHT];
     SSGIUniformBufferObject * pSSGIubo;
 
+    VkBuffer (*ppSunUniformBuffer)[MAX_FRAMES_IN_FLIGHT];
+    void * (*pppSunUniformBufferMapped)[MAX_FRAMES_IN_FLIGHT];
+    DirectionLight * pSunubo;
+
     VkDescriptorSet ** ppGraphicDescriptorSets;
 
     VkDescriptorSet ** ppParticleDescriptorSets;

@@ -771,7 +771,22 @@ int update(void * arg)
 
             allInOne.pSSGIubo->rayStepSize = 0.05f;
             allInOne.pSSGIubo->maxRaySteps = 64;
-            allInOne.pSSGIubo->ssgiStrength = 0.5f;
+            allInOne.pSSGIubo->ssgiStrength = 0.2f;
+
+            // vec3 lightDirection(vec3){0.5f, -1.0f, 0.3f};
+
+            // vec3 lightColor(vec3){1.0f, 0.95f, 0.8f};
+
+            // float x, y, z;
+            // x = -SDL_randf();
+            // y = -SDL_randf();
+            // z = -SDL_randf();
+            // print("x: %f, y: %f, z: %f", x, y, z);
+
+            // glm_vec3_copy((vec3){x, y, z}, allInOne.pSunubo->lightDirection);
+            glm_vec3_copy((vec3){-0.5f, -0.9f, -0.5f}, allInOne.pSunubo->lightDirection);
+            glm_vec3_copy((vec3){1.0f, 0.95f, 0.8f}, allInOne.pSunubo->lightColor);
+            allInOne.pSunubo->lightIntensity = 2.0f;
 
             SDL_LockMutex(allSync.updateMutex);
             // if (updateVertex)
@@ -797,6 +812,7 @@ int update(void * arg)
 
             memcpy((*allInOne.pppComputeUniformBufferMapped)[currentFrame], allInOne.pComputeUbo, sizeof(ComputeUniformBufferObject));
             memcpy((*allInOne.pppSSGIUniformBufferMapped)[currentFrame], allInOne.pSSGIubo, sizeof(SSGIUniformBufferObject));
+            memcpy((*allInOne.pppSunUniformBufferMapped)[currentFrame], allInOne.pSunubo, sizeof(DirectionLight));
 
             memcpy((*allInOne.ppVertexBuffer2DMemMapped)[currentFrame], *allInOne.ppVertices2D, vertexEnd * sizeof(Vertex));// update vertex buffer
             memcpy((*allInOne.ppVertexBuffer3DMemMapped)[currentFrame], *allInOne.ppVertices3D, 30000 * sizeof(Vertex));

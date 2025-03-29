@@ -295,6 +295,11 @@ static VkDeviceMemory SSGIUniformBufferMem[MAX_FRAMES_IN_FLIGHT];
 static void* SSGIUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
 static SSGIUniformBufferObject SSGIubo = {};
 
+static VkBuffer SunUniformBuffer[MAX_FRAMES_IN_FLIGHT];
+static VkDeviceMemory SunUniformBufferMem[MAX_FRAMES_IN_FLIGHT];
+static void* SunUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
+static DirectionLight  Sunubo = {};
+
 static VkDescriptorPoolSize * graphicDescriptorPoolSize = NULL;
 static VkDescriptorPool graphicDescriptorPool = NULL;
 static VkDescriptorSet * graphicDescriptorSets = NULL;
@@ -479,6 +484,10 @@ static void initializeAllInOne(void)
     allInOne.ppSSGIUniformBuffer = &SSGIUniformBuffers;
     allInOne.pppSSGIUniformBufferMapped = &SSGIUniformBufferMapped;
     allInOne.pSSGIubo = &SSGIubo;
+
+    allInOne.ppSunUniformBuffer = &SunUniformBuffer;
+    allInOne.pppSunUniformBufferMapped = &SunUniformBufferMapped;
+    allInOne.pSunubo = &Sunubo;
 
     allInOne.ppGraphicDescriptorSets = &graphicDescriptorSets;
 
@@ -671,13 +680,15 @@ void initVulkan(void)
     createIndexBuffer(&physicalDevice, &device, indexBuffer3D, indexBuffer3DMem, indexBuffer3DMemMapped, indices3D, 45000, sizeof(Uint32), true);
     createIndexBuffer(&physicalDevice, &device, indexBuffer3D + 1, indexBuffer3DMem + 1, indexBuffer3DMemMapped + 1, indices3D, 45000, sizeof(Uint32), true);
 
-    createUniformBufferByBuffering(&physicalDevice, &device, &graphicUniformBuffers, &graphicUniformBuffersMemory, &graphicUniformBufferMapped, sizeof(UniformBufferObject));
-    createUniformBufferByBuffering(&physicalDevice, &device, &graphic3DUniformBuffers, &graphic3DUniformBuffersMemory, &graphic3DUniformBufferMapped, sizeof(UniformBufferObject));
-    createUniformBufferByBuffering(&physicalDevice, &device, &UIUniformBuffers, &UIUniformBuffersMemory, &UIUniformBufferMapped, sizeof(UniformBufferObject));
+    createUniformBufferByBuffering(&graphicUniformBuffers, &graphicUniformBuffersMemory, &graphicUniformBufferMapped, sizeof(UniformBufferObject));
+    createUniformBufferByBuffering(&graphic3DUniformBuffers, &graphic3DUniformBuffersMemory, &graphic3DUniformBufferMapped, sizeof(UniformBufferObject));
+    createUniformBufferByBuffering(&UIUniformBuffers, &UIUniformBuffersMemory, &UIUniformBufferMapped, sizeof(UniformBufferObject));
 
-    createUniformBufferByBuffering(&physicalDevice, &device, &computeUniformBuffers, &computeUniformBuffersmemory, &computeUniformBufferMapped, sizeof(ComputeUniformBufferObject));
+    createUniformBufferByBuffering(&computeUniformBuffers, &computeUniformBuffersmemory, &computeUniformBufferMapped, sizeof(ComputeUniformBufferObject));
 
-    createUniformBufferByBuffering(&physicalDevice, &device, &SSGIUniformBuffers, &SSGIUniformBufferMem, &SSGIUniformBufferMapped, sizeof(SSGIUniformBufferObject));
+    createUniformBufferByBuffering(&SSGIUniformBuffers, &SSGIUniformBufferMem, &SSGIUniformBufferMapped, sizeof(SSGIUniformBufferObject));
+
+    createUniformBufferByBuffering(&SunUniformBuffer, &SunUniformBufferMem, &SunUniformBufferMapped, sizeof(DirectionLight));
 
     createShaderStorageBuffers(&physicalDevice, &device, &shaderStorageBuffers, &shaderStorageBuffersMem);
 
@@ -840,6 +851,8 @@ void initVulkan(void)
     // model
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, modelTexture->pDescriptorSet, graphic3DUniformBuffers, 0, sizeof(UniformBufferObject));//4
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, bottomTexture->pDescriptorSet, graphic3DUniformBuffers, 0, sizeof(UniformBufferObject));
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2, modelTexture->pDescriptorSet, SunUniformBuffer, 0, sizeof(DirectionLight));
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2, bottomTexture->pDescriptorSet, SunUniformBuffer, 0, sizeof(DirectionLight));
 
     // SSGI
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3, normalTexture->pDescriptorSet, SSGIUniformBuffers, 0, sizeof(SSGIUniformBufferObject));
@@ -1074,7 +1087,11 @@ void cleanVulkan(FuncCode code)
         logMessage("SSGI uniform buffers destroyed");
         logMessage("SSGI uniform buffer memory freed");
 
+        destroyBufferByBuffering(SunUniformBuffer, SunUniformBufferMem);
+        logMessage("Sun uniform buffers destroyed");
+        logMessage("Sun uniform buffer memory freed");
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
+
         {
             vkDestroyBuffer(device, shaderStorageBuffers[i], allInOne.pAllocationCallbacks);
         }

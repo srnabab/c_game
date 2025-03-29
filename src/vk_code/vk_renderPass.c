@@ -173,7 +173,7 @@ void createCombineRenderPass(VkFormat colorFormat, VkRenderPass * pRenderPass)
     attachment[0].flags = 0;
     attachment[0].format = colorFormat;
     attachment[0].samples = VK_SAMPLE_COUNT_1_BIT;
-    attachment[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    attachment[0].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     attachment[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
     attachment[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     attachment[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -198,6 +198,26 @@ void createCombineRenderPass(VkFormat colorFormat, VkRenderPass * pRenderPass)
 
     VkAttachmentDescription attachments[] = {attachment[0]};
     VkSubpassDescription subpasses[] = {subpass0};
+    
+    VkSubpassDependency dependencies[2];
+
+    // Dependency from external (previous passes) to this subpass
+    dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+    dependencies[0].dstSubpass = 0;
+    dependencies[0].srcStageMask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT; // Adjust if inputs come from Compute
+    dependencies[0].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    dependencies[0].srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT; // Adjust if inputs come from Compute
+    dependencies[0].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+    dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT; // Usually safe for post-processing
+
+    // Dependency from this subpass to external (next pass)
+    // dependencies[1].srcSubpass = 0;
+    // dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+    // dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    // dependencies[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT; // Stage where next pass reads
+    // dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    // dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;        // Access type for next pass reading
+    // dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
     VkRenderPassCreateInfo renderPassCreateInfo = {};
     renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -208,7 +228,7 @@ void createCombineRenderPass(VkFormat colorFormat, VkRenderPass * pRenderPass)
     renderPassCreateInfo.subpassCount = 1;
     renderPassCreateInfo.pSubpasses = subpasses;
     renderPassCreateInfo.dependencyCount = 0;
-    renderPassCreateInfo.pDependencies = NULL;
+    renderPassCreateInfo.pDependencies = dependencies;
 
     resultVulkan(vkCreateRenderPass(*allInOne.pDevice, &renderPassCreateInfo, allInOne.pAllocationCallbacks, pRenderPass), code, 0);
 

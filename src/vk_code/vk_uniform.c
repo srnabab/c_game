@@ -8,7 +8,7 @@
 
 extern VK_ALL allInOne;
 
-void createUniformBufferByBuffering(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkBuffer (*ppUniformBuffers)[2], VkDeviceMemory (*ppUniformBuffersMem)[2], void* (*pppUniformBuffersMapped)[2], VkDeviceSize bufferSize)
+void createUniformBufferByBuffering(VkBuffer (*ppUniformBuffers)[2], VkDeviceMemory (*ppUniformBuffersMem)[2], void* (*pppUniformBuffersMapped)[2], VkDeviceSize bufferSize)
 {
     FuncCode code = createUniformBuffersF;
 
@@ -19,7 +19,7 @@ void createUniformBufferByBuffering(VkPhysicalDevice * pPhysicalDevice, VkDevice
         resultVulkan(createBuffer(&(*ppUniformBuffers)[i], &(*ppUniformBuffersMem)[i], bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT),
         code, 3, *ppUniformBuffers, *ppUniformBuffersMem, *pppUniformBuffersMapped);
 
-        resultVulkan(vkMapMemory(*pDevice, (*ppUniformBuffersMem)[i], 0, bufferSize, 0, &(*pppUniformBuffersMapped)[i]),
+        resultVulkan(vkMapMemory(*allInOne.pDevice, (*ppUniformBuffersMem)[i], 0, bufferSize, 0, &(*pppUniformBuffersMapped)[i]),
         code, 3, *ppUniformBuffers, *ppUniformBuffersMem, *pppUniformBuffersMapped);
     }
 }

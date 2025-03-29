@@ -66,6 +66,15 @@ struct _SSGIUniformBufferObject
 };
 typedef struct _SSGIUniformBufferObject SSGIUniformBufferObject;
 
+struct _DirectionLight
+{
+    vec3 lightDirection;
+    char align[4];
+    vec3 lightColor;
+    float lightIntensity;
+};
+typedef struct _DirectionLight DirectionLight;
+
 typedef struct _Particle
 {
     vec2 position;

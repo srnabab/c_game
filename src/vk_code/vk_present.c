@@ -330,7 +330,7 @@ static void recordCommandBufferCombine(Uint32 imageIndex)
 
     vkCmdBindDescriptorSets((*allInOne.ppGraphicCommandBuffer)[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pCombinePipelineLayout, 0, 1, (*allInOne.ppCombineDescriptorSets) + currentFrame, 0, NULL);
 
-    vkCmdDraw((*allInOne.ppGraphicCommandBuffer)[currentFrame], 3, 1, 0, 0);
+    vkCmdDraw((*allInOne.ppGraphicCommandBuffer)[currentFrame], 6, 1, 0, 0);
 
     vkCmdEndRenderPass((*allInOne.ppGraphicCommandBuffer)[currentFrame]);
 }
@@ -533,7 +533,7 @@ static void drawFirstScene(void)
     combinbeSubmitInfo.pCommandBuffers = &(*allInOne.ppGraphicCommandBuffer)[*allInOne.pCurrentFrame];
     combinbeSubmitInfo.signalSemaphoreCount = 2;
     combinbeSubmitInfo.pSignalSemaphores = combineSignalSemaphores;
-    vkQueueSubmit(*allInOne.pComputeQueue, 1, &combinbeSubmitInfo, (*allInOne.ppGraphicInFlightFence)[*allInOne.pCurrentFrame]);
+    vkQueueSubmit(*allInOne.pGraphicQueue, 1, &combinbeSubmitInfo, (*allInOne.ppGraphicInFlightFence)[*allInOne.pCurrentFrame]);
     signalValue[0]++;
 
     VkPresentInfoKHR presentInfo_3D = {};

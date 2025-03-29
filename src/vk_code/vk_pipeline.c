@@ -355,7 +355,7 @@ void createModelPipeline(VkDevice * pDevice, VkExtent2D * pExtent2D, uint32_t sh
         colorBlendAttachmentState[i].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
         colorBlendAttachmentState[i].colorBlendOp = VK_BLEND_OP_ADD;
         colorBlendAttachmentState[i].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-        colorBlendAttachmentState[i].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+        colorBlendAttachmentState[i].dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
         colorBlendAttachmentState[i].alphaBlendOp = VK_BLEND_OP_ADD;
         colorBlendAttachmentState[i].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     }
@@ -749,8 +749,8 @@ void createCombinePipeline(uint32_t shaderCount, VkPipelineShaderStageCreateInfo
     pipelineDepthStencilStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
     pipelineDepthStencilStateCreateInfo.pNext = NULL;
     pipelineDepthStencilStateCreateInfo.flags = 0;
-    pipelineDepthStencilStateCreateInfo.depthTestEnable = VK_TRUE;
-    pipelineDepthStencilStateCreateInfo.depthWriteEnable = VK_TRUE;
+    pipelineDepthStencilStateCreateInfo.depthTestEnable = VK_FALSE;
+    pipelineDepthStencilStateCreateInfo.depthWriteEnable = VK_FALSE;
     pipelineDepthStencilStateCreateInfo.depthCompareOp = VK_COMPARE_OP_LESS;
     pipelineDepthStencilStateCreateInfo.depthBoundsTestEnable = VK_FALSE;
     pipelineDepthStencilStateCreateInfo.stencilTestEnable = VK_FALSE;
@@ -767,7 +767,7 @@ void createCombinePipeline(uint32_t shaderCount, VkPipelineShaderStageCreateInfo
     
     for (uint32_t i = 0;i < attachmentCount;i++)
     {
-        colorBlendAttachmentState[i].blendEnable = VK_TRUE;
+        colorBlendAttachmentState[i].blendEnable = VK_FALSE;
         colorBlendAttachmentState[i].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
         colorBlendAttachmentState[i].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
         colorBlendAttachmentState[i].colorBlendOp = VK_BLEND_OP_ADD;
