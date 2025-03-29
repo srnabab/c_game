@@ -16,6 +16,8 @@ typedef enum _PathType
     CustomePath4,
     LogPath,
     PathPath,
+    CombineFragShader,
+    CombineVertShader,
     Model3dVertShader,
     Viking_room_CopyPng,
     Cornell_boxObj,

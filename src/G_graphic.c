@@ -177,6 +177,8 @@ static VkImage * swapchain2DImages = NULL;
 static VkImageView * swapchain2DImageViews = NULL;
 static VkFramebuffer * swapchain2DFramebuffer = NULL;
 
+static VkFramebuffer * directColorFramebuffer = NULL;
+
 // static VkShaderModule vertShaderCode = NULL;
 // static VkShaderModule fragShaderCode = NULL;
 static VkPipelineShaderStageCreateInfo * graphciShaderStageCreateInfo = NULL;
@@ -228,13 +230,11 @@ static VkPipeline computePipeline = NULL;
 
 static VkPipeline modelPipeline = NULL;
 static VkPipeline SSGIPipeline = NULL;
+static VkPipeline combinePipeline = NULL;
 
 static VkCommandPool graphicCommandPool = NULL;
-
 static VkCommandPool presentCommandPool = NULL;
-
 static VkCommandPool transferCommandPool = NULL;
-
 static VkCommandPool computeCommandPool = NULL;
 
 static VkSampler textureSampler = NULL;
@@ -421,6 +421,7 @@ static void initializeAllInOne(void)
 #endif
 
     allInOne.ppSwapchain3DFramebuffer = &swapchain3DFramebuffer;
+    allInOne.ppDirectColorFramebuffer = &directColorFramebuffer;
 
     allInOne.pVertexBuffer2D = &vertexBuffer2D;
     allInOne.maxVertices2DCount = (BALLCOUNT + MAX_CHARACTERS) * 4 * 2;
@@ -570,9 +571,11 @@ void initVulkan(void)
  
     loadDepthResource(TEXTURE_MODEL_DEPTH, true);
     loadNormalResource(TEXTURE_NORMAL);
+    loadImageResource(swapchainFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_UNDEFINED, TEXTURE_MODEL_COLOR, NULL);
     G_Texture_P const * modelDepthTexutre = getTexture(TEXTURE_MODEL_DEPTH);
     G_Texture_P const * modelNormalTexture = getTexture(TEXTURE_NORMAL);
-    createModelRenderPass(swapchainFormat, modelNormalTexture->format, modelDepthTexutre->format, &modelRenderPass);
+    G_Texture_P const * modelColorTexture = getTexture(TEXTURE_MODEL_COLOR);
+    createModelRenderPass(modelColorTexture->format, modelNormalTexture->format, modelDepthTexutre->format, &modelRenderPass);
 
 #if WINDOW_3D_DEBUG
 
@@ -586,8 +589,8 @@ void initVulkan(void)
     createSwapchainImageView(swapchain3DImages, imageCount3D, swapchainFormat, VK_IMAGE_ASPECT_COLOR_BIT, &swapchain3DImageViews);
 #endif
 
-    VkImageView modelImageViews[2] = {modelNormalTexture->imageView, modelDepthTexutre->imageView};
-    createFrameBuffer(imageCount3D, 3, modelImageViews, swapchain3DImageViews, &modelRenderPass, &swapchain3DFramebuffer);
+    VkImageView modelImageViews[] = {modelColorTexture->imageView, modelNormalTexture->imageView, modelDepthTexutre->imageView};
+    createFrameBuffer(2, 3, modelImageViews, NULL, &modelRenderPass, &directColorFramebuffer);
 
     createTextureSampler(&textureSampler);
     createNormalSampler(&normalSampler);
@@ -723,7 +726,7 @@ void initVulkan(void)
     computeDescriptorPoolSize[1].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
     computeDescriptorPoolSize[1].descriptorCount = 4;
     computeDescriptorPoolSize[2].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    computeDescriptorPoolSize[2].descriptorCount = 4;
+    computeDescriptorPoolSize[2].descriptorCount = 6;
     computeDescriptorPoolSize[3].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
     computeDescriptorPoolSize[3].descriptorCount = 2;
     createDescriptorPool(&device, 4, computeDescriptorPoolSize, 6, &computeDescriptorPool);
@@ -750,6 +753,15 @@ void initVulkan(void)
 
     createComputePipeline(&device, &SSGIPipelineLayout, SSGIShaderStageCreateInfo, &SSGIPipeline);
     freeEntryName(1, entryName);
+
+    // PathType combineTypes[] = {CombineVertShader, CombineFragShader};
+    // VkShaderModule * combineTempModule = NULL;
+    // entryName = NULL;
+    // Uint32 combineSetCount = CreateShaderModulesAndDescriptorSets(combineTypes, 2, &combineTempModule, &combineShaderStageCreateInfo, &combineDescriptorSetLayout, &combinePipelineLayout, &entryName);
+
+    // createDescriptorSets(&graphicDescriptorPool, combineDescriptorSetLayout, combineSetCount, 1, &combineDescriptorSets);
+    // createCombinePipeline(&device, &extent2D, 2, combineShaderStageCreateInfo, &combinePipelineLayout, &renderPass, &combinePipeline);
+    // freeEntryName(2, entryName);
 
 
     createCommandbufferByBuffering(VK_COMMAND_BUFFER_LEVEL_PRIMARY, &graphicCommandPool, &graphicCommandBuffer);
@@ -780,7 +792,7 @@ void initVulkan(void)
     loadStaticModel(&staticModelPool, 10, BoxObj, BoxPng, vertices3D, &vertices3DCount, indices3D, &indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_MODEL, modelDescriptorSets);
     loadStaticModel(&staticModelPool, 10, BottomObj, BottomPng, vertices3D, &vertices3DCount, indices3D, &indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_BOTTOM, modelDescriptorSets + 2);
 
-    loadStorageImageResource(VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_STORAGE_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_GENERAL, TEXTURE_SSGI_STORAGE_IMAGE, SSGIDescriptorSets + 2);
+    loadImageResource(VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_STORAGE_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_GENERAL, TEXTURE_SSGI_STORAGE_IMAGE, SSGIDescriptorSets + 2);
 
     loadTexture(Loading1Png, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_LOADING, graphicDescriptorSets);
     loadTexture(CirclePng, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_CIRCLE, graphicDescriptorSets + 2);
@@ -788,7 +800,8 @@ void initVulkan(void)
 
     addDescriptorSetToTexture(TEXTURE_MODEL_DEPTH, SSGIDescriptorSets + 0);
     addDescriptorSetToTexture(TEXTURE_NORMAL, SSGIDescriptorSets + 0);
-    
+    addDescriptorSetToTexture(TEXTURE_MODEL_COLOR, SSGIDescriptorSets + 0);
+
     G_Texture_P * loadingTexture = getTexture(TEXTURE_LOADING);
     G_Texture_P * circleTexture = getTexture(TEXTURE_CIRCLE);
     G_Texture_P * fontTexture = getTexture(TEXTURE_FONT);
@@ -825,6 +838,7 @@ void initVulkan(void)
     // SSGI
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, TEXTURE_MODEL_DEPTH, depthSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_NORMAL, normalSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2, TEXTURE_MODEL_COLOR, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 4, TEXTURE_SSGI_STORAGE_IMAGE, NULL, VK_IMAGE_LAYOUT_GENERAL);
 
     // graphic
@@ -1081,9 +1095,12 @@ void cleanVulkan(FuncCode code)
         case createTextureImageF:
         destroyedFrameBuffer(imageCount2D, swapchain2DFramebuffer);
         SDL_free(swapchain2DFramebuffer);
+
+        destroyedFrameBuffer(2, directColorFramebuffer);
+        SDL_free(directColorFramebuffer);
         
-        destroyedFrameBuffer(imageCount3D, swapchain3DFramebuffer);
-        SDL_free(swapchain3DFramebuffer);
+        // destroyedFrameBuffer(imageCount3D, swapchain3DFramebuffer);
+        // SDL_free(swapchain3DFramebuffer);
         logMessage("framebuffer destroyed");
         /*fall through*/
 

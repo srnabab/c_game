@@ -184,7 +184,7 @@ bool loadNormalResource(const char * innerName)
 
     return true;
 }
-bool loadStorageImageResource(VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties\
+bool loadImageResource(VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties\
 , VkImageLayout targetLayout, const char * innerName, VkDescriptorSet * pDescriptorSet)
 {
     SDL_LockMutex(allSync.textureMutex);
@@ -197,14 +197,14 @@ bool loadStorageImageResource(VkFormat format, VkImageTiling tiling, VkImageUsag
 
     createImageView(&globalTexture[i].image, format, VK_IMAGE_ASPECT_COLOR_BIT, &globalTexture[i].imageView);
 
-    transitionImageLayout(&globalTexture[i].image, format, VK_IMAGE_LAYOUT_UNDEFINED, targetLayout);
+    if (targetLayout != VK_IMAGE_LAYOUT_UNDEFINED) transitionImageLayout(&globalTexture[i].image, format, VK_IMAGE_LAYOUT_UNDEFINED, targetLayout);
 
     globalTexture[i].source_width = allInOne.pExtent2D->width;
     globalTexture[i].source_height = allInOne.pExtent2D->height;
     globalTexture[i].format = format;
     SDL_strlcpy(globalTexture[i].innerName, innerName, 16);
 
-    globalTexture[i].pDescriptorSet = pDescriptorSet;
+    if (pDescriptorSet != NULL) globalTexture[i].pDescriptorSet = pDescriptorSet;
 
     globalTexture[i].ID = ID;
 

@@ -76,8 +76,10 @@ struct _VK_ALL
 
     VkImage ** ppSwapchain3DImages;
     VkImageView ** ppSwapchain3DImageViews;
-    VkFramebuffer ** ppSwapchain3DFramebuffer;
 #endif
+
+    VkFramebuffer ** ppSwapchain3DFramebuffer;
+    VkFramebuffer ** ppDirectColorFramebuffer;
 
     VkBuffer (*pVertexBuffer2D)[MAX_FRAMES_IN_FLIGHT];
     Uint32 maxVertices2DCount;

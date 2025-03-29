@@ -76,7 +76,7 @@ extern bool SDLCALL loadTexture(PathType path, VkFormat format, VkImageAspectFla
 extern G_Texture_P * SDLCALL getTexture(const char * innerName);
 extern bool SDLCALL loadDepthResource(const char * innerName, bool sample);
 extern bool SDLCALL loadNormalResource(const char * innerName);
-extern bool SDLCALL loadStorageImageResource(VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImageLayout targetLayout, const char * innerName, VkDescriptorSet * pDescriptorSet);
+extern bool SDLCALL loadImageResource(VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImageLayout targetLayout, const char * innerName, VkDescriptorSet * pDescriptorSet);
 extern bool SDLCALL addDescriptorSetToTexture(const char * innerName, VkDescriptorSet * pDescriptorSet);
 extern bool SDLCALL textureOffsetsAdd(G_Texture_P * pTexture, Uint32 offset);
 extern void SDLCALL emptyTextureRefCount(void);

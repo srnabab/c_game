@@ -90,7 +90,7 @@ void createModelRenderPass(VkFormat colorFormat, VkFormat normalFormat, VkFormat
     attachment[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     attachment[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
     attachment[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    attachment[0].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    attachment[0].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
     // normal attachment
     attachment[1].flags = 0;
