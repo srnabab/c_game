@@ -2,11 +2,10 @@
 
 layout(location = 0) in vec2 uv; // Texture coordinates from full-screen quad
 
-layout(location = 1) out vec4 finalColor;
-
 layout(binding = 0, set = 0) uniform sampler2D sceneColorSampler;
 layout(binding = 1, set = 0) uniform sampler2D ssgiResultSampler;
 
+layout(location = 0) out vec4 finalColor;
 
 void main() {
     vec3 directLightAndEmissive = texture(sceneColorSampler, uv).rgb;

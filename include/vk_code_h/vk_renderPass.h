@@ -7,6 +7,7 @@
 
 extern void SDLCALL createGraphicRenderPass(VkFormat surfaceFormat, VkFormat depthFormat, VkRenderPass * pRenderPass);
 extern void SDLCALL createModelRenderPass(VkFormat colorFormat, VkFormat normalFormat, VkFormat depthFormat, VkRenderPass * pRenderPass);
+extern void SDLCALL createCombineRenderPass(VkFormat colorFormat, VkRenderPass * pRenderPass);
 
 #include "SDL3/SDL_close_code.h"
 

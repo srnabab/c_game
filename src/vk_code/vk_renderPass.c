@@ -164,3 +164,53 @@ void createModelRenderPass(VkFormat colorFormat, VkFormat normalFormat, VkFormat
 
     //printf("renderPass created\n");
 }
+void createCombineRenderPass(VkFormat colorFormat, VkRenderPass * pRenderPass)
+{
+    FuncCode code = createGraphicRenderPassF;
+    VkAttachmentDescription attachment[2];
+
+    // color attachment
+    attachment[0].flags = 0;
+    attachment[0].format = colorFormat;
+    attachment[0].samples = VK_SAMPLE_COUNT_1_BIT;
+    attachment[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    attachment[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    attachment[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attachment[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attachment[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    attachment[0].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+    VkAttachmentReference attachmentRef[2];
+    attachmentRef[0].attachment = 0;
+    attachmentRef[0].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+    VkSubpassDescription subpass0 = {};
+    subpass0.flags = 0;
+    subpass0.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    subpass0.inputAttachmentCount = 0;
+    subpass0.pInputAttachments = NULL;
+    subpass0.colorAttachmentCount = 1;
+    subpass0.pColorAttachments = attachmentRef;
+    subpass0.pResolveAttachments = NULL;
+    subpass0.pDepthStencilAttachment = NULL;
+    subpass0.preserveAttachmentCount = 0;
+    subpass0.pPreserveAttachments = NULL;
+
+    VkAttachmentDescription attachments[] = {attachment[0]};
+    VkSubpassDescription subpasses[] = {subpass0};
+
+    VkRenderPassCreateInfo renderPassCreateInfo = {};
+    renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    renderPassCreateInfo.pNext = NULL;
+    renderPassCreateInfo.flags = 0;
+    renderPassCreateInfo.attachmentCount = 1;
+    renderPassCreateInfo.pAttachments = attachments;
+    renderPassCreateInfo.subpassCount = 1;
+    renderPassCreateInfo.pSubpasses = subpasses;
+    renderPassCreateInfo.dependencyCount = 0;
+    renderPassCreateInfo.pDependencies = NULL;
+
+    resultVulkan(vkCreateRenderPass(*allInOne.pDevice, &renderPassCreateInfo, allInOne.pAllocationCallbacks, pRenderPass), code, 0);
+
+    //printf("renderPass created\n");
+}
