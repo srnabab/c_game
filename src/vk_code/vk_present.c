@@ -4,6 +4,7 @@
 #include "vk_code_h/vk_move.h"
 #include "vk_code_h/vk_buffer.h"
 #include "vk_code_h/vk_judge.h"
+#include "vk_code_h/vk_image.h"
 #include "vk_code_h/vk_all_struct.h"
 
 #include "SDL3/SDL_timer.h"
@@ -239,54 +240,127 @@ static void recordComputeCommandBuffer(void)
 
     vkCmdDispatch((*allInOne.ppComputeCommandBuffer)[*pCurrentFrame], PARTICLE_COUNT / 256, 1, 1);
 }
+static void recordSSGICommandBuffer(void)
+{
+    uint32_t * pCurrentFrame = allInOne.pCurrentFrame;
+
+    VkCommandBufferBeginInfo computeBeginInfo;
+    computeBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    computeBeginInfo.pNext = NULL;
+    computeBeginInfo.flags = 0;
+    computeBeginInfo.pInheritanceInfo = NULL;
+    
+    vkBeginCommandBuffer((*allInOne.ppComputeCommandBuffer)[*pCurrentFrame], &computeBeginInfo);
+
+    VkViewport viewport = {};
+    viewport.x = 0.0f;
+    viewport.y = 0.0f;
+    viewport.width = (float)allInOne.pExtent2D->width;
+    viewport.height = (float)allInOne.pExtent2D->height;
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+
+    vkCmdSetViewport((*allInOne.ppComputeCommandBuffer)[*pCurrentFrame], 0, 1, &viewport);
+
+    VkRect2D scissor = {};
+    scissor.offset = (VkOffset2D){0, 0};
+    // scissor.extent = (VkExtent2D){200, 200};
+    scissor.extent = *allInOne.pExtent2D;
+
+    vkCmdSetScissor((*allInOne.ppComputeCommandBuffer)[*pCurrentFrame], 0, 1, &scissor);
+
+    vkCmdBindPipeline((*allInOne.ppComputeCommandBuffer)[*pCurrentFrame], VK_PIPELINE_BIND_POINT_COMPUTE, *allInOne.pSSGIPipeline);
+
+    VkDescriptorSet descriptorSets[] = {(*allInOne.ppSSGIDescriptorSets)[*pCurrentFrame], (*allInOne.ppSSGIDescriptorSets + 2)[*pCurrentFrame]};
+    vkCmdBindDescriptorSets((*allInOne.ppComputeCommandBuffer)[*pCurrentFrame], VK_PIPELINE_BIND_POINT_COMPUTE, *allInOne.pSSGIPipelineLayout, 0, 2, descriptorSets, 0, NULL);
+
+    vkCmdDispatch((*allInOne.ppComputeCommandBuffer)[*pCurrentFrame], (allInOne.pExtent2D->width + 8 - 1) / 8, (allInOne.pExtent2D->height + 8 - 1) / 8, 1);
+}
 static void drawFirstScene(void)
 {
+    VkSemaphore * timelineSemaphore = (*allInOne.ppTimelineSemaphore1) + *allInOne.pCurrentFrame;
+    Uint64 waitValue[] = {0, 0};
+    vkGetSemaphoreCounterValue(*allInOne.pDevice, *timelineSemaphore, &waitValue[0]);
+    Uint64 signalValue[] = {1, 0};
+    signalValue[0] = waitValue[0] + 1;
+
     resultVulkan(vkWaitForFences(*allInOne.pDevice, 1, &(*allInOne.ppComputeInFlightFence)[*allInOne.pCurrentFrame], VK_TRUE, UINT64_MAX), waitForFencesF, 0);
     vkResetFences(*allInOne.pDevice, 1, &(*allInOne.ppComputeInFlightFence)[*allInOne.pCurrentFrame]);
+
+    vkResetCommandBuffer((*allInOne.ppComputeCommandBuffer)[*allInOne.pCurrentFrame], 0);
     recordComputeCommandBuffer();
     vkEndCommandBuffer((*allInOne.ppComputeCommandBuffer)[*allInOne.pCurrentFrame]);
+
+    VkTimelineSemaphoreSubmitInfo timelineSemaphoreInfo = {};
+    timelineSemaphoreInfo.sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO;
+    timelineSemaphoreInfo.pNext = NULL;
+    timelineSemaphoreInfo.waitSemaphoreValueCount = 0;
+    timelineSemaphoreInfo.pWaitSemaphoreValues = NULL;
+    timelineSemaphoreInfo.signalSemaphoreValueCount = 1;
+    timelineSemaphoreInfo.pSignalSemaphoreValues = signalValue;
+
     VkSubmitInfo computeSubmitInfo = {};
     computeSubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    computeSubmitInfo.pNext = NULL;
+    computeSubmitInfo.pNext = &timelineSemaphoreInfo;
     computeSubmitInfo.waitSemaphoreCount = 0;
     computeSubmitInfo.pWaitSemaphores = NULL;
     computeSubmitInfo.pWaitDstStageMask = NULL;
     computeSubmitInfo.commandBufferCount = 1;
     computeSubmitInfo.pCommandBuffers = &(*allInOne.ppComputeCommandBuffer)[*allInOne.pCurrentFrame];
     computeSubmitInfo.signalSemaphoreCount = 1;
-    computeSubmitInfo.pSignalSemaphores = &(*allInOne.ppComputeFinishedSemaphore)[*allInOne.pCurrentFrame];
+    computeSubmitInfo.pSignalSemaphores = timelineSemaphore;
     vkQueueSubmit(*allInOne.pComputeQueue, 1, &computeSubmitInfo, (*allInOne.ppComputeInFlightFence)[*allInOne.pCurrentFrame]);
+    signalValue[0]++;
+
+    
+
+
     vkWaitForFences(*allInOne.pDevice, 1, &(*allInOne.ppGraphicInFlightFence)[*allInOne.pCurrentFrame], VK_TRUE, UINT64_MAX);
     resultVulkan(vkResetFences(*allInOne.pDevice, 1, &(*allInOne.ppGraphicInFlightFence)[*allInOne.pCurrentFrame]), resetFencesF, 0);
     //printf("reset fences\n");
+
     uint32_t imageIndex;
     resultVulkan(vkAcquireNextImageKHR(*allInOne.pDevice, *allInOne.pSwapchain2D, UINT64_MAX, (*allInOne.ppImageAvailableSemaphore)[*allInOne.pCurrentFrame], NULL, &imageIndex), acquireNextImageF, 0);
+
     //printf("acquire next image index\n"); 
     resultVulkan(vkResetCommandBuffer((*allInOne.ppGraphicCommandBuffer)[*allInOne.pCurrentFrame], 0), resetCommandBufferF, 0);
     //printf("reset command bufer\n");
     recordCommandBuffer_FirstScene(imageIndex);
     resultVulkan(vkEndCommandBuffer((*allInOne.ppGraphicCommandBuffer)[*allInOne.pCurrentFrame]), endCommandBufferF, 0);
     //printf("end command buffer\n");
-    VkSemaphore waitSemaphore[2] = {(*allInOne.ppComputeFinishedSemaphore)[*allInOne.pCurrentFrame], (*allInOne.ppImageAvailableSemaphore)[*allInOne.pCurrentFrame]};
+
+    VkSemaphore waitSemaphore[2] = {*timelineSemaphore, (*allInOne.ppImageAvailableSemaphore)[*allInOne.pCurrentFrame]};
     VkPipelineStageFlags waitStage[2] = {VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-    VkSemaphore signalSemaphore[1] = {(*allInOne.ppRenderFinishedSemaphore)[*allInOne.pCurrentFrame]};
+
+    VkSemaphore signalSemaphore[2] = {*timelineSemaphore, (*allInOne.ppRenderFinishedSemaphore)[*allInOne.pCurrentFrame]};
+
+    waitValue[0] = signalValue[0] - 1;
+    timelineSemaphoreInfo.waitSemaphoreValueCount = 2;
+    timelineSemaphoreInfo.pWaitSemaphoreValues = waitValue;
+    timelineSemaphoreInfo.signalSemaphoreValueCount = 2;
+    timelineSemaphoreInfo.pSignalSemaphoreValues = signalValue;
+
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo.pNext = NULL;
+    submitInfo.pNext = &timelineSemaphoreInfo;
     submitInfo.waitSemaphoreCount = 2;
     submitInfo.pWaitSemaphores = waitSemaphore;
     submitInfo.pWaitDstStageMask = waitStage;
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &(*allInOne.ppGraphicCommandBuffer)[*allInOne.pCurrentFrame];
-    submitInfo.signalSemaphoreCount = 1;
+    submitInfo.signalSemaphoreCount = 2;
     submitInfo.pSignalSemaphores = signalSemaphore;
+
     SDL_WaitSemaphore(allSync.vertexSemaphore);
+
     resultVulkan(vkQueueSubmit(*allInOne.pGraphicQueue, 1, &submitInfo, (*allInOne.ppGraphicInFlightFence)[*allInOne.pCurrentFrame]), queueSumbitF, 0);
+    signalValue[0]++;
+
     VkPresentInfoKHR presentInfo = {};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
     presentInfo.pNext = NULL;
     presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = &(*allInOne.ppRenderFinishedSemaphore)[*allInOne.pCurrentFrame];
+    presentInfo.pWaitSemaphores = (*allInOne.ppRenderFinishedSemaphore) + *allInOne.pCurrentFrame;
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = allInOne.pSwapchain2D;
     presentInfo.pImageIndices = &imageIndex;
@@ -300,29 +374,77 @@ static void drawFirstScene(void)
     //printf("reset fences\n");
     Uint32 imageIndex_3D = 0;
     resultVulkan(vkAcquireNextImageKHR(*allInOne.pDevice, *allInOne.pSwapchain3D, UINT64_MAX, (*allInOne.ppImageAvailableSemaphore)[*allInOne.pCurrentFrame], NULL, &imageIndex_3D), acquireNextImageF, 0);
+
     //printf("acquire next image index\n"); 
     resultVulkan(vkResetCommandBuffer((*allInOne.ppGraphicCommandBuffer)[*allInOne.pCurrentFrame], 0), resetCommandBufferF, 0);
     recordCommandBuffer_3D(imageIndex_3D);
     resultVulkan(vkEndCommandBuffer((*allInOne.ppGraphicCommandBuffer)[*allInOne.pCurrentFrame]), endCommandBufferF, 0);
+
     VkSemaphore waitSemaphore_3D[] = {(*allInOne.ppImageAvailableSemaphore)[*allInOne.pCurrentFrame]};
     VkPipelineStageFlags waitStage_3D[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-    VkSemaphore signalSemaphore_3D[1] = {(*allInOne.ppRenderFinishedSemaphore)[*allInOne.pCurrentFrame]};
+
+    timelineSemaphoreInfo.waitSemaphoreValueCount = 0;
+    timelineSemaphoreInfo.pWaitSemaphoreValues = NULL;
+    timelineSemaphoreInfo.signalSemaphoreValueCount = 1;
+    timelineSemaphoreInfo.pSignalSemaphoreValues = signalValue;
+
     VkSubmitInfo submitInfo_3D = {};
     submitInfo_3D.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo_3D.pNext = NULL;
+    submitInfo_3D.pNext = &timelineSemaphoreInfo;
     submitInfo_3D.waitSemaphoreCount = 1;
     submitInfo_3D.pWaitSemaphores = waitSemaphore_3D;
     submitInfo_3D.pWaitDstStageMask = waitStage_3D;
     submitInfo_3D.commandBufferCount = 1;
     submitInfo_3D.pCommandBuffers = &(*allInOne.ppGraphicCommandBuffer)[*allInOne.pCurrentFrame];
     submitInfo_3D.signalSemaphoreCount = 1;
-    submitInfo_3D.pSignalSemaphores = signalSemaphore_3D;
+    submitInfo_3D.pSignalSemaphores = timelineSemaphore;
     resultVulkan(vkQueueSubmit(*allInOne.pGraphicQueue, 1, &submitInfo_3D, (*allInOne.ppGraphicInFlightFence)[*allInOne.pCurrentFrame]), queueSumbitF, 0);
+    signalValue[0]++;
+    
+
+    G_Texture_P * depthTexture = getTexture(TEXTURE_MODEL_DEPTH);
+    transitionImageLayout(&depthTexture->image, depthTexture->format, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    G_Texture_P * normalTexture = getTexture(TEXTURE_NORMAL);
+    transitionImageLayout(&normalTexture->image, normalTexture->format, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+    // vkWaitForFences(*allInOne.pDevice, 1, &(*allInOne.ppGraphicInFlightFence)[*allInOne.pCurrentFrame], VK_TRUE, UINT64_MAX);
+    // resultVulkan(vkResetFences(*allInOne.pDevice, 1, &(*allInOne.ppGraphicInFlightFence)[*allInOne.pCurrentFrame]), resetFencesF, 0);
+
+    resultVulkan(vkWaitForFences(*allInOne.pDevice, 1, &(*allInOne.ppComputeInFlightFence)[*allInOne.pCurrentFrame], VK_TRUE, UINT64_MAX), waitForFencesF, 0);
+    vkResetFences(*allInOne.pDevice, 1, &(*allInOne.ppComputeInFlightFence)[*allInOne.pCurrentFrame]);
+
+    vkResetCommandBuffer((*allInOne.ppComputeCommandBuffer)[*allInOne.pCurrentFrame], 0);
+    recordSSGICommandBuffer();
+    vkEndCommandBuffer((*allInOne.ppComputeCommandBuffer)[*allInOne.pCurrentFrame]);
+
+    VkPipelineStageFlags SSGIWaitStage[] = {VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT};
+    VkSemaphore SSGISignaleSemaphore[] = {*timelineSemaphore, (*allInOne.ppRenderFinishedSemaphore)[*allInOne.pCurrentFrame]};
+
+    waitValue[0] = signalValue[0] - 1;
+    timelineSemaphoreInfo.waitSemaphoreValueCount = 1;
+    timelineSemaphoreInfo.pWaitSemaphoreValues = waitValue;
+    timelineSemaphoreInfo.signalSemaphoreValueCount = 2;
+    timelineSemaphoreInfo.pSignalSemaphoreValues = signalValue;
+
+    VkSubmitInfo SSGISubmitInfo = {};
+    SSGISubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    SSGISubmitInfo.pNext = &timelineSemaphoreInfo;
+    SSGISubmitInfo.waitSemaphoreCount = 1;
+    SSGISubmitInfo.pWaitSemaphores = timelineSemaphore;
+    SSGISubmitInfo.pWaitDstStageMask = SSGIWaitStage;
+    SSGISubmitInfo.commandBufferCount = 1;
+    SSGISubmitInfo.pCommandBuffers = &(*allInOne.ppComputeCommandBuffer)[*allInOne.pCurrentFrame];
+    SSGISubmitInfo.signalSemaphoreCount = 2;
+    SSGISubmitInfo.pSignalSemaphores = SSGISignaleSemaphore;
+    vkQueueSubmit(*allInOne.pComputeQueue, 1, &SSGISubmitInfo, (*allInOne.ppComputeInFlightFence)[*allInOne.pCurrentFrame]);
+    signalValue[0]++;
+
+
     VkPresentInfoKHR presentInfo_3D = {};
     presentInfo_3D.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
     presentInfo_3D.pNext = NULL;
     presentInfo_3D.waitSemaphoreCount = 1;
-    presentInfo_3D.pWaitSemaphores = &(*allInOne.ppRenderFinishedSemaphore)[*allInOne.pCurrentFrame];
+    presentInfo_3D.pWaitSemaphores = (*allInOne.ppRenderFinishedSemaphore) + *allInOne.pCurrentFrame;
     presentInfo_3D.swapchainCount = 1;
     presentInfo_3D.pSwapchains = allInOne.pSwapchain3D;
     presentInfo_3D.pImageIndices = &imageIndex_3D;

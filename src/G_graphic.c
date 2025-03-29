@@ -309,12 +309,12 @@ static VkCommandBuffer presentCommandBuffer[MAX_FRAMES_IN_FLIGHT];
 static VkCommandBuffer computeCommandBuffer[MAX_FRAMES_IN_FLIGHT];
 static VkCommandBuffer transferCommandBuffer[MAX_FRAMES_IN_FLIGHT];
 
+static VkSemaphore timelineSemaphore1[MAX_FRAMES_IN_FLIGHT];
+
 static VkSemaphore imageAvailableSemaphore[MAX_FRAMES_IN_FLIGHT];
 static VkSemaphore renderFinishedSemaphore[MAX_FRAMES_IN_FLIGHT];
 
 static VkFence graphicInFlightFence[2];
-
-static VkSemaphore computeFinishedSemaphore[MAX_FRAMES_IN_FLIGHT];
 static VkFence computeInFlightFences[2];
 
 static Uint32 currentFrame = 0;
@@ -463,6 +463,10 @@ static void initializeAllInOne(void)
     allInOne.pppUIUniformBufferMapped = &UIUniformBufferMapped;
     allInOne.pUIUbo = &uboUI;
 
+    allInOne.ppSSGIUniformBuffer = &SSGIUniformBuffers;
+    allInOne.pppSSGIUniformBufferMapped = &SSGIUniformBufferMapped;
+    allInOne.pSSGIubo = &SSGIubo;
+
     allInOne.ppGraphicDescriptorSets = &graphicDescriptorSets;
 
     allInOne.ppParticleDescriptorSets = &particleDescriptorSets;
@@ -473,6 +477,8 @@ static void initializeAllInOne(void)
 
     allInOne.ppComputeDescriptorSets = &computeDescriptorSets;
 
+    allInOne.ppSSGIDescriptorSets = &SSGIDescriptorSets;
+
     allInOne.ppShaderStorageBuffers = &shaderStorageBuffers;
 
     allInOne.ppGraphicCommandBuffer = &graphicCommandBuffer;
@@ -480,12 +486,11 @@ static void initializeAllInOne(void)
     allInOne.ppComputeCommandBuffer = &computeCommandBuffer;
     allInOne.ppTransferCommandBuffer = &transferCommandBuffer;
 
+    allInOne.ppTimelineSemaphore1 = &timelineSemaphore1;
     allInOne.ppImageAvailableSemaphore = &imageAvailableSemaphore;
     allInOne.ppRenderFinishedSemaphore = &renderFinishedSemaphore;
 
     allInOne.ppGraphicInFlightFence = &graphicInFlightFence;
-
-    allInOne.ppComputeFinishedSemaphore = &computeFinishedSemaphore;
 
     allInOne.ppComputeInFlightFence = &computeInFlightFences;
 
@@ -752,12 +757,12 @@ void initVulkan(void)
     createCommandbufferByBuffering(VK_COMMAND_BUFFER_LEVEL_PRIMARY, &computeCommandPool, &computeCommandBuffer);
     createCommandbufferByBuffering(VK_COMMAND_BUFFER_LEVEL_PRIMARY, &transferCommandPool, &transferCommandBuffer);
 
+    createTimelineSemaphoreByBuffering(&timelineSemaphore1);
+
     createSemaphoreByBuffering(&imageAvailableSemaphore);
     createSemaphoreByBuffering(&renderFinishedSemaphore);
  
     createFenceByBuffering(&graphicInFlightFence);
-
-    createSemaphoreByBuffering(&computeFinishedSemaphore);
 
     createFenceByBuffering(&computeInFlightFences);
     
@@ -791,8 +796,6 @@ void initVulkan(void)
     G_Texture_P * modelTexture = getTexture(TEXTURE_MODEL);
     G_Texture_P * bottomTexture = getTexture(TEXTURE_BOTTOM);
     G_Texture_P * normalTexture = getTexture(TEXTURE_NORMAL);
-    G_Texture_P * depthTexture = getTexture(TEXTURE_MODEL_DEPTH);
-    G_Texture_P * SSGIStorageImageTexture = getTexture(TEXTURE_SSGI_STORAGE_IMAGE);
 
     // UI
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, loadingTexture->pDescriptorSet, UIUniformBuffers, 0, sizeof(UniformBufferObject));//0
@@ -864,13 +867,7 @@ void cleanVulkan(FuncCode code)
             vkDestroyFence(device, computeInFlightFences[i], allInOne.pAllocationCallbacks);
         }
         logMessage("compute in flight fences destroyed");
-
-        for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
-        {
-            vkDestroySemaphore(device, computeFinishedSemaphore[i], allInOne.pAllocationCallbacks);
-        }
-        logMessage("compute finished semaphore destroyed");
-        /*fall through*/
+       /*fall through*/
 
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
         {
@@ -891,6 +888,11 @@ void cleanVulkan(FuncCode code)
             vkDestroySemaphore(device, imageAvailableSemaphore[i], allInOne.pAllocationCallbacks);
         }
         logMessage("image available semaphore destroyed");
+
+        for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
+        {
+            vkDestroySemaphore(device, timelineSemaphore1[i], allInOne.pAllocationCallbacks);
+        }
         /*fall through*/
 
         case createSemaphoreF:

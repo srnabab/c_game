@@ -121,6 +121,9 @@ struct _VK_ALL
     void * (*pppUIUniformBufferMapped)[MAX_FRAMES_IN_FLIGHT];
     UniformBufferObject * pUIUbo;
 
+    VkBuffer (*ppSSGIUniformBuffer)[MAX_FRAMES_IN_FLIGHT];
+    void * (*pppSSGIUniformBufferMapped)[MAX_FRAMES_IN_FLIGHT];
+    SSGIUniformBufferObject * pSSGIubo;
 
     VkDescriptorSet ** ppGraphicDescriptorSets;
 
@@ -134,17 +137,19 @@ struct _VK_ALL
 
     VkDescriptorSet ** ppComputeDescriptorSets;
 
+    VkDescriptorSet ** ppSSGIDescriptorSets;
+
     VkCommandBuffer (*ppGraphicCommandBuffer)[MAX_FRAMES_IN_FLIGHT];
     VkCommandBuffer (*ppPresentCommandBuffer)[MAX_FRAMES_IN_FLIGHT];
     VkCommandBuffer (*ppComputeCommandBuffer)[MAX_FRAMES_IN_FLIGHT];
     VkCommandBuffer (*ppTransferCommandBuffer)[MAX_FRAMES_IN_FLIGHT];
 
+    VkSemaphore (*ppTimelineSemaphore1)[MAX_FRAMES_IN_FLIGHT];
+
     VkSemaphore (*ppImageAvailableSemaphore)[MAX_FRAMES_IN_FLIGHT];
     VkSemaphore (*ppRenderFinishedSemaphore)[MAX_FRAMES_IN_FLIGHT];
 
     VkFence (*ppGraphicInFlightFence)[MAX_FRAMES_IN_FLIGHT];
-
-    VkSemaphore (*ppComputeFinishedSemaphore)[MAX_FRAMES_IN_FLIGHT];
 
     VkFence (*ppComputeInFlightFence)[MAX_FRAMES_IN_FLIGHT];
 

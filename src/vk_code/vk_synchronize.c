@@ -19,6 +19,25 @@ void createSemaphoreByBuffering(VkSemaphore (*ppSemaphore)[2])
         resultVulkan(vkCreateSemaphore(*allInOne.pDevice, &semaphoreCreateInfo, allInOne.pAllocationCallbacks, (*ppSemaphore) + i), code, 0);
     //printf("semaphor created\n");
 }
+void createTimelineSemaphoreByBuffering(VkSemaphore (*ppSemaphore)[2])
+{
+    FuncCode code = createSemaphoreF;
+
+    VkSemaphoreTypeCreateInfo timelineCreateInfo = {};
+    timelineCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO;
+    timelineCreateInfo.pNext = NULL;
+    timelineCreateInfo.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE;
+    timelineCreateInfo.initialValue = 0;
+
+    VkSemaphoreCreateInfo semaphoreCreateInfo = {};
+    semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+    semaphoreCreateInfo.pNext = &timelineCreateInfo;
+    semaphoreCreateInfo.flags = 0;
+
+    for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
+        resultVulkan(vkCreateSemaphore(*allInOne.pDevice, &semaphoreCreateInfo, allInOne.pAllocationCallbacks, (*ppSemaphore) + i), code, 0);
+    //printf("timeline semaphor created\n");
+}
 void createFenceByBuffering(VkFence (*ppFence)[2])
 {
     FuncCode code = createFenceF;

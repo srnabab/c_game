@@ -178,10 +178,7 @@ void pickPhysicalDevice(void)
 	VkPhysicalDeviceFeatures deviceFeatures;
 	vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
 
-    if (GPU_CHOOSED) logMessage("device picked: INTEL_GPU");
-    else logMessage("device picked: RTX_2060");
-
-	if (deviceFeatures.geometryShader)
+	if (deviceFeatures.geometryShader == VK_TRUE)
 	{
 		SDL_free(devices);
 		//printf("devive picked\n");
@@ -191,6 +188,9 @@ void pickPhysicalDevice(void)
     {
         SDL_free(devices);
     }
+
+    if (GPU_CHOOSED) logMessage("device picked: INTEL_GPU");
+    else logMessage("device picked: RTX_2060");
 }
 static bool * extensionSupportedCheck_Optional(Uint32 neededExtensionCount, char ** neededExtensions, Uint32 extensionCount, VkExtensionProperties * pExtensionProperties)
 {
@@ -342,12 +342,22 @@ void createLogicalDevice(void)
         "VK_LAYER_KHRONOS_validation"
     };
 
+    VkPhysicalDeviceTimelineSemaphoreFeatures timelineSemaphoreFeatures = {};
+    timelineSemaphoreFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES;
+    timelineSemaphoreFeatures.pNext = NULL;
+    timelineSemaphoreFeatures.timelineSemaphore = VK_TRUE;
+
     VkPhysicalDeviceFeatures deviceFeatures = {};
     deviceFeatures.samplerAnisotropy = VK_TRUE;
 
+    VkPhysicalDeviceFeatures2 deviceFeatures2 = {};
+    deviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+    deviceFeatures2.pNext = &timelineSemaphoreFeatures;
+    deviceFeatures2.features = deviceFeatures;
+
     VkDeviceCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    createInfo.pNext = NULL;
+    createInfo.pNext = &deviceFeatures2;
     createInfo.flags = 0;
     createInfo.queueCreateInfoCount = queueFamilyCount;
     createInfo.pQueueCreateInfos = queueCreateInfo;
@@ -355,7 +365,7 @@ void createLogicalDevice(void)
     createInfo.ppEnabledLayerNames = validationLayers;
     createInfo.enabledExtensionCount = enabledExtensionCount;
     createInfo.ppEnabledExtensionNames = (const char* const *)enabledExtension;
-    createInfo.pEnabledFeatures = &deviceFeatures;
+    createInfo.pEnabledFeatures = NULL;
 
     resultVulkan(vkCreateDevice(*allInOne.pPhysicalDevice, &createInfo, allInOne.pAllocationCallbacks, allInOne.pDevice), code, 0);
 

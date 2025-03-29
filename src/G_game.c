@@ -761,6 +761,18 @@ int update(void * arg)
 
             vertexEnd = *allInOne.pVertices2DCount;
 
+            glm_mat4_copy(allInOne.pGraphic3DUbo->proj, allInOne.pSSGIubo->projectionMatrix);
+            glm_mat4_copy(allInOne.pGraphic3DUbo->proj, allInOne.pSSGIubo->inverseProjectionMatrix);
+            glm_mat4_inv(allInOne.pSSGIubo->inverseProjectionMatrix, allInOne.pSSGIubo->inverseProjectionMatrix);
+
+            allInOne.pSSGIubo->cameraPosition[0] = -*pCamera_X;
+            allInOne.pSSGIubo->cameraPosition[1] = 4.0f + -*pCamera_Y;
+            allInOne.pSSGIubo->cameraPosition[2] = 4.0f;
+
+            allInOne.pSSGIubo->rayStepSize = 0.05f;
+            allInOne.pSSGIubo->maxRaySteps = 64;
+            allInOne.pSSGIubo->ssgiStrength = 0.5f;
+
             SDL_LockMutex(allSync.updateMutex);
             // if (updateVertex)
             // {
@@ -784,6 +796,7 @@ int update(void * arg)
             memcpy((*allInOne.pppUIUniformBufferMapped)[currentFrame], pUIUbo, sizeof(UniformBufferObject));
 
             memcpy((*allInOne.pppComputeUniformBufferMapped)[currentFrame], allInOne.pComputeUbo, sizeof(ComputeUniformBufferObject));
+            memcpy((*allInOne.pppSSGIUniformBufferMapped)[currentFrame], allInOne.pSSGIubo, sizeof(SSGIUniformBufferObject));
 
             memcpy((*allInOne.ppVertexBuffer2DMemMapped)[currentFrame], *allInOne.ppVertices2D, vertexEnd * sizeof(Vertex));// update vertex buffer
             memcpy((*allInOne.ppVertexBuffer3DMemMapped)[currentFrame], *allInOne.ppVertices3D, 30000 * sizeof(Vertex));
