@@ -829,6 +829,199 @@ void createCombinePipeline(uint32_t shaderCount, VkPipelineShaderStageCreateInfo
 
     //printf("graphicsPipelinecreated\n");
 }
+void createShadowPipeline(uint32_t shaderCount, VkPipelineShaderStageCreateInfo * pPipelineShaderStageCreateInfo, VkPipelineLayout * pPipelineLayout, VkRenderPass * pRenderPass, VkPipeline * pGraphicsPipeline)
+{
+    FuncCode code = createGraphicsPipelineF;
+
+    // VkPipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo = {};
+    // configurePipelineVertexInputState(&pipelineVertexInputStateCreateInfo);
+    VkVertexInputBindingDescription pBindingDescription[3];
+    pBindingDescription[0].binding = 0;
+    pBindingDescription[0].stride = sizeof(Vertex4);
+    pBindingDescription[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+    pBindingDescription[1].binding = 1;
+    pBindingDescription[1].stride = sizeof(mat4);
+    pBindingDescription[1].inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
+
+    VkVertexInputAttributeDescription pAttributeDescriptions[12];
+    pAttributeDescriptions[0].location = 0;
+    pAttributeDescriptions[0].binding = 0;
+    pAttributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+    pAttributeDescriptions[0].offset = offsetof(Vertex4, pos);
+
+    pAttributeDescriptions[1].location = 1;
+    pAttributeDescriptions[1].binding = 1;
+    pAttributeDescriptions[1].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    pAttributeDescriptions[1].offset = 0;
+
+    pAttributeDescriptions[2].location = 2;
+    pAttributeDescriptions[2].binding = 1;
+    pAttributeDescriptions[2].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    pAttributeDescriptions[2].offset = sizeof(vec4) * 1;
+    
+    pAttributeDescriptions[3].location = 3;
+    pAttributeDescriptions[3].binding = 1;
+    pAttributeDescriptions[3].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    pAttributeDescriptions[3].offset = sizeof(vec4) * 2;
+
+    pAttributeDescriptions[4].location = 4;
+    pAttributeDescriptions[4].binding = 1;
+    pAttributeDescriptions[4].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    pAttributeDescriptions[4].offset = sizeof(vec4) * 3;
+
+    VkPipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo = {};
+    pipelineVertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+    pipelineVertexInputStateCreateInfo.pNext = NULL;
+    pipelineVertexInputStateCreateInfo.flags = 0;
+    pipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = 2;
+    pipelineVertexInputStateCreateInfo.pVertexBindingDescriptions = pBindingDescription;
+    pipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = 5;
+    pipelineVertexInputStateCreateInfo.pVertexAttributeDescriptions = pAttributeDescriptions;
+
+    VkPipelineInputAssemblyStateCreateInfo pipelineInputAssemblyStateCreateInfo = {};
+    pipelineInputAssemblyStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+    pipelineInputAssemblyStateCreateInfo.pNext = NULL;
+    pipelineInputAssemblyStateCreateInfo.flags = 0;
+    pipelineInputAssemblyStateCreateInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    pipelineInputAssemblyStateCreateInfo.primitiveRestartEnable = VK_FALSE;
+    // configurePipelineInputAssemblyState(&pipelineInputAssemblyStateCreateInfo);
+
+    //VkPipelineTessellationStateCreateInfo pipelineTessellationStateCreateInfo = {};
+    VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo = {};
+    VkViewport pViewport[3];
+    pViewport[0].x = 0.0f;
+    pViewport[0].y = 0.0f;
+    pViewport[0].width = (float)allInOne.pExtent2D->width;
+    pViewport[0].height = (float)allInOne.pExtent2D->height;
+    pViewport[0].minDepth = 0.0f;
+    pViewport[0].maxDepth = 1.0f;
+
+    VkRect2D pScissor[3];
+    pScissor[0].offset = (VkOffset2D){0, 0};
+    pScissor[0].extent = *allInOne.pExtent2D;
+
+    pipelineViewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+    pipelineViewportStateCreateInfo.pNext = NULL;
+    pipelineViewportStateCreateInfo.flags = 0;
+    pipelineViewportStateCreateInfo.viewportCount = 1;
+    pipelineViewportStateCreateInfo.pViewports = pViewport;
+    pipelineViewportStateCreateInfo.scissorCount = 1;
+    pipelineViewportStateCreateInfo.pScissors = pScissor;
+    // configurePipelineViewportsStateCreateInfo(&pipelineViewportStateCreateInfo, pExtent2D);
+
+    VkPipelineRasterizationStateCreateInfo pipelineRasterizationStateCreateInfo = {};
+    pipelineRasterizationStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+    pipelineRasterizationStateCreateInfo.pNext = NULL;
+    pipelineRasterizationStateCreateInfo.flags = 0;
+    pipelineRasterizationStateCreateInfo.depthBiasClamp = VK_FALSE;
+    pipelineRasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE; 
+    pipelineRasterizationStateCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
+    pipelineRasterizationStateCreateInfo.cullMode = VK_CULL_MODE_FRONT_BIT;
+    pipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+    pipelineRasterizationStateCreateInfo.depthBiasEnable = VK_TRUE;
+    pipelineRasterizationStateCreateInfo.depthBiasConstantFactor = 0.0f;
+    pipelineRasterizationStateCreateInfo.depthBiasClamp = 0.0f;
+    pipelineRasterizationStateCreateInfo.depthBiasSlopeFactor = 0.0f;
+    pipelineRasterizationStateCreateInfo.lineWidth = 1.0f;
+    // configurePipelineRasterizationStateCreateInfo(&pipelineRasterizationStateCreateInfo);
+
+    VkPipelineMultisampleStateCreateInfo pipelineMultisampleStateCreateInfo = {};
+    pipelineMultisampleStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+    pipelineMultisampleStateCreateInfo.pNext = NULL;
+    pipelineMultisampleStateCreateInfo.flags = 0;
+    pipelineMultisampleStateCreateInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+    pipelineMultisampleStateCreateInfo.sampleShadingEnable = VK_FALSE;
+    pipelineMultisampleStateCreateInfo.minSampleShading = 1.0f; // Optional
+    pipelineMultisampleStateCreateInfo.pSampleMask = NULL; // Optional
+    pipelineMultisampleStateCreateInfo.alphaToCoverageEnable = VK_FALSE; // Optional
+    pipelineMultisampleStateCreateInfo.alphaToOneEnable = VK_FALSE; // Optional
+    // configurePipelineMultisampleStateCreateInfo(&pipelineMultisampleStateCreateInfo);
+
+    VkPipelineDepthStencilStateCreateInfo pipelineDepthStencilStateCreateInfo = {};
+    pipelineDepthStencilStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+    pipelineDepthStencilStateCreateInfo.pNext = NULL;
+    pipelineDepthStencilStateCreateInfo.flags = 0;
+    pipelineDepthStencilStateCreateInfo.depthTestEnable = VK_TRUE;
+    pipelineDepthStencilStateCreateInfo.depthWriteEnable = VK_TRUE;
+    pipelineDepthStencilStateCreateInfo.depthCompareOp = VK_COMPARE_OP_LESS;
+    pipelineDepthStencilStateCreateInfo.depthBoundsTestEnable = VK_FALSE;
+    pipelineDepthStencilStateCreateInfo.stencilTestEnable = VK_FALSE;
+    VkStencilOpState empty = {};
+    pipelineDepthStencilStateCreateInfo.front = empty;
+    pipelineDepthStencilStateCreateInfo.back = empty;
+    pipelineDepthStencilStateCreateInfo.minDepthBounds = 0.0f;
+    pipelineDepthStencilStateCreateInfo.maxDepthBounds = 1.0f;
+    // configurePipelineDepthStencilStateCreateInfo(&pipelineDepthStencilStateCreateInfo);
+
+    VkPipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo = {};
+    Uint32 attachmentCount = 0;
+    VkPipelineColorBlendAttachmentState * colorBlendAttachmentState = (VkPipelineColorBlendAttachmentState *)SDL_malloc(attachmentCount * sizeof(VkPipelineColorBlendAttachmentState));
+    
+    for (uint32_t i = 0;i < attachmentCount;i++)
+    {
+        colorBlendAttachmentState[i].blendEnable = VK_FALSE;
+        colorBlendAttachmentState[i].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+        colorBlendAttachmentState[i].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+        colorBlendAttachmentState[i].colorBlendOp = VK_BLEND_OP_ADD;
+        colorBlendAttachmentState[i].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+        colorBlendAttachmentState[i].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+        colorBlendAttachmentState[i].alphaBlendOp = VK_BLEND_OP_ADD;
+        colorBlendAttachmentState[i].colorWriteMask = 0;
+    }
+
+    pipelineColorBlendStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+    pipelineColorBlendStateCreateInfo.pNext = NULL;
+    pipelineColorBlendStateCreateInfo.flags = 0;
+    pipelineColorBlendStateCreateInfo.logicOpEnable = VK_FALSE;
+    pipelineColorBlendStateCreateInfo.logicOp = VK_LOGIC_OP_COPY; // Optional
+    pipelineColorBlendStateCreateInfo.attachmentCount = attachmentCount;
+    pipelineColorBlendStateCreateInfo.pAttachments = colorBlendAttachmentState;
+    pipelineColorBlendStateCreateInfo.blendConstants[0] = 0.0f; // Optional
+    pipelineColorBlendStateCreateInfo.blendConstants[1] = 0.0f; // Optional
+    pipelineColorBlendStateCreateInfo.blendConstants[2] = 0.0f; // Optional
+    pipelineColorBlendStateCreateInfo.blendConstants[3] = 0.0f; // Optional
+    // configurePipelineColorBlendStateCreateInfo(1, &pipelineColorBlendStateCreateInfo);
+    
+    VkPipelineDynamicStateCreateInfo pipelineDynamicStateCreateInfo = {};
+    uint32_t dynamicCount = 2;
+    VkDynamicState * dynamicStates = (VkDynamicState *)SDL_malloc(dynamicCount * sizeof(VkDynamicState));
+    dynamicStates[0] = VK_DYNAMIC_STATE_VIEWPORT;
+    dynamicStates[1] = VK_DYNAMIC_STATE_SCISSOR;
+
+    pipelineDynamicStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+    pipelineDynamicStateCreateInfo.pNext = NULL;
+    pipelineDynamicStateCreateInfo.flags = 0;
+    pipelineDynamicStateCreateInfo.dynamicStateCount = dynamicCount;
+    pipelineDynamicStateCreateInfo.pDynamicStates = dynamicStates;
+    // configureDynamicsState(&pipelineDynamicStateCreateInfo);
+
+    VkGraphicsPipelineCreateInfo pipelineCreateInfo = {};
+    pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+    pipelineCreateInfo.pNext = NULL;
+    pipelineCreateInfo.flags = 0;
+    pipelineCreateInfo.stageCount = shaderCount;
+    pipelineCreateInfo.pStages = pPipelineShaderStageCreateInfo;
+    pipelineCreateInfo.pVertexInputState = &pipelineVertexInputStateCreateInfo;
+    pipelineCreateInfo.pInputAssemblyState = &pipelineInputAssemblyStateCreateInfo;
+    pipelineCreateInfo.pTessellationState = NULL;
+    pipelineCreateInfo.pViewportState = &pipelineViewportStateCreateInfo;
+    pipelineCreateInfo.pRasterizationState = &pipelineRasterizationStateCreateInfo;
+    pipelineCreateInfo.pMultisampleState = &pipelineMultisampleStateCreateInfo;
+    pipelineCreateInfo.pDepthStencilState = &pipelineDepthStencilStateCreateInfo;
+    pipelineCreateInfo.pColorBlendState = &pipelineColorBlendStateCreateInfo;
+    pipelineCreateInfo.pDynamicState = &pipelineDynamicStateCreateInfo;
+    pipelineCreateInfo.layout = *pPipelineLayout;
+    pipelineCreateInfo.renderPass = *pRenderPass;
+    pipelineCreateInfo.subpass = 0;
+    pipelineCreateInfo.basePipelineHandle = NULL;
+    pipelineCreateInfo.basePipelineIndex = -1;
+
+    resultVulkan(vkCreateGraphicsPipelines(*allInOne.pDevice, NULL, 1, &pipelineCreateInfo, allInOne.pAllocationCallbacks, pGraphicsPipeline),
+                                        code, 0);
+
+    //printf("graphicsPipelinecreated\n");
+}
 void createComputePipeline(VkDevice * pDevice, VkPipelineLayout * pComputePipelineLayout, VkPipelineShaderStageCreateInfo * pShaderStageCreateInfo, VkPipeline * pComputePipeline)
 {
     VkComputePipelineCreateInfo pipelineInfo = {};

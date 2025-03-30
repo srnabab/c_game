@@ -21,6 +21,7 @@ struct _G_Texture_P
 	VkDeviceMemory imageMem;
 
 	VkDescriptorSet * pDescriptorSet;
+	VkDescriptorSet * pShadowDescriptorSet;
 	VkFramebuffer frameBuffer;
 
 	struct _offsets
@@ -78,6 +79,7 @@ extern bool SDLCALL loadDepthResource(const char * innerName, bool sample);
 extern bool SDLCALL loadNormalResource(const char * innerName);
 extern bool SDLCALL loadImageResource(VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImageLayout targetLayout, const char * innerName, VkDescriptorSet * pDescriptorSet);
 extern bool SDLCALL addDescriptorSetToTexture(const char * innerName, VkDescriptorSet * pDescriptorSet);
+extern bool SDLCALL addShadowDescriptorSetToTexture(const char * innerName, VkDescriptorSet * pDescriptorSet);
 extern bool SDLCALL textureOffsetsAdd(G_Texture_P * pTexture, Uint32 offset);
 extern void SDLCALL emptyTextureRefCount(void);
 extern bool SDLCALL unloadTexture(const char * innerName);

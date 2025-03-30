@@ -46,6 +46,7 @@ struct _VK_ALL
 
     VkRenderPass * pRenderPass;
     VkRenderPass * pModelRenderPass;
+    VkRenderPass * pShadowRenderPass;
     VkRenderPass * pCombineRenderPass;
 
     VkPipelineLayout * pGraphicPipelineLayout;
@@ -59,6 +60,9 @@ struct _VK_ALL
 
     VkPipelineLayout * pModelPipelineLayout;
     VkPipeline * pModelPipeline;
+
+    VkPipelineLayout * pShadowPipelineLayout;
+    VkPipeline * pShadowPipeline;
 
     VkPipelineLayout * pSSGIPipelineLayout;
     VkPipeline * pSSGIPipeline;
@@ -83,6 +87,7 @@ struct _VK_ALL
 #endif
 
     VkFramebuffer ** ppSwapchain3DFramebuffer;
+    VkFramebuffer ** ppShadowFramebuffer;
     VkFramebuffer ** ppDirectColorFramebuffer;
     VkFramebuffer ** ppCombineFramebuffer;
 
@@ -132,6 +137,10 @@ struct _VK_ALL
     void * (*pppSSGIUniformBufferMapped)[MAX_FRAMES_IN_FLIGHT];
     SSGIUniformBufferObject * pSSGIubo;
 
+    VkBuffer (*ppLightSpaceUniformBuffer)[MAX_FRAMES_IN_FLIGHT];
+    void * (*pppLightSpaceUniformBufferMapped)[MAX_FRAMES_IN_FLIGHT];
+    LightSpace * pLightSpaceUbo;
+
     VkBuffer (*ppSunUniformBuffer)[MAX_FRAMES_IN_FLIGHT];
     void * (*pppSunUniformBufferMapped)[MAX_FRAMES_IN_FLIGHT];
     DirectionLight * pSunubo;
@@ -148,6 +157,7 @@ struct _VK_ALL
 
     VkDescriptorSet ** ppComputeDescriptorSets;
 
+    VkDescriptorSet ** ppShadowDescriptorSets;
     VkDescriptorSet ** ppSSGIDescriptorSets;
     VkDescriptorSet ** ppCombineDescriptorSets;
 

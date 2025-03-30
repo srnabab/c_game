@@ -765,18 +765,6 @@ int update(void * arg)
             glm_mat4_copy(allInOne.pGraphic3DUbo->proj, allInOne.pSSGIubo->inverseProjectionMatrix);
             glm_mat4_inv(allInOne.pSSGIubo->inverseProjectionMatrix, allInOne.pSSGIubo->inverseProjectionMatrix);
 
-            allInOne.pSSGIubo->cameraPosition[0] = -*pCamera_X;
-            allInOne.pSSGIubo->cameraPosition[1] = 4.0f + -*pCamera_Y;
-            allInOne.pSSGIubo->cameraPosition[2] = 4.0f;
-
-            allInOne.pSSGIubo->rayStepSize = 0.05f;
-            allInOne.pSSGIubo->maxRaySteps = 64;
-            allInOne.pSSGIubo->ssgiStrength = 0.2f;
-
-            // vec3 lightDirection(vec3){0.5f, -1.0f, 0.3f};
-
-            // vec3 lightColor(vec3){1.0f, 0.95f, 0.8f};
-
             // float x, y, z;
             // x = -SDL_randf();
             // y = -SDL_randf();
@@ -784,9 +772,19 @@ int update(void * arg)
             // print("x: %f, y: %f, z: %f", x, y, z);
 
             // glm_vec3_copy((vec3){x, y, z}, allInOne.pSunubo->lightDirection);
+            glm_lookat((vec3){0.5f + -*pCamera_X, 0.9f + -*pCamera_Y, 0.5f}, (vec3){-*pCamera_X, -*pCamera_Y, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, allInOne.pSunubo->lightSpace);
+            glm_mul(pGraphic3DUbo->proj, allInOne.pSunubo->lightSpace, allInOne.pSunubo->lightSpace);
             glm_vec3_copy((vec3){-0.5f, -0.9f, -0.5f}, allInOne.pSunubo->lightDirection);
             glm_vec3_copy((vec3){1.0f, 0.95f, 0.8f}, allInOne.pSunubo->lightColor);
             allInOne.pSunubo->lightIntensity = 2.0f;
+
+            allInOne.pSSGIubo->cameraPosition[0] = -*pCamera_X;
+            allInOne.pSSGIubo->cameraPosition[1] = 4.0f + -*pCamera_Y;
+            allInOne.pSSGIubo->cameraPosition[2] = 4.0f;
+
+            allInOne.pSSGIubo->rayStepSize = 0.05f;
+            allInOne.pSSGIubo->maxRaySteps = 64;
+            allInOne.pSSGIubo->ssgiStrength = 0.2f;
 
             SDL_LockMutex(allSync.updateMutex);
             // if (updateVertex)
@@ -813,6 +811,7 @@ int update(void * arg)
             memcpy((*allInOne.pppComputeUniformBufferMapped)[currentFrame], allInOne.pComputeUbo, sizeof(ComputeUniformBufferObject));
             memcpy((*allInOne.pppSSGIUniformBufferMapped)[currentFrame], allInOne.pSSGIubo, sizeof(SSGIUniformBufferObject));
             memcpy((*allInOne.pppSunUniformBufferMapped)[currentFrame], allInOne.pSunubo, sizeof(DirectionLight));
+            memcpy((*allInOne.pppLightSpaceUniformBufferMapped)[currentFrame], allInOne.pLightSpaceUbo , sizeof(LightSpace));
 
             memcpy((*allInOne.ppVertexBuffer2DMemMapped)[currentFrame], *allInOne.ppVertices2D, vertexEnd * sizeof(Vertex));// update vertex buffer
             memcpy((*allInOne.ppVertexBuffer3DMemMapped)[currentFrame], *allInOne.ppVertices3D, 30000 * sizeof(Vertex));

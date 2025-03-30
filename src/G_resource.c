@@ -232,6 +232,26 @@ bool addDescriptorSetToTexture(const char * innerName, VkDescriptorSet * pDescri
 
     return false;
 }
+bool addShadowDescriptorSetToTexture(const char * innerName, VkDescriptorSet * pDescriptorSet)
+{
+    SDL_LockMutex(allSync.textureMutex);
+
+    Uint32 ID = HashID(innerName);
+
+    for (int i = 0;i < tableCount;i++)
+    {
+        if (ID == globalTexture[i].ID)
+        {
+            globalTexture[i].pShadowDescriptorSet = pDescriptorSet;
+            SDL_UnlockMutex(allSync.textureMutex);
+            return true;
+        }
+    }
+
+    SDL_UnlockMutex(allSync.textureMutex);
+
+    return false;
+}
 G_Texture_P * getTexture(const char * innerName)
 {
     SDL_LockMutex(allSync.textureMutex);

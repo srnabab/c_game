@@ -1,9 +1,11 @@
 #version 460
 
 layout(set = 0, binding = 1) uniform sampler2D texSampler;
+layout(set = 0, binding = 2) uniform sampler2D shadowSampler;
 
-layout(set = 0, binding = 2) uniform directionLight
+layout(set = 0, binding = 3) uniform directionLight
 {
+    mat4 lightSapceMatrix;
     vec3 lightDirection;
     vec3 lightColor;
     float lightIntensity;
@@ -11,8 +13,8 @@ layout(set = 0, binding = 2) uniform directionLight
 
 layout(location = 0) in vec3 fragColor;
 layout(location = 1) in vec2 fragTexCoord;
-layout(location = 2) in vec3 outWorldPos;
-layout(location = 3) in vec3 outWorldNormal;
+layout(location = 2) in vec3 inWorldPos;
+layout(location = 3) in vec3 inWorldNormal;
 
 layout(location = 0) out vec4 outColor;
 layout(location = 1) out vec4 outNormalBuffer;
@@ -21,10 +23,25 @@ void main()
 {
     vec3 L = normalize(-sun.lightDirection);
 
-    outNormalBuffer = vec4(outWorldNormal * 0.5 + 0.5, 1.0);
+    outNormalBuffer = vec4(inWorldNormal * 0.5 + 0.5, 1.0);
     vec3 N = normalize(outNormalBuffer.rgb);
     float NdotL = max(dot(N, L), 0.0);
 
+
+    vec4 fragPosLightSpace = sun.lightSapceMatrix * vec4(inWorldPos, 1.0);
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    vec2 shadowCoord = projCoords.xy * 0.5 + 0.5;
+    shadowCoord.y = 1.0 - shadowCoord.y;
+    float currentDepth = projCoords.z;
+
+    float shadowMapMinDepth = texture(shadowSampler, shadowCoord).r;
+    float bias = max(0.05 * (1.0 - NdotL), 0.005);
+    float shadow = 1.0;
+
+    if (shadowCoord.x > 1.0 || shadowCoord.x < 0.0 || shadowCoord.y > 1.0 || shadowCoord.y < 0.0 || currentDepth > shadowMapMinDepth + bias)
+    {
+        shadow = 0.0;
+    }
 
     // vec3 albedoColor = fragColor;
     vec4 textureColor = texture(texSampler, fragTexCoord);
@@ -37,7 +54,7 @@ void main()
     // float specFactor = pow(NdotH, shininess); // shininess 是材质光泽度
     // vec3 specular = specularColor * sun.lightColor * sun.lightIntensity * specFactor;
 
-    vec3 finalColor = diffuse; // + specular;
+    vec3 finalColor = shadow * (diffuse); // + specular;
     
 
     outColor = vec4(textureColor.rgb * finalColor, textureColor.a);

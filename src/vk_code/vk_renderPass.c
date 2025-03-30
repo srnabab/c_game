@@ -164,6 +164,64 @@ void createModelRenderPass(VkFormat colorFormat, VkFormat normalFormat, VkFormat
 
     //printf("renderPass created\n");
 }
+void createShadowRenderPass(VkFormat depthFormat, VkRenderPass * pRenderPass)
+{
+    FuncCode code = createGraphicRenderPassF;
+
+    VkAttachmentDescription depthAttachment = {};
+    depthAttachment.flags = 0;
+    depthAttachment.format = depthFormat;
+    depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+    depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    depthAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+    VkAttachmentReference depthAttachmentRef = {};
+    depthAttachmentRef.attachment = 0;
+    depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+    VkSubpassDescription subpass0 = {};
+    subpass0.flags = 0;
+    subpass0.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    subpass0.inputAttachmentCount = 0;
+    subpass0.pInputAttachments = NULL;
+    subpass0.colorAttachmentCount = 0;
+    subpass0.pColorAttachments = NULL;
+    subpass0.pResolveAttachments = NULL;
+    subpass0.pDepthStencilAttachment = &depthAttachmentRef;
+    subpass0.preserveAttachmentCount = 0;
+    subpass0.pPreserveAttachments = NULL;
+
+    VkSubpassDependency dependency = {};
+    dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+    dependency.dstSubpass = 0;
+    dependency.srcStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+    dependency.dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+    dependency.srcAccessMask = 0;
+    dependency.dstAccessMask =  VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    dependency.dependencyFlags = 0;
+
+    VkAttachmentDescription attachments[] = {depthAttachment};
+    VkSubpassDescription subpasses[] = {subpass0};
+
+    VkRenderPassCreateInfo renderPassCreateInfo = {};
+    renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    renderPassCreateInfo.pNext = NULL;
+    renderPassCreateInfo.flags = 0;
+    renderPassCreateInfo.attachmentCount = 1;
+    renderPassCreateInfo.pAttachments = attachments;
+    renderPassCreateInfo.subpassCount = 1;
+    renderPassCreateInfo.pSubpasses = subpasses;
+    renderPassCreateInfo.dependencyCount = 1;
+    renderPassCreateInfo.pDependencies = &dependency;
+
+    resultVulkan(vkCreateRenderPass(*allInOne.pDevice, &renderPassCreateInfo, allInOne.pAllocationCallbacks, pRenderPass), code, 0);
+
+    //printf("renderPass created\n");
+}
 void createCombineRenderPass(VkFormat colorFormat, VkRenderPass * pRenderPass)
 {
     FuncCode code = createGraphicRenderPassF;

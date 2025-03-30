@@ -177,19 +177,15 @@ static VkImage * swapchain2DImages = NULL;
 static VkImageView * swapchain2DImageViews = NULL;
 static VkFramebuffer * swapchain2DFramebuffer = NULL;
 
+static VkFramebuffer * shadowFrameBuffer = NULL;
 static VkFramebuffer * directColorFramebuffer = NULL;
 static VkFramebuffer * combineFrameBuffer = NULL;
 
-// static VkShaderModule vertShaderCode = NULL;
-// static VkShaderModule fragShaderCode = NULL;
 static VkPipelineShaderStageCreateInfo * graphciShaderStageCreateInfo = NULL;
 
-// static VkShaderModule modelVertShaderCode = NULL;
-// static VkShaderModule modelFragShaderCode = NULL;
 static VkPipelineShaderStageCreateInfo * modelShaderStageCreateInfo = NULL;
+static VkPipelineShaderStageCreateInfo * shadowShaderStageCreateInfo = NULL;
 
-// static VkShaderModule particleVertexShaderCode = NULL;
-// static VkShaderModule particleFragmentShaderCode = NULL;
 static VkPipelineShaderStageCreateInfo * particleShaderStageCreateInfo = NULL;
 
 // static VkShaderModule compShaderCode = NULL;
@@ -201,6 +197,7 @@ static VkPipelineShaderStageCreateInfo * combineShaderStageCreateInfo = NULL;
 static VkDescriptorSetLayout * graphicDescriptorSetLayout = NULL;
 
 static VkDescriptorSetLayout * modelDescriptorSetLayout = NULL;
+static VkDescriptorSetLayout * shadowDescriptorSetLayout = NULL;
 
 static VkDescriptorSetLayout * particleDescriptorSetLayout = NULL;
 
@@ -213,7 +210,6 @@ static VkDescriptorSetLayout * combineDescriptorSetLayout = NULL;
 static VkDescriptorSetLayoutBinding * graphicBindings = NULL;
 static VkPipelineLayout graphicPipelineLayout = NULL;
 
-
 static VkDescriptorSetLayoutBinding * particleBindings = NULL;
 static VkPipelineLayout particlePipelineLayout = NULL;
 
@@ -224,8 +220,12 @@ static VkPipelineLayout computePipelineLayout = NULL;
 static VkRenderPass renderPass = NULL;
 
 static VkPipelineLayout modelPipelineLayout = NULL;
-static VkPipelineLayout SSGIPipelineLayout = NULL;
 static VkRenderPass modelRenderPass = NULL;
+
+static VkPipelineLayout shadwoPipelineLayout = NULL;
+static VkRenderPass shadowRenderPass = NULL;
+
+static VkPipelineLayout SSGIPipelineLayout = NULL;
 
 static VkPipelineLayout combinePipelineLayout = NULL;
 static VkRenderPass combineRenderPass = NULL;
@@ -235,6 +235,7 @@ static VkPipeline particlePipeline = NULL;
 static VkPipeline computePipeline = NULL;
 
 static VkPipeline modelPipeline = NULL;
+static VkPipeline shadowPipeline = NULL;
 static VkPipeline SSGIPipeline = NULL;
 static VkPipeline combinePipeline = NULL;
 
@@ -300,6 +301,12 @@ static VkDeviceMemory SunUniformBufferMem[MAX_FRAMES_IN_FLIGHT];
 static void* SunUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
 static DirectionLight  Sunubo = {};
 
+static VkBuffer lightSpaceUniformBuffer[MAX_FRAMES_IN_FLIGHT];
+static VkDeviceMemory lightSpaceUniformBufferMem[MAX_FRAMES_IN_FLIGHT];
+static void* lightSpaceUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
+static LightSpace lightSpaceubo = {};
+
+
 static VkDescriptorPoolSize * graphicDescriptorPoolSize = NULL;
 static VkDescriptorPool graphicDescriptorPool = NULL;
 static VkDescriptorSet * graphicDescriptorSets = NULL;
@@ -313,6 +320,7 @@ static VkDescriptorPoolSize * computeDescriptorPoolSize = NULL;
 static VkDescriptorPool computeDescriptorPool = NULL;
 static VkDescriptorSet * computeDescriptorSets = NULL;
 
+static VkDescriptorSet * shadowDescriptorSets = NULL;
 static VkDescriptorSet * SSGIDescriptorSets = NULL;
 static VkDescriptorSet * combineDescriptorSets = NULL;
 
@@ -402,6 +410,7 @@ static void initializeAllInOne(void)
  
     allInOne.pRenderPass = &renderPass;
     allInOne.pModelRenderPass = &modelRenderPass;
+    allInOne.pShadowRenderPass = &shadowRenderPass;
     allInOne.pCombineRenderPass = &combineRenderPass;
 
     allInOne.pGraphicPipelineLayout = &graphicPipelineLayout;
@@ -415,6 +424,9 @@ static void initializeAllInOne(void)
 
     allInOne.pModelPipelineLayout = &modelPipelineLayout;
     allInOne.pModelPipeline = &modelPipeline;
+
+    allInOne.pShadowPipelineLayout = &shadwoPipelineLayout;
+    allInOne.pShadowPipeline = &shadowPipeline;
 
     allInOne.pSSGIPipelineLayout = &SSGIPipelineLayout;
     allInOne.pSSGIPipeline = &SSGIPipeline;
@@ -437,6 +449,7 @@ static void initializeAllInOne(void)
 #endif
 
     allInOne.ppSwapchain3DFramebuffer = &swapchain3DFramebuffer;
+    allInOne.ppShadowFramebuffer = &shadowFrameBuffer;
     allInOne.ppDirectColorFramebuffer = &directColorFramebuffer;
     allInOne.ppCombineFramebuffer = &combineFrameBuffer;
 
@@ -485,6 +498,10 @@ static void initializeAllInOne(void)
     allInOne.pppSSGIUniformBufferMapped = &SSGIUniformBufferMapped;
     allInOne.pSSGIubo = &SSGIubo;
 
+    allInOne.ppLightSpaceUniformBuffer = &lightSpaceUniformBuffer;
+    allInOne.pppLightSpaceUniformBufferMapped = &lightSpaceUniformBufferMapped;
+    allInOne.pLightSpaceUbo = &lightSpaceubo;
+
     allInOne.ppSunUniformBuffer = &SunUniformBuffer;
     allInOne.pppSunUniformBufferMapped = &SunUniformBufferMapped;
     allInOne.pSunubo = &Sunubo;
@@ -499,6 +516,7 @@ static void initializeAllInOne(void)
 
     allInOne.ppComputeDescriptorSets = &computeDescriptorSets;
 
+    allInOne.ppShadowDescriptorSets = &shadowDescriptorSets;
     allInOne.ppSSGIDescriptorSets = &SSGIDescriptorSets;
     allInOne.ppCombineDescriptorSets = &combineDescriptorSets;
 
@@ -591,9 +609,15 @@ void initVulkan(void)
     VkImageView graphicImageViews[1] = {depthTexutre->imageView};
     createFrameBuffer(imageCount2D, 2, graphicImageViews, swapchain2DImageViews, &renderPass, &swapchain2DFramebuffer);
  
+    loadDepthResource(TEXTURE_SHADOW, true);
+    G_Texture_P * modelShadowTexture = getTexture(TEXTURE_SHADOW);
+    createShadowRenderPass(modelShadowTexture->format, &shadowRenderPass);
+    createFrameBuffer(2, 1, &modelShadowTexture->imageView, NULL, &shadowRenderPass, &shadowFrameBuffer);
+
     loadDepthResource(TEXTURE_MODEL_DEPTH, true);
     loadNormalResource(TEXTURE_NORMAL);
     loadImageResource(swapchainFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_UNDEFINED, TEXTURE_MODEL_COLOR, NULL);
+
     G_Texture_P const * modelDepthTexutre = getTexture(TEXTURE_MODEL_DEPTH);
     G_Texture_P const * modelNormalTexture = getTexture(TEXTURE_NORMAL);
     G_Texture_P const * modelColorTexture = getTexture(TEXTURE_MODEL_COLOR);
@@ -689,6 +713,7 @@ void initVulkan(void)
     createUniformBufferByBuffering(&SSGIUniformBuffers, &SSGIUniformBufferMem, &SSGIUniformBufferMapped, sizeof(SSGIUniformBufferObject));
 
     createUniformBufferByBuffering(&SunUniformBuffer, &SunUniformBufferMem, &SunUniformBufferMapped, sizeof(DirectionLight));
+    createUniformBufferByBuffering(&lightSpaceUniformBuffer, &lightSpaceUniformBufferMem, &lightSpaceUniformBufferMapped, sizeof(LightSpace));
 
     createShaderStorageBuffers(&physicalDevice, &device, &shaderStorageBuffers, &shaderStorageBuffersMem);
 
@@ -699,8 +724,8 @@ void initVulkan(void)
     graphicDescriptorPoolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     graphicDescriptorPoolSize[0].descriptorCount = 12;
     graphicDescriptorPoolSize[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    graphicDescriptorPoolSize[1].descriptorCount = 16;
-    createDescriptorPool(&device, 2, graphicDescriptorPoolSize, 14, &graphicDescriptorPool);
+    graphicDescriptorPoolSize[1].descriptorCount = 18;
+    createDescriptorPool(&device, 2, graphicDescriptorPoolSize, 16, &graphicDescriptorPool);
 
     PathType graphicTypes[] = {TriangleVertShader, TriangleFragShader};
     VkShaderModule * graphicTempModule = NULL;
@@ -754,10 +779,10 @@ void initVulkan(void)
     computeDescriptorPoolSize[1].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
     computeDescriptorPoolSize[1].descriptorCount = 4;
     computeDescriptorPoolSize[2].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    computeDescriptorPoolSize[2].descriptorCount = 6;
+    computeDescriptorPoolSize[2].descriptorCount = 10;
     computeDescriptorPoolSize[3].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
     computeDescriptorPoolSize[3].descriptorCount = 2;
-    createDescriptorPool(&device, 4, computeDescriptorPoolSize, 6, &computeDescriptorPool);
+    createDescriptorPool(&device, 4, computeDescriptorPoolSize, 8, &computeDescriptorPool);
 
     //compute shader
     PathType computeTypes[] = {ParticleCompShader};
@@ -771,6 +796,18 @@ void initVulkan(void)
     createComputePipeline(&device, &computePipelineLayout, computeShaderStageCreateInfo, &computePipeline);
     freeEntryName(1, entryName);
 
+    //shadow shader
+    PathType shadowTypes[] = {ShadowVertShader, EmptyFragShader};
+    VkShaderModule * shadowTempModule = NULL;
+    entryName = NULL;
+    Uint32 shadowSetCount = CreateShaderModulesAndDescriptorSets(shadowTypes, 2, &shadowTempModule, &shadowShaderStageCreateInfo, &shadowDescriptorSetLayout, &shadwoPipelineLayout, &entryName);
+
+    createDescriptorSets(&graphicDescriptorPool, shadowDescriptorSetLayout, shadowSetCount, 1, &shadowDescriptorSets);
+
+    createShadowPipeline(2, shadowShaderStageCreateInfo, &shadwoPipelineLayout, &shadowRenderPass, &shadowPipeline);
+
+    freeEntryName(2, entryName);
+
     // SSGI shader
     PathType SSGITypes[] = {SSGICompShader};
     VkShaderModule * SSGITempModule = NULL;
@@ -782,6 +819,7 @@ void initVulkan(void)
     createComputePipeline(&device, &SSGIPipelineLayout, SSGIShaderStageCreateInfo, &SSGIPipeline);
     freeEntryName(1, entryName);
 
+    // combine Shader
     PathType combineTypes[] = {CombineVertShader, CombineFragShader};
     VkShaderModule * combineTempModule = NULL;
     entryName = NULL;
@@ -837,6 +875,7 @@ void initVulkan(void)
     G_Texture_P * modelTexture = getTexture(TEXTURE_MODEL);
     G_Texture_P * bottomTexture = getTexture(TEXTURE_BOTTOM);
     G_Texture_P * normalTexture = getTexture(TEXTURE_NORMAL);
+    G_Texture_P * shadowTexture = getTexture(TEXTURE_SHADOW);
     // G_Texture_P * directColorTexture = getTexture(TEXTURE_MODEL_COLOR);
     // G_Texture_P * SSGIStorageTexture = getTexture(TEXTURE_SSGI_STORAGE_IMAGE);
 
@@ -851,8 +890,9 @@ void initVulkan(void)
     // model
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, modelTexture->pDescriptorSet, graphic3DUniformBuffers, 0, sizeof(UniformBufferObject));//4
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, bottomTexture->pDescriptorSet, graphic3DUniformBuffers, 0, sizeof(UniformBufferObject));
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2, modelTexture->pDescriptorSet, SunUniformBuffer, 0, sizeof(DirectionLight));
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2, bottomTexture->pDescriptorSet, SunUniformBuffer, 0, sizeof(DirectionLight));
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3, modelTexture->pDescriptorSet, SunUniformBuffer, 0, sizeof(DirectionLight));
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3, bottomTexture->pDescriptorSet, SunUniformBuffer, 0, sizeof(DirectionLight));
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, shadowDescriptorSets, lightSpaceUniformBuffer, 0, sizeof(LightSpace));
 
     // SSGI
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3, normalTexture->pDescriptorSet, SSGIUniformBuffers, 0, sizeof(SSGIUniformBufferObject));
@@ -864,8 +904,14 @@ void initVulkan(void)
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_TILE_SET, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     // model
+    addShadowDescriptorSetToTexture(TEXTURE_MODEL, shadowTexture->pDescriptorSet);
+    addShadowDescriptorSetToTexture(TEXTURE_BOTTOM, shadowTexture->pDescriptorSet);
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_MODEL, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_BOTTOM, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);//12
+    addDescriptorSetToTexture(TEXTURE_SHADOW, modelTexture->pDescriptorSet);
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2, TEXTURE_SHADOW, depthSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    addDescriptorSetToTexture(TEXTURE_SHADOW, bottomTexture->pDescriptorSet);
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2, TEXTURE_SHADOW, depthSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     // SSGI
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, TEXTURE_MODEL_DEPTH, depthSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
@@ -990,6 +1036,8 @@ void cleanVulkan(FuncCode code)
 
         vkDestroyPipeline(device, SSGIPipeline, allInOne.pAllocationCallbacks);
         logMessage("SSGI pipelne destroyed");
+        
+        vkDestroyPipeline(device, shadowPipeline, allInOne.pAllocationCallbacks);
 
         vkDestroyPipeline(device, combinePipeline, allInOne.pAllocationCallbacks);
         logMessage("SSGI pipelne destroyed");
@@ -1011,6 +1059,8 @@ void cleanVulkan(FuncCode code)
 
         vkDestroyPipelineLayout(device, SSGIPipelineLayout, allInOne.pAllocationCallbacks);
         logMessage("SSGI pipeline layout destroyed");
+
+        vkDestroyPipelineLayout(device, shadwoPipelineLayout, allInOne.pAllocationCallbacks);
 
         vkDestroyPipelineLayout(device, combinePipelineLayout, allInOne.pAllocationCallbacks);
         logMessage("SSGI pipeline layout destroyed");
@@ -1040,6 +1090,10 @@ void cleanVulkan(FuncCode code)
         vkDestroyDescriptorSetLayout(device, SSGIDescriptorSetLayout[1], allInOne.pAllocationCallbacks);
         SDL_free(SSGIDescriptorSetLayout);
         logMessage("graphic descriptor set layout destroyed");
+
+        vkDestroyDescriptorSetLayout(device, shadowDescriptorSetLayout[0], allInOne.pAllocationCallbacks);
+        SDL_free(shadowDescriptorSetLayout);
+        logMessage("graphic descriptor set layout destroyed");
  
         vkDestroyDescriptorSetLayout(device, combineDescriptorSetLayout[0], allInOne.pAllocationCallbacks);
         SDL_free(combineDescriptorSetLayout);
@@ -1054,6 +1108,7 @@ void cleanVulkan(FuncCode code)
         SDL_free(graphciShaderStageCreateInfo);
         SDL_free(SSGIShaderStageCreateInfo);
         SDL_free(combineShaderStageCreateInfo);
+        SDL_free(shadowShaderStageCreateInfo);
 
         VkShaderModule tempModule;
         do
@@ -1090,6 +1145,11 @@ void cleanVulkan(FuncCode code)
         destroyBufferByBuffering(SunUniformBuffer, SunUniformBufferMem);
         logMessage("Sun uniform buffers destroyed");
         logMessage("Sun uniform buffer memory freed");
+
+        destroyBufferByBuffering(lightSpaceUniformBuffer, lightSpaceUniformBufferMem);
+        logMessage("lightSpace uniform buffers destroyed");
+        logMessage("lightSpace uniform buffer memory freed");
+ 
         for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
 
         {
@@ -1152,6 +1212,9 @@ void cleanVulkan(FuncCode code)
         destroyedFrameBuffer(imageCount2D, swapchain2DFramebuffer);
         SDL_free(swapchain2DFramebuffer);
 
+        destroyedFrameBuffer(2, shadowFrameBuffer);
+        SDL_free(shadowFrameBuffer);
+
         destroyedFrameBuffer(2, directColorFramebuffer);
         SDL_free(directColorFramebuffer);
         
@@ -1188,6 +1251,8 @@ void cleanVulkan(FuncCode code)
         case createCommandPoolF:
         vkDestroyRenderPass(device, renderPass, allInOne.pAllocationCallbacks);
         logMessage("renderPass destroyed");
+
+        vkDestroyRenderPass(device, shadowRenderPass, allInOne.pAllocationCallbacks);
 
         vkDestroyRenderPass(device, modelRenderPass, allInOne.pAllocationCallbacks);
 

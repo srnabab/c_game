@@ -58,6 +58,10 @@ PathType pathCompare(char * buffer)
     {
         return Viking_room_CopyPng;
     }
+    else if ((SDL_strcmp(buffer, "[ShadowVertShader]") == 0))
+    {
+        return ShadowVertShader;
+    }
     else if ((SDL_strcmp(buffer, "[Cornell_boxObj]") == 0))
     {
         return Cornell_boxObj;
@@ -93,6 +97,10 @@ PathType pathCompare(char * buffer)
     else if ((SDL_strcmp(buffer, "[Viking_roomPng]") == 0))
     {
         return Viking_roomPng;
+    }
+    else if ((SDL_strcmp(buffer, "[EmptyFragShader]") == 0))
+    {
+        return EmptyFragShader;
     }
     else if ((SDL_strcmp(buffer, "[MainBackgroundMusic1Wav]") == 0))
     {
