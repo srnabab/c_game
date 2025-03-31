@@ -27,6 +27,7 @@ vec3 reconstructWorldPosition(vec2 uv, float depth) {
 
 void main() 
 {
+    return;
     ivec2 pixelCoord = ivec2(gl_GlobalInvocationID.xy);
     vec2 uv = vec2(pixelCoord) / vec2(textureSize(depthTexture, 0));
 

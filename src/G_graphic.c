@@ -609,10 +609,10 @@ void initVulkan(void)
     VkImageView graphicImageViews[1] = {depthTexutre->imageView};
     createFrameBuffer(imageCount2D, allInOne.pExtent2D->width, allInOne.pExtent2D->height, 2, graphicImageViews, swapchain2DImageViews, &renderPass, &swapchain2DFramebuffer);
  
-    loadShadowResource(TEXTURE_SHADOW, 1024, 1024);
+    loadShadowResource(TEXTURE_SHADOW, SHADOW_MAPPING_WIDTH, SHADOW_MAPPING_HEIGHT);
     G_Texture_P * modelShadowTexture = getTexture(TEXTURE_SHADOW);
     createShadowRenderPass(modelShadowTexture->format, &shadowRenderPass);
-    createFrameBuffer(2, 1024, 1024, 1, &modelShadowTexture->imageView, NULL, &shadowRenderPass, &shadowFrameBuffer);
+    createFrameBuffer(2, SHADOW_MAPPING_WIDTH, SHADOW_MAPPING_HEIGHT, 1, &modelShadowTexture->imageView, NULL, &shadowRenderPass, &shadowFrameBuffer);
 
     loadDepthResource(TEXTURE_MODEL_DEPTH, true);
     loadNormalResource(TEXTURE_NORMAL);

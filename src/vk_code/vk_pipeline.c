@@ -917,12 +917,12 @@ void createShadowPipeline(uint32_t shaderCount, VkPipelineShaderStageCreateInfo 
     pipelineRasterizationStateCreateInfo.depthBiasClamp = VK_FALSE;
     pipelineRasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE; 
     pipelineRasterizationStateCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
-    pipelineRasterizationStateCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+    pipelineRasterizationStateCreateInfo.cullMode = VK_CULL_MODE_FRONT_BIT;
     pipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
     pipelineRasterizationStateCreateInfo.depthBiasEnable = VK_TRUE;
     pipelineRasterizationStateCreateInfo.depthBiasConstantFactor = 0.0f;
     pipelineRasterizationStateCreateInfo.depthBiasClamp = 0.0f;
-    pipelineRasterizationStateCreateInfo.depthBiasSlopeFactor = 0.0f;
+    pipelineRasterizationStateCreateInfo.depthBiasSlopeFactor = 0.45f;
     pipelineRasterizationStateCreateInfo.lineWidth = 1.0f;
     // configurePipelineRasterizationStateCreateInfo(&pipelineRasterizationStateCreateInfo);
 

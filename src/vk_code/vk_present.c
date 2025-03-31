@@ -149,7 +149,7 @@ static void recordCommandBufferShadow(void)
     resultVulkan(vkBeginCommandBuffer((*allInOne.ppGraphicCommandBuffer)[currentFrame], &beginInfo), code, 0);
     //printf("record command buffer begin\n");
 
-    VkExtent2D shadow = {1024, 1024};
+    VkExtent2D shadow = {SHADOW_MAPPING_WIDTH, SHADOW_MAPPING_HEIGHT};
 
     VkViewport viewport = {};
     viewport.x = 0.0f;

@@ -748,7 +748,7 @@ int update(void * arg)
             // glm_scale(pGraphic3DUbo->model, (vec3){0.5f ,0.5f, 0.5f});
             // glm_rotate(pGraphic3DUbo->model, glm_rad(180.0f), (vec3){0.0f, 0.0f, 1.0f});
             // glm_translate(pGraphic3DUbo->model, (vec3){1.0f, 0.0f, 0.0f});
-            glm_lookat((vec3){-*pCamera_X, 4.0f + -*pCamera_Y, 4.0f}, (vec3){-*pCamera_X, -*pCamera_Y, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, pGraphic3DUbo->view);
+            glm_lookat((vec3){-*pCamera_X, 4.0f + -*pCamera_Y / SDL_cosf(M_PI / 4), 4.0f}, (vec3){-*pCamera_X, -*pCamera_Y / SDL_cosf(M_PI / 4), 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, pGraphic3DUbo->view);
             glm_ortho_vulkan(-aspect, aspect, -aspect2, aspect2, -0.001f, -100.0f, pGraphic3DUbo->proj);
             // glm_perspective(glm_rad(45.0f), aspect, 0.1f, 100.0f, pGraphic3DUbo->proj);
             // pGraphic3DUbo->proj[1][1] *= -1;
@@ -779,7 +779,7 @@ int update(void * arg)
             // glm_mat4_copy(allInOne.pGraphic3DUbo->view, allInOne.pSunubo->lightSpace);
             glm_mul(lightProj, allInOne.pSunubo->lightSpace, allInOne.pSunubo->lightSpace);
             glm_vec3_copy((vec3){-5.0f, -9.0f, -5.0f}, allInOne.pSunubo->lightDirection);
-            glm_vec3_copy((vec3){1.0f, 0.95f, 0.8f}, allInOne.pSunubo->lightColor);
+            glm_vec3_copy((vec3){1.0f, 1.0f, 1.0f}, allInOne.pSunubo->lightColor);
             allInOne.pSunubo->lightIntensity = 2.0f;
 
             glm_mat4_copy(allInOne.pSunubo->lightSpace, allInOne.pLightSpaceUbo->lightSpace);
@@ -791,7 +791,7 @@ int update(void * arg)
 
             allInOne.pSSGIubo->rayStepSize = 0.05f;
             allInOne.pSSGIubo->maxRaySteps = 64;
-            allInOne.pSSGIubo->ssgiStrength = 0.2f;
+            allInOne.pSSGIubo->ssgiStrength = 0.1f;
 
             SDL_LockMutex(allSync.updateMutex);
             // if (updateVertex)
