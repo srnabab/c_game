@@ -917,7 +917,7 @@ void createShadowPipeline(uint32_t shaderCount, VkPipelineShaderStageCreateInfo 
     pipelineRasterizationStateCreateInfo.depthBiasClamp = VK_FALSE;
     pipelineRasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE; 
     pipelineRasterizationStateCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
-    pipelineRasterizationStateCreateInfo.cullMode = VK_CULL_MODE_FRONT_BIT;
+    pipelineRasterizationStateCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
     pipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
     pipelineRasterizationStateCreateInfo.depthBiasEnable = VK_TRUE;
     pipelineRasterizationStateCreateInfo.depthBiasConstantFactor = 0.0f;
@@ -944,7 +944,7 @@ void createShadowPipeline(uint32_t shaderCount, VkPipelineShaderStageCreateInfo 
     pipelineDepthStencilStateCreateInfo.flags = 0;
     pipelineDepthStencilStateCreateInfo.depthTestEnable = VK_TRUE;
     pipelineDepthStencilStateCreateInfo.depthWriteEnable = VK_TRUE;
-    pipelineDepthStencilStateCreateInfo.depthCompareOp = VK_COMPARE_OP_LESS;
+    pipelineDepthStencilStateCreateInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
     pipelineDepthStencilStateCreateInfo.depthBoundsTestEnable = VK_FALSE;
     pipelineDepthStencilStateCreateInfo.stencilTestEnable = VK_FALSE;
     VkStencilOpState empty = {};
@@ -967,7 +967,7 @@ void createShadowPipeline(uint32_t shaderCount, VkPipelineShaderStageCreateInfo 
         colorBlendAttachmentState[i].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
         colorBlendAttachmentState[i].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
         colorBlendAttachmentState[i].alphaBlendOp = VK_BLEND_OP_ADD;
-        colorBlendAttachmentState[i].colorWriteMask = 0;
+        colorBlendAttachmentState[i].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     }
 
     pipelineColorBlendStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;

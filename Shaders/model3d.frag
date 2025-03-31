@@ -34,7 +34,7 @@ void main()
     shadowCoord.y = 1.0 - shadowCoord.y;
     float currentDepth = projCoords.z;
 
-    float shadowMapMinDepth = texture(shadowSampler, shadowCoord).r;
+    float shadowMapMinDepth = -texture(shadowSampler, shadowCoord).r + 1.0;
     float bias = max(0.05 * (1.0 - NdotL), 0.005);
     float shadow = 1.0;
 
@@ -58,6 +58,12 @@ void main()
     
 
     outColor = vec4(textureColor.rgb * finalColor, textureColor.a);
+    // outColor = vec4(fragPosLightSpace);
+    // outColor = vec4(projCoords, 1.0);
+    // outColor = vec4(shadowMapMinDepth);
+    // outColor = vec4(vec3(bias), 1.0);
+    // outColor = vec4(vec3(inWorldPos), 1.0);
+    // outColor = vec4(vec3(currentDepth), 1.0);
     // outColor = vec4(textureColor.rgb * sun.lightIntensity, 1.0);
     // outColor = vec4(vec3(NdotL), 1.0);// debug
     // outColor = vec4(L * 0.5 + 0.5, 1.0);// debug

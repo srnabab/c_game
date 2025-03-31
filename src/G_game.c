@@ -765,18 +765,25 @@ int update(void * arg)
             glm_mat4_copy(allInOne.pGraphic3DUbo->proj, allInOne.pSSGIubo->inverseProjectionMatrix);
             glm_mat4_inv(allInOne.pSSGIubo->inverseProjectionMatrix, allInOne.pSSGIubo->inverseProjectionMatrix);
 
-            // float x, y, z;
-            // x = -SDL_randf();
-            // y = -SDL_randf();
-            // z = -SDL_randf();
+            float x, y, z;
+            x = SDL_randf();
+            y = SDL_randf();
+            z = SDL_randf();
             // print("x: %f, y: %f, z: %f", x, y, z);
 
+            mat4 lightProj;
+            glm_ortho_vulkan(-50.0f, 50.0f, 50.0f, -50.0f, 0.1f, 100.0f, lightProj);
             // glm_vec3_copy((vec3){x, y, z}, allInOne.pSunubo->lightDirection);
-            glm_lookat((vec3){0.5f + -*pCamera_X, 0.9f + -*pCamera_Y, 0.5f}, (vec3){-*pCamera_X, -*pCamera_Y, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, allInOne.pSunubo->lightSpace);
-            glm_mul(pGraphic3DUbo->proj, allInOne.pSunubo->lightSpace, allInOne.pSunubo->lightSpace);
+            // glm_lookat((vec3){x, y, z}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, allInOne.pSunubo->lightSpace);
+            // glm_lookat((vec3){0.5f + -*pCamera_X, 0.9f + -*pCamera_Y, 0.5f}, (vec3){-*pCamera_X, -*pCamera_Y, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, allInOne.pSunubo->lightSpace);
+            glm_mat4_copy(allInOne.pGraphic3DUbo->view, allInOne.pSunubo->lightSpace);
+            glm_mul(allInOne.pGraphic3DUbo->proj, allInOne.pSunubo->lightSpace, allInOne.pSunubo->lightSpace);
             glm_vec3_copy((vec3){-0.5f, -0.9f, -0.5f}, allInOne.pSunubo->lightDirection);
             glm_vec3_copy((vec3){1.0f, 0.95f, 0.8f}, allInOne.pSunubo->lightColor);
             allInOne.pSunubo->lightIntensity = 2.0f;
+
+            glm_mat4_copy(allInOne.pSunubo->lightSpace, allInOne.pLightSpaceUbo->lightSpace);
+            // glm_mul(lightProj, allInOne.pGraphic3DUbo->view, allInOne.pLightSpaceUbo->lightSpace);
 
             allInOne.pSSGIubo->cameraPosition[0] = -*pCamera_X;
             allInOne.pSSGIubo->cameraPosition[1] = 4.0f + -*pCamera_Y;
