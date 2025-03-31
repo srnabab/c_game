@@ -545,10 +545,10 @@ int update(void * arg)
     textureVertexInit(-32, -32, 64, 64, 0.2f, allInOne.pVertices2DCount, *allInOne.ppVertices2D, getTexture(TEXTURE_LOADING));
     
     tileMapVertexInit(allInOne.pVertices2DCount, *allInOne.ppVertices2D);
-    addModelMatrix(0, 0, -8, allInOne.pStaticModelPool, TEXTURE_MODEL);
-    addModelMatrix(100, 0, -8, allInOne.pStaticModelPool, TEXTURE_MODEL);
-    addModelMatrix(0, 100, -8, allInOne.pStaticModelPool, TEXTURE_MODEL);
-    addModelMatrix(0, 0, 1, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
+    addModelMatrix(0, 0, 8, allInOne.pStaticModelPool, TEXTURE_MODEL);
+    addModelMatrix(100, 0, 8, allInOne.pStaticModelPool, TEXTURE_MODEL);
+    addModelMatrix(0, 100, 8, allInOne.pStaticModelPool, TEXTURE_MODEL);
+    addModelMatrix(0, 0, -1, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
         
     SDL_Delay(300);
     
@@ -739,7 +739,7 @@ int update(void * arg)
 
             glm_mat4_identity(pGraphicUbo->model);
             glm_lookat((vec3){*pCamera_X, *pCamera_Y, 100.0f}, (vec3){*pCamera_X, *pCamera_Y, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pGraphicUbo->view);
-            glm_ortho_vulkan(-aspect, aspect, -aspect2, aspect2, 0.001f, 100.0f, pGraphicUbo->proj);
+            glm_ortho_vulkan(-aspect, aspect, -aspect2, aspect2, -0.001f, -100.0f, pGraphicUbo->proj);
             // glm_ortho(-aspect, aspect, -1.0f, 1.0f, 0.001f, 100.0f, pGraphicUbo->proj);
             // pGraphicUbo->proj[1][1] *= -1;
 
@@ -749,13 +749,13 @@ int update(void * arg)
             // glm_rotate(pGraphic3DUbo->model, glm_rad(180.0f), (vec3){0.0f, 0.0f, 1.0f});
             // glm_translate(pGraphic3DUbo->model, (vec3){1.0f, 0.0f, 0.0f});
             glm_lookat((vec3){-*pCamera_X, 4.0f + -*pCamera_Y, 4.0f}, (vec3){-*pCamera_X, -*pCamera_Y, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, pGraphic3DUbo->view);
-            glm_ortho_vulkan(-aspect, aspect, -aspect2, aspect2, 0.001f, 100.0f, pGraphic3DUbo->proj);
+            glm_ortho_vulkan(-aspect, aspect, -aspect2, aspect2, -0.001f, -100.0f, pGraphic3DUbo->proj);
             // glm_perspective(glm_rad(45.0f), aspect, 0.1f, 100.0f, pGraphic3DUbo->proj);
             // pGraphic3DUbo->proj[1][1] *= -1;
 
             glm_mat4_identity(pUIUbo->model);
             glm_lookat((vec3){0.0f, 0.0f, 100.0f}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pUIUbo->view);
-            glm_ortho_vulkan(-aspect, aspect, -aspect2, aspect2, 0.001f, 100.0f, pUIUbo->proj);
+            glm_ortho_vulkan(-aspect, aspect, -aspect2, aspect2, -0.001f, -100.0f, pUIUbo->proj);
  
             allInOne.pComputeUbo->deltaTime = delta_time;
 
@@ -772,12 +772,12 @@ int update(void * arg)
             // print("x: %f, y: %f, z: %f", x, y, z);
 
             mat4 lightProj;
-            // glm_ortho_vulkan(-10.0f, 10.0f, 10.0f * aspect2, -10.0f * aspect2, 0.1f, 100.0f, lightProj);
+            glm_ortho_vulkan(-(1024.0f / 600.0f) * (1024.0f / 600.0f), (1024.0f / 600.0f) * (1024.0f / 600.0f), -1.0f * (1024.0f / 600.0f), 1.0f * (1024.0f / 600.0f), -0.001f, -100.0f, lightProj);
             // glm_vec3_copy((vec3){x, y, z}, allInOne.pSunubo->lightDirection);
             // glm_lookat((vec3){x, y, z}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, allInOne.pSunubo->lightSpace);
             glm_lookat((vec3){5.0f, 9.0f, 5.0f}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, allInOne.pSunubo->lightSpace);
             // glm_mat4_copy(allInOne.pGraphic3DUbo->view, allInOne.pSunubo->lightSpace);
-            glm_mul(allInOne.pGraphic3DUbo->proj, allInOne.pSunubo->lightSpace, allInOne.pSunubo->lightSpace);
+            glm_mul(lightProj, allInOne.pSunubo->lightSpace, allInOne.pSunubo->lightSpace);
             glm_vec3_copy((vec3){-5.0f, -9.0f, -5.0f}, allInOne.pSunubo->lightDirection);
             glm_vec3_copy((vec3){1.0f, 0.95f, 0.8f}, allInOne.pSunubo->lightColor);
             allInOne.pSunubo->lightIntensity = 2.0f;

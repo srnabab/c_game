@@ -20,7 +20,7 @@ CGLM_INLINE void SDLCALL glm_ortho_vulkan(float left, float right, float bottom,
     dest[2][2] = fn;  // 修改：Z 值映射到 [0, 1]
     dest[3][0] = -(right  + left) * rl;
     dest[3][1] = -(top    + bottom) * tb;
-    dest[3][2] = (farZ + nearZ) * fn;  // 修改：适配 Vulkan 深度范围
+    dest[3][2] = -nearZ * fn;  // 修改：适配 Vulkan 深度范围
     dest[3][3] = 1.0f;
 }
 

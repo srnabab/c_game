@@ -607,12 +607,12 @@ void initVulkan(void)
     G_Texture_P const * depthTexutre = getTexture(TEXTURE_DEPTH);
     createGraphicRenderPass(swapchainFormat, depthTexutre->format, &renderPass);
     VkImageView graphicImageViews[1] = {depthTexutre->imageView};
-    createFrameBuffer(imageCount2D, 2, graphicImageViews, swapchain2DImageViews, &renderPass, &swapchain2DFramebuffer);
+    createFrameBuffer(imageCount2D, allInOne.pExtent2D->width, allInOne.pExtent2D->height, 2, graphicImageViews, swapchain2DImageViews, &renderPass, &swapchain2DFramebuffer);
  
-    loadDepthResource(TEXTURE_SHADOW, true);
+    loadShadowResource(TEXTURE_SHADOW, 1024, 1024);
     G_Texture_P * modelShadowTexture = getTexture(TEXTURE_SHADOW);
     createShadowRenderPass(modelShadowTexture->format, &shadowRenderPass);
-    createFrameBuffer(2, 1, &modelShadowTexture->imageView, NULL, &shadowRenderPass, &shadowFrameBuffer);
+    createFrameBuffer(2, 1024, 1024, 1, &modelShadowTexture->imageView, NULL, &shadowRenderPass, &shadowFrameBuffer);
 
     loadDepthResource(TEXTURE_MODEL_DEPTH, true);
     loadNormalResource(TEXTURE_NORMAL);
@@ -637,10 +637,10 @@ void initVulkan(void)
 #endif
 
     VkImageView modelImageViews[] = {modelColorTexture->imageView, modelNormalTexture->imageView, modelDepthTexutre->imageView};
-    createFrameBuffer(2, 3, modelImageViews, NULL, &modelRenderPass, &directColorFramebuffer);
+    createFrameBuffer(2, allInOne.pExtent2D->width, allInOne.pExtent2D->height, 3, modelImageViews, NULL, &modelRenderPass, &directColorFramebuffer);
 
     createCombineRenderPass(modelColorTexture->format, &combineRenderPass);
-    createFrameBuffer(imageCount3D, 1, NULL, swapchain3DImageViews, &combineRenderPass, &combineFrameBuffer);
+    createFrameBuffer(imageCount3D, allInOne.pExtent2D->width, allInOne.pExtent2D->height, 1, NULL, swapchain3DImageViews, &combineRenderPass, &combineFrameBuffer);
 
     createTextureSampler(&textureSampler);
     createNormalSampler(&normalSampler);

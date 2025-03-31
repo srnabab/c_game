@@ -40,7 +40,7 @@ void main()
 
     if (shadowCoord.x > 1.0 || shadowCoord.x < 0.0 || shadowCoord.y > 1.0 || shadowCoord.y < 0.0 || currentDepth > shadowMapMinDepth + bias)
     {
-        shadow = 0;
+        shadow = 0.09;
     }
 
     // vec3 albedoColor = fragColor;

@@ -142,6 +142,34 @@ bool loadTexture(PathType path, VkFormat format, VkImageAspectFlags flags, const
 
     return true;
 }
+bool loadShadowResource(const char * innerName, Uint32 width, Uint32 height)
+{
+    SDL_LockMutex(allSync.textureMutex);
+
+    int i = getEmptyTexture(innerName);
+   
+    Uint32 ID = HashID(innerName);
+
+    VkImageUsageFlags usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+
+    VkFormat depthFormat = 0;;
+    findDepthFormat(VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT, &depthFormat);
+    
+    createImage(width, height, depthFormat, VK_IMAGE_TILING_OPTIMAL, usage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &globalTexture[i].image, &globalTexture[i].imageMem);
+
+    createImageView(&globalTexture[i].image, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, &globalTexture[i].imageView);
+
+    globalTexture[i].source_width = width;
+    globalTexture[i].source_height = height;
+    globalTexture[i].format = depthFormat;
+    SDL_strlcpy(globalTexture[i].innerName, innerName, 16);
+
+    globalTexture[i].ID = ID;
+
+    SDL_UnlockMutex(allSync.textureMutex);
+
+    return true;
+}
 bool loadDepthResource(const char * innerName, bool sample)
 {
     SDL_LockMutex(allSync.textureMutex);

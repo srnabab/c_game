@@ -18,7 +18,7 @@ void main() {
     // combinedLight = Tonemap(combinedLight);
     // combinedLight = pow(combinedLight, vec3(1.0/2.2)); // Gamma Correction Example
 
-    finalColor = vec4(combinedLight, 1.0);
+    // finalColor = vec4(combinedLight, 1.0);
     // finalColor = vec4(uv, 0.0, 1.0); // For testing: just output the UV coordinates
-    // finalColor = texture(sceneColorSampler, uv); // For testing: just output the scene color
+    finalColor = texture(sceneColorSampler, uv); // For testing: just output the scene color
 }

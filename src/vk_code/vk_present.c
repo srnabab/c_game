@@ -149,13 +149,15 @@ static void recordCommandBufferShadow(void)
     resultVulkan(vkBeginCommandBuffer((*allInOne.ppGraphicCommandBuffer)[currentFrame], &beginInfo), code, 0);
     //printf("record command buffer begin\n");
 
+    VkExtent2D shadow = {1024, 1024};
+
     VkViewport viewport = {};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
     // viewport.width = 200;
     // viewport.height = 200;
-    viewport.width = (float)allInOne.pExtent2D->width;
-    viewport.height = (float)allInOne.pExtent2D->height;
+    viewport.width = (float)shadow.width;
+    viewport.height = (float)shadow.height;
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
 
@@ -164,12 +166,12 @@ static void recordCommandBufferShadow(void)
     VkRect2D scissor = {};
     scissor.offset = (VkOffset2D){0, 0};
     // scissor.extent = (VkExtent2D){200, 200};
-    scissor.extent = *allInOne.pExtent2D;
+    scissor.extent = shadow; 
 
     vkCmdSetScissor((*allInOne.ppGraphicCommandBuffer)[currentFrame], 0, 1, &scissor);
 
     VkOffset2D offset = {0, 0};
-    VkRect2D renderArea = {offset, *allInOne.pExtent2D};
+    VkRect2D renderArea = {offset, shadow};
 
     VkClearValue clearValue[3];
     clearValue[0].depthStencil = (VkClearDepthStencilValue){1.0f, 0};

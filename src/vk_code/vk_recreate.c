@@ -40,7 +40,7 @@ void recreateSwapchain(void)
 
     loadDepthResource(TEXTURE_DEPTH, false);
     VkImageView graphicImageViews[1] = {getTexture(TEXTURE_DEPTH)->imageView};
-    createFrameBuffer(*allInOne.pImageCount2D, 2, graphicImageViews, *allInOne.ppSwapchain2DImageViews, allInOne.pRenderPass, allInOne.ppSwapchain2DFramebuffer);
+    createFrameBuffer(*allInOne.pImageCount2D, allInOne.pExtent2D->width, allInOne.pExtent2D->height, 2, graphicImageViews, *allInOne.ppSwapchain2DImageViews, allInOne.pRenderPass, allInOne.ppSwapchain2DFramebuffer);
 
     destroyedFrameBuffer(oldImageCount, oldFrameBuffer);
     destroyImageViews(oldSwapchainImageView, oldImageCount);
@@ -65,7 +65,7 @@ void recreateSwapchain(void)
     loadDepthResource(TEXTURE_MODEL_DEPTH, true);
     loadNormalResource(TEXTURE_NORMAL);
     VkImageView modelImageViews[2] = {getTexture(TEXTURE_NORMAL)->imageView, getTexture(TEXTURE_MODEL_DEPTH)->imageView};
-    createFrameBuffer(*allInOne.pImageCount3D, 3, modelImageViews, *allInOne.ppSwapchain3DImageViews, allInOne.pRenderPass, allInOne.ppSwapchain3DFramebuffer);
+    createFrameBuffer(*allInOne.pImageCount3D, allInOne.pExtent2D->width, allInOne.pExtent2D->height, 3, modelImageViews, *allInOne.ppSwapchain3DImageViews, allInOne.pRenderPass, allInOne.ppSwapchain3DFramebuffer);
 
     destroyedFrameBuffer(oldImageCount3D, oldFrameBuffer3D);
     destroyImageViews(oldSwapchainImageView3D, oldImageCount3D);
