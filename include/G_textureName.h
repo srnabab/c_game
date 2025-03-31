@@ -13,5 +13,7 @@
 #define TEXTURE_NORMAL "normal"
 #define TEXTURE_SSGI_STORAGE_IMAGE "ssgi"
 #define TEXTURE_SHADOW "shadow"
+#define TEXTURE_SHADOW_MAP "shadowMap"
+#define TEXTURE_2D_COLOR "color2d"
 
 #endif

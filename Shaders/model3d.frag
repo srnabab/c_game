@@ -18,6 +18,7 @@ layout(location = 3) in vec3 inWorldNormal;
 
 layout(location = 0) out vec4 outColor;
 layout(location = 1) out vec4 outNormalBuffer;
+layout(location = 2) out float outShadowFactor;
 
 void main() 
 {
@@ -56,6 +57,7 @@ void main()
 
     vec3 finalColor = shadow * (diffuse); // + specular;
     
+    outShadowFactor = shadow * 0.9;
 
     outColor = vec4(textureColor.rgb * finalColor, textureColor.a);
     // outColor = vec4(fragPosLightSpace);

@@ -766,19 +766,34 @@ int update(void * arg)
             glm_mat4_inv(allInOne.pSSGIubo->inverseProjectionMatrix, allInOne.pSSGIubo->inverseProjectionMatrix);
 
             float x, y, z;
-            x = SDL_randf();
-            y = SDL_randf();
-            z = SDL_randf();
+
+            static int xyzID;
+            if (intervalIsDone(300 * MS_TO_NS, &xyzID, -1))
+            {
+                int neg = SDL_rand(2);
+
+                if (neg)
+                {
+                    x = -SDL_randf() * 10.0f;
+                    y = -SDL_randf() * 10.0f;
+                }
+                else
+                {
+                    x = SDL_randf() * 10.0f;
+                    y = SDL_randf() * 10.0f;
+                }
+                z = SDL_randf() * 10.0f;
+            }
             // print("x: %f, y: %f, z: %f", x, y, z);
 
             mat4 lightProj;
             glm_ortho_vulkan(-(1024.0f / 600.0f) * (1024.0f / 600.0f), (1024.0f / 600.0f) * (1024.0f / 600.0f), -1.0f * (1024.0f / 600.0f), 1.0f * (1024.0f / 600.0f), -0.001f, -100.0f, lightProj);
             // glm_vec3_copy((vec3){x, y, z}, allInOne.pSunubo->lightDirection);
             // glm_lookat((vec3){x, y, z}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, allInOne.pSunubo->lightSpace);
-            glm_lookat((vec3){5.0f, 9.0f, 5.0f}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, allInOne.pSunubo->lightSpace);
+            glm_lookat((vec3){x, y, z}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, allInOne.pSunubo->lightSpace);
             // glm_mat4_copy(allInOne.pGraphic3DUbo->view, allInOne.pSunubo->lightSpace);
             glm_mul(lightProj, allInOne.pSunubo->lightSpace, allInOne.pSunubo->lightSpace);
-            glm_vec3_copy((vec3){-5.0f, -9.0f, -5.0f}, allInOne.pSunubo->lightDirection);
+            glm_vec3_copy((vec3){-x, -y, -z}, allInOne.pSunubo->lightDirection);
             glm_vec3_copy((vec3){1.0f, 1.0f, 1.0f}, allInOne.pSunubo->lightColor);
             allInOne.pSunubo->lightIntensity = 2.0f;
 

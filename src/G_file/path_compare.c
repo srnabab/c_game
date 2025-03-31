@@ -46,6 +46,10 @@ PathType pathCompare(char * buffer)
     {
         return CombineFragShader;
     }
+    else if ((SDL_strcmp(buffer, "[Combine2dFragShader]") == 0))
+    {
+        return Combine2dFragShader;
+    }
     else if ((SDL_strcmp(buffer, "[CombineVertShader]") == 0))
     {
         return CombineVertShader;

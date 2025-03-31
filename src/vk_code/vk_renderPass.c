@@ -17,7 +17,7 @@ void createGraphicRenderPass(VkFormat surfaceFormat, VkFormat depthFormat, VkRen
     colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
     colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
     VkAttachmentReference colorAttachmentRef = {};
     colorAttachmentRef.attachment = 0;
@@ -76,10 +76,10 @@ void createGraphicRenderPass(VkFormat surfaceFormat, VkFormat depthFormat, VkRen
 
     //printf("renderPass created\n");
 }
-void createModelRenderPass(VkFormat colorFormat, VkFormat normalFormat, VkFormat depthFormat, VkRenderPass * pRenderPass)
+void createModelRenderPass(VkFormat colorFormat, VkFormat normalFormat, VkFormat shadowFormat, VkFormat depthFormat, VkRenderPass * pRenderPass)
 {
     FuncCode code = createGraphicRenderPassF;
-    VkAttachmentDescription attachment[2];
+    VkAttachmentDescription attachment[3];
 
     // color attachment
     attachment[0].flags = 0;
@@ -103,12 +103,28 @@ void createModelRenderPass(VkFormat colorFormat, VkFormat normalFormat, VkFormat
     attachment[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     attachment[1].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-    VkAttachmentReference attachmentRef[2];
+    // shadow attachment
+    attachment[2].flags = 0;
+    attachment[2].format = shadowFormat;
+    attachment[2].samples = VK_SAMPLE_COUNT_1_BIT;
+    attachment[2].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    attachment[2].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    attachment[2].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attachment[2].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attachment[2].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    attachment[2].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+
+    VkAttachmentReference attachmentRef[3];
     attachmentRef[0].attachment = 0;
     attachmentRef[0].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
     attachmentRef[1].attachment = 1;
     attachmentRef[1].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+    attachmentRef[2].attachment = 2;
+    attachmentRef[2].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
 
     VkAttachmentDescription depthAttachment = {};
     depthAttachment.flags = 0;
@@ -122,7 +138,7 @@ void createModelRenderPass(VkFormat colorFormat, VkFormat normalFormat, VkFormat
     depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
     VkAttachmentReference depthAttachmentRef = {};
-    depthAttachmentRef.attachment = 2;
+    depthAttachmentRef.attachment = 3;
     depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
     VkSubpassDescription subpass0 = {};
@@ -130,35 +146,35 @@ void createModelRenderPass(VkFormat colorFormat, VkFormat normalFormat, VkFormat
     subpass0.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     subpass0.inputAttachmentCount = 0;
     subpass0.pInputAttachments = NULL;
-    subpass0.colorAttachmentCount = 2;
+    subpass0.colorAttachmentCount = 3;
     subpass0.pColorAttachments = attachmentRef;
     subpass0.pResolveAttachments = NULL;
     subpass0.pDepthStencilAttachment = &depthAttachmentRef;
     subpass0.preserveAttachmentCount = 0;
     subpass0.pPreserveAttachments = NULL;
 
-    // VkSubpassDependency dependency = {};
-    // dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-    // dependency.dstSubpass = 0;
-    // dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-    // dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-    // dependency.srcAccessMask = 0;
-    // dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-    // dependency.dependencyFlags = 0;
+    VkSubpassDependency dependency = {};
+    dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+    dependency.dstSubpass = 0;
+    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+    dependency.srcAccessMask = 0;
+    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    dependency.dependencyFlags = 0;
 
-    VkAttachmentDescription attachments[] = {attachment[0], attachment[1], depthAttachment};
+    VkAttachmentDescription attachments[] = {attachment[0], attachment[1], attachment[2], depthAttachment};
     VkSubpassDescription subpasses[] = {subpass0};
 
     VkRenderPassCreateInfo renderPassCreateInfo = {};
     renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
     renderPassCreateInfo.pNext = NULL;
     renderPassCreateInfo.flags = 0;
-    renderPassCreateInfo.attachmentCount = 3;
+    renderPassCreateInfo.attachmentCount = 4;
     renderPassCreateInfo.pAttachments = attachments;
     renderPassCreateInfo.subpassCount = 1;
     renderPassCreateInfo.pSubpasses = subpasses;
-    renderPassCreateInfo.dependencyCount = 0;
-    renderPassCreateInfo.pDependencies = NULL;
+    renderPassCreateInfo.dependencyCount = 1;
+    renderPassCreateInfo.pDependencies = &dependency;
 
     resultVulkan(vkCreateRenderPass(*allInOne.pDevice, &renderPassCreateInfo, allInOne.pAllocationCallbacks, pRenderPass), code, 0);
 

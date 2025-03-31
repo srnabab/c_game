@@ -45,6 +45,7 @@ struct _VK_ALL
 
 
     VkRenderPass * pRenderPass;
+    VkRenderPass * pCombine2DRenderPass;
     VkRenderPass * pModelRenderPass;
     VkRenderPass * pShadowRenderPass;
     VkRenderPass * pCombineRenderPass;
@@ -70,6 +71,9 @@ struct _VK_ALL
     VkPipelineLayout * pCombinePipelineLayout;
     VkPipeline * pCombinePipeline;
 
+    VkPipelineLayout * pCombine2DPipelineLayout;
+    VkPipeline * pCombine2DPipeline;
+
 
 #if WINDOW_3D_DEBUG
     
@@ -86,6 +90,7 @@ struct _VK_ALL
     VkImageView ** ppSwapchain3DImageViews;
 #endif
 
+    VkFramebuffer ** ppGraphic2dFramebuffer;
     VkFramebuffer ** ppSwapchain3DFramebuffer;
     VkFramebuffer ** ppShadowFramebuffer;
     VkFramebuffer ** ppDirectColorFramebuffer;
@@ -160,6 +165,7 @@ struct _VK_ALL
     VkDescriptorSet ** ppShadowDescriptorSets;
     VkDescriptorSet ** ppSSGIDescriptorSets;
     VkDescriptorSet ** ppCombineDescriptorSets;
+    VkDescriptorSet ** ppCombine2dDescriptorSets;
 
     VkCommandBuffer (*ppGraphicCommandBuffer)[MAX_FRAMES_IN_FLIGHT];
     VkCommandBuffer (*ppPresentCommandBuffer)[MAX_FRAMES_IN_FLIGHT];

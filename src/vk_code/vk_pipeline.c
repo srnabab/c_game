@@ -345,7 +345,7 @@ void createModelPipeline(VkDevice * pDevice, VkExtent2D * pExtent2D, uint32_t sh
     // configurePipelineDepthStencilStateCreateInfo(&pipelineDepthStencilStateCreateInfo);
 
     VkPipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo = {};
-    Uint32 attachmentCount = 2;
+    Uint32 attachmentCount = 3;
     VkPipelineColorBlendAttachmentState * colorBlendAttachmentState = (VkPipelineColorBlendAttachmentState *)SDL_malloc(attachmentCount * sizeof(VkPipelineColorBlendAttachmentState));
     
     for (uint32_t i = 0;i < attachmentCount;i++)
@@ -359,6 +359,7 @@ void createModelPipeline(VkDevice * pDevice, VkExtent2D * pExtent2D, uint32_t sh
         colorBlendAttachmentState[i].alphaBlendOp = VK_BLEND_OP_ADD;
         colorBlendAttachmentState[i].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     }
+    colorBlendAttachmentState[2].blendEnable = VK_FALSE;
 
     pipelineColorBlendStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
     pipelineColorBlendStateCreateInfo.pNext = NULL;
