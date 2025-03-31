@@ -172,7 +172,7 @@ static void recordCommandBufferShadow(void)
     VkRect2D renderArea = {offset, *allInOne.pExtent2D};
 
     VkClearValue clearValue[3];
-    clearValue[1].depthStencil = (VkClearDepthStencilValue){1.0f, 0};
+    clearValue[0].depthStencil = (VkClearDepthStencilValue){1.0f, 0};
 
     VkRenderPassBeginInfo renderBeginInfo = {};
     renderBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;

@@ -976,7 +976,7 @@ void createShadowPipeline(uint32_t shaderCount, VkPipelineShaderStageCreateInfo 
     pipelineColorBlendStateCreateInfo.logicOpEnable = VK_FALSE;
     pipelineColorBlendStateCreateInfo.logicOp = VK_LOGIC_OP_COPY; // Optional
     pipelineColorBlendStateCreateInfo.attachmentCount = attachmentCount;
-    pipelineColorBlendStateCreateInfo.pAttachments = colorBlendAttachmentState;
+    pipelineColorBlendStateCreateInfo.pAttachments = NULL;
     pipelineColorBlendStateCreateInfo.blendConstants[0] = 0.0f; // Optional
     pipelineColorBlendStateCreateInfo.blendConstants[1] = 0.0f; // Optional
     pipelineColorBlendStateCreateInfo.blendConstants[2] = 0.0f; // Optional

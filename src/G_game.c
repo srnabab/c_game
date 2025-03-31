@@ -772,13 +772,13 @@ int update(void * arg)
             // print("x: %f, y: %f, z: %f", x, y, z);
 
             mat4 lightProj;
-            glm_ortho_vulkan(-50.0f, 50.0f, 50.0f, -50.0f, 0.1f, 100.0f, lightProj);
+            // glm_ortho_vulkan(-10.0f, 10.0f, 10.0f * aspect2, -10.0f * aspect2, 0.1f, 100.0f, lightProj);
             // glm_vec3_copy((vec3){x, y, z}, allInOne.pSunubo->lightDirection);
             // glm_lookat((vec3){x, y, z}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, allInOne.pSunubo->lightSpace);
-            // glm_lookat((vec3){0.5f + -*pCamera_X, 0.9f + -*pCamera_Y, 0.5f}, (vec3){-*pCamera_X, -*pCamera_Y, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, allInOne.pSunubo->lightSpace);
-            glm_mat4_copy(allInOne.pGraphic3DUbo->view, allInOne.pSunubo->lightSpace);
+            glm_lookat((vec3){5.0f, 9.0f, 5.0f}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, allInOne.pSunubo->lightSpace);
+            // glm_mat4_copy(allInOne.pGraphic3DUbo->view, allInOne.pSunubo->lightSpace);
             glm_mul(allInOne.pGraphic3DUbo->proj, allInOne.pSunubo->lightSpace, allInOne.pSunubo->lightSpace);
-            glm_vec3_copy((vec3){-0.5f, -0.9f, -0.5f}, allInOne.pSunubo->lightDirection);
+            glm_vec3_copy((vec3){-5.0f, -9.0f, -5.0f}, allInOne.pSunubo->lightDirection);
             glm_vec3_copy((vec3){1.0f, 0.95f, 0.8f}, allInOne.pSunubo->lightColor);
             allInOne.pSunubo->lightIntensity = 2.0f;
 

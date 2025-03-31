@@ -1,7 +1,7 @@
 #version 460
 
 layout(set = 0, binding = 1) uniform sampler2D texSampler;
-layout(set = 0, binding = 2) uniform sampler2D shadowSampler;
+layout(set = 0, binding = 2) uniform sampler2DShadow shadowSampler;
 
 layout(set = 0, binding = 3) uniform directionLight
 {
@@ -31,16 +31,16 @@ void main()
     vec4 fragPosLightSpace = sun.lightSapceMatrix * vec4(inWorldPos, 1.0);
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
     vec2 shadowCoord = projCoords.xy * 0.5 + 0.5;
-    shadowCoord.y = 1.0 - shadowCoord.y;
+    // shadowCoord.y = 1.0 - shadowCoord.y;
     float currentDepth = projCoords.z;
 
-    float shadowMapMinDepth = -texture(shadowSampler, shadowCoord).r + 1.0;
+    float shadowMapMinDepth = texture(shadowSampler, vec3(shadowCoord, currentDepth));
     float bias = max(0.05 * (1.0 - NdotL), 0.005);
     float shadow = 1.0;
 
     if (shadowCoord.x > 1.0 || shadowCoord.x < 0.0 || shadowCoord.y > 1.0 || shadowCoord.y < 0.0 || currentDepth > shadowMapMinDepth + bias)
     {
-        shadow = 0.0;
+        shadow = 0;
     }
 
     // vec3 albedoColor = fragColor;
