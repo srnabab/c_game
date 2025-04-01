@@ -46,6 +46,7 @@ static SDL_MessageBoxData * boxData;
 
 static void initAllSync(void)
 {
+    allSync.inputMutex = SDL_CreateMutex();
     allSync.updateMutex = SDL_CreateMutex();
     allSync.renderMutex = SDL_CreateMutex();
     allSync.logMutex = SDL_CreateMutex();
@@ -147,6 +148,8 @@ static Scene preScene = Pause_Scene;
 
 static bool resolutionChanged = false; 
 
+static float mouse_x, mouse_y;
+
 // Function to poll SDL events and process keyboard input
 bool process_input(void)
 {
@@ -178,7 +181,7 @@ bool process_input(void)
     while(SDL_PollEvent(&event))
     {
         SDL_Keycode key = event.key.key;
-        logMessage("preKeyState: %u, keyState: %u, key: %s(%u)", preKeyState, event.type, SDL_GetKeyName(key), key);
+        // logMessage("preKeyState: %u, keyState: %u, key: %s(%u)", preKeyState, event.type, SDL_GetKeyName(key), key);
         // logMessage("pressed Key:%u", pressedKey);
         
         if (event.type == SDL_EVENT_WINDOW_MINIMIZED)
@@ -316,7 +319,12 @@ bool process_input(void)
             if (event.type == SDL_EVENT_MOUSE_MOTION)
             {
                 //logMessage("mouse moving: %d", event.type);
-                // logMessage("mouse: (%f, %f)", event.motion.x, event.motion.y);
+                logMessage("mouse: (%f, %f)", event.motion.x, event.motion.y);
+
+                SDL_LockMutex(allSync.inputMutex);
+                mouse_x = event.motion.x;
+                mouse_y = event.motion.y;
+                SDL_UnlockMutex(allSync.inputMutex);
             }
 
             if (event.type == SDL_EVENT_MOUSE_BUTTON_UP)
@@ -766,28 +774,48 @@ int update(void * arg)
             glm_mat4_inv(allInOne.pSSGIubo->inverseProjectionMatrix, allInOne.pSSGIubo->inverseProjectionMatrix);
 
             float x, y, z;
+            vec3 lightPos;
+            float factor_x = LIGHT_HEIGHT / (allInOne.pExtent2D->width / 2);
+            float factor_y = LIGHT_HEIGHT / (allInOne.pExtent2D->height / 2);
+            
+            SDL_LockMutex(allSync.inputMutex);
+            x = -mouse_x + (allInOne.pExtent2D->width / 2);
+            x *= factor_x;
+            y = mouse_y - (allInOne.pExtent2D->height / 2);
+            y *= factor_y;
+            // z = SDL_sqrtf(SDL_powf(x, 2) + SDL_powf(y, 2)) * 10.0f;;
+            z = SDL_sqrtf(SDL_powf(LIGHT_HEIGHT, 2) - SDL_powf(x, 2) - SDL_powf(y, 2));
+            SDL_UnlockMutex(allSync.inputMutex);
 
-            static int xyzID;
-            if (intervalIsDone(300 * MS_TO_NS, &xyzID, -1))
-            {
-                int neg = SDL_rand(2);
+            // lightPos[0] = x;
+            // lightPos[1] = y;
+            // lightPos[2] = z;
+            // glm_vec3_normalize(lightPos);
+            // glm_vec3_scale(lightPos, LIGHT_HEIGHT, lightPos);
+            // x = lightPos[0];
+            // y = lightPos[1];
+            // z = lightPos[2];
+            // static int xyzID;
+            // if (intervalIsDone(300 * MS_TO_NS, &xyzID, -1))
+            // {
+            //     int neg = SDL_rand(2);
 
-                if (neg)
-                {
-                    x = -SDL_randf() * 10.0f;
-                    y = -SDL_randf() * 10.0f;
-                }
-                else
-                {
-                    x = SDL_randf() * 10.0f;
-                    y = SDL_randf() * 10.0f;
-                }
-                z = SDL_randf() * 10.0f;
-            }
-            // print("x: %f, y: %f, z: %f", x, y, z);
+            //     if (neg)
+            //     {
+            //         x = -SDL_randf() * 10.0f;
+            //         y = SDL_randf() * 10.0f;
+            //     }
+            //     else
+            //     {
+            //         x = SDL_randf() * 10.0f;
+            //         y = -SDL_randf() * 10.0f;
+            //     }
+            //     z = SDL_randf() * 10.0f;
+            // }
+            print("x: %f, y: %f, z: %f", x, y, z);
 
             mat4 lightProj;
-            glm_ortho_vulkan(-(1024.0f / 600.0f) * (1024.0f / 600.0f), (1024.0f / 600.0f) * (1024.0f / 600.0f), -1.0f * (1024.0f / 600.0f), 1.0f * (1024.0f / 600.0f), -0.001f, -100.0f, lightProj);
+            glm_ortho_vulkan(-(SHADOW_SIZE / 600.0f), (SHADOW_SIZE / 600.0f), -(SHADOW_SIZE / 800.0f), (SHADOW_SIZE / 800.0f), -0.001f, -100.0f, lightProj);
             // glm_vec3_copy((vec3){x, y, z}, allInOne.pSunubo->lightDirection);
             // glm_lookat((vec3){x, y, z}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, allInOne.pSunubo->lightSpace);
             glm_lookat((vec3){x, y, z}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, allInOne.pSunubo->lightSpace);
@@ -795,7 +823,7 @@ int update(void * arg)
             glm_mul(lightProj, allInOne.pSunubo->lightSpace, allInOne.pSunubo->lightSpace);
             glm_vec3_copy((vec3){-x, -y, -z}, allInOne.pSunubo->lightDirection);
             glm_vec3_copy((vec3){1.0f, 1.0f, 1.0f}, allInOne.pSunubo->lightColor);
-            allInOne.pSunubo->lightIntensity = 2.0f;
+            allInOne.pSunubo->lightIntensity = 1.5f;
 
             glm_mat4_copy(allInOne.pSunubo->lightSpace, allInOne.pLightSpaceUbo->lightSpace);
             // glm_mul(lightProj, allInOne.pGraphic3DUbo->view, allInOne.pLightSpaceUbo->lightSpace);

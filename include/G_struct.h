@@ -8,6 +8,8 @@
 
 struct _G_SYNC
 {
+    // for input
+    SDL_Mutex * inputMutex;
     // for update
     SDL_Mutex * updateMutex;
     // for render
