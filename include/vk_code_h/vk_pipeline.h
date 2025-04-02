@@ -6,12 +6,17 @@
 
 #include "SDL3/SDL_begin_code.h"
 
-extern void SDLCALL createGraphicsPipeline(VkDevice * pDevice, VkExtent2D * pExtent2D, uint32_t shaderCount, VkPipelineShaderStageCreateInfo * pPipelineShaderStageCreateInfo, VkPipelineLayout * pPipelineLayout, VkRenderPass * pRenderPass, VkPipeline * pGraphicsPipeline);
-extern void SDLCALL createModelPipeline(VkDevice * pDevice, VkExtent2D * pExtent2D, uint32_t shaderCount, VkPipelineShaderStageCreateInfo * pPipelineShaderStageCreateInfo, VkPipelineLayout * pPipelineLayout, VkRenderPass * pRenderPass, VkPipeline * pGraphicsPipeline);
-extern void SDLCALL createShadowPipeline(uint32_t shaderCount, VkPipelineShaderStageCreateInfo * pPipelineShaderStageCreateInfo, VkPipelineLayout * pPipelineLayout, VkRenderPass * pRenderPass, VkPipeline * pGraphicsPipeline);
-extern void SDLCALL createCombinePipeline(uint32_t shaderCount, VkPipelineShaderStageCreateInfo * pPipelineShaderStageCreateInfo, VkPipelineLayout * pPipelineLayout, VkRenderPass * pRenderPass, VkPipeline * pGraphicsPipeline);
-extern void SDLCALL createParticlePipeline(VkDevice * pDevice, VkExtent2D * pExtent2D, uint32_t shaderCount, VkPipelineShaderStageCreateInfo * pPipelineShaderStageCreateInfo, VkPipelineLayout * pPipelineLayout, VkRenderPass * pRenderPass, VkPipeline * pGraphicsPipeline);
-extern void SDLCALL createComputePipeline(VkDevice * pDevice, VkPipelineLayout * pComputePipelineLayout, VkPipelineShaderStageCreateInfo * pShaderStageCreateInfo, VkPipeline * pComputePipeline);
+extern void SDLCALL createGraphicsPipeline(VkExtent2D extent2D, Uint32 shaderCount, VkPipelineShaderStageCreateInfo * pPipelineShaderStageCreateInfo, VkPipelineLayout pipelineLayout, VkRenderPass renderPass, VkPipeline * pGraphicsPipeline);
+extern void SDLCALL createModelPipeline(VkExtent2D extent2D, Uint32 shaderCount, VkPipelineShaderStageCreateInfo * pPipelineShaderStageCreateInfo, VkPipelineLayout pipelineLayout, VkRenderPass renderPass, VkPipeline * pGraphicsPipeline);
+extern void SDLCALL createShadowPipeline(VkExtent2D extent2D, Uint32 shaderCount, VkPipelineShaderStageCreateInfo * pPipelineShaderStageCreateInfo, VkPipelineLayout pipelineLayout, VkRenderPass renderPass, VkPipeline * pGraphicsPipeline);
+extern void SDLCALL createCombinePipeline(VkExtent2D extent2D, Uint32 shaderCount, VkPipelineShaderStageCreateInfo * pPipelineShaderStageCreateInfo, VkPipelineLayout pipelineLayout, VkRenderPass renderPass, VkPipeline * pGraphicsPipeline);
+extern void SDLCALL createParticlePipeline(VkExtent2D extent2D, Uint32 shaderCount, VkPipelineShaderStageCreateInfo * pPipelineShaderStageCreateInfo, VkPipelineLayout pipelineLayout, VkRenderPass renderPass, VkPipeline * pGraphicsPipeline);
+extern void SDLCALL createComputePipeline(VkPipelineLayout * pComputePipelineLayout, VkPipelineShaderStageCreateInfo * pShaderStageCreateInfo, VkPipeline * pComputePipeline);
+extern bool SDLCALL addGraphicPipelineCreateInfo(Uint32 stageCount, VkPipelineShaderStageCreateInfo * pStage, VkPipelineVertexInputStateCreateInfo * pVertexInputState, VkPipelineInputAssemblyStateCreateInfo * pInputAssemblyState\
+, VkPipelineTessellationStateCreateInfo * pTessellationState, VkPipelineViewportStateCreateInfo * pViewportState, VkPipelineRasterizationStateCreateInfo * pRasterizationState\
+, VkPipelineMultisampleStateCreateInfo * pMultisampleState, VkPipelineDepthStencilStateCreateInfo * pDepthStencilState, VkPipelineColorBlendStateCreateInfo * pColorBlendState\
+, VkPipelineDynamicStateCreateInfo * pDynamicState, VkPipelineLayout layout, VkRenderPass renderPass, Uint32 subpass, VkPipeline basePipelineHandle, int32_t basePipelineIndex);
+extern VkResult SDLCALL createGraphicsPipelines(VkPipeline * pPipelines);
 
 #include "SDL3/SDL_close_code.h"
 

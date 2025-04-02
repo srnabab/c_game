@@ -18,13 +18,8 @@ extern VK_ALL allInOne;
 
 #include <stdio.h>
 
-void freeEntryName(Uint32 count, char ** ppEntryName)
-{
-    for (int i = 0;i < count;i++) SDL_free(ppEntryName[i]);
-    free(ppEntryName);
-}
 Uint32 CreateShaderModulesAndDescriptorSets(PathType * types, int32_t shaderCount, VkShaderModule ** ppShaderModule,\
-VkPipelineShaderStageCreateInfo ** ppShaderStageCreateInfo, VkDescriptorSetLayout ** ppDescriptorSetLayout, VkPipelineLayout * pPipelineLayout, char *** ppEntryName)
+VkPipelineShaderStageCreateInfo ** ppShaderStageCreateInfo, VkDescriptorSetLayout ** ppDescriptorSetLayout, VkPipelineLayout * pPipelineLayout)
 {
     int32_t i, j;
     int32_t setCount = 1;
@@ -67,14 +62,12 @@ VkPipelineShaderStageCreateInfo ** ppShaderStageCreateInfo, VkDescriptorSetLayou
         spv_result = spvReflectCreateShaderModule(fileSize, shaderCode, &module);
         SDL_assert(spv_result == SPV_REFLECT_RESULT_SUCCESS);
 
-        SDL_strlcpy(entryName[i], module.entry_point_name, 255);
-
         (*ppShaderStageCreateInfo)[i].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         (*ppShaderStageCreateInfo)[i].pNext = NULL;
         (*ppShaderStageCreateInfo)[i].flags = 0;
         (*ppShaderStageCreateInfo)[i].stage = module.shader_stage;
         (*ppShaderStageCreateInfo)[i].module = (*ppShaderModule)[i];
-        (*ppShaderStageCreateInfo)[i].pName = entryName[i];
+        (*ppShaderStageCreateInfo)[i].pName = "main";
         (*ppShaderStageCreateInfo)[i].pSpecializationInfo = NULL;
 
         Uint32 var_count = 0;
@@ -120,8 +113,6 @@ VkPipelineShaderStageCreateInfo ** ppShaderStageCreateInfo, VkDescriptorSetLayou
         SDL_free(shaderCode);
         SDL_CloseIO(shaderFile);
     }
-
-    *ppEntryName = entryName;
 
     setCount = biggestSet + 1;
     *ppDescriptorSetLayout = (VkDescriptorSetLayout*)SDL_malloc(setCount * sizeof(VkDescriptorSetLayout));

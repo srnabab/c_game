@@ -741,63 +741,62 @@ void initVulkan(void)
 
     /*unfixed code*/
 
-    //graphic shader
     graphicDescriptorPoolSize = (VkDescriptorPoolSize*)SDL_malloc(2 * sizeof(VkDescriptorPoolSize));
     graphicDescriptorPoolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    graphicDescriptorPoolSize[0].descriptorCount = 12;
+    graphicDescriptorPoolSize[0].descriptorCount = 14;
     graphicDescriptorPoolSize[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     graphicDescriptorPoolSize[1].descriptorCount = 20;
-    createDescriptorPool(&device, 2, graphicDescriptorPoolSize, 18, &graphicDescriptorPool);
+    createDescriptorPool(&device, 2, graphicDescriptorPoolSize, 20, &graphicDescriptorPool);
 
+    //graphic shader
     PathType graphicTypes[] = {TriangleVertShader, TriangleFragShader};
     VkShaderModule * graphicTempModule = NULL;
-    char ** entryName = NULL;
-    Uint32 graphicSetCount = CreateShaderModulesAndDescriptorSets(graphicTypes, 2, &graphicTempModule, &graphciShaderStageCreateInfo, &graphicDescriptorSetLayout, &graphicPipelineLayout, &entryName);
-
+    Uint32 graphicSetCount = CreateShaderModulesAndDescriptorSets(graphicTypes, 2, &graphicTempModule, &graphciShaderStageCreateInfo, &graphicDescriptorSetLayout, &graphicPipelineLayout);
     createDescriptorSets(&graphicDescriptorPool, graphicDescriptorSetLayout, graphicSetCount, 4, &graphicDescriptorSets);
-    createGraphicsPipeline(&device, &extent2D, 2, graphciShaderStageCreateInfo, &graphicPipelineLayout, &renderPass, &graphicPipeline);
-    freeEntryName(2, entryName);
+    createGraphicsPipeline(extent2D, 2, graphciShaderStageCreateInfo, graphicPipelineLayout, renderPass, &graphicPipeline);
 
     //graphic combine shader
     PathType combine2DTypes[] = {CombineVertShader, Combine2dFragShader};
     VkShaderModule * combine2DTempModeule = NULL;
-    entryName = NULL;
-    Uint32 combine2DSetCount = CreateShaderModulesAndDescriptorSets(combine2DTypes, 2, &combine2DTempModeule, &combine2DShaderStageCreateInfo, &combine2DDescriptorSetLayout, &combine2DPipelineLayout, &entryName);
-
+    Uint32 combine2DSetCount = CreateShaderModulesAndDescriptorSets(combine2DTypes, 2, &combine2DTempModeule, &combine2DShaderStageCreateInfo, &combine2DDescriptorSetLayout, &combine2DPipelineLayout);
     createDescriptorSets(&graphicDescriptorPool, combine2DDescriptorSetLayout, combine2DSetCount, 1, &combine2DDescriptorSets);
-    createCombinePipeline(2, combine2DShaderStageCreateInfo, &combine2DPipelineLayout, &combine2DRenderPass, &combine2DPipeline);
-    freeEntryName(2, entryName);
-
+    createCombinePipeline(extent2D, 2, combine2DShaderStageCreateInfo, combine2DPipelineLayout, combine2DRenderPass, &combine2DPipeline);
 
     //3d model shader
     PathType modelTypes[] = {Model3dVertShader, Model3dFragShader};
     VkShaderModule * modelTempModule = NULL;
-    entryName = NULL;
-    Uint32 modelSetCount = CreateShaderModulesAndDescriptorSets(modelTypes, 2, &modelTempModule, &modelShaderStageCreateInfo, &modelDescriptorSetLayout, &modelPipelineLayout, &entryName);
-
+    Uint32 modelSetCount = CreateShaderModulesAndDescriptorSets(modelTypes, 2, &modelTempModule, &modelShaderStageCreateInfo, &modelDescriptorSetLayout, &modelPipelineLayout);
     createDescriptorSets(&graphicDescriptorPool, modelDescriptorSetLayout, modelSetCount, 2, &modelDescriptorSets);
-
-    createModelPipeline(&device, &extent2D, 2, modelShaderStageCreateInfo, &modelPipelineLayout, &modelRenderPass, &modelPipeline);
-
-    freeEntryName(2, entryName);
-
-    //particle shader
-    particleDescriptorPoolSize = (VkDescriptorPoolSize*)SDL_malloc(1 * sizeof(VkDescriptorPoolSize));
-    particleDescriptorPoolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    particleDescriptorPoolSize[0].descriptorCount = 2;
-    createDescriptorPool(&device, 1, particleDescriptorPoolSize, 2, &particleDescriptorPool);
+    createModelPipeline(extent2D, 2, modelShaderStageCreateInfo, modelPipelineLayout, modelRenderPass, &modelPipeline);
 
     PathType particleTypes[] = {ParticleVertShader, ParticleFragShader};
     VkShaderModule * particleTempModule = NULL;
-    entryName = NULL;
-    Uint32 particleSetCount = CreateShaderModulesAndDescriptorSets(particleTypes, 2, &particleTempModule, &particleShaderStageCreateInfo, &particleDescriptorSetLayout, &particlePipelineLayout, &entryName);
-    // particleVertexShaderCode = particleTempModule[0];
-    // particleFragmentShaderCode = particleTempModule[1];
+    Uint32 particleSetCount = CreateShaderModulesAndDescriptorSets(particleTypes, 2, &particleTempModule, &particleShaderStageCreateInfo, &particleDescriptorSetLayout, &particlePipelineLayout);
+    createDescriptorSets(&graphicDescriptorPool, particleDescriptorSetLayout, particleSetCount, 1, &particleDescriptorSets);
+    createParticlePipeline(extent2D, 2, particleShaderStageCreateInfo, particlePipelineLayout, renderPass, &particlePipeline);
 
-    createDescriptorSets(&particleDescriptorPool, particleDescriptorSetLayout, particleSetCount, 1, &particleDescriptorSets);
+    // combine Shader
+    PathType combineTypes[] = {CombineVertShader, CombineFragShader};
+    VkShaderModule * combineTempModule = NULL;
+    Uint32 combineSetCount = CreateShaderModulesAndDescriptorSets(combineTypes, 2, &combineTempModule, &combineShaderStageCreateInfo, &combineDescriptorSetLayout, &combinePipelineLayout);
+    createDescriptorSets(&graphicDescriptorPool, combineDescriptorSetLayout, combineSetCount, 1, &combineDescriptorSets);
+    createCombinePipeline(extent2D, 2, combineShaderStageCreateInfo, combinePipelineLayout, combineRenderPass, &combinePipeline);
 
-    createParticlePipeline(&device, &extent2D, 2, particleShaderStageCreateInfo, &particlePipelineLayout, &renderPass, &particlePipeline);
-    freeEntryName(2, entryName);
+    //shadow shader
+    PathType shadowTypes[] = {ShadowVertShader, EmptyFragShader};
+    VkShaderModule * shadowTempModule = NULL;
+    Uint32 shadowSetCount = CreateShaderModulesAndDescriptorSets(shadowTypes, 2, &shadowTempModule, &shadowShaderStageCreateInfo, &shadowDescriptorSetLayout, &shadwoPipelineLayout);
+    createDescriptorSets(&graphicDescriptorPool, shadowDescriptorSetLayout, shadowSetCount, 1, &shadowDescriptorSets);
+    createShadowPipeline((VkExtent2D){SHADOW_MAPPING_WIDTH, SHADOW_MAPPING_HEIGHT}, 2, shadowShaderStageCreateInfo, shadwoPipelineLayout, shadowRenderPass, &shadowPipeline);
+
+    VkPipeline tempPipeline[6];
+    createGraphicsPipelines(tempPipeline);
+    graphicPipeline = tempPipeline[0];
+    combine2DPipeline = tempPipeline[1];
+    modelPipeline = tempPipeline[2];
+    particlePipeline = tempPipeline[3];
+    combinePipeline = tempPipeline[4];
+    shadowPipeline = tempPipeline[5];
 
     //compute descriptor pool 
     computeDescriptorPoolSize = (VkDescriptorPoolSize*)SDL_malloc(4 * sizeof(VkDescriptorPoolSize));
@@ -814,47 +813,16 @@ void initVulkan(void)
     //compute shader
     PathType computeTypes[] = {ParticleCompShader};
     VkShaderModule * computeTempModule = NULL;
-    entryName = NULL;
-    Uint32 computeSetCount = CreateShaderModulesAndDescriptorSets(computeTypes, 1, &computeTempModule, &computeShaderStageCreateInfo, &computeDescriptorSetLayout, &computePipelineLayout, &entryName);
-    // compShaderCode = computeTempModule[0];
-    
+    Uint32 computeSetCount = CreateShaderModulesAndDescriptorSets(computeTypes, 1, &computeTempModule, &computeShaderStageCreateInfo, &computeDescriptorSetLayout, &computePipelineLayout);
     createDescriptorSets(&computeDescriptorPool, computeDescriptorSetLayout, computeSetCount, 1, &computeDescriptorSets);
-
-    createComputePipeline(&device, &computePipelineLayout, computeShaderStageCreateInfo, &computePipeline);
-    freeEntryName(1, entryName);
-
-    //shadow shader
-    PathType shadowTypes[] = {ShadowVertShader, EmptyFragShader};
-    VkShaderModule * shadowTempModule = NULL;
-    entryName = NULL;
-    Uint32 shadowSetCount = CreateShaderModulesAndDescriptorSets(shadowTypes, 2, &shadowTempModule, &shadowShaderStageCreateInfo, &shadowDescriptorSetLayout, &shadwoPipelineLayout, &entryName);
-
-    createDescriptorSets(&graphicDescriptorPool, shadowDescriptorSetLayout, shadowSetCount, 1, &shadowDescriptorSets);
-
-    createShadowPipeline(2, shadowShaderStageCreateInfo, &shadwoPipelineLayout, &shadowRenderPass, &shadowPipeline);
-
-    freeEntryName(2, entryName);
+    createComputePipeline(&computePipelineLayout, computeShaderStageCreateInfo, &computePipeline);
 
     // SSGI shader
     PathType SSGITypes[] = {SSGICompShader};
     VkShaderModule * SSGITempModule = NULL;
-    entryName = NULL;
-    Uint32 SSGISetCount = CreateShaderModulesAndDescriptorSets(SSGITypes, 1, &SSGITempModule, &SSGIShaderStageCreateInfo, &SSGIDescriptorSetLayout, &SSGIPipelineLayout, &entryName);
-
+    Uint32 SSGISetCount = CreateShaderModulesAndDescriptorSets(SSGITypes, 1, &SSGITempModule, &SSGIShaderStageCreateInfo, &SSGIDescriptorSetLayout, &SSGIPipelineLayout);
     createDescriptorSets(&computeDescriptorPool, SSGIDescriptorSetLayout, SSGISetCount, 1, &SSGIDescriptorSets);
-
-    createComputePipeline(&device, &SSGIPipelineLayout, SSGIShaderStageCreateInfo, &SSGIPipeline);
-    freeEntryName(1, entryName);
-
-    // combine Shader
-    PathType combineTypes[] = {CombineVertShader, CombineFragShader};
-    VkShaderModule * combineTempModule = NULL;
-    entryName = NULL;
-    Uint32 combineSetCount = CreateShaderModulesAndDescriptorSets(combineTypes, 2, &combineTempModule, &combineShaderStageCreateInfo, &combineDescriptorSetLayout, &combinePipelineLayout, &entryName);
-
-    createDescriptorSets(&graphicDescriptorPool, combineDescriptorSetLayout, combineSetCount, 1, &combineDescriptorSets);
-    createCombinePipeline(2, combineShaderStageCreateInfo, &combinePipelineLayout, &combineRenderPass, &combinePipeline);
-    freeEntryName(2, entryName);
+    createComputePipeline(&SSGIPipelineLayout, SSGIShaderStageCreateInfo, &SSGIPipeline);
 
 
     createCommandbufferByBuffering(VK_COMMAND_BUFFER_LEVEL_PRIMARY, &graphicCommandPool, &graphicCommandBuffer);
