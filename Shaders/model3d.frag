@@ -20,29 +20,35 @@ layout(location = 0) out vec4 outColor;
 layout(location = 1) out vec4 outNormalBuffer;
 layout(location = 2) out float outShadowFactor;
 
-void main() 
+float shadowFactor(vec3 N, float NdotL)
 {
-    vec3 L = normalize(-sun.lightDirection);
+    vec3 offsetWorldPos = inWorldPos + N * 0.0035;
 
-    outNormalBuffer = vec4(inWorldNormal * 0.5 + 0.5, 1.0);
-    vec3 N = normalize(inWorldNormal.rgb);
-    float NdotL = max(dot(N, L), 0.0);
-
-
-    vec4 fragPosLightSpace = sun.lightSapceMatrix * vec4(inWorldPos, 1.0);
+    vec4 fragPosLightSpace = sun.lightSapceMatrix * vec4(offsetWorldPos, 1.0);
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
     vec2 shadowCoord = projCoords.xy * 0.5 + 0.5;
     // shadowCoord.y = 1.0 - shadowCoord.y;
     float currentDepth = projCoords.z;
 
     float shadowMapMinDepth = texture(shadowSampler, vec3(shadowCoord, currentDepth));
-    float bias = max(0.05 * (1.0 - NdotL), 0.005);
+    float bias = max(0.05 * (1.0 - NdotL), 0.055);
     float shadow = 1.0;
 
     if (shadowCoord.x > 1.0 || shadowCoord.x < 0.0 || shadowCoord.y > 1.0 || shadowCoord.y < 0.0 || currentDepth > shadowMapMinDepth + bias)
     {
-        shadow = 0.00;
+        shadow = 0.04;
     }
+
+    return shadow;
+}
+void main() 
+{
+    vec3 L = normalize(-sun.lightDirection);
+
+    vec3 N = normalize(inWorldNormal.rgb);
+    float NdotL = max(dot(N, L), 0.0);
+
+    float shadow = shadowFactor(N, NdotL);
 
     // vec3 albedoColor = fragColor;
     vec4 textureColor = texture(texSampler, fragTexCoord);
@@ -57,6 +63,8 @@ void main()
 
     vec3 finalColor = shadow * (diffuse); // + specular;
     
+    outNormalBuffer = vec4(inWorldNormal * 0.5 + 0.5, 1.0);
+
     outShadowFactor = shadow * NdotL * sun.lightIntensity;
 
     outColor = vec4(finalColor, textureColor.a);

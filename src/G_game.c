@@ -815,7 +815,7 @@ int update(void * arg)
             print("x: %f, y: %f, z: %f", x, y, z);
 
             mat4 lightProj;
-            glm_ortho_vulkan(-(SHADOW_SIZE / 600.0f), (SHADOW_SIZE / 600.0f), -(SHADOW_SIZE / 800.0f), (SHADOW_SIZE / 800.0f), -0.001f, -100.0f, lightProj);
+            glm_ortho_vulkan(-(SHADOW_SIZE / 600.0f) / 2.5f, (SHADOW_SIZE / 600.0f) / 2.5f, -(SHADOW_SIZE / 800.0f) / 2.5f, (SHADOW_SIZE / 800.0f) / 2.5f, -0.001f, -100.0f, lightProj);
             // glm_vec3_copy((vec3){x, y, z}, allInOne.pSunubo->lightDirection);
             // glm_lookat((vec3){x, y, z}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, allInOne.pSunubo->lightSpace);
             glm_lookat((vec3){x, y, z}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, allInOne.pSunubo->lightSpace);
