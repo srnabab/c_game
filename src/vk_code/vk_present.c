@@ -497,6 +497,8 @@ static void drawFirstScene(void)
     recordCommandBufferShadow();
     resultVulkan(vkEndCommandBuffer((*allInOne.ppGraphicCommandBuffer)[*allInOne.pCurrentFrame]), endCommandBufferF, 0);
 
+    SDL_WaitSemaphore(allSync.vertexSemaphore);
+
     VkTimelineSemaphoreSubmitInfo timelineSemaphoreInfo = {};
     timelineSemaphoreInfo.sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO;
     timelineSemaphoreInfo.pNext = NULL;
@@ -705,7 +707,6 @@ static void drawFirstScene(void)
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = timelineSemaphore;
 
-    SDL_WaitSemaphore(allSync.vertexSemaphore);
 
     resultVulkan(vkQueueSubmit(*allInOne.pGraphicQueue, 1, &submitInfo, (*allInOne.ppGraphicInFlightFence)[*allInOne.pCurrentFrame]), queueSumbitF, 0);
     signalValue[0]++;
@@ -750,6 +751,7 @@ static void drawFirstScene(void)
     combineSubmitInfo.signalSemaphoreCount = 2;
     combineSubmitInfo.pSignalSemaphores = signalSemaphore;
 
+    SDL_WaitSemaphore(allSync.vertexSemaphore);
     resultVulkan(vkQueueSubmit(*allInOne.pGraphicQueue, 1, &combineSubmitInfo, (*allInOne.ppGraphicInFlightFence)[*allInOne.pCurrentFrame]), queueSumbitF, 0);
     signalValue[0]++;
 

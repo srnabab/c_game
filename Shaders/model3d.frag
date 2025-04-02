@@ -22,6 +22,10 @@ layout(location = 2) out float outShadowFactor;
 
 float shadowFactor(vec3 N, float NdotL)
 {
+    float shadowBias = 0.005;
+    int pcfSamples = 9;
+    float pcfRadius = 1.5;
+
     vec3 offsetWorldPos = inWorldPos + N * 0.0035;
 
     vec4 fragPosLightSpace = sun.lightSapceMatrix * vec4(offsetWorldPos, 1.0);
@@ -30,14 +34,46 @@ float shadowFactor(vec3 N, float NdotL)
     // shadowCoord.y = 1.0 - shadowCoord.y;
     float currentDepth = projCoords.z;
 
-    float shadowMapMinDepth = texture(shadowSampler, vec3(shadowCoord, currentDepth));
-    float bias = max(0.05 * (1.0 - NdotL), 0.055);
-    float shadow = 1.0;
+    float bias = max(0.05 * (1.0 - NdotL), shadowBias);
 
-    if (shadowCoord.x > 1.0 || shadowCoord.x < 0.0 || shadowCoord.y > 1.0 || shadowCoord.y < 0.0 || currentDepth > shadowMapMinDepth + bias)
+    vec2 texelSize = 1.0 / textureSize(shadowSampler, 0);
+    // 2. 获取纹理像素大小，用于计算偏移
+
+    // 3. 循环采样周围区域
+    float shadow = 0.0;
+    for (int x = -1; x <= 1; ++x) 
     {
-        shadow = 0.04;
+        for (int y = -1; y <= 1; ++y) 
+        {
+            // 计算采样点的 UV 坐标
+            vec2 offset = vec2(x, y) * texelSize * pcfRadius;
+            vec2 sampleUV = shadowCoord + offset;
+
+            // 检查UV是否越界 (可选但推荐)
+            if (sampleUV.x >= 0.0 && sampleUV.x <= 1.0 && sampleUV.y >= 0.0 && sampleUV.y <= 1.0) 
+            {
+                // 4. 读取阴影图深度
+                float shadowMapDepth = texture(shadowSampler, vec3(sampleUV, currentDepth));
+
+                // 5. 进行深度比较
+                if (currentDepth <= shadowMapDepth + bias) 
+                {
+                    shadow += 1.0;
+                }
+            } 
+            else 
+            {
+                // 处理边界外情况，可以认为不在阴影内
+                shadow += 1.0;
+            }
+        }
     }
+
+    // 6. 计算百分比
+    shadow /= float(pcfSamples);
+
+    float minShadowIntensity = 0.1;
+    shadow = mix(minShadowIntensity, 1.0, shadow);
 
     return shadow;
 }
@@ -63,7 +99,7 @@ void main()
 
     vec3 finalColor = shadow * (diffuse); // + specular;
     
-    outNormalBuffer = vec4(inWorldNormal * 0.5 + 0.5, 1.0);
+    outNormalBuffer = vec4(inWorldNormal, 1.0);
 
     outShadowFactor = shadow * NdotL * sun.lightIntensity;
 

@@ -8,6 +8,7 @@
 extern void SDLCALL createTextureSampler(VkSampler * pSampler);
 extern void SDLCALL createNormalSampler(VkSampler * pSampler);
 extern void SDLCALL createDepthSampler(VkSampler * pSampler);
+extern void SDLCALL createShadowSampler(VkSampler * pSampler);
 
 #include "SDL3/SDL_close_code.h"
 

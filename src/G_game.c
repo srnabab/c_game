@@ -583,11 +583,83 @@ int update(void * arg)
 
         currentFrame = *allInOne.pCurrentFrame;
 
-        // vertexStart = *allInOne.pVerticesCount;
+        float aspect2 = 1.0f  * ((float)allInOne.pExtent2D->height / 600.0f);
+        float aspect = ((float)allInOne.pExtent2D->width / allInOne.pExtent2D->height) * aspect2;
 
-        // emptyTextureRefCount();
+        glm_mat4_identity(pGraphicUbo->model);
+        glm_lookat((vec3){*pCamera_X, *pCamera_Y, 100.0f}, (vec3){*pCamera_X, *pCamera_Y, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pGraphicUbo->view);
+        glm_ortho_vulkan(-aspect, aspect, -aspect2, aspect2, -0.001f, -100.0f, pGraphicUbo->proj);
+        // glm_ortho(-aspect, aspect, -1.0f, 1.0f, 0.001f, 100.0f, pGraphicUbo->proj);
+        // pGraphicUbo->proj[1][1] *= -1;
+
+        glm_mat4_identity(pGraphic3DUbo->model);
+        glm_lookat((vec3){-*pCamera_X, 4.0f + -*pCamera_Y / SDL_cosf(M_PI / 4), 4.0f}, (vec3){-*pCamera_X, -*pCamera_Y / SDL_cosf(M_PI / 4), 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, pGraphic3DUbo->view);
+        glm_ortho_vulkan(-aspect, aspect, -aspect2, aspect2, -0.001f, -100.0f, pGraphic3DUbo->proj);
+        // glm_perspective(glm_rad(45.0f), aspect, 0.1f, 100.0f, pGraphic3DUbo->proj);
+        // pGraphic3DUbo->proj[1][1] *= -1;
+
+        glm_mat4_identity(pUIUbo->model);
+        glm_lookat((vec3){0.0f, 0.0f, 100.0f}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pUIUbo->view);
+        glm_ortho_vulkan(-aspect, aspect, -aspect2, aspect2, -0.001f, -100.0f, pUIUbo->proj);
+
+        allInOne.pComputeUbo->deltaTime = delta_time;
+
+
+        glm_mat4_copy(allInOne.pGraphic3DUbo->proj, allInOne.pSSGIubo->projectionMatrix);
+        glm_mat4_copy(allInOne.pGraphic3DUbo->proj, allInOne.pSSGIubo->inverseProjectionMatrix);
+        glm_mat4_inv(allInOne.pSSGIubo->inverseProjectionMatrix, allInOne.pSSGIubo->inverseProjectionMatrix);
+
+        float x, y, z;
+        vec3 lightPos;
+        float factor_x = LIGHT_HEIGHT / (allInOne.pExtent2D->width / 2);
+        float factor_y = LIGHT_HEIGHT / (allInOne.pExtent2D->height / 2);
         
-        // Get delta_time factor converted to seconds to be used to update objects
+        x = 400 * SDL_sinf_flip(totalTime / 3);
+        SDL_LockMutex(allSync.inputMutex);
+        // x = -mouse_x + (allInOne.pExtent2D->width / 2);
+        y = mouse_y - (allInOne.pExtent2D->height / 2);
+        y = 0;
+        SDL_UnlockMutex(allSync.inputMutex);
+        x *= factor_x;
+        y *= factor_y;
+        z = SDL_sqrtf(SDL_powf(LIGHT_HEIGHT, 2) - SDL_powf(x, 2) - SDL_powf(y, 2));
+
+        print("x: %f, y: %f, z: %f", x, y, z);
+
+        mat4 lightProj;
+        glm_ortho_vulkan(-(SHADOW_SIZE / 600.0f) / 2.0f, (SHADOW_SIZE / 600.0f) / 2.0f, -(SHADOW_SIZE / 800.0f) / 2.0f, (SHADOW_SIZE / 800.0f) / 2.0f, -0.001f, -100.0f, lightProj);
+
+        glm_lookat((vec3){x, y, z}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, allInOne.pSunubo->lightSpace);
+        glm_mul(lightProj, allInOne.pSunubo->lightSpace, allInOne.pSunubo->lightSpace);
+
+        glm_vec3_copy((vec3){-x, -y, -z}, allInOne.pSunubo->lightDirection);
+        glm_vec3_copy((vec3){1.0f, 1.0f, 1.0f}, allInOne.pSunubo->lightColor);
+        allInOne.pSunubo->lightIntensity = 1.1f;
+
+        glm_mat4_copy(allInOne.pSunubo->lightSpace, allInOne.pLightSpaceUbo->lightSpace);
+
+        allInOne.pSSGIubo->cameraPosition[0] = -*pCamera_X;
+        allInOne.pSSGIubo->cameraPosition[1] = 4.0f + -*pCamera_Y / SDL_cosf(M_PI / 4);
+        allInOne.pSSGIubo->cameraPosition[2] = 4.0f;
+
+        allInOne.pSSGIubo->rayStepSize = 0.05f;
+        allInOne.pSSGIubo->maxRaySteps = 64;
+        allInOne.pSSGIubo->ssgiStrength = 0.1f;
+
+        SDL_LockMutex(allSync.vertexMutex);
+        memcpy((*allInOne.pppGraphicUniformBufferMapped)[currentFrame], pGraphicUbo, sizeof(UniformBufferObject));
+        memcpy((*allInOne.pppGraphic3DUniformBufferMapped)[currentFrame], pGraphic3DUbo, sizeof(UniformBufferObject));
+        memcpy((*allInOne.pppUIUniformBufferMapped)[currentFrame], pUIUbo, sizeof(UniformBufferObject));
+
+        memcpy((*allInOne.pppComputeUniformBufferMapped)[currentFrame], allInOne.pComputeUbo, sizeof(ComputeUniformBufferObject));
+        memcpy((*allInOne.pppSSGIUniformBufferMapped)[currentFrame], allInOne.pSSGIubo, sizeof(SSGIUniformBufferObject));
+        memcpy((*allInOne.pppSunUniformBufferMapped)[currentFrame], allInOne.pSunubo, sizeof(DirectionLight));
+        memcpy((*allInOne.pppLightSpaceUniformBufferMapped)[currentFrame], allInOne.pLightSpaceUbo , sizeof(LightSpace));
+        
+        SDL_SignalSemaphore(allSync.vertexSemaphore);
+        SDL_UnlockMutex(allSync.vertexMutex);
+
+
         if (scene == Pause_Scene)
         {
             recovreyPause = true;
@@ -739,129 +811,9 @@ int update(void * arg)
             {
             }
 
-            //updateUniformBuffer(*allInOne.pCurrentFrame, allInOne.pExtent2D, allInOne.pGraphicUbo, allInOne.pppGraphicUniformBufferMapped, *allInOne.pCamera_X, *allInOne.pCamera_Y, allInOne.pComputeUbo, allInOne.pppComputeUniformBufferMapped, delta_time);   
-            //print("time: %.2f\n", time);
-
-            float aspect2 = 1.0f  * ((float)allInOne.pExtent2D->height / 600.0f);
-            float aspect = ((float)allInOne.pExtent2D->width / allInOne.pExtent2D->height) * aspect2;
-
-            glm_mat4_identity(pGraphicUbo->model);
-            glm_lookat((vec3){*pCamera_X, *pCamera_Y, 100.0f}, (vec3){*pCamera_X, *pCamera_Y, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pGraphicUbo->view);
-            glm_ortho_vulkan(-aspect, aspect, -aspect2, aspect2, -0.001f, -100.0f, pGraphicUbo->proj);
-            // glm_ortho(-aspect, aspect, -1.0f, 1.0f, 0.001f, 100.0f, pGraphicUbo->proj);
-            // pGraphicUbo->proj[1][1] *= -1;
-
-            glm_mat4_identity(pGraphic3DUbo->model);
-            // glm_scale(pGraphic3DUbo->model, (vec3){0.2266666f, 0.2266666f, 0.2266666f});
-            // glm_scale(pGraphic3DUbo->model, (vec3){0.5f ,0.5f, 0.5f});
-            // glm_rotate(pGraphic3DUbo->model, glm_rad(180.0f), (vec3){0.0f, 0.0f, 1.0f});
-            // glm_translate(pGraphic3DUbo->model, (vec3){1.0f, 0.0f, 0.0f});
-            glm_lookat((vec3){-*pCamera_X, 4.0f + -*pCamera_Y / SDL_cosf(M_PI / 4), 4.0f}, (vec3){-*pCamera_X, -*pCamera_Y / SDL_cosf(M_PI / 4), 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, pGraphic3DUbo->view);
-            glm_ortho_vulkan(-aspect, aspect, -aspect2, aspect2, -0.001f, -100.0f, pGraphic3DUbo->proj);
-            // glm_perspective(glm_rad(45.0f), aspect, 0.1f, 100.0f, pGraphic3DUbo->proj);
-            // pGraphic3DUbo->proj[1][1] *= -1;
-
-            glm_mat4_identity(pUIUbo->model);
-            glm_lookat((vec3){0.0f, 0.0f, 100.0f}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pUIUbo->view);
-            glm_ortho_vulkan(-aspect, aspect, -aspect2, aspect2, -0.001f, -100.0f, pUIUbo->proj);
- 
-            allInOne.pComputeUbo->deltaTime = delta_time;
-
             vertexEnd = *allInOne.pVertices2DCount;
-
-            glm_mat4_copy(allInOne.pGraphic3DUbo->proj, allInOne.pSSGIubo->projectionMatrix);
-            glm_mat4_copy(allInOne.pGraphic3DUbo->proj, allInOne.pSSGIubo->inverseProjectionMatrix);
-            glm_mat4_inv(allInOne.pSSGIubo->inverseProjectionMatrix, allInOne.pSSGIubo->inverseProjectionMatrix);
-
-            float x, y, z;
-            vec3 lightPos;
-            float factor_x = LIGHT_HEIGHT / (allInOne.pExtent2D->width / 2);
-            float factor_y = LIGHT_HEIGHT / (allInOne.pExtent2D->height / 2);
-            
-            SDL_LockMutex(allSync.inputMutex);
-            x = -mouse_x + (allInOne.pExtent2D->width / 2);
-            x *= factor_x;
-            y = mouse_y - (allInOne.pExtent2D->height / 2);
-            y *= factor_y;
-            // z = SDL_sqrtf(SDL_powf(x, 2) + SDL_powf(y, 2)) * 10.0f;;
-            z = SDL_sqrtf(SDL_powf(LIGHT_HEIGHT, 2) - SDL_powf(x, 2) - SDL_powf(y, 2));
-            SDL_UnlockMutex(allSync.inputMutex);
-
-            // lightPos[0] = x;
-            // lightPos[1] = y;
-            // lightPos[2] = z;
-            // glm_vec3_normalize(lightPos);
-            // glm_vec3_scale(lightPos, LIGHT_HEIGHT, lightPos);
-            // x = lightPos[0];
-            // y = lightPos[1];
-            // z = lightPos[2];
-            // static int xyzID;
-            // if (intervalIsDone(300 * MS_TO_NS, &xyzID, -1))
-            // {
-            //     int neg = SDL_rand(2);
-
-            //     if (neg)
-            //     {
-            //         x = -SDL_randf() * 10.0f;
-            //         y = SDL_randf() * 10.0f;
-            //     }
-            //     else
-            //     {
-            //         x = SDL_randf() * 10.0f;
-            //         y = -SDL_randf() * 10.0f;
-            //     }
-            //     z = SDL_randf() * 10.0f;
-            // }
-            print("x: %f, y: %f, z: %f", x, y, z);
-
-            mat4 lightProj;
-            glm_ortho_vulkan(-(SHADOW_SIZE / 600.0f) / 2.5f, (SHADOW_SIZE / 600.0f) / 2.5f, -(SHADOW_SIZE / 800.0f) / 2.5f, (SHADOW_SIZE / 800.0f) / 2.5f, -0.001f, -100.0f, lightProj);
-            // glm_vec3_copy((vec3){x, y, z}, allInOne.pSunubo->lightDirection);
-            // glm_lookat((vec3){x, y, z}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, allInOne.pSunubo->lightSpace);
-            glm_lookat((vec3){x, y, z}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, allInOne.pSunubo->lightSpace);
-            // glm_mat4_copy(allInOne.pGraphic3DUbo->view, allInOne.pSunubo->lightSpace);
-            glm_mul(lightProj, allInOne.pSunubo->lightSpace, allInOne.pSunubo->lightSpace);
-            glm_vec3_copy((vec3){-x, -y, -z}, allInOne.pSunubo->lightDirection);
-            glm_vec3_copy((vec3){1.0f, 1.0f, 1.0f}, allInOne.pSunubo->lightColor);
-            allInOne.pSunubo->lightIntensity = 1.5f;
-
-            glm_mat4_copy(allInOne.pSunubo->lightSpace, allInOne.pLightSpaceUbo->lightSpace);
-            // glm_mul(lightProj, allInOne.pGraphic3DUbo->view, allInOne.pLightSpaceUbo->lightSpace);
-
-            allInOne.pSSGIubo->cameraPosition[0] = -*pCamera_X;
-            allInOne.pSSGIubo->cameraPosition[1] = 4.0f + -*pCamera_Y;
-            allInOne.pSSGIubo->cameraPosition[2] = 4.0f;
-
-            allInOne.pSSGIubo->rayStepSize = 0.05f;
-            allInOne.pSSGIubo->maxRaySteps = 64;
-            allInOne.pSSGIubo->ssgiStrength = 0.1f;
-
+            //print("time: %.2f\n", time);
             SDL_LockMutex(allSync.updateMutex);
-            // if (updateVertex)
-            // {
-            //     memcpy(*allInOne.ppVertexBufferMemMapped, *allInOne.ppVertices2D, 2100 * 4 * (sizeof(vec3) + sizeof(vec3) + sizeof(vec2)) * 2);// update vertex buffer
-            //     updateVertex = false;
-            // }
-            // else
-            // {
-            //     memcpy((*allInOne.ppVertexBufferMemMapped)[*allInOne.pCurrentFrame], *allInOne.ppVertices_Pos, 2100 * 4 * sizeof(vec3));// update position
-            // }
-
-            // if (vertexEnd > vertexStart) memcpy((Vertex*)(*allInOne.ppVertexBufferMemMapped)[currentFrame] + vertexStart, *allInOne.ppVertices2D + vertexStart, (vertexEnd - vertexStart) * sizeof(Vertex));// update vertex buffer
-            // else if (vertexEnd < vertexStart) 
-            // {
-            //     memcpy((Vertex*)(*allInOne.ppVertexBufferMemMapped)[currentFrame] + vertexStart, *allInOne.ppVertices2D + vertexStart, (allInOne.maxVerticesCount - vertexStart) * sizeof(Vertex));// update vertex buffer
-            //     memcpy((*allInOne.ppVertexBufferMemMapped)[currentFrame], *allInOne.ppVertices2D, vertexEnd * sizeof(Vertex));
-            // }
-
-            memcpy((*allInOne.pppGraphicUniformBufferMapped)[currentFrame], pGraphicUbo, sizeof(UniformBufferObject));
-            memcpy((*allInOne.pppGraphic3DUniformBufferMapped)[currentFrame], pGraphic3DUbo, sizeof(UniformBufferObject));
-            memcpy((*allInOne.pppUIUniformBufferMapped)[currentFrame], pUIUbo, sizeof(UniformBufferObject));
-
-            memcpy((*allInOne.pppComputeUniformBufferMapped)[currentFrame], allInOne.pComputeUbo, sizeof(ComputeUniformBufferObject));
-            memcpy((*allInOne.pppSSGIUniformBufferMapped)[currentFrame], allInOne.pSSGIubo, sizeof(SSGIUniformBufferObject));
-            memcpy((*allInOne.pppSunUniformBufferMapped)[currentFrame], allInOne.pSunubo, sizeof(DirectionLight));
-            memcpy((*allInOne.pppLightSpaceUniformBufferMapped)[currentFrame], allInOne.pLightSpaceUbo , sizeof(LightSpace));
 
             memcpy((*allInOne.ppVertexBuffer2DMemMapped)[currentFrame], *allInOne.ppVertices2D, vertexEnd * sizeof(Vertex));// update vertex buffer
             memcpy((*allInOne.ppVertexBuffer3DMemMapped)[currentFrame], *allInOne.ppVertices3D, 30000 * sizeof(Vertex));

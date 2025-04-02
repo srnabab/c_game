@@ -35,19 +35,20 @@ void main()
     if (depth == 1.0) return; // 跳过背景像素
 
     vec3 worldPos = reconstructWorldPosition(uv, depth);
-    vec3 normal = normalize(texture(normalTexture, uv).xyz * 2.0 - 1.0); // 法线通常编码在 [0, 1] 范围
+    vec3 normal = normalize(texture(normalTexture, uv).xyz); // 法线通常编码在 [0, 1] 范围
+    vec3 offsetWorldPos = worldPos + normal * 0.0035;
 
     // 计算光线方向 (例如，基于法线和视角方向) -  这部分需要更精细的逻辑
-    vec3 rayDirection = normalize(reflect(normalize(worldPos - ubo.cameraPosition), normal));
+    vec3 rayDirection = normalize(reflect(normalize(offsetWorldPos- ubo.cameraPosition), normal));
 
     vec3 indirectLighting = vec3(0.0);
-    vec3 currentRayPos = worldPos + normal * 0.01; // 偏移起点避免自相交
+    vec3 currentRayPos = offsetWorldPos + normal * 0.01; // 偏移起点避免自相交
 
     for (int i = 0; i < ubo.maxRaySteps; ++i) 
     {
         currentRayPos += rayDirection * ubo.rayStepSize;
         vec4 projectedPos = ubo.projectionMatrix * vec4(currentRayPos, 1.0);
-        vec2 sampleUV = projectedPos.xy / projectedPos.w * 0.5 + 0.5;
+        vec2 sampleUV = (projectedPos.xy / projectedPos.w) * 0.5 + 0.5;
 
         if (sampleUV.x < 0.0 || sampleUV.x > 1.0 || sampleUV.y < 0.0 || sampleUV.y > 1.0) continue; // 超出屏幕边界
 
@@ -56,8 +57,8 @@ void main()
 
         if (sampledDepth < currentDepth) { // 碰撞发生
             // 采样碰撞点的颜色/反射率 (如果 G-Buffer 中有)
-            // vec3 reflectedColor = colorTexture ? texture(colorTexture, sampleUV).rgb : vec3(1.0); // 默认白色反射率
-            vec3 reflectedColor = vec3(1.0); // 默认白色反射率
+            vec3 reflectedColor = texture(colorTexture, sampleUV).rgb; // 默认白色反射率
+            // vec3 reflectedColor = vec3(1.0); // 默认白色反射率
 
             // 简化间接光照计算 -  这里可以更复杂，例如考虑环境光照、BRDF 等
             indirectLighting = reflectedColor * ubo.ssgiStrength;

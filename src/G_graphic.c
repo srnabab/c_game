@@ -254,6 +254,7 @@ static VkCommandPool computeCommandPool = NULL;
 static VkSampler textureSampler = NULL;
 static VkSampler normalSampler = NULL;
 static VkSampler depthSampler = NULL;
+static VkSampler shadowSampler = NULL;
 
 static VkBuffer vertexBuffer2D[MAX_FRAMES_IN_FLIGHT];
 static VkDeviceMemory vertexBuffer2DMem[MAX_FRAMES_IN_FLIGHT];
@@ -665,6 +666,7 @@ void initVulkan(void)
     createTextureSampler(&textureSampler);
     createNormalSampler(&normalSampler);
     createDepthSampler(&depthSampler);
+    createShadowSampler(&shadowSampler);
 
     vertices2D = (Vertex*)SDL_calloc(VERTEX_COUNT_IN_BUFFER_2D, sizeof(Vertex));
     allInOne.maxVertices2DCount = VERTEX_COUNT_IN_BUFFER_2D;
@@ -938,9 +940,9 @@ void initVulkan(void)
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_MODEL, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_BOTTOM, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);//12
     addDescriptorSetToTexture(TEXTURE_SHADOW, modelTexture->pDescriptorSet);
-    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2, TEXTURE_SHADOW, depthSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2, TEXTURE_SHADOW, shadowSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     addDescriptorSetToTexture(TEXTURE_SHADOW, bottomTexture->pDescriptorSet);
-    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2, TEXTURE_SHADOW, depthSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2, TEXTURE_SHADOW, shadowSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     // SSGI
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, TEXTURE_MODEL_DEPTH, depthSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
@@ -1235,6 +1237,9 @@ void cleanVulkan(FuncCode code)
         vkDestroySampler(device, depthSampler, allInOne.pAllocationCallbacks);
         logMessage("depth sampler detroyed");
  
+        vkDestroySampler(device, shadowSampler, allInOne.pAllocationCallbacks);
+        logMessage("shadow sampler detroyed");
+        
         vkDestroySampler(device, normalSampler, allInOne.pAllocationCallbacks);
         logMessage("normal sampler detroyed");
         /*fall through*/

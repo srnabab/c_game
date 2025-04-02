@@ -23,6 +23,14 @@ CGLM_INLINE void SDLCALL glm_ortho_vulkan(float left, float right, float bottom,
     dest[3][2] = -nearZ * fn;  // 修改：适配 Vulkan 深度范围
     dest[3][3] = 1.0f;
 }
+SDL_FORCE_INLINE float SDLCALL SDL_sinf_flip(float a)
+{
+    float value = SDL_fmodf(a, 2 * SDL_PI_F);
+    int neg = 1;
+    if (value > M_PI_2 && value < M_PI_2 * 3) neg = -1;
+
+    return neg * SDL_sinf(value);
+}
 
 #include "SDL3/SDL_close_code.h"
 
