@@ -6,39 +6,37 @@
 #include "G_staticModel.h"
 #include "G_custom_math.h"
 
-#include "SDL3/SDL_init.h"
 #include "SDL3/SDL_video.h"
 #include "SDL3/SDL_vulkan.h"
 
-// #include "vma/vk_mem_alloc.h"
-
+#include "vk_code_h/vk_device.h"
+#include "vk_code_h/vk_instance.h"
+#include "vk_code_h/vk_queue.h"
+#include "vk_code_h/vk_commandPool.h"
 #include "vk_code_h/vk_image.h"
+#include "vk_code_h/vk_swapchain.h"
 #include "vk_code_h/vk_framebuffer.h"
 #include "vk_code_h/vk_descriptorPool.h"
-#include "vk_code_h/vk_commandPool.h"
 #include "vk_code_h/vk_synchronize.h"
-#include "vk_code_h/vk_computeShader.h"
 #include "vk_code_h/vk_uniform.h"
 #include "vk_code_h/vk_buffer.h"
-#include "vk_code_h/vk_index.h"
-#include "vk_code_h/vk_vertex.h"
+#include "vk_code_h/vk_load_model.h"
 #include "vk_code_h/vk_texture.h"
 #include "vk_code_h/vk_depth.h"
 #include "vk_code_h/vk_sampler.h"
+#include "vk_code_h/vk_computeShader.h"
+#include "vk_code_h/vk_shader.h"
 #include "vk_code_h/vk_renderPass.h"
 #include "vk_code_h/vk_pipeline.h"
-#include "vk_code_h/vk_shader.h"
-#include "vk_code_h/vk_swapchain.h"
+#include "vk_code_h/vk_vertex.h"
+#include "vk_code_h/vk_index.h"
 #include "vk_code_h/vk_alloc_func.h"
-#include "vk_code_h/vk_queue.h"
-#include "vk_code_h/vk_device.h"
 #include "vk_code_h/vk_version.h"
 #include "vk_code_h/vk_surface.h"
-#include "vk_code_h/vk_instance.h"
 #include "vk_code_h/vk_move.h"
-#include "vk_code_h/vk_load_model.h"
-#include "vk_code_h/vk_judge.h"
 #include "vk_code_h/vk_all_struct.h"
+#include "vk_code_h/vk_collection.h"
+#include "vk_code_h/vk_judge.h"
 
 #include "spirv_reflect/shader_resolve.h"
 
@@ -315,17 +313,14 @@ static void* lightSpaceUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
 static LightSpace lightSpaceubo = {};
 
 
-static VkDescriptorPoolSize * graphicDescriptorPoolSize = NULL;
 static VkDescriptorPool graphicDescriptorPool = NULL;
 static VkDescriptorSet * graphicDescriptorSets = NULL;
 static VkDescriptorSet * combine2DDescriptorSets = NULL;
 static VkDescriptorSet * modelDescriptorSets = NULL;
 
-static VkDescriptorPoolSize * particleDescriptorPoolSize = NULL;
 static VkDescriptorPool particleDescriptorPool = NULL;
 static VkDescriptorSet * particleDescriptorSets = NULL;
 
-static VkDescriptorPoolSize * computeDescriptorPoolSize = NULL;
 static VkDescriptorPool computeDescriptorPool = NULL;
 static VkDescriptorSet * computeDescriptorSets = NULL;
 
@@ -559,8 +554,6 @@ static void initializeAllInOne(void)
     allInOne.pPictureY = &pictureY;
 
     allInOne.pPushConstants = &picturePushConstants;
-
-    initStack(&allInOne.shaderModuleStack, sizeof(VkShaderModule), NULL, NULL);
 }
 
 void initVulkan(void)
@@ -570,8 +563,9 @@ void initVulkan(void)
 
     initGlobalTexture();
 
-
     initializeAllInOne();
+
+    initCollection();
 
     SDL_allocationCallBacks.pUserData = NULL;
     SDL_allocationCallBacks.pfnAllocation = SDL_VK_alloc;
@@ -583,13 +577,16 @@ void initVulkan(void)
     vulkanVersion();
 
     createInstance();
+    CO_addInstance(instance);// CO
 
     createSurface(window_2D, &surface2D);
+    CO_addSurface(surface2D);// CO
 
     pickPhysicalDevice();
 
     findQueueFamilies();
     createLogicalDevice();
+    CO_addDevice(device);// CO
 
     createQueue(queueIndices.graphicsFamily.familyIndice, &graphicQueue);
     createQueue(queueIndices.presentFamily.familyIndice, &presentQueue);
@@ -597,9 +594,13 @@ void initVulkan(void)
     createQueue(queueIndices.transferFamily.familyIndice, &transferQueue);
 
     createCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, queueIndices.graphicsFamily.familyIndice, &graphicCommandPool);
+    CO_addCommandPool(graphicCommandPool);// CO
     createCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, queueIndices.presentFamily.familyIndice, &presentCommandPool);
+    CO_addCommandPool(presentCommandPool);// CO
     createCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, queueIndices.computeFamily.familyIndice, &computeCommandPool);
+    CO_addCommandPool(computeCommandPool);// CO
     createCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, queueIndices.transferFamily.familyIndice, &transferCommandPool);
+    CO_addCommandPool(transferCommandPool);// CO
 
     getSurfaceFormats(surface2D, &surface2DFormat);
     getPresentModes(&presentMode2D);
@@ -609,29 +610,38 @@ void initVulkan(void)
     extent2D.height = height;
 
     createSwapchain(surface2D, surface2DCapabilities, surface2DFormat, presentMode2D, &swapchain2D, NULL);
+    CO_addSwapchain(swapchain2D);// CO
 
     getSwapchainNumber(swapchain2D, &imageCount2D);
     createSwapchainImage(swapchain2D, &imageCount2D, &swapchain2DImages);
+    CO_addSwapchainImage(swapchain2DImages);// CO
 
     swapchainFormat = surface2DFormat.format;
 
     //swapchain2D image view
     createSwapchainImageView(swapchain2DImages, imageCount2D, swapchainFormat, VK_IMAGE_ASPECT_COLOR_BIT, &swapchain2DImageViews);
+    CO_addSwapchainImageView(imageCount2D, swapchain2DImageViews);// CO
     createCombineRenderPass(swapchainFormat, &combine2DRenderPass);
+    CO_addRenderPass(combine2DRenderPass);// CO
     createFrameBuffer(imageCount2D, allInOne.pExtent2D->width, allInOne.pExtent2D->height, 1, NULL, swapchain2DImageViews, &combine2DRenderPass, &swapchain2DFramebuffer);
+    CO_addFrameBuffer(imageCount2D, swapchain2DFramebuffer);// CO
 
     loadDepthResource(TEXTURE_DEPTH, false);
     loadImageResource(swapchainFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_UNDEFINED, TEXTURE_2D_COLOR, NULL);
     G_Texture_P const * depthTexutre = getTexture(TEXTURE_DEPTH);
     G_Texture_P * color2DTexture = getTexture(TEXTURE_2D_COLOR);
     createGraphicRenderPass(swapchainFormat, depthTexutre->format, &renderPass);
+    CO_addRenderPass(renderPass);// CO
     VkImageView graphicImageViews[] = {color2DTexture->imageView, depthTexutre->imageView};
     createFrameBuffer(2, allInOne.pExtent2D->width, allInOne.pExtent2D->height, 2, graphicImageViews, NULL, &renderPass, &graphic2DFramebuffer);
+    CO_addFrameBuffer(2, graphic2DFramebuffer);// CO
  
     loadShadowResource(TEXTURE_SHADOW, SHADOW_MAPPING_WIDTH, SHADOW_MAPPING_HEIGHT);
     G_Texture_P * modelShadowTexture = getTexture(TEXTURE_SHADOW);
     createShadowRenderPass(modelShadowTexture->format, &shadowRenderPass);
+    CO_addRenderPass(shadowRenderPass);// CO
     createFrameBuffer(2, SHADOW_MAPPING_WIDTH, SHADOW_MAPPING_HEIGHT, 1, &modelShadowTexture->imageView, NULL, &shadowRenderPass, &shadowFrameBuffer);
+    CO_addFrameBuffer(2, shadowFrameBuffer);// CO
 
     loadDepthResource(TEXTURE_MODEL_DEPTH, true);
     loadImageResource(VK_FORMAT_R16_SFLOAT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_UNDEFINED, TEXTURE_SHADOW_MAP, NULL);
@@ -643,30 +653,42 @@ void initVulkan(void)
     G_Texture_P * modelColorTexture = getTexture(TEXTURE_MODEL_COLOR);
     G_Texture_P * seprateShadowTexture = getTexture(TEXTURE_SHADOW_MAP);
     createModelRenderPass(modelColorTexture->format, modelNormalTexture->format, seprateShadowTexture->format, modelDepthTexutre->format, &modelRenderPass);
+    CO_addRenderPass(modelRenderPass);// CO
 
 
 #if WINDOW_3D_DEBUG
 
     createSurface(window_3D, &surface3D);
+    CO_addSurface(surface3D);// Co
     getSurfaceFormats(surface3D, &surface3DFormat);
     getPresentModes(&presentMode3D);
     getSurfaceCapabilities(surface3D, &surface3DCapabilities);
     createSwapchain(surface3D, surface3DCapabilities, surface3DFormat, presentMode3D, &swapchain3D, NULL);
+    CO_addSwapchain(swapchain3D);// CO
     getSwapchainNumber(swapchain3D, &imageCount3D);
     createSwapchainImage(swapchain3D, &imageCount3D, &swapchain3DImages);
+    CO_addSwapchainImage(swapchain3DImages);// CO
     createSwapchainImageView(swapchain3DImages, imageCount3D, swapchainFormat, VK_IMAGE_ASPECT_COLOR_BIT, &swapchain3DImageViews);
+    CO_addSwapchainImageView(imageCount3D, swapchain3DImageViews);// CO
 #endif
 
     VkImageView modelImageViews[] = {modelColorTexture->imageView, modelNormalTexture->imageView, seprateShadowTexture->imageView, modelDepthTexutre->imageView};
     createFrameBuffer(2, allInOne.pExtent2D->width, allInOne.pExtent2D->height, 4, modelImageViews, NULL, &modelRenderPass, &directColorFramebuffer);
+    CO_addFrameBuffer(2, directColorFramebuffer);// CO
 
     createCombineRenderPass(modelColorTexture->format, &combineRenderPass);
+    CO_addRenderPass(combineRenderPass);// CO
     createFrameBuffer(imageCount3D, allInOne.pExtent2D->width, allInOne.pExtent2D->height, 1, NULL, swapchain3DImageViews, &combineRenderPass, &combineFrameBuffer);
+    CO_addFrameBuffer(imageCount3D, combineFrameBuffer);// CO
 
     createTextureSampler(&textureSampler);
+    CO_addSampler(textureSampler);// CO
     createNormalSampler(&normalSampler);
+    CO_addSampler(normalSampler);// CO
     createDepthSampler(&depthSampler);
+    CO_addSampler(depthSampler);// CO
     createShadowSampler(&shadowSampler);
+    CO_addSampler(shadowSampler);// CO
 
     vertices2D = (Vertex*)SDL_calloc(VERTEX_COUNT_IN_BUFFER_2D, sizeof(Vertex));
     allInOne.maxVertices2DCount = VERTEX_COUNT_IN_BUFFER_2D;
@@ -684,43 +706,6 @@ void initVulkan(void)
     vertices3D = (Vertex4*)SDL_calloc(30000, sizeof(Vertex4));
     allInOne.maxVertices3DCount = 30000;
     indices3D = (Uint32*)SDL_calloc(45000, sizeof(Uint32));
-    // UniformBufferObject tempUbo = {};
-    // glm_mat4_identity(tempUbo.model);
-    // // glm_scale(tempUbo.model, (vec3){0.0266666f, 0.0266666f, 0.0266666f});
-    // glm_scale(tempUbo.model, (vec3){0.5f ,0.5f, 0.5f});
-    // glm_lookat((vec3){0.0f, 4.0f, 4.0f}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, tempUbo.view);
-    // glm_ortho_vulkan(-((float)4 / 3), ((float)4 / 3), -1.0f, 1.0f, 0.1f, 100.0f, tempUbo.proj);
-    // vec4 tempVec4;
-    // vec2 * XYs = SDL_malloc(vertices3DCount * sizeof(vec2));
-    // float max_x, max_y, min_x, min_y;
-    // max_x = max_y = -1000000.0f;
-    // min_x = min_y = 1000000.0f;
-    // for (int lk = 0;lk < vertices3DCount;lk++)
-    // {
-    //     glm_mul(tempUbo.proj, tempUbo.view, tempUbo.proj);
-    //     glm_mul(tempUbo.proj, tempUbo.model, tempUbo.proj);
-    //     tempVec4[0] = vertices3D[lk].pos[0];
-    //     tempVec4[1] = vertices3D[lk].pos[1];
-    //     tempVec4[2] = vertices3D[lk].pos[2];
-    //     tempVec4[3] = 1.0f;
-    //     for (int kl = 0;kl < 2;kl++)
-    //     {
-    //         XYs[lk][kl] = glm_vec4_dot(tempUbo.proj[kl], tempVec4);
-    //     }
-    //     XYs[lk][0] = (XYs[lk][0] * width) - width / 2;
-    //     XYs[lk][1] = (XYs[lk][1] * height) - height / 2;
-    //     // XYs[lk][0] = (XYs[lk][0] + 1.0f) * 800.0f;
-    //     // XYs[lk][1] = (XYs[lk][1] + 1.0f) * 600.0f;
-    //     max_x = (XYs[lk][0] > max_x) ? XYs[lk][0] : max_x;
-    //     max_y = (XYs[lk][1] > max_y) ? XYs[lk][1] : max_y;
-    //     min_x = (XYs[lk][0] < min_x) ? XYs[lk][0] : min_x;
-    //     min_y = (XYs[lk][1] < min_y) ? XYs[lk][1] : min_y;
-    //     // print("point:x: %f, y: %f", XYs[lk][0], XYs[lk][1]);
-    // }
-    // SDL_free(XYs);
-    // // print("max point:x: %f, y: %f", max_x, max_y);
-    // // print("min point:x: %f, y: %f", min_x, min_y);
-    // print("width: %f, height: %f", max_x - min_x, (max_y - min_y) * SDL_cosf(M_PI / 4));
     createVertexBuffer(&physicalDevice, &device, vertexBuffer3D, vertexBuffer3DMem, vertexBuffer3DMemMapped, 30000 * sizeof(Vertex4));
     createVertexBuffer(&physicalDevice, &device, vertexBuffer3D + 1, vertexBuffer3DMem + 1, vertexBuffer3DMemMapped + 1, 30000 * sizeof(Vertex4));
     createIndexBuffer(&physicalDevice, &device, indexBuffer3D, indexBuffer3DMem, indexBuffer3DMemMapped, indices3D, 45000, sizeof(Uint32), true);
@@ -741,12 +726,13 @@ void initVulkan(void)
 
     /*unfixed code*/
 
-    graphicDescriptorPoolSize = (VkDescriptorPoolSize*)SDL_malloc(2 * sizeof(VkDescriptorPoolSize));
+    VkDescriptorPoolSize graphicDescriptorPoolSize[2];
     graphicDescriptorPoolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     graphicDescriptorPoolSize[0].descriptorCount = 14;
     graphicDescriptorPoolSize[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     graphicDescriptorPoolSize[1].descriptorCount = 20;
     createDescriptorPool(&device, 2, graphicDescriptorPoolSize, 20, &graphicDescriptorPool);
+    CO_addDescriptorPool(graphicDescriptorPool);// CO
 
     //graphic shader
     PathType graphicTypes[] = {TriangleVertShader, TriangleFragShader};
@@ -792,7 +778,7 @@ void initVulkan(void)
     executeCreateGraphicsPipelines(NULL);
 
     //compute descriptor pool 
-    computeDescriptorPoolSize = (VkDescriptorPoolSize*)SDL_malloc(4 * sizeof(VkDescriptorPoolSize));
+    VkDescriptorPoolSize computeDescriptorPoolSize[4];
     computeDescriptorPoolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     computeDescriptorPoolSize[0].descriptorCount = 4;
     computeDescriptorPoolSize[1].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
@@ -802,6 +788,7 @@ void initVulkan(void)
     computeDescriptorPoolSize[3].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
     computeDescriptorPoolSize[3].descriptorCount = 2;
     createDescriptorPool(&device, 4, computeDescriptorPoolSize, 8, &computeDescriptorPool);
+    CO_addDescriptorPool(computeDescriptorPool);// CO
 
     //compute shader
     PathType computeTypes[] = {ParticleCompShader};
@@ -825,13 +812,23 @@ void initVulkan(void)
     createCommandbufferByBuffering(VK_COMMAND_BUFFER_LEVEL_PRIMARY, &transferCommandPool, &transferCommandBuffer);
 
     createTimelineSemaphoreByBuffering(&timelineSemaphore1);
+    CO_addSemaphore(timelineSemaphore1[0]);// CO
+    CO_addSemaphore(timelineSemaphore1[1]);// CO
 
     createSemaphoreByBuffering(&imageAvailableSemaphore);
+    CO_addSemaphore(imageAvailableSemaphore[0]);// CO
+    CO_addSemaphore(imageAvailableSemaphore[1]);// CO
     createSemaphoreByBuffering(&renderFinishedSemaphore);
+    CO_addSemaphore(renderFinishedSemaphore[0]);// CO
+    CO_addSemaphore(renderFinishedSemaphore[1]);// CO
  
     createFenceByBuffering(&graphicInFlightFence);
+    CO_addFence(graphicInFlightFence[0]);// CO
+    CO_addFence(graphicInFlightFence[1]);// CO
 
     createFenceByBuffering(&computeInFlightFences);
+    CO_addFence(computeInFlightFences[0]);// CO
+    CO_addFence(computeInFlightFences[1]);// CO
     
     loadTileSet(TileSet1Png, TileSet1Tsd, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_TILE_SET, graphicDescriptorSets + 6);
     loadTileMap(TileMap1TsdI, -400, -500, TEXTURE_TILE_SET);
@@ -941,6 +938,7 @@ void cleanVulkan(FuncCode code)
 
     vkDeviceWaitIdle(device);
 
+
     switch (code)
     {
         case FuncCodeMax:
@@ -954,173 +952,13 @@ void cleanVulkan(FuncCode code)
         case waitForFencesF:
         case drawFrameF:
         case recordCommandBufferF:
-        for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
-        {
-            vkDestroyFence(device, computeInFlightFences[i], allInOne.pAllocationCallbacks);
-        }
-        logMessage("compute in flight fences destroyed");
-       /*fall through*/
-
-        for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
-        {
-            vkDestroyFence(device, graphicInFlightFence[i], allInOne.pAllocationCallbacks);
-        }
-        logMessage("in flight fence destroyed");
-        /*fall through*/
-
         case createFenceF:
-        for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
-        {
-            vkDestroySemaphore(device, renderFinishedSemaphore[i], allInOne.pAllocationCallbacks);
-        }
-        logMessage("render finished semaphore destroyed");
-
-        for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
-        {
-            vkDestroySemaphore(device, imageAvailableSemaphore[i], allInOne.pAllocationCallbacks);
-        }
-        logMessage("image available semaphore destroyed");
-
-        for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
-        {
-            vkDestroySemaphore(device, timelineSemaphore1[i], allInOne.pAllocationCallbacks);
-        }
-        /*fall through*/
-
         case createSemaphoreF:
-        // SDL_free(graphicCommandBuffer);
-        // logMessage("command buffer freed");
-
-        // SDL_free(computeCommandBuffer);
-        // logMessage("compute command buffer freed");
-
-        // SDL_free(presentCommandBuffer);
-        // logMessage("command buffer freed");
-
-        // SDL_free(transferCommandBuffer);
-        // logMessage("compute command buffer freed");
-        // /*fall through*/
         case createCommandbufferByBufferingF:
-        vkDestroyDescriptorPool(device, computeDescriptorPool, allInOne.pAllocationCallbacks);
-        SDL_free(computeDescriptorPoolSize);
-        logMessage("compute descriptro pool destroyed");
-
-        vkDestroyDescriptorPool(device, particleDescriptorPool, allInOne.pAllocationCallbacks);
-        SDL_free(particleDescriptorPoolSize);
-        logMessage("particle descriptor pool destroyed");
-
-        vkDestroyDescriptorPool(device, graphicDescriptorPool, allInOne.pAllocationCallbacks);
-        SDL_free(graphicDescriptorPoolSize);
-        logMessage("graphic descriptor pool destroyed");
-        /*fall through*/
-
         case createDescriptorPoolF:
-        vkDestroyPipeline(device, computePipeline, allInOne.pAllocationCallbacks);
-        logMessage("compute pipeline destroyed");
-
-        vkDestroyPipeline(device, particlePipeline, allInOne.pAllocationCallbacks);
-        logMessage("particle pipeline destroyed");
-
-        vkDestroyPipeline(device, modelPipeline, allInOne.pAllocationCallbacks);
-        logMessage("model pipelne destroyed");
-
-        vkDestroyPipeline(device, graphicPipeline, allInOne.pAllocationCallbacks);
-        logMessage("graphic pipelne destroyed");
-
-        vkDestroyPipeline(device, combine2DPipeline, allInOne.pAllocationCallbacks);
-
-        vkDestroyPipeline(device, SSGIPipeline, allInOne.pAllocationCallbacks);
-        logMessage("SSGI pipelne destroyed");
-        
-        vkDestroyPipeline(device, shadowPipeline, allInOne.pAllocationCallbacks);
-
-        vkDestroyPipeline(device, combinePipeline, allInOne.pAllocationCallbacks);
-        logMessage("SSGI pipelne destroyed");
- 
-        /*fall through*/
-
         case createGraphicsPipelineF:
-        vkDestroyPipelineLayout(device, computePipelineLayout, allInOne.pAllocationCallbacks);
-        logMessage("compute pipeline layout destroyed");
-
-        vkDestroyPipelineLayout(device, particlePipelineLayout, allInOne.pAllocationCallbacks);
-        logMessage("particle pipeline layout destroyed");
-
-        vkDestroyPipelineLayout(device, modelPipelineLayout, allInOne.pAllocationCallbacks);
-        logMessage("model pipeline layout destroyed");
-
-        vkDestroyPipelineLayout(device, graphicPipelineLayout, allInOne.pAllocationCallbacks);
-        logMessage("graphic pipeline layout destroyed");
-
-        vkDestroyPipelineLayout(device, combine2DPipelineLayout, allInOne.pAllocationCallbacks);
-
-        vkDestroyPipelineLayout(device, SSGIPipelineLayout, allInOne.pAllocationCallbacks);
-        logMessage("SSGI pipeline layout destroyed");
-
-        vkDestroyPipelineLayout(device, shadwoPipelineLayout, allInOne.pAllocationCallbacks);
-
-        vkDestroyPipelineLayout(device, combinePipelineLayout, allInOne.pAllocationCallbacks);
-        logMessage("SSGI pipeline layout destroyed");
-        /*fall through*/
-
         case createPipelineLayoutF:
-        vkDestroyDescriptorSetLayout(device, *computeDescriptorSetLayout, allInOne.pAllocationCallbacks);
-        SDL_free(computeDescriptorSetLayout);
-        SDL_free(computeBindings);
-        logMessage("compute descriptor set layout destroyed");
-
-        vkDestroyDescriptorSetLayout(device, *particleDescriptorSetLayout, allInOne.pAllocationCallbacks);
-        SDL_free(particleDescriptorSetLayout);
-        SDL_free(particleBindings);
-        logMessage("particle descriptoe set layout destroyed");
-
-        vkDestroyDescriptorSetLayout(device, *modelDescriptorSetLayout, allInOne.pAllocationCallbacks);
-        SDL_free(modelDescriptorSetLayout);
-        logMessage("graphic descriptor set layout destroyed");
- 
-        vkDestroyDescriptorSetLayout(device, *graphicDescriptorSetLayout, allInOne.pAllocationCallbacks);
-        SDL_free(graphicDescriptorSetLayout);
-        SDL_free(graphicBindings);
-        logMessage("graphic descriptor set layout destroyed");
- 
-        vkDestroyDescriptorSetLayout(device, SSGIDescriptorSetLayout[0], allInOne.pAllocationCallbacks);
-        vkDestroyDescriptorSetLayout(device, SSGIDescriptorSetLayout[1], allInOne.pAllocationCallbacks);
-        SDL_free(SSGIDescriptorSetLayout);
-        logMessage("graphic descriptor set layout destroyed");
-
-        vkDestroyDescriptorSetLayout(device, shadowDescriptorSetLayout[0], allInOne.pAllocationCallbacks);
-        SDL_free(shadowDescriptorSetLayout);
-        logMessage("graphic descriptor set layout destroyed");
- 
-        vkDestroyDescriptorSetLayout(device, combineDescriptorSetLayout[0], allInOne.pAllocationCallbacks);
-        SDL_free(combineDescriptorSetLayout);
-        logMessage("graphic descriptor set layout destroyed");
-  
-        vkDestroyDescriptorSetLayout(device, combine2DDescriptorSetLayout[0], allInOne.pAllocationCallbacks);
-        SDL_free(combine2DDescriptorSetLayout);
- 
-        /*fall through*/
-
         case createDescriptorSetLayoutF:
-        SDL_free(computeShaderStageCreateInfo);
-        SDL_free(particleShaderStageCreateInfo);
-        SDL_free(modelShaderStageCreateInfo);
-        SDL_free(graphciShaderStageCreateInfo);
-        SDL_free(SSGIShaderStageCreateInfo);
-        SDL_free(combineShaderStageCreateInfo);
-        SDL_free(shadowShaderStageCreateInfo);
-
-        VkShaderModule tempModule;
-        do
-        {
-            tempModule = NULL;
-            allInOne.shaderModuleStack.popFn(&allInOne.shaderModuleStack, &tempModule);
-            vkDestroyShaderModule(device, tempModule, allInOne.pAllocationCallbacks);
-        } while (tempModule != NULL);
-
-        logMessage("shaderCode destroyed");
-        /*fall through*/
-
         case createShaderModuleF:
         destroyBufferByBuffering(graphicUniformBuffers, graphicUniformBuffersMemory);
         logMessage("graphic uniform buffer destroyed");
@@ -1193,125 +1031,26 @@ void cleanVulkan(FuncCode code)
         /*fall through*/
 
         case createVertexBufferF:
-        vkDestroySampler(device, textureSampler, allInOne.pAllocationCallbacks);
-        logMessage("texture sampler detroyed");
-        
-        vkDestroySampler(device, depthSampler, allInOne.pAllocationCallbacks);
-        logMessage("depth sampler detroyed");
- 
-        vkDestroySampler(device, shadowSampler, allInOne.pAllocationCallbacks);
-        logMessage("shadow sampler detroyed");
-        
-        vkDestroySampler(device, normalSampler, allInOne.pAllocationCallbacks);
-        logMessage("normal sampler detroyed");
-        /*fall through*/
-
         case createTextureSamplerF:
         unloadAllTexture();
-        /*fall through*/
-
         case createTextureImageViewF:
         case createTextureImageF:
-        destroyedFrameBuffer(2, graphic2DFramebuffer);
-        SDL_free(graphic2DFramebuffer);
-
-        destroyedFrameBuffer(2, shadowFrameBuffer);
-        SDL_free(shadowFrameBuffer);
-
-        destroyedFrameBuffer(2, directColorFramebuffer);
-        SDL_free(directColorFramebuffer);
-        
-        destroyedFrameBuffer(imageCount3D, combineFrameBuffer);
-        SDL_free(combineFrameBuffer);
-
-        destroyedFrameBuffer(imageCount2D, swapchain2DFramebuffer);
-        SDL_free(swapchain2DFramebuffer);
-
-        logMessage("framebuffer destroyed");
-        /*fall through*/
-
         case createFrameBufferF:
-        // vkDestroyImageView(device, depthImageView, allInOne.pAllocationCallbacks);
-        // logMessage("depth image view destroyed");
-
-        // vkDestroyImage(device, depthImage, allInOne.pAllocationCallbacks);
-        // logMessage("depth image destroyed");
-
-        // vkFreeMemory(device, depthImageMemory, allInOne.pAllocationCallbacks);
-        // logMessage("depth image memory freed");
-        /*fall through*/
-
         case createDepthResouresF:
-        vkDestroyCommandPool(device, graphicCommandPool, allInOne.pAllocationCallbacks);
-        logMessage("commandpool destroyed");
-        
-        vkDestroyCommandPool(device, computeCommandPool, allInOne.pAllocationCallbacks);
-        logMessage("compute commandpool destroyed");
-
-        vkDestroyCommandPool(device, presentCommandPool, allInOne.pAllocationCallbacks);
-        logMessage("commandpool destroyed");
-        
-        vkDestroyCommandPool(device, transferCommandPool, allInOne.pAllocationCallbacks);
-        logMessage("compute commandpool destroyed");
-        /*fall through*/
-
         case createCommandPoolF:
-        vkDestroyRenderPass(device, renderPass, allInOne.pAllocationCallbacks);
-        logMessage("renderPass destroyed");
-
-        vkDestroyRenderPass(device, shadowRenderPass, allInOne.pAllocationCallbacks);
-
-        vkDestroyRenderPass(device, modelRenderPass, allInOne.pAllocationCallbacks);
-
-        vkDestroyRenderPass(device, combineRenderPass, allInOne.pAllocationCallbacks);
-        vkDestroyRenderPass(device, combine2DRenderPass, allInOne.pAllocationCallbacks);
-        /*fall through*/
-
         case createGraphicRenderPassF:
-        destroyImageViews(swapchain2DImageViews, imageCount2D);
-        SDL_free(swapchain2DImageViews);
-        
-        destroyImageViews(swapchain3DImageViews, imageCount3D);
-        SDL_free(swapchain3DImageViews);
-        logMessage("swapchain2D image views destroyed");
-        /*fall through*/
-
         case createSwapchainImageViewsF:
-        SDL_free(swapchain2DImages);
-        
-        SDL_free(swapchain3DImages);
-        logMessage("swapchainImages freed");
-        /*fall through*/
-
         case createSwapchainImageF:
         case getSwapchainNumberF:
-        vkDestroySwapchainKHR(device, swapchain2D, allInOne.pAllocationCallbacks);
-        
-        vkDestroySwapchainKHR(device, swapchain3D, allInOne.pAllocationCallbacks);
-        logMessage("swapchain2D destroyed");
-        /*fall through*/
-
         case createSwapchainF:
-        vkDestroyDevice(device, allInOne.pAllocationCallbacks);
-        logMessage("device destroyed");
-        /*fall through*/
-
         case getSurfaceCapabilitiesF:
         case getPresentModesF:
         case getSurfaceFormatsF:
         case createLogicalDeviceF:
         case findQueueFamiliesF:
         case pickPhysicalDeviceF:
-        vkDestroySurfaceKHR(instance, surface2D, allInOne.pAllocationCallbacks);
-        
-        vkDestroySurfaceKHR(instance, surface3D, allInOne.pAllocationCallbacks);
-        logMessage("surface destroyed");
-        /*fall through*/
-
         case createSurfaceF:
-        vkDestroyInstance(instance, allInOne.pAllocationCallbacks);
-        logMessage("instance destroyed");
-        /*fall through*/
+        CO_CleanAllVkResource();
 
         case createInstanceF:
         case vulkanVersionF:

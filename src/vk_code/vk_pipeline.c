@@ -1,6 +1,7 @@
 #include "vk_code_h/vk_pipeline.h"
 #include "vk_code_h/vk_judge.h"
 #include "vk_code_h/vk_all_struct.h"
+#include "vk_code_h/vk_collection.h"
 
 #undef offsetof
 #define offsetof(s, m) (size_t) & (((s *)0)->m)
@@ -556,6 +557,8 @@ VkResult executeCreateGraphicsPipelines(VkPipelineCache pipelinesCache)
         SDL_free((void*)graphicsPipelineCreateInfos[i].pColorBlendState->pAttachments);
         SDL_free((void*)graphicsPipelineCreateInfos[i].pColorBlendState);
         SDL_free((void*)graphicsPipelineCreateInfos[i].pDynamicState);
+
+        CO_addPiepline(tempGraphicsPipeline[i]);
     }
 
     graphicsPipelineCreateInfoCount = 0;
@@ -591,6 +594,7 @@ VkResult executeCreateComputePipelines(VkPipelineCache pipelinesCache)
     for (Uint32 i = 0;i < computePipelineCreateInfoCount;i++)
     {
         *computePipelinePtr[i] = tempComputePipelines[i];
+        CO_addPiepline(tempComputePipelines[i]);
     }
 
     computePipelineCreateInfoCount = 0;

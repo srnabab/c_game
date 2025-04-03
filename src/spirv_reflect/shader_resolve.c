@@ -5,6 +5,7 @@
 
 #include "vk_code_h/vk_shader.h"
 #include "vk_code_h/vk_all_struct.h"
+#include "vk_code_h/vk_collection.h"
 
 #include "SDL3/SDL_iostream.h"
 #include "SDL3/SDL_assert.h"
@@ -56,7 +57,7 @@ VkPipelineShaderStageCreateInfo ** ppShaderStageCreateInfo, VkDescriptorSetLayou
         SDL_ReadIO(shaderFile, shaderCode, sizeof(char) * fileSize);
 
         createShaderModuleFromMem(fileSize, (const Uint32*)shaderCode, (*ppShaderModule) + i);
-        allInOne.shaderModuleStack.pushFn(&allInOne.shaderModuleStack, (*ppShaderModule) + i);
+        CO_addShaderModule((*ppShaderModule)[i]);// CO
 
         SpvReflectShaderModule module;
         spv_result = spvReflectCreateShaderModule(fileSize, shaderCode, &module);
@@ -113,6 +114,7 @@ VkPipelineShaderStageCreateInfo ** ppShaderStageCreateInfo, VkDescriptorSetLayou
         SDL_free(shaderCode);
         SDL_CloseIO(shaderFile);
     }
+    CO_addShaderStageCreateInfo(*ppShaderStageCreateInfo);// CO
 
     setCount = biggestSet + 1;
     *ppDescriptorSetLayout = (VkDescriptorSetLayout*)SDL_malloc(setCount * sizeof(VkDescriptorSetLayout));
@@ -128,6 +130,7 @@ VkPipelineShaderStageCreateInfo ** ppShaderStageCreateInfo, VkDescriptorSetLayou
 
         vkCreateDescriptorSetLayout(*allInOne.pDevice, &layoutInfo, allInOne.pAllocationCallbacks, (*ppDescriptorSetLayout) + i);
     }
+    CO_addDescriptorSetLayout(setCount, (*ppDescriptorSetLayout));// CO
 
     VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
     pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -139,6 +142,7 @@ VkPipelineShaderStageCreateInfo ** ppShaderStageCreateInfo, VkDescriptorSetLayou
     pipelineLayoutCreateInfo.pPushConstantRanges = pPushConstantRange;
 
     vkCreatePipelineLayout(*allInOne.pDevice, &pipelineLayoutCreateInfo, allInOne.pAllocationCallbacks, pPipelineLayout);
+    CO_addPieplineLayout(*pPipelineLayout);
 
     // VkDescriptorSetLayout * layouts = (VkDescriptorSetLayout *)SDL_malloc(MAX_FRAMES_IN_FLIGHT * setCount * sizeof(VkDescriptorSetLayout));
     // for (i = 0;i < setCount;i++)

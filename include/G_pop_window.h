@@ -5,7 +5,7 @@
 
 #include "SDL3/SDL_begin_code.h"
 
-#define OPEN_FILE_FAILED(ft) {pushMessage(SDL_MESSAGEBOX_ERROR, "File Error", "open file %s failed (%s)", getPath(ft), SDL_GetError());exit(0);}
+#define OPEN_FILE_FAILED(ft) {pushMessage(SDL_MESSAGEBOX_ERROR, "File Error", "open file %s failed (%s)", getPath(ft), SDL_GetError());}
 
 extern bool SDLCALL initPopWindow(void);
 extern void SDLCALL pushMessage(SDL_MessageBoxFlags flags, const char * title, char *fmt, ...);
