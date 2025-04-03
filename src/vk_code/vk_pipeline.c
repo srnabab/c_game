@@ -13,11 +13,13 @@
 
 #warning "graphics pipeline create info count has limitation 10"
 static VkGraphicsPipelineCreateInfo graphicsPipelineCreateInfos[10];
+static VkPipeline * graphicPipelinePtr[10];
 static Uint32 graphicsPipelineCreateInfoCount = 0;
 
 #warning "compute pipeline create info count has limitation 10"
-static VkGraphicsPipelineCreateInfo computePipelineCreateInfos[10];
-static Uint32 comutePipelineCreateInfoCount = 0;
+static VkComputePipelineCreateInfo computePipelineCreateInfos[10];
+static VkPipeline * computePipelinePtr[10];
+static Uint32 computePipelineCreateInfoCount = 0;
 
 extern VK_ALL allInOne;
 
@@ -232,7 +234,7 @@ void createModelPipeline(VkExtent2D extent2D, Uint32 shaderCount, VkPipelineShad
 
     addGraphicPipelineCreateInfo(shaderCount, pPipelineShaderStageCreateInfo, &pipelineVertexInputStateCreateInfo, &pipelineInputAssemblyStateCreateInfo, NULL, &pipelineViewportStateCreateInfo\
         , &pipelineRasterizationStateCreateInfo, &pipelineMultisampleStateCreateInfo, &pipelineDepthStencilStateCreateInfo, &pipelineColorBlendStateCreateInfo, &pipelineDynamicStateCreateInfo, pipelineLayout, renderPass\
-        , 0, NULL, -1);
+        , 0, NULL, -1, pGraphicsPipeline);
 }
 void createGraphicsPipeline(VkExtent2D extent2D, Uint32 shaderCount, VkPipelineShaderStageCreateInfo * pPipelineShaderStageCreateInfo, VkPipelineLayout pipelineLayout, VkRenderPass renderPass, VkPipeline * pGraphicsPipeline)
 {
@@ -286,7 +288,7 @@ void createGraphicsPipeline(VkExtent2D extent2D, Uint32 shaderCount, VkPipelineS
 
     addGraphicPipelineCreateInfo(shaderCount, pPipelineShaderStageCreateInfo, &pipelineVertexInputStateCreateInfo, &pipelineInputAssemblyStateCreateInfo, NULL, &pipelineViewportStateCreateInfo\
         , &pipelineRasterizationStateCreateInfo, &pipelineMultisampleStateCreateInfo, &pipelineDepthStencilStateCreateInfo, &pipelineColorBlendStateCreateInfo, &pipelineDynamicStateCreateInfo, pipelineLayout, renderPass\
-        , 0, NULL, -1);
+        , 0, NULL, -1, pGraphicsPipeline);
 }
 void createParticlePipeline(VkExtent2D extent2D, Uint32 shaderCount, VkPipelineShaderStageCreateInfo * pPipelineShaderStageCreateInfo, VkPipelineLayout pipelineLayout, VkRenderPass renderPass, VkPipeline * pGraphicsPipeline)
 {
@@ -339,7 +341,7 @@ void createParticlePipeline(VkExtent2D extent2D, Uint32 shaderCount, VkPipelineS
 
     addGraphicPipelineCreateInfo(shaderCount, pPipelineShaderStageCreateInfo, &pipelineVertexInputStateCreateInfo, &pipelineInputAssemblyStateCreateInfo, NULL, &pipelineViewportStateCreateInfo\
         , &pipelineRasterizationStateCreateInfo, &pipelineMultisampleStateCreateInfo, &pipelineDepthStencilStateCreateInfo, &pipelineColorBlendStateCreateInfo, &pipelineDynamicStateCreateInfo, pipelineLayout, renderPass\
-        , 0, NULL, -1);
+        , 0, NULL, -1, pGraphicsPipeline);
 }
 void createCombinePipeline(VkExtent2D extent2D, Uint32 shaderCount, VkPipelineShaderStageCreateInfo * pPipelineShaderStageCreateInfo, VkPipelineLayout pipelineLayout, VkRenderPass renderPass, VkPipeline * pGraphicsPipeline)
 {
@@ -384,7 +386,7 @@ void createCombinePipeline(VkExtent2D extent2D, Uint32 shaderCount, VkPipelineSh
 
     addGraphicPipelineCreateInfo(shaderCount, pPipelineShaderStageCreateInfo, &pipelineVertexInputStateCreateInfo, &pipelineInputAssemblyStateCreateInfo, NULL, &pipelineViewportStateCreateInfo\
         , &pipelineRasterizationStateCreateInfo, &pipelineMultisampleStateCreateInfo, &pipelineDepthStencilStateCreateInfo, &pipelineColorBlendStateCreateInfo, &pipelineDynamicStateCreateInfo, pipelineLayout, renderPass\
-        , 0, NULL, -1);
+        , 0, NULL, -1, pGraphicsPipeline);
 }
 void createShadowPipeline(VkExtent2D extent2D, Uint32 shaderCount, VkPipelineShaderStageCreateInfo * pPipelineShaderStageCreateInfo, VkPipelineLayout pipelineLayout, VkRenderPass renderPass, VkPipeline * pGraphicsPipeline)
 {
@@ -436,12 +438,12 @@ void createShadowPipeline(VkExtent2D extent2D, Uint32 shaderCount, VkPipelineSha
 
     addGraphicPipelineCreateInfo(shaderCount, pPipelineShaderStageCreateInfo, &pipelineVertexInputStateCreateInfo, &pipelineInputAssemblyStateCreateInfo, NULL, &pipelineViewportStateCreateInfo\
         , &pipelineRasterizationStateCreateInfo, &pipelineMultisampleStateCreateInfo, &pipelineDepthStencilStateCreateInfo, &pipelineColorBlendStateCreateInfo, &pipelineDynamicStateCreateInfo, pipelineLayout, renderPass\
-        , 0, NULL, -1);
+        , 0, NULL, -1, pGraphicsPipeline);
 }
 bool addGraphicPipelineCreateInfo(Uint32 stageCount, VkPipelineShaderStageCreateInfo * pStage, VkPipelineVertexInputStateCreateInfo * pVertexInputState, VkPipelineInputAssemblyStateCreateInfo * pInputAssemblyState\
 , VkPipelineTessellationStateCreateInfo * pTessellationState, VkPipelineViewportStateCreateInfo * pViewportState, VkPipelineRasterizationStateCreateInfo * pRasterizationState\
 , VkPipelineMultisampleStateCreateInfo * pMultisampleState, VkPipelineDepthStencilStateCreateInfo * pDepthStencilState, VkPipelineColorBlendStateCreateInfo * pColorBlendState\
-, VkPipelineDynamicStateCreateInfo * pDynamicState, VkPipelineLayout layout, VkRenderPass renderPass, Uint32 subpass, VkPipeline basePipelineHandle, int32_t basePipelineIndex)
+, VkPipelineDynamicStateCreateInfo * pDynamicState, VkPipelineLayout layout, VkRenderPass renderPass, Uint32 subpass, VkPipeline basePipelineHandle, int32_t basePipelineIndex, VkPipeline * pPipeline)
 {
     if (graphicsPipelineCreateInfoCount == 10) return false;
 
@@ -529,16 +531,19 @@ bool addGraphicPipelineCreateInfo(Uint32 stageCount, VkPipelineShaderStageCreate
     pipelineCreateInfo.basePipelineIndex = basePipelineIndex;
 
     graphicsPipelineCreateInfos[graphicsPipelineCreateInfoCount] = pipelineCreateInfo;
+    graphicPipelinePtr[graphicsPipelineCreateInfoCount] = pPipeline;
     graphicsPipelineCreateInfoCount++;
 
     return true;
 }
-VkResult createGraphicsPipelines(VkPipeline * pPipelines)
+VkResult executeCreateGraphicsPipelines(VkPipelineCache pipelinesCache)
 {
-    VkResult result = vkCreateGraphicsPipelines(*allInOne.pDevice, NULL, graphicsPipelineCreateInfoCount, graphicsPipelineCreateInfos, allInOne.pAllocationCallbacks, pPipelines);
+    VkPipeline tempGraphicsPipeline[10];
+    VkResult result = vkCreateGraphicsPipelines(*allInOne.pDevice, NULL, graphicsPipelineCreateInfoCount, graphicsPipelineCreateInfos, allInOne.pAllocationCallbacks, tempGraphicsPipeline);
 
     for  (Uint32 i = 0;i < graphicsPipelineCreateInfoCount;i++)
     {
+        *graphicPipelinePtr[i] = tempGraphicsPipeline[i];
         SDL_free((void*)graphicsPipelineCreateInfos[i].pVertexInputState->pVertexBindingDescriptions);
         SDL_free((void*)graphicsPipelineCreateInfos[i].pVertexInputState->pVertexAttributeDescriptions);
         SDL_free((void*)graphicsPipelineCreateInfos[i].pInputAssemblyState);
@@ -557,16 +562,38 @@ VkResult createGraphicsPipelines(VkPipeline * pPipelines)
 
     return result;
 }
-void createComputePipeline(VkPipelineLayout * pComputePipelineLayout, VkPipelineShaderStageCreateInfo * pShaderStageCreateInfo, VkPipeline * pComputePipeline)
+bool addComputePipeline(VkPipelineShaderStageCreateInfo * pShaderStageCreateInfo, VkPipelineLayout * pComputePipelineLayout, VkPipeline basePipelineHandle, Uint32 basePipelineIndex, VkPipeline * pComputePipeline)
 {
+    if (computePipelineCreateInfoCount == 10) return false;
+
     VkComputePipelineCreateInfo pipelineInfo = {};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
     pipelineInfo.pNext = NULL;
     pipelineInfo.flags = 0;
     pipelineInfo.stage = *pShaderStageCreateInfo;
     pipelineInfo.layout = *pComputePipelineLayout;
-    pipelineInfo.basePipelineHandle = NULL;
-    pipelineInfo.basePipelineIndex = 0;
+    pipelineInfo.basePipelineHandle = basePipelineHandle;
+    pipelineInfo.basePipelineIndex = basePipelineIndex;
+
+    computePipelineCreateInfos[computePipelineCreateInfoCount] = pipelineInfo;
+    computePipelinePtr[computePipelineCreateInfoCount] = pComputePipeline;
+    computePipelineCreateInfoCount++;
+
+    return true;
 
     vkCreateComputePipelines(*allInOne.pDevice, NULL, 1, &pipelineInfo, allInOne.pAllocationCallbacks, pComputePipeline);
+}
+VkResult executeCreateComputePipelines(VkPipelineCache pipelinesCache)
+{
+    VkPipeline tempComputePipelines[10];
+    VkResult result = vkCreateComputePipelines(*allInOne.pDevice, NULL, computePipelineCreateInfoCount, computePipelineCreateInfos, allInOne.pAllocationCallbacks, tempComputePipelines);
+
+    for (Uint32 i = 0;i < computePipelineCreateInfoCount;i++)
+    {
+        *computePipelinePtr[i] = tempComputePipelines[i];
+    }
+
+    computePipelineCreateInfoCount = 0;
+
+    return result;
 }

@@ -789,14 +789,7 @@ void initVulkan(void)
     createDescriptorSets(&graphicDescriptorPool, shadowDescriptorSetLayout, shadowSetCount, 1, &shadowDescriptorSets);
     createShadowPipeline((VkExtent2D){SHADOW_MAPPING_WIDTH, SHADOW_MAPPING_HEIGHT}, 2, shadowShaderStageCreateInfo, shadwoPipelineLayout, shadowRenderPass, &shadowPipeline);
 
-    VkPipeline tempPipeline[6];
-    createGraphicsPipelines(tempPipeline);
-    graphicPipeline = tempPipeline[0];
-    combine2DPipeline = tempPipeline[1];
-    modelPipeline = tempPipeline[2];
-    particlePipeline = tempPipeline[3];
-    combinePipeline = tempPipeline[4];
-    shadowPipeline = tempPipeline[5];
+    executeCreateGraphicsPipelines(NULL);
 
     //compute descriptor pool 
     computeDescriptorPoolSize = (VkDescriptorPoolSize*)SDL_malloc(4 * sizeof(VkDescriptorPoolSize));
@@ -815,15 +808,16 @@ void initVulkan(void)
     VkShaderModule * computeTempModule = NULL;
     Uint32 computeSetCount = CreateShaderModulesAndDescriptorSets(computeTypes, 1, &computeTempModule, &computeShaderStageCreateInfo, &computeDescriptorSetLayout, &computePipelineLayout);
     createDescriptorSets(&computeDescriptorPool, computeDescriptorSetLayout, computeSetCount, 1, &computeDescriptorSets);
-    createComputePipeline(&computePipelineLayout, computeShaderStageCreateInfo, &computePipeline);
+    addComputePipeline(computeShaderStageCreateInfo, &computePipelineLayout, NULL, 0, &computePipeline);
 
     // SSGI shader
     PathType SSGITypes[] = {SSGICompShader};
     VkShaderModule * SSGITempModule = NULL;
     Uint32 SSGISetCount = CreateShaderModulesAndDescriptorSets(SSGITypes, 1, &SSGITempModule, &SSGIShaderStageCreateInfo, &SSGIDescriptorSetLayout, &SSGIPipelineLayout);
     createDescriptorSets(&computeDescriptorPool, SSGIDescriptorSetLayout, SSGISetCount, 1, &SSGIDescriptorSets);
-    createComputePipeline(&SSGIPipelineLayout, SSGIShaderStageCreateInfo, &SSGIPipeline);
+    addComputePipeline(SSGIShaderStageCreateInfo, &SSGIPipelineLayout, NULL, 0, &SSGIPipeline);
 
+    executeCreateComputePipelines(NULL);
 
     createCommandbufferByBuffering(VK_COMMAND_BUFFER_LEVEL_PRIMARY, &graphicCommandPool, &graphicCommandBuffer);
     createCommandbufferByBuffering(VK_COMMAND_BUFFER_LEVEL_PRIMARY, &presentCommandPool, &presentCommandBuffer);
