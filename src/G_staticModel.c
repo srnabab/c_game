@@ -130,6 +130,8 @@ bool addModelMatrix(int32_t x, int32_t y, int32_t z, G_StaticModelPool * pModelP
 
     glm_mat4_identity(pModel->matrix[pModel->matrixCount]);
     glm_translate(pModel->matrix[pModel->matrixCount], tempVec3);
+    glm_rotate(pModel->matrix[pModel->matrixCount], glm_rad(180.0f), (vec3){0.0f, 1.0f, 0.0f});
+    glm_rotate(pModel->matrix[pModel->matrixCount], glm_rad(-90.0f), (vec3){1.0f, 0.0f, 0.0f});
 
     glm_mat4_copy(pModel->matrix[pModel->matrixCount], pModel->matrix[pModel->matrixCount + totalMatrixCount]);
     glm_inv_tr(pModel->matrix[pModel->matrixCount + totalMatrixCount]);

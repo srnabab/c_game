@@ -551,6 +551,7 @@ int update(void * arg)
     Uint32 vertexEnd = *allInOne.pVertices2DCount;
 
     textureVertexInit(-32, -32, 64, 64, 0.2f, allInOne.pVertices2DCount, *allInOne.ppVertices2D, getTexture(TEXTURE_LOADING));
+    textureVertexInit(-8, -5, 16, 23, 0.3f, allInOne.pVertices2DCount, *allInOne.ppVertices2D, getTexture(TEXTURE_BOX));
     
     tileMapVertexInit(allInOne.pVertices2DCount, *allInOne.ppVertices2D);
     addModelMatrix(0, 0, 8, allInOne.pStaticModelPool, TEXTURE_MODEL);
@@ -570,6 +571,8 @@ int update(void * arg)
         SDL_WaitSemaphore(allSync.updateSemaphore);
         if (preScene == Pause_Scene && recovreyPause)
         {
+            while(SDL_TryWaitSemaphore(allSync.vertexSemaphore));
+
             last_frame_time = SDL_GetPerformanceCounter();
             recovreyPause = false;
         }
@@ -613,11 +616,11 @@ int update(void * arg)
         float factor_x = LIGHT_HEIGHT / (allInOne.pExtent2D->width / 2);
         float factor_y = LIGHT_HEIGHT / (allInOne.pExtent2D->height / 2);
         
-        x = 400 * SDL_sinf_flip(totalTime / 3);
+        // x = 400 * SDL_sinf_flip(totalTime / 3);
         SDL_LockMutex(allSync.inputMutex);
-        // x = -mouse_x + (allInOne.pExtent2D->width / 2);
+        x = -mouse_x + (allInOne.pExtent2D->width / 2);
         y = mouse_y - (allInOne.pExtent2D->height / 2);
-        y = 0;
+        // y = 0;
         SDL_UnlockMutex(allSync.inputMutex);
         x *= factor_x;
         y *= factor_y;

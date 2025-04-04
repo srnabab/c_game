@@ -98,7 +98,7 @@ bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex4 * vert
                 vertices[vertexIndex].pos[2] = attrib.vertices[attrib.faces[i].v_idx * 3 + 2];
 
                 vertices[vertexIndex].texCoord[0] = attrib.texcoords[attrib.faces[i].vt_idx * 2 + 0];
-                vertices[vertexIndex].texCoord[1] = attrib.texcoords[attrib.faces[i].vt_idx * 2 + 1];
+                vertices[vertexIndex].texCoord[1] = 1 - attrib.texcoords[attrib.faces[i].vt_idx * 2 + 1];
 
                 vertices[vertexIndex].color[0] = 1.0f;
                 vertices[vertexIndex].color[1] = 1.0f;

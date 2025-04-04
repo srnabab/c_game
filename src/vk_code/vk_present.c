@@ -150,6 +150,9 @@ static void recordCommandBuffer2D()
     //circle
     drawPic(TEXTURE_CIRCLE, currentFrame, currentCommandBuffer);
 
+    // box
+    drawPic(TEXTURE_BOX, currentFrame, currentCommandBuffer);
+
     // main font png
     drawPic(TEXTURE_FONT, currentFrame, currentCommandBuffer);
 
@@ -396,6 +399,7 @@ static void drawFirstScene(void)
 
     VkSubmitInfo submitInfoShadow = {};
     setSubmitInfo(&timelineSemaphoreInfo, 0, NULL, NULL, 1, (*allInOne.ppGraphicCommandBuffer) + currentFrame, 1, timelineSemaphore, &submitInfoShadow);
+    // print("semaphore value: %u", SDL_GetSemaphoreValue(allSync.vertexSemaphore));
     SDL_WaitSemaphore(allSync.vertexSemaphore);
     resultVulkan(vkQueueSubmit(*allInOne.pGraphicQueue, 1, &submitInfoShadow, (*allInOne.ppGraphicInFlightFence)[*allInOne.pCurrentFrame]), 0);
     signalValue[0]++;

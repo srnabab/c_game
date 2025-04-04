@@ -102,8 +102,11 @@ void main()
     outNormalBuffer = vec4(inWorldNormal, 1.0);
 
     outShadowFactor = shadow * NdotL * sun.lightIntensity;
+    // outShadowFactor = shadow;
+    // outShadowFactor = 1.0;
 
     outColor = vec4(finalColor, textureColor.a);
+    // outColor = textureColor;
     // outColor = vec4(fragPosLightSpace);
     // outColor = vec4(projCoords, 1.0);
     // outColor = vec4(shadowMapMinDepth);

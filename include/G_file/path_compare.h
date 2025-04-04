@@ -19,6 +19,7 @@ typedef enum _PathType
     CombineFragShader,
     Combine2dFragShader,
     CombineVertShader,
+    Box1Png,
     Model3dVertShader,
     Viking_room_CopyPng,
     ShadowVertShader,
