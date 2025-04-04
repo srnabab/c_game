@@ -129,7 +129,7 @@ static bool changeScene = false;
 //delete needed
 static bool scale = false;
 
-static bool ballAdd = false;
+// static bool ballAdd = false;
 static uint8_t leftButtonClickedTimes = 0;
 static bool leftButtonEnabled = true;
 static Uint32 ballCount = 2;
@@ -342,7 +342,7 @@ bool process_input(void)
                     {
                         leftButtonClickedTimes++;
                         ballCount++;
-                        ballAdd = true;
+                        // ballAdd = true;
                     }
                 }
             }
@@ -546,12 +546,12 @@ int update(void * arg)
     Uint32 vertexEnd = *allInOne.pVertices2DCount;
 
     textureVertexInit(-32, -32, 64, 64, 0.2f, allInOne.pVertices2DCount, *allInOne.ppVertices2D, getTexture(TEXTURE_LOADING));
-    textureVertexInit(-8, -5, 16, 23, 0.3f, allInOne.pVertices2DCount, *allInOne.ppVertices2D, getTexture(TEXTURE_BOX));
     
     tileMapVertexInit(allInOne.pVertices2DCount, *allInOne.ppVertices2D);
     addModelMatrix(0, 0, 8, allInOne.pStaticModelPool, TEXTURE_MODEL);
     addModelMatrix(100, 0, 8, allInOne.pStaticModelPool, TEXTURE_MODEL);
     addModelMatrix(0, 100, 8, allInOne.pStaticModelPool, TEXTURE_MODEL);
+    addModelMatrix(100, 100, 8, allInOne.pStaticModelPool, TEXTURE_MODEL);
     addModelMatrix(0, 0, -1, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
         
     SDL_Delay(300);
@@ -779,23 +779,23 @@ int update(void * arg)
                 // Uint32 indiceCount = *allInOne.pIndicesCount;
                 // size_t bufferSize2 = sizeof(uint16_t) * indiceCount;
 
-                if (ballAdd)
-                {
-                    //*allInOne.ppVertices2D = (Vertex *)realloc(*allInOne.ppVertices2D, count * sizeof(Vertex));
-                    int x = SDL_rand(250);
-                    if (SDL_rand(2))
-                    {
-                        x *= -1;
-                    }
-                    // float averagePhysicalCoffect = (physicalCoffectX + physicalCoffectY) / 2.0f;
-                    textureVertexInit(x * physicalCoffectX, 280 * physicalCoffectY, 16 * physicalCoffectY, 16 * physicalCoffectY, 0.9, allInOne.pVertices2DCount, *allInOne.ppVertices2D, getTexture(TEXTURE_CIRCLE));
+                // if (ballAdd)
+                // {
+                //     //*allInOne.ppVertices2D = (Vertex *)realloc(*allInOne.ppVertices2D, count * sizeof(Vertex));
+                //     int x = SDL_rand(250);
+                //     if (SDL_rand(2))
+                //     {
+                //         x *= -1;
+                //     }
+                //     // float averagePhysicalCoffect = (physicalCoffectX + physicalCoffectY) / 2.0f;
+                //     textureVertexInit(x * physicalCoffectX, 280 * physicalCoffectY, 16 * physicalCoffectY, 16 * physicalCoffectY, 0.9, allInOne.pVertices2DCount, *allInOne.ppVertices2D, getTexture(TEXTURE_CIRCLE));
 
-                    ballStack.pushFn(&ballStack, &x);
-                    //print("indices count: %u\n", indiceCount);
-                    //*allInOne.ppIndices = (uint16_t *)realloc(*allInOne.ppIndices, indiceCount * sizeof(uint16_t));
+                //     ballStack.pushFn(&ballStack, &x);
+                //     //print("indices count: %u\n", indiceCount);
+                //     //*allInOne.ppIndices = (uint16_t *)realloc(*allInOne.ppIndices, indiceCount * sizeof(uint16_t));
 
-                    ballAdd = false;
-                }
+                //     ballAdd = false;
+                // }
             
                 static int id_timeStep = 0;
                 while (intervalIsDone(f32_s_to_ns(TIME_STEP), &id_timeStep, -1))

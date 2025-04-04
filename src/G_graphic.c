@@ -670,13 +670,6 @@ void initVulkan(void)
     createDescriptorSets(&graphicDescriptorPool, graphicDescriptorSetLayout, graphicSetCount, 5, &graphicDescriptorSets);
     createGraphicsPipeline(extent2D, 2, graphciShaderStageCreateInfo, graphicPipelineLayout, renderPass, &graphicPipeline);
 
-    //graphic combine shader
-    // PathType combine2DTypes[] = {CombineVertShader, Combine2dFragShader};
-    // VkShaderModule * combine2DTempModeule = NULL;
-    // Uint32 combine2DSetCount = CreateShaderModulesAndDescriptorSets(combine2DTypes, 2, &combine2DTempModeule, &combine2DShaderStageCreateInfo, &combine2DDescriptorSetLayout, &combine2DPipelineLayout);
-    // createDescriptorSets(&graphicDescriptorPool, combine2DDescriptorSetLayout, combine2DSetCount, 1, &combine2DDescriptorSets);
-    // createCombinePipeline(extent2D, 2, combine2DShaderStageCreateInfo, combine2DPipelineLayout, combine2DRenderPass, &combine2DPipeline);
-
     //3d model shader
     PathType modelTypes[] = {Model3dVertShader, Model3dFragShader};
     VkShaderModule * modelTempModule = NULL;
@@ -778,7 +771,7 @@ void initVulkan(void)
     loadTexture(Loading1Png, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_LOADING, graphicDescriptorSets);
     loadTexture(CirclePng, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_CIRCLE, graphicDescriptorSets + 2);
     loadTexture(MainFontPng, VK_FORMAT_R8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_FONT, graphicDescriptorSets + 4);
-    loadTexture(Box1Png, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_BOX, graphicDescriptorSets + 8);
+    // loadTexture(Box1Png, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_BOX, graphicDescriptorSets + 8);
 
     addDescriptorSetToTexture(TEXTURE_MODEL_DEPTH, SSGIDescriptorSets + 0);
     addDescriptorSetToTexture(TEXTURE_NORMAL, SSGIDescriptorSets + 0);
@@ -802,7 +795,7 @@ void initVulkan(void)
     // graphic
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, circleTexture->pDescriptorSet, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, tileSetTexture->pDescriptorSet, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, getTexture(TEXTURE_BOX)->pDescriptorSet, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
+    // addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, getTexture(TEXTURE_BOX)->pDescriptorSet, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
 
     // model
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, modelTexture->pDescriptorSet, graphic3DUniformBuffers, 0, sizeof(UniformBufferObject));//4
@@ -819,7 +812,6 @@ void initVulkan(void)
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_CIRCLE, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);//8
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_FONT, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_TILE_SET, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_BOX, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     // addDescriptorSetToTexture(TEXTURE_2D_COLOR, combine2DDescriptorSets);
     // addDescriptorSetToTexture(TEXTURE_SHADOW_MAP, combine2DDescriptorSets);
     // addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, TEXTURE_2D_COLOR, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);

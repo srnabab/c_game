@@ -538,55 +538,6 @@ static void drawFirstScene(void)
     presentInfo_3D.pImageIndices = &imageIndex_3D;
     presentInfo_3D.pResults = NULL;
     resultVulkan(vkQueuePresentKHR(*allInOne.pPresentQueue, &presentInfo_3D), 0);
-
-
-
-
-    // G_Texture_P * shadow2dTexture = getTexture(TEXTURE_SHADOW_MAP);
-    // G_Texture_P * graphic2dTexture = getTexture(TEXTURE_2D_COLOR);
-    // transitionImageLayout(&shadow2dTexture->image, shadow2dTexture->format, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    // transitionImageLayout(&graphic2dTexture->image, graphic2dTexture->format, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-
-    // Uint32 imageIndex;
-    // resultVulkan(vkAcquireNextImageKHR(*allInOne.pDevice, *allInOne.pSwapchain2D, UINT64_MAX, (*allInOne.ppImageAvailableSemaphore)[*allInOne.pCurrentFrame], NULL, &imageIndex), 0);
-
-    // vkWaitForFences(*allInOne.pDevice, 1, &(*allInOne.ppGraphicInFlightFence)[*allInOne.pCurrentFrame], VK_TRUE, UINT64_MAX);
-    // resultVulkan(vkResetFences(*allInOne.pDevice, 1, &(*allInOne.ppGraphicInFlightFence)[*allInOne.pCurrentFrame]), 0);
-
-    // resultVulkan(vkResetCommandBuffer((*allInOne.ppGraphicCommandBuffer)[*allInOne.pCurrentFrame], 0), 0);
-    // //printf("reset command bufer\n");
-    // recordCommandBufferCombine2D(imageIndex);
-    // resultVulkan(vkEndCommandBuffer((*allInOne.ppGraphicCommandBuffer)[*allInOne.pCurrentFrame]), 0);
-
-    // VkSemaphore waitSemaphore[2] = {*timelineSemaphore, (*allInOne.ppImageAvailableSemaphore)[*allInOne.pCurrentFrame]};
-    // VkPipelineStageFlags waitStage[2] = {VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-
-    // VkSemaphore signalSemaphore[2] = {*timelineSemaphore, (*allInOne.ppRenderFinishedSemaphore)[*allInOne.pCurrentFrame]};
-
-    // waitValue[0] = signalValue[0] - 1;
-    // timelineSemaphoreInfo.waitSemaphoreValueCount = 2;
-    // timelineSemaphoreInfo.pWaitSemaphoreValues = waitValue;
-    // timelineSemaphoreInfo.signalSemaphoreValueCount = 2;
-    // timelineSemaphoreInfo.pSignalSemaphoreValues = signalValue;
-
-    // VkSubmitInfo combineSubmitInfo = {};
-    // setSubmitInfo(&timelineSemaphoreInfo, 2, waitSemaphore, waitStage, 1, (*allInOne.ppGraphicCommandBuffer) + currentFrame, 2, signalSemaphore, &combineSubmitInfo);
-    // SDL_WaitSemaphore(allSync.vertexSemaphore);
-    // resultVulkan(vkQueueSubmit(*allInOne.pGraphicQueue, 1, &combineSubmitInfo, (*allInOne.ppGraphicInFlightFence)[*allInOne.pCurrentFrame]), 0);
-    // signalValue[0]++;
-
-    // VkPresentInfoKHR presentInfo = {};
-    // presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-    // presentInfo.pNext = NULL;
-    // presentInfo.waitSemaphoreCount = 1;
-    // presentInfo.pWaitSemaphores = (*allInOne.ppRenderFinishedSemaphore) + *allInOne.pCurrentFrame;
-    // presentInfo.swapchainCount = 1;
-    // presentInfo.pSwapchains = allInOne.pSwapchain2D;
-    // presentInfo.pImageIndices = &imageIndex;
-    // presentInfo.pResults = NULL;
-    // resultVulkan(vkQueuePresentKHR(*allInOne.pPresentQueue, &presentInfo), 0);
-    //printf("present queue\n");
 }
 void drawFrame(Scene scene)
 {
