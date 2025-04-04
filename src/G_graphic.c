@@ -90,6 +90,8 @@ static bool initWindow_3D(void)
     
     logMessage("window_3D initialized");
 
+    CO_addWindow(window_3D);
+
     return true;
 }
 #endif
@@ -101,6 +103,8 @@ bool initWindow_2D(void)
     window_2D = SDL_CreateWindow("Vulkan_2D", width, height, SDL_WINDOW_VULKAN | SDL_WINDOW_HIGH_PIXEL_DENSITY);
     if (window_2D == NULL)
         return false;
+
+    CO_addWindow(window_2D);
     
     int count = 0;
     SDL_DisplayID * displays = SDL_GetDisplays(&count);
@@ -207,15 +211,10 @@ static VkDescriptorSetLayout * computeDescriptorSetLayout = NULL;
 static VkDescriptorSetLayout * SSGIDescriptorSetLayout = NULL;
 static VkDescriptorSetLayout * combineDescriptorSetLayout = NULL;
 
-// static Uint32 graphicBinding = 0;
-static VkDescriptorSetLayoutBinding * graphicBindings = NULL;
 static VkPipelineLayout graphicPipelineLayout = NULL;
 
-static VkDescriptorSetLayoutBinding * particleBindings = NULL;
 static VkPipelineLayout particlePipelineLayout = NULL;
 
-// static Uint32 computeBinding = 0;
-static VkDescriptorSetLayoutBinding * computeBindings = NULL;
 static VkPipelineLayout computePipelineLayout = NULL;
 
 static VkRenderPass renderPass = NULL;
@@ -318,7 +317,6 @@ static VkDescriptorSet * graphicDescriptorSets = NULL;
 static VkDescriptorSet * combine2DDescriptorSets = NULL;
 static VkDescriptorSet * modelDescriptorSets = NULL;
 
-static VkDescriptorPool particleDescriptorPool = NULL;
 static VkDescriptorSet * particleDescriptorSets = NULL;
 
 static VkDescriptorPool computeDescriptorPool = NULL;
@@ -694,12 +692,15 @@ void initVulkan(void)
     allInOne.maxVertices2DCount = VERTEX_COUNT_IN_BUFFER_2D;
 
     createVertexBuffer(&physicalDevice, &device, vertexBuffer2D, vertexBuffer2DMem, vertexBuffer2DMemMapped, VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex));
+    CO_addBuffer(true, vertexBuffer2D[0], vertexBuffer2DMem[0], NULL);// CO
     createVertexBuffer(&physicalDevice, &device, vertexBuffer2D + 1, vertexBuffer2DMem + 1, vertexBuffer2DMemMapped + 1, VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex));
+    CO_addBuffer(true, vertexBuffer2D[1], vertexBuffer2DMem[1], vertices2D);// CO
 
     indices2D = (Uint16 *)SDL_calloc(INDEX_COUNT_IN_BUFFER_2D, sizeof(Uint16 ));
     indexInitialize(indices2D, MAX_UNIT_COUNT_2D);
 
     createIndexBuffer(&physicalDevice, &device, indexBuffer2D, indexBuffer2DMem, indexBuffer2DMemMapped, indices2D, INDEX_COUNT_IN_BUFFER_2D, sizeof(Uint16), false);
+    CO_addBuffer(false, indexBuffer2D[0], indexBuffer2DMem[0], NULL);// CO
 
     SDL_free(indices2D);
 
@@ -707,22 +708,42 @@ void initVulkan(void)
     allInOne.maxVertices3DCount = 30000;
     indices3D = (Uint32*)SDL_calloc(45000, sizeof(Uint32));
     createVertexBuffer(&physicalDevice, &device, vertexBuffer3D, vertexBuffer3DMem, vertexBuffer3DMemMapped, 30000 * sizeof(Vertex4));
+    CO_addBuffer(true, vertexBuffer3D[0], vertexBuffer3DMem[0], NULL);// CO
     createVertexBuffer(&physicalDevice, &device, vertexBuffer3D + 1, vertexBuffer3DMem + 1, vertexBuffer3DMemMapped + 1, 30000 * sizeof(Vertex4));
+    CO_addBuffer(true, vertexBuffer3D[1], vertexBuffer3DMem[1], vertices3D);// CO
     createIndexBuffer(&physicalDevice, &device, indexBuffer3D, indexBuffer3DMem, indexBuffer3DMemMapped, indices3D, 45000, sizeof(Uint32), true);
+    CO_addBuffer(true, indexBuffer3D[0], indexBuffer3DMem[0], NULL);// CO
     createIndexBuffer(&physicalDevice, &device, indexBuffer3D + 1, indexBuffer3DMem + 1, indexBuffer3DMemMapped + 1, indices3D, 45000, sizeof(Uint32), true);
+    CO_addBuffer(true, indexBuffer3D[1], indexBuffer3DMem[1], indices3D);// CO
 
     createUniformBufferByBuffering(&graphicUniformBuffers, &graphicUniformBuffersMemory, &graphicUniformBufferMapped, sizeof(UniformBufferObject));
+    CO_addBuffer(true, graphicUniformBuffers[0], graphicUniformBuffersMemory[0], NULL);// CO
+    CO_addBuffer(true, graphicUniformBuffers[1], graphicUniformBuffersMemory[1], NULL);// CO
     createUniformBufferByBuffering(&graphic3DUniformBuffers, &graphic3DUniformBuffersMemory, &graphic3DUniformBufferMapped, sizeof(UniformBufferObject));
+    CO_addBuffer(true, graphic3DUniformBuffers[0], graphic3DUniformBuffersMemory[0], NULL);// CO
+    CO_addBuffer(true, graphic3DUniformBuffers[1], graphic3DUniformBuffersMemory[1], NULL);// CO
     createUniformBufferByBuffering(&UIUniformBuffers, &UIUniformBuffersMemory, &UIUniformBufferMapped, sizeof(UniformBufferObject));
+    CO_addBuffer(true, UIUniformBuffers[0], UIUniformBuffersMemory[0], NULL);// CO
+    CO_addBuffer(true, UIUniformBuffers[1], UIUniformBuffersMemory[1], NULL);// CO
 
     createUniformBufferByBuffering(&computeUniformBuffers, &computeUniformBuffersmemory, &computeUniformBufferMapped, sizeof(ComputeUniformBufferObject));
+    CO_addBuffer(true, computeUniformBuffers[0], computeUniformBuffersmemory[0], NULL);// CO
+    CO_addBuffer(true, computeUniformBuffers[1], computeUniformBuffersmemory[1], NULL);// CO
 
     createUniformBufferByBuffering(&SSGIUniformBuffers, &SSGIUniformBufferMem, &SSGIUniformBufferMapped, sizeof(SSGIUniformBufferObject));
+    CO_addBuffer(true, SSGIUniformBuffers[0], SSGIUniformBufferMem[0], NULL);// CO
+    CO_addBuffer(true, SSGIUniformBuffers[1], SSGIUniformBufferMem[1], NULL);// CO
 
     createUniformBufferByBuffering(&SunUniformBuffer, &SunUniformBufferMem, &SunUniformBufferMapped, sizeof(DirectionLight));
+    CO_addBuffer(true, SunUniformBuffer[0], SunUniformBufferMem[0], NULL);// CO
+    CO_addBuffer(true, SunUniformBuffer[1], SunUniformBufferMem[1], NULL);// CO
     createUniformBufferByBuffering(&lightSpaceUniformBuffer, &lightSpaceUniformBufferMem, &lightSpaceUniformBufferMapped, sizeof(LightSpace));
+    CO_addBuffer(true, lightSpaceUniformBuffer[0], lightSpaceUniformBufferMem[0], NULL);// CO
+    CO_addBuffer(true, lightSpaceUniformBuffer[1], lightSpaceUniformBufferMem[1], NULL);// CO
 
     createShaderStorageBuffers(&physicalDevice, &device, &shaderStorageBuffers, &shaderStorageBuffersMem);
+    CO_addBuffer(false, shaderStorageBuffers[0], shaderStorageBuffersMem[0], NULL);// CO
+    CO_addBuffer(false, shaderStorageBuffers[1], shaderStorageBuffersMem[1], NULL);// CO
 
     /*unfixed code*/
 
@@ -929,139 +950,18 @@ void initVulkan(void)
 
     // initializeRecreate();
 
-    resultVulkan(VK_SUCCESS, initializedF, 0);
+    resultVulkan(VK_SUCCESS, 0);
 }
 
-void cleanVulkan(FuncCode code)
+void cleanVulkan(void)
 {
-    logMessage("\nclean up");
+    print("\nclean begin");
 
     vkDeviceWaitIdle(device);
 
-
-    switch (code)
-    {
-        case FuncCodeMax:
-        case recreateSwapchainF:
-        case queuePresentF:
-        case queueSumbitF:
-        case endCommandBufferF:
-        case resetCommandBufferF:
-        case acquireNextImageF:
-        case resetFencesF:
-        case waitForFencesF:
-        case drawFrameF:
-        case recordCommandBufferF:
-        case createFenceF:
-        case createSemaphoreF:
-        case createCommandbufferByBufferingF:
-        case createDescriptorPoolF:
-        case createGraphicsPipelineF:
-        case createPipelineLayoutF:
-        case createDescriptorSetLayoutF:
-        case createShaderModuleF:
-        destroyBufferByBuffering(graphicUniformBuffers, graphicUniformBuffersMemory);
-        logMessage("graphic uniform buffer destroyed");
-        logMessage("graphic uniform buffer memory freed");
-
-        destroyBufferByBuffering(graphic3DUniformBuffers, graphic3DUniformBuffersMemory);
-        logMessage("graphic 3D uniform buffer destroyed");
-        logMessage("graphic 3D uniform buffer memory freed");
-
-        destroyBufferByBuffering(UIUniformBuffers, UIUniformBuffersMemory);
-        logMessage("graphic 3D uniform buffer destroyed");
-        logMessage("graphic 3D uniform buffer memory freed");
-
-        destroyBufferByBuffering(computeUniformBuffers, computeUniformBuffersmemory);
-        logMessage("compute uniform buffers destroyed");
-        logMessage("compute uniform buffer memory freed");
-
-        destroyBufferByBuffering(SSGIUniformBuffers, SSGIUniformBufferMem);
-        logMessage("SSGI uniform buffers destroyed");
-        logMessage("SSGI uniform buffer memory freed");
-
-        destroyBufferByBuffering(SunUniformBuffer, SunUniformBufferMem);
-        logMessage("Sun uniform buffers destroyed");
-        logMessage("Sun uniform buffer memory freed");
-
-        destroyBufferByBuffering(lightSpaceUniformBuffer, lightSpaceUniformBufferMem);
-        logMessage("lightSpace uniform buffers destroyed");
-        logMessage("lightSpace uniform buffer memory freed");
- 
-        for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
-
-        {
-            vkDestroyBuffer(device, shaderStorageBuffers[i], allInOne.pAllocationCallbacks);
-        }
-        logMessage("shader storage buffer destroyed");
-
-        for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
-        {
-            vkFreeMemory(device, shaderStorageBuffersMem[i], allInOne.pAllocationCallbacks);
-        }
-        logMessage("shader storage buffer memory freed");
-        /*fall through*/
-
-        case createUniformBuffersF:
-        vkDestroyBuffer(device, indexBuffer2D[0], allInOne.pAllocationCallbacks);
-        logMessage("index buffer destroyed");
-
-        vkFreeMemory(device, indexBuffer2DMem[0], allInOne.pAllocationCallbacks);
-        logMessage("index buffer memory freed");
-
-        SDL_free(indices3D);
-        destroyBufferByBuffering(indexBuffer3D, indexBuffer3DMem);
-        logMessage("index buffer destroyed");
-        logMessage("index buffer memory freed");
-        /*fall through*/
-
-        case createIndexBufferF:
-        SDL_free(vertices3D);
-        destroyBufferByBuffering(vertexBuffer3D, vertexBuffer3DMem);
-        logMessage("vertex buffer destroyed");
-        logMessage("vertex buffer memory freed");
-
-        destroyStaticModelPool(&staticModelPool);
-        logMessage("static model pool destroyed");
- 
-        SDL_free(vertices2D);
-        destroyBufferByBuffering(vertexBuffer2D, vertexBuffer2DMem);
-        logMessage("vertex buffer destroyed");
-        logMessage("vertex buffer memory freed");
-        /*fall through*/
-
-        case createVertexBufferF:
-        case createTextureSamplerF:
-        unloadAllTexture();
-        case createTextureImageViewF:
-        case createTextureImageF:
-        case createFrameBufferF:
-        case createDepthResouresF:
-        case createCommandPoolF:
-        case createGraphicRenderPassF:
-        case createSwapchainImageViewsF:
-        case createSwapchainImageF:
-        case getSwapchainNumberF:
-        case createSwapchainF:
-        case getSurfaceCapabilitiesF:
-        case getPresentModesF:
-        case getSurfaceFormatsF:
-        case createLogicalDeviceF:
-        case findQueueFamiliesF:
-        case pickPhysicalDeviceF:
-        case createSurfaceF:
-        CO_CleanAllVkResource();
-
-        case createInstanceF:
-        case vulkanVersionF:
-        SDL_DestroyWindow(window_2D);
-        SDL_DestroyWindow(window_3D);
-        logMessage("window_2D destroyed");
-        break;
-
-        default:
-        break;
-    }
+    destroyStaticModelPool(&staticModelPool);
+    unloadAllTexture();
+    CO_CleanAllVkResource();
 }
     /*vertices2D[4] = (Vertex){{-0.0f, -0.0f, 0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}};
     vertices2D[5] = (Vertex){{1.0f, -0.0f, 0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}};

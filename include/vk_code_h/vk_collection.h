@@ -1,11 +1,24 @@
 #include "SDL3/SDL_stdinc.h"
+#include "SDL3/SDL_video.h"
 #include "vulkan/vulkan.h"
 
 #ifndef VK_COLLECTION_H
 #define VK_COLLECTION_H 1
 
+struct _BUFFER_PACK
+{
+    VkBuffer buffer;
+    VkDeviceMemory bufferMemory;
+    void* cpuMem;
+    bool mapped;
+};
+typedef struct _BUFFER_PACK BUFFER_PACK;
+
 struct _VK_COLLECTION
 {
+    SDL_Window * windows[2];
+    Uint32 windowCount;
+
     VkInstance instance;
 
     VkSurfaceKHR surface[2];
@@ -62,11 +75,15 @@ struct _VK_COLLECTION
 
     VkFence * fences;
     Uint32 fenceCount;
+
+    BUFFER_PACK * buffers;
+    Uint32 bufferCount;
 };
 typedef struct _VK_COLLECTION VK_COLLECTION;
 
 #include "SDL3/SDL_begin_code.h"
 
+extern bool SDLCALL CO_addWindow(SDL_Window * window);
 extern void SDLCALL initCollection(void);
 extern bool SDLCALL CO_addInstance(VkInstance instance);
 extern bool SDLCALL CO_addSurface(VkSurfaceKHR surface);
@@ -83,6 +100,7 @@ extern bool SDLCALL CO_addShaderStageCreateInfo(VkPipelineShaderStageCreateInfo 
 extern bool SDLCALL CO_addDescriptorSetLayout(Uint32 count, VkDescriptorSetLayout * pDescriptorSetLayout);
 extern bool SDLCALL CO_addPieplineLayout(VkPipelineLayout pipelineLayout);
 extern bool SDLCALL CO_addPiepline(VkPipeline pipeline);
+extern bool SDLCALL CO_addBuffer(bool mapped, VkBuffer buffer, VkDeviceMemory bufferMemory, void* cpuMem);
 extern bool SDLCALL CO_addDescriptorPool(VkDescriptorPool descriptorPool);
 extern bool SDLCALL CO_addSemaphore(VkSemaphore semaphore);
 extern bool SDLCALL CO_addFence(VkFence fence);

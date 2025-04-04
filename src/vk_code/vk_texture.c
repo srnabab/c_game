@@ -126,9 +126,7 @@ VkResult copyBufferToImage(VkImage * pImage, Uint32 width, Uint32 height, VkBuff
 }
 void createTextureImageView(VkImage * pTextureImage, VkFormat format, VkImageAspectFlags aspectFlags, VkImageView * pTextureImageView)
 {
-    FuncCode code = createTextureImageViewF;
-    
-    resultVulkan(createImageView(pTextureImage, format, aspectFlags, pTextureImageView), code, 0);
+    resultVulkan(createImageView(pTextureImage, format, aspectFlags, pTextureImageView), 0);
 }
 // png_bytep readPNG(PathType type, Uint32 * pWidth, Uint32 * pHeight, Uint8 * pChannel)
 // {

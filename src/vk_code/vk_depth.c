@@ -15,19 +15,17 @@ void findDepthFormat(VkImageTiling tiling, VkFormatFeatureFlags features, VkForm
 }
 VkFormat createDepthResoures(VkImage * pDepthImage, VkDeviceMemory * pDepthImageMem, VkImageView * pDepthImageView, bool sample)
 {
-    FuncCode code = createDepthResouresF;
-
     VkImageUsageFlags usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
     if (sample) usage |= VK_IMAGE_USAGE_SAMPLED_BIT;
 
     VkFormat depthFormat = 0;;
     findDepthFormat(VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT, &depthFormat);
     
-    resultVulkan(createImage(allInOne.pExtent2D->width, allInOne.pExtent2D->height, depthFormat, VK_IMAGE_TILING_OPTIMAL, usage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, pDepthImage, pDepthImageMem), code, 0);
+    resultVulkan(createImage(allInOne.pExtent2D->width, allInOne.pExtent2D->height, depthFormat, VK_IMAGE_TILING_OPTIMAL, usage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, pDepthImage, pDepthImageMem), 0);
 
-    resultVulkan(createImageView(pDepthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, pDepthImageView), code, 0);
+    resultVulkan(createImageView(pDepthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, pDepthImageView), 0);
 
-    // resultVulkan(transitionImageLayout(pDepthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL), code, 0);
+    // resultVulkan(transitionImageLayout(pDepthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL), 0);
 
     return depthFormat;
 }

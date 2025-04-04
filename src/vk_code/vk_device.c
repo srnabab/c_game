@@ -161,9 +161,8 @@ static int getBestPhysicalDeviceIndex(VkPhysicalDevice *pPhysicalDevices, Uint32
 }
 void pickPhysicalDevice(void)
 {
-	FuncCode code = pickPhysicalDeviceF;
     Uint32 deviceCount = 0;
-    resultVulkan(vkEnumeratePhysicalDevices(*allInOne.pInstance, &deviceCount, NULL), code, 0);
+    resultVulkan(vkEnumeratePhysicalDevices(*allInOne.pInstance, &deviceCount, NULL), 0);
 
     if (deviceCount == 0)
     {
@@ -171,7 +170,7 @@ void pickPhysicalDevice(void)
     }
 
     VkPhysicalDevice * devices = (VkPhysicalDevice *)SDL_malloc(deviceCount * sizeof(VkPhysicalDevice));
-    resultVulkan(vkEnumeratePhysicalDevices(*allInOne.pInstance, &deviceCount, devices), code, 1, devices);
+    resultVulkan(vkEnumeratePhysicalDevices(*allInOne.pInstance, &deviceCount, devices), 1, devices);
 
 	// VkPhysicalDevice device = devices[getBestPhysicalDeviceIndex(devices, deviceCount)];xx
     VkPhysicalDevice device = devices[GPU_CHOOSED];
@@ -274,14 +273,12 @@ static Uint32 configureQueueCreateInfo(VkDeviceQueueCreateInfo * pCreateInfo, Qu
 }
 void createLogicalDevice(void)
 {
-    FuncCode code = createLogicalDeviceF;
-
     VkPhysicalDeviceFeatures supportedFeatures;
     vkGetPhysicalDeviceFeatures(*allInOne.pPhysicalDevice, &supportedFeatures);
 
     if (!supportedFeatures.samplerAnisotropy)
     {
-        cleanVulkan(code);
+        cleanVulkan();
     }
     
     const Uint32 requiredDeviceExtensionCount = 1;
@@ -368,7 +365,7 @@ void createLogicalDevice(void)
     createInfo.ppEnabledExtensionNames = (const char* const *)enabledExtension;
     createInfo.pEnabledFeatures = NULL;
 
-    resultVulkan(vkCreateDevice(*allInOne.pPhysicalDevice, &createInfo, allInOne.pAllocationCallbacks, allInOne.pDevice), code, 0);
+    resultVulkan(vkCreateDevice(*allInOne.pPhysicalDevice, &createInfo, allInOne.pAllocationCallbacks, allInOne.pDevice), 0);
 
     SDL_free(enabledExtension);
     //printf("logical device created\n");

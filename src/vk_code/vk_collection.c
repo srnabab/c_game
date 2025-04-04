@@ -8,6 +8,8 @@ extern VK_ALL allInOne;
 
 void initCollection(void)
 {
+    CO.windowCount = 0;
+
     CO.instance = NULL;
 
     CO.surfaceCount = 0;
@@ -64,6 +66,18 @@ void initCollection(void)
 
     CO.fences = NULL;
     CO.fenceCount = 0;
+
+    CO.buffers = NULL;
+    CO.bufferCount = 0;
+}
+bool CO_addWindow(SDL_Window * window)
+{
+    if (CO.windowCount == 2) return false;
+
+    CO.windows[CO.windowCount] = window;
+    CO.windowCount++;
+
+    return true;
 }
 bool CO_addInstance(VkInstance instance)
 {
@@ -280,6 +294,21 @@ bool CO_addDescriptorPool(VkDescriptorPool descriptorPool)
 
     return true;
 }
+bool CO_addBuffer(bool mapped, VkBuffer buffer, VkDeviceMemory bufferMemory, void* cpuMem)
+{
+    void * ptr;
+    ptr = SDL_realloc(CO.buffers, (CO.bufferCount + 1) * sizeof(BUFFER_PACK));
+    if (ptr == NULL) return false;
+
+    CO.buffers = ptr;
+    CO.buffers[CO.bufferCount].buffer = buffer;
+    CO.buffers[CO.bufferCount].bufferMemory = bufferMemory;
+    CO.buffers[CO.bufferCount].cpuMem = cpuMem;
+    CO.buffers[CO.bufferCount].mapped = mapped;
+    CO.bufferCount++;
+
+    return true;
+}
 bool CO_addSemaphore(VkSemaphore semaphore)
 {
     void * ptr;
@@ -312,6 +341,22 @@ void CO_CleanAllVkResource(void)
 
     if (CO.device != NULL)
     {
+        if (CO.bufferCount)
+        {
+            for (i = 0;i < CO.bufferCount;i++)
+            {
+                if (CO.buffers[i].mapped)
+                {
+                    vkUnmapMemory(CO.device, CO.buffers[i].bufferMemory);
+                }
+                vkDestroyBuffer(CO.device, CO.buffers[i].buffer, allInOne.pAllocationCallbacks);
+                vkFreeMemory(CO.device, CO.buffers[i].bufferMemory, allInOne.pAllocationCallbacks);
+            }
+            SDL_free(CO.buffers);
+            CO.buffers = NULL;
+            CO.bufferCount = 0;
+        }
+
         if (CO.swapchainCount)
         {
             if (CO.swapchainImageViewCount)
@@ -320,20 +365,26 @@ void CO_CleanAllVkResource(void)
                 {
                     vkDestroyImageView(CO.device, CO.swapchainImageViews[i], allInOne.pAllocationCallbacks);
                 }
+                SDL_free(CO.swapchainImageViews);
+                CO.swapchainImageViews = NULL;
                 CO.swapchainImageViewCount = 0;
             }
+
+            if (CO.swapchainImageMemCount)
+            {
+                for (i = 0;i < CO.swapchainImageViewMemCount;i++)
+                {
+                    SDL_free(CO.swapchainImageViewMem[i]);
+                }
+                SDL_free(CO.swapchainImageViewMem);
+                CO.swapchainImageViewMem = NULL;
+                CO.swapchainImageViewMemCount = 0;
+            }   
 
             for (i = 0;i < CO.swapchainCount;i++)
             {
                 vkDestroySwapchainKHR(CO.device, CO.swapchains[i], allInOne.pAllocationCallbacks);
             }
-
-            for (i = 0;i < CO.swapchainImageMemCount;i++)
-            {
-                SDL_free(CO.swapchainImageMem[i]);
-                CO.swapchainImageMem[i] = NULL;
-            }
-
             CO.swapchainCount = 0;
         }
 
@@ -345,11 +396,15 @@ void CO_CleanAllVkResource(void)
                 {
                     vkDestroyFramebuffer(CO.device, CO.frameBuffers[i], allInOne.pAllocationCallbacks);
                 }
+                SDL_free(CO.frameBuffers);
+                CO.frameBuffers = NULL;
                 CO.frameBufferCount = 0;
                 for (i = 0;i < CO.frameBufferMemCount;i++)
                 {
                     SDL_free(CO.frameBufferMem[i]);
                 }
+                SDL_free(CO.frameBufferMem);
+                CO.frameBufferMem = NULL;
                 CO.frameBufferMemCount = 0;
             }
 
@@ -357,6 +412,8 @@ void CO_CleanAllVkResource(void)
             {
                 vkDestroyRenderPass(CO.device, CO.renderPasses[i], allInOne.pAllocationCallbacks);
             }
+            SDL_free(CO.renderPasses);
+            CO.renderPasses = NULL;
             CO.renderPassCount = 0;
         }
 
@@ -368,6 +425,8 @@ void CO_CleanAllVkResource(void)
                 {
                     SDL_free(CO.shaderStageCreateInfos[i]);
                 }
+                SDL_free(CO.shaderStageCreateInfos);
+                CO.shaderStageCreateInfos = NULL;
                 CO.shaderStageCreateInfoCount = 0;
             }
 
@@ -381,6 +440,8 @@ void CO_CleanAllVkResource(void)
                         {
                             vkDestroyPipeline(CO.device, CO.pipelines[i], allInOne.pAllocationCallbacks);
                         }
+                        SDL_free(CO.pipelines);
+                        CO.pipelines = NULL;
                         CO.pipelineCount = 0;
                     }
 
@@ -388,6 +449,8 @@ void CO_CleanAllVkResource(void)
                     {
                         vkDestroyPipelineLayout(CO.device, CO.pipelineLayouts[i], allInOne.pAllocationCallbacks);
                     }
+                    SDL_free(CO.pipelineLayouts);
+                    CO.pipelineLayouts = NULL;
                     CO.pipelineLayoutCount = 0;
                 }
 
@@ -395,11 +458,15 @@ void CO_CleanAllVkResource(void)
                 {
                     vkDestroyDescriptorSetLayout(CO.device, CO.descriptorSetLayouts[i], allInOne.pAllocationCallbacks);
                 }
+                SDL_free(CO.descriptorSetLayouts);
+                CO.descriptorSetLayouts = NULL;
                 CO.descriptorSetLayoutCount = 0;
                 for (i = 0;i < CO.descriptorSetLayoutMemCount;i++)
                 {
                     SDL_free(CO.descriptorSetLayoutMem[i]);
                 }
+                SDL_free(CO.descriptorSetLayoutMem);
+                CO.descriptorSetLayoutMem = NULL;
                 CO.descriptorSetLayoutMemCount = 0;
             }
 
@@ -407,6 +474,8 @@ void CO_CleanAllVkResource(void)
             {
                 vkDestroyShaderModule(CO.device, CO.shaderModules[i], allInOne.pAllocationCallbacks);
             }
+            SDL_free(CO.shaderModules);
+            CO.shaderModules = NULL;
             CO.shaderModuleCount = 0;
         }
 
@@ -416,6 +485,8 @@ void CO_CleanAllVkResource(void)
             {
                 vkDestroySampler(CO.device, CO.samplers[i], allInOne.pAllocationCallbacks);
             }
+            SDL_free(CO.samplers);
+            CO.samplers = NULL;
             CO.samplerCount = 0;
         }
 
@@ -425,6 +496,8 @@ void CO_CleanAllVkResource(void)
             {
                 vkDestroyDescriptorPool(CO.device, CO.descriptorPool[i], allInOne.pAllocationCallbacks);
             }
+            SDL_free(CO.descriptorPool);
+            CO.descriptorPool = NULL;
             CO.descriptorPoolCount = 0;
         }
 
@@ -434,6 +507,8 @@ void CO_CleanAllVkResource(void)
             {
                 vkDestroySemaphore(CO.device, CO.semaphores[i], allInOne.pAllocationCallbacks);
             }
+            SDL_free(CO.semaphores);
+            CO.semaphores = NULL;
             CO.semaphoreCount = 0;
         }
 
@@ -443,6 +518,8 @@ void CO_CleanAllVkResource(void)
             {
                 vkDestroyFence(CO.device, CO.fences[i], allInOne.pAllocationCallbacks);
             }
+            SDL_free(CO.fences);
+            CO.fences = NULL;
             CO.fenceCount = 0;
         }
 
@@ -452,6 +529,8 @@ void CO_CleanAllVkResource(void)
             {
                 vkDestroyCommandPool(CO.device, CO.commandPools[i], allInOne.pAllocationCallbacks);
             }
+            SDL_free(CO.commandPools);
+            CO.commandPools = NULL;
             CO.commandPoolCount = 0;
         }
 
@@ -471,5 +550,14 @@ void CO_CleanAllVkResource(void)
 
         vkDestroyInstance(CO.instance, allInOne.pAllocationCallbacks);
         CO.instance = NULL;
+    }
+
+    if (CO.windowCount)
+    {
+        for (i = 0;i < CO.windowCount;i++)
+        {
+            SDL_DestroyWindow(CO.windows[i]);
+        }
+        CO.windowCount = 0;
     }
 }

@@ -109,8 +109,6 @@ static void setOptionalExtensions(uint32_t extensionCount, const char ** extensi
 }
 void createInstance(void)
 {
-    FuncCode code = createInstanceF;
-
     VkApplicationInfo appInfo = {};
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     appInfo.pNext = NULL;
@@ -135,15 +133,15 @@ void createInstance(void)
     }
 
     uint32_t extensionCount = 0;
-    resultVulkan(vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, NULL), code, 0);
+    resultVulkan(vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, NULL), 0);
 
     VkExtensionProperties * extensionsProperties = (VkExtensionProperties *)SDL_malloc(extensionCount * sizeof(VkExtensionProperties));
     if (extensionsProperties == NULL)
     {
         pushMessage(SDL_MESSAGEBOX_ERROR, "Error", "alloc memory failed (VkExtensionProperties)");
-        cleanVulkan(code);
+        cleanVulkan();
     }
-    resultVulkan(vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, extensionsProperties), code, 1, extensionsProperties);
+    resultVulkan(vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, extensionsProperties), 1, extensionsProperties);
 
     uint32_t requiredExtensionCount = 0;
 
@@ -156,11 +154,11 @@ void createInstance(void)
     {
         pushMessage(SDL_MESSAGEBOX_ERROR, "Error", "alloc memory failed (requiredExtension)");
         SDL_free(extensionsProperties);
-        cleanVulkan(code);
+        cleanVulkan();
     }
     setRequiredExtensions(sdlExtensionCount, (const char**)sdlExtensions, requiredExtension);
 
-    resultVulkan(!extensionSupportedCheck_Must(sdlExtensionCount, (char **)sdlExtensions, extensionCount, extensionsProperties), code, 2, requiredExtension, extensionsProperties);
+    resultVulkan(!extensionSupportedCheck_Must(sdlExtensionCount, (char **)sdlExtensions, extensionCount, extensionsProperties), 2, requiredExtension, extensionsProperties);
 
     
     uint32_t optionalExtensionCount = 0;
@@ -171,7 +169,7 @@ void createInstance(void)
         pushMessage(SDL_MESSAGEBOX_ERROR, "Error", "alloc memory failed (requiredExtension)");
         SDL_free(requiredExtension);
         SDL_free(extensionsProperties);
-        cleanVulkan(code);
+        cleanVulkan();
     }
     setOptionalExtensions(0, NULL, NULL);
 
@@ -206,7 +204,7 @@ void createInstance(void)
     createInfo.enabledExtensionCount = requiredExtensionCount;
     createInfo.ppEnabledExtensionNames = (const char * const *)requiredExtension;
 
-    resultVulkan(vkCreateInstance(&createInfo, allInOne.pAllocationCallbacks, allInOne.pInstance), code, 1, requiredExtension);
+    resultVulkan(vkCreateInstance(&createInfo, allInOne.pAllocationCallbacks, allInOne.pInstance), 1, requiredExtension);
 
     SDL_free(requiredExtension);
 

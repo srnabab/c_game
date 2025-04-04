@@ -19,8 +19,6 @@ static Uint32 updatesCount = 0;
 
 void createDescriptorPool(VkDevice * pDevice, Uint32 poolSizeCount, VkDescriptorPoolSize * pPoolSizes, Uint32 maxSets, VkDescriptorPool * pDescriptorPool)
 {
-    FuncCode code = createDescriptorPoolF;
-
     VkDescriptorPoolCreateInfo poolInfo = {};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     poolInfo.pNext = NULL;
@@ -29,7 +27,7 @@ void createDescriptorPool(VkDevice * pDevice, Uint32 poolSizeCount, VkDescriptor
     poolInfo.pPoolSizes = pPoolSizes;
     poolInfo.maxSets  = maxSets;
 
-    resultVulkan(vkCreateDescriptorPool(*pDevice, &poolInfo, allInOne.pAllocationCallbacks, pDescriptorPool), code, 0);
+    resultVulkan(vkCreateDescriptorPool(*pDevice, &poolInfo, allInOne.pAllocationCallbacks, pDescriptorPool), 0);
 }
 void createDescriptorSets(VkDescriptorPool * pDescriptorPool, VkDescriptorSetLayout * pDescriptorSetLayout, Uint32 setCount, Uint32 SetsCount, VkDescriptorSet ** ppDescriptorSets)
 {

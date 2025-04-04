@@ -12,13 +12,11 @@ extern VK_ALL allInOne;
 
 void createShaderModuleFromFile(PathType type, VkShaderModule * pShaderModule)
 {
-    FuncCode code = createShaderModuleF;
-
     SDL_IOStream * shaderFile;
     if ((shaderFile = SDL_IOFromFile(getPath(type), "rb+")) == NULL)
     {
         logMessage("open file %s failed", getPath(type));
-        cleanVulkan(createShaderModuleF);
+        cleanVulkan();
     }
 
     SDL_SeekIO(shaderFile, 0, SDL_IO_SEEK_END);
@@ -31,7 +29,7 @@ void createShaderModuleFromFile(PathType type, VkShaderModule * pShaderModule)
     
     SDL_CloseIO(shaderFile);
 
-    resultVulkan(createShaderModuleFromMem(fileSize, (const Uint32 *)shaderCode, pShaderModule), code, 1, shaderCode);
+    resultVulkan(createShaderModuleFromMem(fileSize, (const Uint32 *)shaderCode, pShaderModule), 1, shaderCode);
 
     SDL_free(shaderCode);
 

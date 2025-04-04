@@ -15,8 +15,6 @@ extern VK_ALL allInOne;
 
 void recreateSwapchain(void)
 {
-    FuncCode code = recreateSwapchainF; 
-
     VkDevice * pDevice = allInOne.pDevice;
 
     VkFramebuffer * oldFrameBuffer = *allInOne.ppSwapchain2DFramebuffer;
@@ -24,7 +22,7 @@ void recreateSwapchain(void)
     Uint32 oldImageCount = *allInOne.pImageCount2D;
     VkSwapchainKHR oldSwapchain = *allInOne.pSwapchain2D;
 
-    resultVulkan(vkDeviceWaitIdle(*pDevice), code, 0);
+    resultVulkan(vkDeviceWaitIdle(*pDevice), 0);
 
     unloadTexture(TEXTURE_DEPTH);
     

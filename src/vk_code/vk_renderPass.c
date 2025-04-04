@@ -7,7 +7,6 @@ extern VK_ALL allInOne;
 
 void createGraphicRenderPass(VkFormat surfaceFormat, VkFormat depthFormat, VkRenderPass * pRenderPass)
 {
-    FuncCode code = createGraphicRenderPassF;
     VkAttachmentDescription colorAttachment = {};
     colorAttachment.flags = 0;
     colorAttachment.format = surfaceFormat;
@@ -72,13 +71,12 @@ void createGraphicRenderPass(VkFormat surfaceFormat, VkFormat depthFormat, VkRen
     renderPassCreateInfo.dependencyCount = 1;
     renderPassCreateInfo.pDependencies = &dependency;
 
-    resultVulkan(vkCreateRenderPass(*allInOne.pDevice, &renderPassCreateInfo, allInOne.pAllocationCallbacks, pRenderPass), code, 0);
+    resultVulkan(vkCreateRenderPass(*allInOne.pDevice, &renderPassCreateInfo, allInOne.pAllocationCallbacks, pRenderPass), 0);
 
     //printf("renderPass created\n");
 }
 void createModelRenderPass(VkFormat colorFormat, VkFormat normalFormat, VkFormat shadowFormat, VkFormat depthFormat, VkRenderPass * pRenderPass)
 {
-    FuncCode code = createGraphicRenderPassF;
     VkAttachmentDescription attachment[3];
 
     // color attachment
@@ -176,14 +174,12 @@ void createModelRenderPass(VkFormat colorFormat, VkFormat normalFormat, VkFormat
     renderPassCreateInfo.dependencyCount = 1;
     renderPassCreateInfo.pDependencies = &dependency;
 
-    resultVulkan(vkCreateRenderPass(*allInOne.pDevice, &renderPassCreateInfo, allInOne.pAllocationCallbacks, pRenderPass), code, 0);
+    resultVulkan(vkCreateRenderPass(*allInOne.pDevice, &renderPassCreateInfo, allInOne.pAllocationCallbacks, pRenderPass), 0);
 
     //printf("renderPass created\n");
 }
 void createShadowRenderPass(VkFormat depthFormat, VkRenderPass * pRenderPass)
 {
-    FuncCode code = createGraphicRenderPassF;
-
     VkAttachmentDescription depthAttachment = {};
     depthAttachment.flags = 0;
     depthAttachment.format = depthFormat;
@@ -243,15 +239,13 @@ void createShadowRenderPass(VkFormat depthFormat, VkRenderPass * pRenderPass)
     renderPassCreateInfo.dependencyCount = 2;
     renderPassCreateInfo.pDependencies = dependencies;
 
-    resultVulkan(vkCreateRenderPass(*allInOne.pDevice, &renderPassCreateInfo, allInOne.pAllocationCallbacks, pRenderPass), code, 0);
+    resultVulkan(vkCreateRenderPass(*allInOne.pDevice, &renderPassCreateInfo, allInOne.pAllocationCallbacks, pRenderPass), 0);
 
     //printf("renderPass created\n");
 }
 void createCombineRenderPass(VkFormat colorFormat, VkRenderPass * pRenderPass)
 {
-    FuncCode code = createGraphicRenderPassF;
     VkAttachmentDescription attachment[2];
-
     // color attachment
     attachment[0].flags = 0;
     attachment[0].format = colorFormat;
@@ -313,7 +307,7 @@ void createCombineRenderPass(VkFormat colorFormat, VkRenderPass * pRenderPass)
     renderPassCreateInfo.dependencyCount = 0;
     renderPassCreateInfo.pDependencies = dependencies;
 
-    resultVulkan(vkCreateRenderPass(*allInOne.pDevice, &renderPassCreateInfo, allInOne.pAllocationCallbacks, pRenderPass), code, 0);
+    resultVulkan(vkCreateRenderPass(*allInOne.pDevice, &renderPassCreateInfo, allInOne.pAllocationCallbacks, pRenderPass), 0);
 
     //printf("renderPass created\n");
 }

@@ -8,8 +8,6 @@ extern VK_ALL allInOne;
 
 void findQueueFamilies(void)
 {
-    FuncCode code = findQueueFamiliesF;
-
     uint32_t queueFamilyCount = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(*allInOne.pPhysicalDevice, &queueFamilyCount, NULL);
     logMessage("queueFamilyCount: %u", queueFamilyCount);
@@ -35,7 +33,7 @@ void findQueueFamilies(void)
         }
 
         VkBool32 presentSupport = false;
-        resultVulkan(vkGetPhysicalDeviceSurfaceSupportKHR(*allInOne.pPhysicalDevice, i, *allInOne.pSurface2D, &presentSupport), code, 1, queueFamily);
+        resultVulkan(vkGetPhysicalDeviceSurfaceSupportKHR(*allInOne.pPhysicalDevice, i, *allInOne.pSurface2D, &presentSupport), 1, queueFamily);
         if (presentSupport && !ok2) 
         {
             allInOne.pQueueFamilyIndices->presentFamily.familyIndice = i;

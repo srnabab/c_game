@@ -5,9 +5,8 @@
 
 void vulkanVersion(void)
 {
-    FuncCode code = vulkanVersionF;
     uint32_t apiVersion = 0;
-    resultVulkan(vkEnumerateInstanceVersion(&apiVersion), code, 0);
+    resultVulkan(vkEnumerateInstanceVersion(&apiVersion), 0);
 
     uint32_t major = VK_VERSION_MAJOR(apiVersion);
     uint32_t minor = VK_VERSION_MINOR(apiVersion);

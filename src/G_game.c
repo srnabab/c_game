@@ -610,7 +610,6 @@ int update(void * arg)
         glm_mat4_inv(allInOne.pSSGIubo->inverseProjectionMatrix, allInOne.pSSGIubo->inverseProjectionMatrix);
 
         float x, y, z;
-        vec3 lightPos;
         float factor_x = LIGHT_HEIGHT / (allInOne.pExtent2D->width / 2);
         float factor_y = LIGHT_HEIGHT / (allInOne.pExtent2D->height / 2);
         
@@ -926,7 +925,7 @@ void destroy(void)
 
     deInitMusicManagement();
 
-    cleanVulkan(FuncCodeMax);
+    cleanVulkan();
 
     deInitPopWindow();
     destroyLog();
