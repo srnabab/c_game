@@ -52,6 +52,4 @@
 #define SHADOW_SIZE 4096
 #define LIGHT_HEIGHT 20.0f
 
-#define WINDOW_3D_DEBUG 1
-
 #endif

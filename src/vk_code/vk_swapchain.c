@@ -37,12 +37,12 @@ void getSurfaceFormats(VkSurfaceKHR surface, VkSurfaceFormatKHR * pSurfaceFormat
 void getPresentModes(VkPresentModeKHR * pPresentMode)
 {
     uint32_t presentModeCount;
-    resultVulkan(vkGetPhysicalDeviceSurfacePresentModesKHR(*allInOne.pPhysicalDevice, *allInOne.pSurface2D, &presentModeCount, NULL), 0);
+    resultVulkan(vkGetPhysicalDeviceSurfacePresentModesKHR(*allInOne.pPhysicalDevice, *allInOne.pSurface3D, &presentModeCount, NULL), 0);
 
     VkPresentModeKHR * presentModes = (VkPresentModeKHR *)SDL_malloc(presentModeCount * sizeof(VkPresentModeKHR));
     if (presentModeCount != 0) 
     {
-        resultVulkan(vkGetPhysicalDeviceSurfacePresentModesKHR(*allInOne.pPhysicalDevice, *allInOne.pSurface2D, &presentModeCount, presentModes), 1, presentModes);
+        resultVulkan(vkGetPhysicalDeviceSurfacePresentModesKHR(*allInOne.pPhysicalDevice, *allInOne.pSurface3D, &presentModeCount, presentModes), 1, presentModes);
     
         for (uint32_t i = 0;i < presentModeCount;i++)
         {
@@ -69,7 +69,7 @@ void createSwapchain(VkSurfaceKHR surface, VkSurfaceCapabilitiesKHR surfaceCapab
     if (surfaceCapabilities.maxImageCount > 0 && imageCount > surfaceCapabilities.maxImageCount)
         imageCount = surfaceCapabilities.maxImageCount;
         
-    if (*allInOne.pSwapchain2D == NULL)
+    if (*allInOne.pSwapchain3D == NULL)
     {
         //printf("imageCount: %u\n", imageCount);
     }

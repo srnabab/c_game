@@ -33,7 +33,7 @@ void findQueueFamilies(void)
         }
 
         VkBool32 presentSupport = false;
-        resultVulkan(vkGetPhysicalDeviceSurfaceSupportKHR(*allInOne.pPhysicalDevice, i, *allInOne.pSurface2D, &presentSupport), 1, queueFamily);
+        resultVulkan(vkGetPhysicalDeviceSurfaceSupportKHR(*allInOne.pPhysicalDevice, i, *allInOne.pSurface3D, &presentSupport), 1, queueFamily);
         if (presentSupport && !ok2) 
         {
             allInOne.pQueueFamilyIndices->presentFamily.familyIndice = i;

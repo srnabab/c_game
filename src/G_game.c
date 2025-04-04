@@ -26,7 +26,6 @@
 // Global variables
 bool game_is_running = false;
 
-extern SDL_Window * window_2D;
 extern SDL_Window * window_3D;
 extern SDL_DisplayID displayId;
 extern VK_ALL allInOne;
@@ -81,11 +80,11 @@ void setup(int argc, char* argv[])
 
     initLog(arg);
 
-    game_is_running = initWindow_2D();
+    game_is_running = initWindow_3D();
     logMessage("game_is_running: %d", game_is_running);
     if (game_is_running == false) return;
 
-    SDL_StopTextInput(window_2D);
+    SDL_StopTextInput(window_3D);
 
     static SDL_MessageBoxButtonData buttons[2] = {
         {SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "No"},
@@ -94,7 +93,7 @@ void setup(int argc, char* argv[])
 
     static SDL_MessageBoxData messageBoxData = {0};
     messageBoxData.flags = SDL_MESSAGEBOX_WARNING;
-    messageBoxData.window = window_2D;
+    messageBoxData.window = window_3D;
     messageBoxData.title = "Do you want to quit?";
     messageBoxData.message = "Yes or No?";
     messageBoxData.numbuttons = 2;
@@ -193,7 +192,7 @@ bool process_input(void)
 
         if (event.type == SDL_EVENT_WINDOW_RESTORED)
         {
-            SDL_RaiseWindow(window_2D);
+            SDL_RaiseWindow(window_3D);
 
             scene = preScene;
             preScene = Pause_Scene;
@@ -230,11 +229,7 @@ bool process_input(void)
                 allInOne.pExtent2D->width = 1600;
                 allInOne.pExtent2D->height = 900;
                 
-                SDL_SetWindowSize(window_2D, allInOne.pExtent2D->width, allInOne.pExtent2D->height);
-
-#if WINDOW_3D_DEBUG
                 SDL_SetWindowSize(window_3D, allInOne.pExtent2D->width, allInOne.pExtent2D->height);
-#endif
 
                 resolutionChanged = true;
 
@@ -259,9 +254,9 @@ bool process_input(void)
                 SDL_DisplayMode displayMode = {0};
 
                 SDL_GetClosestFullscreenDisplayMode(displayId, allInOne.pExtent2D->width, allInOne.pExtent2D->height, 0, false, &displayMode);
-                SDL_SetWindowFullscreen(window_2D, 1);
-                SDL_SetWindowFullscreenMode(window_2D, &displayMode);
-                SDL_RaiseWindow(window_2D);
+                SDL_SetWindowFullscreen(window_3D, 1);
+                SDL_SetWindowFullscreenMode(window_3D, &displayMode);
+                SDL_RaiseWindow(window_3D);
 
                 resolutionChanged = true;
 
@@ -280,12 +275,12 @@ bool process_input(void)
                 scene = Pause_Scene;
                 SDL_Delay(50);
 
-                SDL_SetWindowFullscreen(window_2D, 0);
+                SDL_SetWindowFullscreen(window_3D, 0);
                 allInOne.pOldExtent2D->width = allInOne.pExtent2D->width;
                 allInOne.pOldExtent2D->height = allInOne.pExtent2D->height;
 
-                SDL_SetWindowSize(window_2D, allInOne.pExtent2D->width, allInOne.pExtent2D->height);
-                SDL_RaiseWindow(window_2D);
+                SDL_SetWindowSize(window_3D, allInOne.pExtent2D->width, allInOne.pExtent2D->height);
+                SDL_RaiseWindow(window_3D);
 
                 resolutionChanged = true;
 
@@ -626,7 +621,7 @@ int update(void * arg)
         y *= factor_y;
         z = SDL_sqrtf(SDL_powf(LIGHT_HEIGHT, 2) - SDL_powf(x, 2) - SDL_powf(y, 2));
 
-        print("x: %f, y: %f, z: %f", x, y, z);
+        // print("x: %f, y: %f, z: %f", x, y, z);
 
         mat4 lightProj;
         glm_ortho_vulkan(-(SHADOW_SIZE / 600.0f) / 2.0f, (SHADOW_SIZE / 600.0f) / 2.0f, -(SHADOW_SIZE / 800.0f) / 2.0f, (SHADOW_SIZE / 800.0f) / 2.0f, -0.001f, -100.0f, lightProj);
@@ -820,7 +815,7 @@ int update(void * arg)
             memcpy((*allInOne.ppVertexBuffer2DMemMapped)[currentFrame], *allInOne.ppVertices2D, vertexEnd * sizeof(Vertex));// update vertex buffer
             memcpy((*allInOne.ppVertexBuffer3DMemMapped)[currentFrame], *allInOne.ppVertices3D, 30000 * sizeof(Vertex));
             memcpy((*allInOne.ppIndexBuffer3DMemMapped)[currentFrame], *allInOne.ppIndices3D, 45000 * sizeof(Uint32));
-            SDL_SignalSemaphore(allSync.vertexSemaphore);
+            // SDL_SignalSemaphore(allSync.vertexSemaphore);
 
             allInOne.pPushConstants->rotation = totalTime * glm_rad(580.0f);
             

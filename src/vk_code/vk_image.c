@@ -97,7 +97,7 @@ void destroyImageViews(VkImageView * pImageView, uint32_t imageCount)
         vkDestroyImageView(*allInOne.pDevice, pImageView[i], allInOne.pAllocationCallbacks);
     }
 }
-VkResult transitionImageLayout(VkImage * pImage, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
+VkResult transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
 {
     VkResult result  = VK_SUCCESS;
 
@@ -113,7 +113,7 @@ VkResult transitionImageLayout(VkImage * pImage, VkFormat format, VkImageLayout 
     barrier.newLayout = newLayout;
     barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barrier.image = *pImage;
+    barrier.image = image;
     barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     barrier.subresourceRange.baseMipLevel = 0;
     barrier.subresourceRange.levelCount = 1;
@@ -204,6 +204,14 @@ VkResult transitionImageLayout(VkImage * pImage, VkFormat format, VkImageLayout 
 
         sourceStage = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
         destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    }
+    else if (oldLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+    {
+        barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+        sourceStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        destinationStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     }
     else 
     {

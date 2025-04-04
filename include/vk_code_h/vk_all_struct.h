@@ -17,11 +17,11 @@ struct _VK_ALL
 
     VkDevice * pDevice;
 
-    VkSurfaceCapabilitiesKHR * pSurface2DCapabilities;
-    VkSurfaceFormatKHR * pSurface2DFormat;
-    VkPresentModeKHR * pPresentMode2D;
+    // VkSurfaceCapabilitiesKHR * pSurface2DCapabilities;
+    // VkSurfaceFormatKHR * pSurface2DFormat;
+    // VkPresentModeKHR * pPresentMode2D;
 
-    VkSurfaceKHR * pSurface2D;
+    // VkSurfaceKHR * pSurface2D;
     
     QueueFamilyIndices * pQueueFamilyIndices;
     VkQueue * pGraphicQueue;
@@ -36,16 +36,16 @@ struct _VK_ALL
 
     VkExtent2D * pExtent2D;
     VkExtent2D * pOldExtent2D;
-    Uint32 * pImageCount2D;
+    // Uint32 * pImageCount2D;
 
-    VkSwapchainKHR * pSwapchain2D;
-    VkImage ** ppSwapchain2DImages;
-    VkImageView ** ppSwapchain2DImageViews;
-    VkFramebuffer ** ppSwapchain2DFramebuffer;
+    // VkSwapchainKHR * pSwapchain2D;
+    // VkImage ** ppSwapchain2DImages;
+    // VkImageView ** ppSwapchain2DImageViews;
+    // VkFramebuffer ** ppSwapchain2DFramebuffer;
 
 
     VkRenderPass * pRenderPass;
-    VkRenderPass * pCombine2DRenderPass;
+    // VkRenderPass * pCombine2DRenderPass;
     VkRenderPass * pModelRenderPass;
     VkRenderPass * pShadowRenderPass;
     VkRenderPass * pCombineRenderPass;
@@ -71,11 +71,10 @@ struct _VK_ALL
     VkPipelineLayout * pCombinePipelineLayout;
     VkPipeline * pCombinePipeline;
 
-    VkPipelineLayout * pCombine2DPipelineLayout;
-    VkPipeline * pCombine2DPipeline;
+    // VkPipelineLayout * pCombine2DPipelineLayout;
+    // VkPipeline * pCombine2DPipeline;
 
 
-#if WINDOW_3D_DEBUG
     
     VkSurfaceKHR * pSurface3D;
 
@@ -88,7 +87,6 @@ struct _VK_ALL
 
     VkImage ** ppSwapchain3DImages;
     VkImageView ** ppSwapchain3DImageViews;
-#endif
 
     VkFramebuffer ** ppGraphic2dFramebuffer;
     VkFramebuffer ** ppSwapchain3DFramebuffer;
@@ -165,7 +163,7 @@ struct _VK_ALL
     VkDescriptorSet ** ppShadowDescriptorSets;
     VkDescriptorSet ** ppSSGIDescriptorSets;
     VkDescriptorSet ** ppCombineDescriptorSets;
-    VkDescriptorSet ** ppCombine2dDescriptorSets;
+    // VkDescriptorSet ** ppCombine2dDescriptorSets;
 
     VkCommandBuffer (*ppGraphicCommandBuffer)[MAX_FRAMES_IN_FLIGHT];
     VkCommandBuffer (*ppPresentCommandBuffer)[MAX_FRAMES_IN_FLIGHT];

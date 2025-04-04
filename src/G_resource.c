@@ -225,7 +225,7 @@ bool loadImageResource(VkFormat format, VkImageTiling tiling, VkImageUsageFlags 
 
     createImageView(&globalTexture[i].image, format, VK_IMAGE_ASPECT_COLOR_BIT, &globalTexture[i].imageView);
 
-    if (targetLayout != VK_IMAGE_LAYOUT_UNDEFINED) transitionImageLayout(&globalTexture[i].image, format, VK_IMAGE_LAYOUT_UNDEFINED, targetLayout);
+    if (targetLayout != VK_IMAGE_LAYOUT_UNDEFINED) transitionImageLayout(globalTexture[i].image, format, VK_IMAGE_LAYOUT_UNDEFINED, targetLayout);
 
     globalTexture[i].source_width = allInOne.pExtent2D->width;
     globalTexture[i].source_height = allInOne.pExtent2D->height;

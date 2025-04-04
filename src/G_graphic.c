@@ -40,17 +40,6 @@
 
 #include "spirv_reflect/shader_resolve.h"
 
-// declare a sdl window_2D
-SDL_Window * window_2D = NULL;
-SDL_DisplayID displayId = 0;
-
-// windows' width and height
-Uint32 width = 800;
-Uint32 height = 600;
-
-float physicalCoffectX = 1.0f;
-float physicalCoffectY = 1.0f;
-
 static bool initSDL(void)
 {
     /*initialize sdl
@@ -73,38 +62,26 @@ static bool initSDL(void)
     return true;
 }
 
-#if WINDOW_3D_DEBUG
+// declare a sdl window_3D
 SDL_Window * window_3D = NULL;
-// false means failed to initialize window_3D
-static bool initWindow_3D(void)
+SDL_DisplayID displayId = 0;
+
+// windows' width and height
+Uint32 width = 800;
+Uint32 height = 600;
+
+float physicalCoffectX = 1.0f;
+float physicalCoffectY = 1.0f;
+
+bool initWindow_3D(void)
 {
-   //create sdl window_2D and sign window_2D as a vulkan window_2D
-    window_3D = SDL_CreateWindow("Vulkan_3D", width, height, SDL_WINDOW_VULKAN | SDL_WINDOW_HIGH_PIXEL_DENSITY);
-
-    if (window_3D == NULL) return false;
-
-    int x, y;
-
-    SDL_GetWindowPosition(window_3D, &x, &y);
-    SDL_SetWindowPosition(window_3D, x - 800, y);
-    
-    logMessage("window_3D initialized");
-
-    CO_addWindow(window_3D);
-
-    return true;
-}
-#endif
-
-bool initWindow_2D(void)
-{
-   //create sdl window_2D and sign window_2D as a vulkan window_2D
+   //create sdl window_3D and sign window_3D as a vulkan window_3D
     if (!initSDL()) return false;
-    window_2D = SDL_CreateWindow("Vulkan_2D", width, height, SDL_WINDOW_VULKAN | SDL_WINDOW_HIGH_PIXEL_DENSITY);
-    if (window_2D == NULL)
+    window_3D = SDL_CreateWindow("Vulkan_3D", width, height, SDL_WINDOW_VULKAN | SDL_WINDOW_HIGH_PIXEL_DENSITY);
+    if (window_3D == NULL)
         return false;
 
-    CO_addWindow(window_2D);
+    CO_addWindow(window_3D);
     
     int count = 0;
     SDL_DisplayID * displays = SDL_GetDisplays(&count);
@@ -123,7 +100,7 @@ bool initWindow_2D(void)
     physicalCoffectX = (float)width / LOGICAL_WIDTH;
     physicalCoffectY = (float)height / LOGICAL_HEIGHT;
 
-    logMessage("window_2D initialized");
+    logMessage("window_3D initialized");
 
     Uint32 iconWidth, iconHeight;
     iconWidth = iconHeight = 0;         
@@ -136,23 +113,16 @@ bool initWindow_2D(void)
         return false;
     }
 
-    if (!SDL_SetWindowIcon(window_2D, iconSurface))
+    if (!SDL_SetWindowIcon(window_3D, iconSurface))
         return false;
 
     SDL_DestroySurface(iconSurface);
     SDL_free(iconPixels);
 
-#if WINDOW_3D_DEBUG
-    bool res_3d = initWindow_3D();
-    if (!res_3d) return false;
-#endif
-
     return true;
 }
 
 static VkInstance instance = NULL;
-
-static VkSurfaceKHR surface2D = NULL;
 
 static VkPhysicalDevice physicalDevice = NULL;
 
@@ -165,19 +135,11 @@ static VkQueue transferQueue = NULL;
 
 static VkAllocationCallbacks SDL_allocationCallBacks = {};
 
-static VkSurfaceFormatKHR surface2DFormat = {};
-static VkPresentModeKHR presentMode2D = 0;
-static VkSurfaceCapabilitiesKHR surface2DCapabilities = {};
 static VkExtent2D extent2D = {};
 static VkExtent2D oldExtent2D = {};
-static VkSwapchainKHR swapchain2D = NULL;
 
-static Uint32 imageCount2D = 0;
 static VkFormat swapchainFormat = 0;
 
-static VkImage * swapchain2DImages = NULL;
-static VkImageView * swapchain2DImageViews = NULL;
-static VkFramebuffer * swapchain2DFramebuffer = NULL;
 static VkFramebuffer * graphic2DFramebuffer = NULL;
 
 static VkFramebuffer * shadowFrameBuffer = NULL;
@@ -185,7 +147,6 @@ static VkFramebuffer * directColorFramebuffer = NULL;
 static VkFramebuffer * combineFrameBuffer = NULL;
 
 static VkPipelineShaderStageCreateInfo * graphciShaderStageCreateInfo = NULL;
-static VkPipelineShaderStageCreateInfo * combine2DShaderStageCreateInfo = NULL;
 
 static VkPipelineShaderStageCreateInfo * modelShaderStageCreateInfo = NULL;
 static VkPipelineShaderStageCreateInfo * shadowShaderStageCreateInfo = NULL;
@@ -199,7 +160,6 @@ static VkPipelineShaderStageCreateInfo * SSGIShaderStageCreateInfo = NULL;
 static VkPipelineShaderStageCreateInfo * combineShaderStageCreateInfo = NULL;
 
 static VkDescriptorSetLayout * graphicDescriptorSetLayout = NULL;
-static VkDescriptorSetLayout * combine2DDescriptorSetLayout = NULL;
 
 static VkDescriptorSetLayout * modelDescriptorSetLayout = NULL;
 static VkDescriptorSetLayout * shadowDescriptorSetLayout = NULL;
@@ -230,11 +190,7 @@ static VkPipelineLayout SSGIPipelineLayout = NULL;
 static VkPipelineLayout combinePipelineLayout = NULL;
 static VkRenderPass combineRenderPass = NULL;
 
-static VkPipelineLayout combine2DPipelineLayout = NULL;
-static VkRenderPass combine2DRenderPass = NULL;
-
 static VkPipeline graphicPipeline = NULL;
-static VkPipeline combine2DPipeline = NULL;
 static VkPipeline particlePipeline = NULL;
 static VkPipeline computePipeline = NULL;
 
@@ -314,7 +270,6 @@ static LightSpace lightSpaceubo = {};
 
 static VkDescriptorPool graphicDescriptorPool = NULL;
 static VkDescriptorSet * graphicDescriptorSets = NULL;
-static VkDescriptorSet * combine2DDescriptorSets = NULL;
 static VkDescriptorSet * modelDescriptorSets = NULL;
 
 static VkDescriptorSet * particleDescriptorSets = NULL;
@@ -354,7 +309,6 @@ static VkDeviceMemory shaderStorageBuffersMem[MAX_FRAMES_IN_FLIGHT];
 
 static PushConstants picturePushConstants = {0.0f};
 
-#if WINDOW_3D_DEBUG
 static VkSurfaceKHR surface3D = NULL;
 
 static VkSurfaceFormatKHR surface3DFormat = {};
@@ -367,7 +321,6 @@ static Uint32 imageCount3D = 0;
 static VkImage * swapchain3DImages = NULL;
 static VkImageView * swapchain3DImageViews = NULL;
 static VkFramebuffer * swapchain3DFramebuffer = NULL;
-#endif
 
 static G_StaticModelPool staticModelPool = {};
 
@@ -384,12 +337,6 @@ static void initializeAllInOne(void)
 
     allInOne.pDevice = &device;
 
-    allInOne.pSurface2DCapabilities = &surface2DCapabilities;
-    allInOne.pSurface2DFormat = &surface2DFormat;
-    allInOne.pPresentMode2D = &presentMode2D;
-
-    allInOne.pSurface2D = &surface2D;
-
     allInOne.pQueueFamilyIndices = &queueIndices;
     allInOne.pGraphicQueue = &graphicQueue;
     allInOne.pPresentQueue = &presentQueue;
@@ -403,15 +350,8 @@ static void initializeAllInOne(void)
 
     allInOne.pExtent2D = &extent2D;
     allInOne.pOldExtent2D = &oldExtent2D;
-    allInOne.pImageCount2D = &imageCount2D;
 
-    allInOne.pSwapchain2D = &swapchain2D;
-    allInOne.ppSwapchain2DImages = &swapchain2DImages;
-    allInOne.ppSwapchain2DImageViews = &swapchain2DImageViews;
-    allInOne.ppSwapchain2DFramebuffer = &swapchain2DFramebuffer;
- 
     allInOne.pRenderPass = &renderPass;
-    allInOne.pCombine2DRenderPass = &combine2DRenderPass;
     allInOne.pModelRenderPass = &modelRenderPass;
     allInOne.pShadowRenderPass = &shadowRenderPass;
     allInOne.pCombineRenderPass = &combineRenderPass;
@@ -437,12 +377,6 @@ static void initializeAllInOne(void)
     allInOne.pCombinePipelineLayout = &combinePipelineLayout;
     allInOne.pCombinePipeline = &combinePipeline;
 
-    allInOne.pCombine2DPipelineLayout = &combine2DPipelineLayout;
-    allInOne.pCombine2DPipeline = &combine2DPipeline;
-
-   
-#if WINDOW_3D_DEBUG
-
     allInOne.pSurface3D = &surface3D;
     allInOne.pSurface3DFormat = &surface3DFormat;
     allInOne.pSurface3DCapabilities = &surface3DCapabilities;
@@ -452,7 +386,6 @@ static void initializeAllInOne(void)
     allInOne.ppSwapchain3DImages = &swapchain3DImages;
     allInOne.ppSwapchain3DImageViews = &swapchain3DImageViews;
 
-#endif
 
     allInOne.ppGraphic2dFramebuffer = &graphic2DFramebuffer;
     allInOne.ppSwapchain3DFramebuffer = &swapchain3DFramebuffer;
@@ -526,7 +459,6 @@ static void initializeAllInOne(void)
     allInOne.ppShadowDescriptorSets = &shadowDescriptorSets;
     allInOne.ppSSGIDescriptorSets = &SSGIDescriptorSets;
     allInOne.ppCombineDescriptorSets = &combineDescriptorSets;
-    allInOne.ppCombine2dDescriptorSets = &combine2DDescriptorSets;
 
     allInOne.ppShaderStorageBuffers = &shaderStorageBuffers;
 
@@ -577,8 +509,8 @@ void initVulkan(void)
     createInstance();
     CO_addInstance(instance);// CO
 
-    createSurface(window_2D, &surface2D);
-    CO_addSurface(surface2D);// CO
+    createSurface(window_3D, &surface3D);
+    CO_addSurface(surface3D);// Co
 
     pickPhysicalDevice();
 
@@ -600,40 +532,26 @@ void initVulkan(void)
     createCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, queueIndices.transferFamily.familyIndice, &transferCommandPool);
     CO_addCommandPool(transferCommandPool);// CO
 
-    getSurfaceFormats(surface2D, &surface2DFormat);
-    getPresentModes(&presentMode2D);
-    getSurfaceCapabilities(surface2D, &surface2DCapabilities);
+    getSurfaceFormats(surface3D, &surface3DFormat);
+    getPresentModes(&presentMode3D);
+    getSurfaceCapabilities(surface3D, &surface3DCapabilities);
     
     extent2D.width = width;
     extent2D.height = height;
 
-    createSwapchain(surface2D, surface2DCapabilities, surface2DFormat, presentMode2D, &swapchain2D, NULL);
-    CO_addSwapchain(swapchain2D);// CO
+    createSwapchain(surface3D, surface3DCapabilities, surface3DFormat, presentMode3D, &swapchain3D, NULL);
+    CO_addSwapchain(swapchain3D);// CO
 
-    getSwapchainNumber(swapchain2D, &imageCount2D);
-    createSwapchainImage(swapchain2D, &imageCount2D, &swapchain2DImages);
-    CO_addSwapchainImage(swapchain2DImages);// CO
+    getSwapchainNumber(swapchain3D, &imageCount3D);
+    createSwapchainImage(swapchain3D, &imageCount3D, &swapchain3DImages);
+    CO_addSwapchainImage(swapchain3DImages);// CO
 
-    swapchainFormat = surface2DFormat.format;
+    swapchainFormat = surface3DFormat.format;
 
-    //swapchain2D image view
-    createSwapchainImageView(swapchain2DImages, imageCount2D, swapchainFormat, VK_IMAGE_ASPECT_COLOR_BIT, &swapchain2DImageViews);
-    CO_addSwapchainImageView(imageCount2D, swapchain2DImageViews);// CO
-    createCombineRenderPass(swapchainFormat, &combine2DRenderPass);
-    CO_addRenderPass(combine2DRenderPass);// CO
-    createFrameBuffer(imageCount2D, allInOne.pExtent2D->width, allInOne.pExtent2D->height, 1, NULL, swapchain2DImageViews, &combine2DRenderPass, &swapchain2DFramebuffer);
-    CO_addFrameBuffer(imageCount2D, swapchain2DFramebuffer);// CO
+    //swapchain3D image view
+    createSwapchainImageView(swapchain3DImages, imageCount3D, swapchainFormat, VK_IMAGE_ASPECT_COLOR_BIT, &swapchain3DImageViews);
+    CO_addSwapchainImageView(imageCount3D, swapchain3DImageViews);// CO
 
-    loadDepthResource(TEXTURE_DEPTH, false);
-    loadImageResource(swapchainFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_UNDEFINED, TEXTURE_2D_COLOR, NULL);
-    G_Texture_P const * depthTexutre = getTexture(TEXTURE_DEPTH);
-    G_Texture_P * color2DTexture = getTexture(TEXTURE_2D_COLOR);
-    createGraphicRenderPass(swapchainFormat, depthTexutre->format, &renderPass);
-    CO_addRenderPass(renderPass);// CO
-    VkImageView graphicImageViews[] = {color2DTexture->imageView, depthTexutre->imageView};
-    createFrameBuffer(2, allInOne.pExtent2D->width, allInOne.pExtent2D->height, 2, graphicImageViews, NULL, &renderPass, &graphic2DFramebuffer);
-    CO_addFrameBuffer(2, graphic2DFramebuffer);// CO
- 
     loadShadowResource(TEXTURE_SHADOW, SHADOW_MAPPING_WIDTH, SHADOW_MAPPING_HEIGHT);
     G_Texture_P * modelShadowTexture = getTexture(TEXTURE_SHADOW);
     createShadowRenderPass(modelShadowTexture->format, &shadowRenderPass);
@@ -653,32 +571,22 @@ void initVulkan(void)
     createModelRenderPass(modelColorTexture->format, modelNormalTexture->format, seprateShadowTexture->format, modelDepthTexutre->format, &modelRenderPass);
     CO_addRenderPass(modelRenderPass);// CO
 
-
-#if WINDOW_3D_DEBUG
-
-    createSurface(window_3D, &surface3D);
-    CO_addSurface(surface3D);// Co
-    getSurfaceFormats(surface3D, &surface3DFormat);
-    getPresentModes(&presentMode3D);
-    getSurfaceCapabilities(surface3D, &surface3DCapabilities);
-    createSwapchain(surface3D, surface3DCapabilities, surface3DFormat, presentMode3D, &swapchain3D, NULL);
-    CO_addSwapchain(swapchain3D);// CO
-    getSwapchainNumber(swapchain3D, &imageCount3D);
-    createSwapchainImage(swapchain3D, &imageCount3D, &swapchain3DImages);
-    CO_addSwapchainImage(swapchain3DImages);// CO
-    createSwapchainImageView(swapchain3DImages, imageCount3D, swapchainFormat, VK_IMAGE_ASPECT_COLOR_BIT, &swapchain3DImageViews);
-    CO_addSwapchainImageView(imageCount3D, swapchain3DImageViews);// CO
-#endif
-
     VkImageView modelImageViews[] = {modelColorTexture->imageView, modelNormalTexture->imageView, seprateShadowTexture->imageView, modelDepthTexutre->imageView};
     createFrameBuffer(2, allInOne.pExtent2D->width, allInOne.pExtent2D->height, 4, modelImageViews, NULL, &modelRenderPass, &directColorFramebuffer);
     CO_addFrameBuffer(2, directColorFramebuffer);// CO
 
-    createCombineRenderPass(modelColorTexture->format, &combineRenderPass);
+    loadImageResource(swapchainFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_UNDEFINED, TEXTURE_COMBINE_COLOR, NULL);
+
+    createCombineRenderPass(swapchainFormat, &combineRenderPass);
     CO_addRenderPass(combineRenderPass);// CO
     createFrameBuffer(imageCount3D, allInOne.pExtent2D->width, allInOne.pExtent2D->height, 1, NULL, swapchain3DImageViews, &combineRenderPass, &combineFrameBuffer);
     CO_addFrameBuffer(imageCount3D, combineFrameBuffer);// CO
 
+    createGraphicRenderPass(swapchainFormat, &renderPass);
+    CO_addRenderPass(renderPass);// CO
+    createFrameBuffer(imageCount3D, allInOne.pExtent2D->width, allInOne.pExtent2D->height, 1, NULL, swapchain3DImageViews, &renderPass, &graphic2DFramebuffer);
+    CO_addFrameBuffer(imageCount3D, graphic2DFramebuffer);// CO
+ 
     createTextureSampler(&textureSampler);
     CO_addSampler(textureSampler);// CO
     createNormalSampler(&normalSampler);
@@ -763,11 +671,11 @@ void initVulkan(void)
     createGraphicsPipeline(extent2D, 2, graphciShaderStageCreateInfo, graphicPipelineLayout, renderPass, &graphicPipeline);
 
     //graphic combine shader
-    PathType combine2DTypes[] = {CombineVertShader, Combine2dFragShader};
-    VkShaderModule * combine2DTempModeule = NULL;
-    Uint32 combine2DSetCount = CreateShaderModulesAndDescriptorSets(combine2DTypes, 2, &combine2DTempModeule, &combine2DShaderStageCreateInfo, &combine2DDescriptorSetLayout, &combine2DPipelineLayout);
-    createDescriptorSets(&graphicDescriptorPool, combine2DDescriptorSetLayout, combine2DSetCount, 1, &combine2DDescriptorSets);
-    createCombinePipeline(extent2D, 2, combine2DShaderStageCreateInfo, combine2DPipelineLayout, combine2DRenderPass, &combine2DPipeline);
+    // PathType combine2DTypes[] = {CombineVertShader, Combine2dFragShader};
+    // VkShaderModule * combine2DTempModeule = NULL;
+    // Uint32 combine2DSetCount = CreateShaderModulesAndDescriptorSets(combine2DTypes, 2, &combine2DTempModeule, &combine2DShaderStageCreateInfo, &combine2DDescriptorSetLayout, &combine2DPipelineLayout);
+    // createDescriptorSets(&graphicDescriptorPool, combine2DDescriptorSetLayout, combine2DSetCount, 1, &combine2DDescriptorSets);
+    // createCombinePipeline(extent2D, 2, combine2DShaderStageCreateInfo, combine2DPipelineLayout, combine2DRenderPass, &combine2DPipeline);
 
     //3d model shader
     PathType modelTypes[] = {Model3dVertShader, Model3dFragShader};
@@ -912,10 +820,10 @@ void initVulkan(void)
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_FONT, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_TILE_SET, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_BOX, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    addDescriptorSetToTexture(TEXTURE_2D_COLOR, combine2DDescriptorSets);
-    addDescriptorSetToTexture(TEXTURE_SHADOW_MAP, combine2DDescriptorSets);
-    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, TEXTURE_2D_COLOR, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_SHADOW_MAP, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    // addDescriptorSetToTexture(TEXTURE_2D_COLOR, combine2DDescriptorSets);
+    // addDescriptorSetToTexture(TEXTURE_SHADOW_MAP, combine2DDescriptorSets);
+    // addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, TEXTURE_2D_COLOR, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    // addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_SHADOW_MAP, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     // model
     addShadowDescriptorSetToTexture(TEXTURE_MODEL, shadowTexture->pDescriptorSet);
