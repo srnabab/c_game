@@ -105,6 +105,7 @@ add_executable(game ${SRC_ROOT}/main.c
                     ${SRC_ROOT}/vk_code/vk_synchronize.c
                     ${SRC_ROOT}/vk_code/vk_shader.c
                     ${SRC_ROOT}/vk_code/vk_recreate.c
+                    ${SRC_ROOT}/vk_code/vk_drawTool.c
                     ${SRC_ROOT}/vk_code/vk_present.c
                     ${SRC_ROOT}/vk_code/vk_load_model.c
                     ${SRC_ROOT}/vk_code/vk_collection.c)

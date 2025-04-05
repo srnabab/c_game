@@ -314,7 +314,7 @@ bool process_input(void)
             if (event.type == SDL_EVENT_MOUSE_MOTION)
             {
                 //logMessage("mouse moving: %d", event.type);
-                logMessage("mouse: (%f, %f)", event.motion.x, event.motion.y);
+                // logMessage("mouse: (%f, %f)", event.motion.x, event.motion.y);
 
                 SDL_LockMutex(allSync.inputMutex);
                 mouse_x = event.motion.x;
