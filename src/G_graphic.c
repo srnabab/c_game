@@ -659,7 +659,7 @@ void initVulkan(void)
     graphicDescriptorPoolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     graphicDescriptorPoolSize[0].descriptorCount = 16;
     graphicDescriptorPoolSize[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    graphicDescriptorPoolSize[1].descriptorCount = 22;
+    graphicDescriptorPoolSize[1].descriptorCount = 26;
     createDescriptorPool(&device, 2, graphicDescriptorPoolSize, 22, &graphicDescriptorPool);
     CO_addDescriptorPool(graphicDescriptorPool);// CO
 
@@ -763,8 +763,8 @@ void initVulkan(void)
     // loadTileMap(TileMap1TsdI, 400, -1100, TEXTURE_TILE_SET);
     // loadTileMap(TileMap1TsdI, -400, -1100, TEXTURE_TILE_SET);
     createStaticModelPool(&staticModelPool, 20);
-    loadStaticModel(&staticModelPool, 10, BoxObj, BoxPng, vertices3D, &vertices3DCount, indices3D, &indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_MODEL, modelDescriptorSets);
-    loadStaticModel(&staticModelPool, 10, BottomObj, BottomPng, vertices3D, &vertices3DCount, indices3D, &indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_BOTTOM, modelDescriptorSets + 2);
+    loadStaticModel(&staticModelPool, 10, BoxObj, BoxPng, vertices3D, &vertices3DCount, indices3D, &indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_MODEL, modelDescriptorSets, false);
+    loadStaticModel(&staticModelPool, 10, BottomObj, BottomPng, vertices3D, &vertices3DCount, indices3D, &indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_BOTTOM, modelDescriptorSets + 2, true);
 
     loadImageResource(VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_GENERAL, TEXTURE_SSGI_STORAGE_IMAGE, SSGIDescriptorSets + 2);
 

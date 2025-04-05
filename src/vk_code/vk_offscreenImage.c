@@ -31,8 +31,6 @@ VkResult drawImageView(Uint32 width, Uint32 height, VkImageView imageView, VkCom
 
     // drawPic(innerName, )
 
-    vkCmdDraw(commandBuffer, 6, 1, 0, 0);
-
     vkCmdEndRenderPass(commandBuffer);
     
     return result;

@@ -9,6 +9,9 @@
 
 #include "tinyobj_loader/tinyobj_loader_c.h"
 
+// #define CGLTF_IMPLEMENTATION
+// #include "cgltf/cgltf.h"
+
 #include "SDL3/SDL_iostream.h"
 
 #include "G_log.h"
@@ -59,7 +62,8 @@ static void tinyobj_SDL_readFile(void *ctx, const char *filename, int is_mtl, co
 
     SDL_CloseIO(stream);
 }
-bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex4 * vertices, Uint32 * pVertexIndex, Uint32 * indices, Uint32 * pIndexIndex, VkFormat textureFormat, VkImageAspectFlags flags, const char * innerName, VkDescriptorSet * pDescriptorSet)
+bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex4 * vertices, Uint32 * pVertexIndex, Uint32 * indices, Uint32 * pIndexIndex, VkFormat textureFormat, VkImageAspectFlags flags\
+, const char * innerName, VkDescriptorSet * pDescriptorSet, bool ground)
 {
     tinyobj_attrib_t attrib;
     tinyobj_shape_t * shapes;
@@ -107,6 +111,17 @@ bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex4 * vert
                 vertices[vertexIndex].normal[0] = attrib.normals[attrib.faces[i].vn_idx * 3 + 0];
                 vertices[vertexIndex].normal[1] = attrib.normals[attrib.faces[i].vn_idx * 3 + 1];
                 vertices[vertexIndex].normal[2] = attrib.normals[attrib.faces[i].vn_idx * 3 + 2];
+
+                if (ground)
+                {
+                    float dot = glm_vec3_dot(vertices[vertexIndex].normal, (vec3){0.0f, 0.0f, 1.0f});
+                    if (SDL_abs(dot - 0.0f) < 0.0001f)
+                    {
+                        vertices[vertexIndex].groupId = 1;
+                    }
+                    else vertices[vertexIndex].groupId = 0;
+                }
+                else vertices[vertexIndex].groupId = 0;
 
                 indexIndex++;
                 vertexIndex++;
@@ -180,3 +195,138 @@ bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex4 * vert
 
     return true;
 }
+// static void * cgltf_SDL_alloc(void * user_data, size_t size)
+// {
+//     (void)user_data;
+//     return SDL_malloc(size);
+// }
+// static void cgltf_SDL_free(void * user_data, void * ptr)
+// {
+//     (void)user_data;
+//     SDL_free(ptr);
+// }
+// static cgltf_result cgltf_SDL_file_read(const struct cgltf_memory_options* memory_options, const struct cgltf_file_options* file_options, const char* path, cgltf_size* size, void** data)
+// {
+// 	(void)file_options;
+// 	void* (*memory_alloc)(void*, cgltf_size) = memory_options->alloc_func ? memory_options->alloc_func : &cgltf_default_alloc;
+// 	void (*memory_free)(void*, void*) = memory_options->free_func ? memory_options->free_func : &cgltf_default_free;
+
+// 	SDL_IOStream * file = SDL_IOFromFile(path, "rb");
+// 	if (!file)
+// 	{
+// 		return cgltf_result_file_not_found;
+// 	}
+
+// 	cgltf_size file_size = size ? *size : 0;
+
+// 	if (file_size == 0)
+// 	{
+// 		SDL_SeekIO(file, 0, SDL_IO_SEEK_END);
+
+// 		long length = SDL_TellIO(file);
+
+// 		if (length < 0)
+// 		{
+// 			SDL_CloseIO(file);
+// 			return cgltf_result_io_error;
+// 		}
+
+// 		SDL_SeekIO(file, 0, SDL_IO_SEEK_SET);
+// 		file_size = (cgltf_size)length;
+// 	}
+
+// 	char* file_data = (char*)memory_alloc(memory_options->user_data, file_size);
+// 	if (!file_data)
+// 	{
+// 		SDL_CloseIO(file);
+// 		return cgltf_result_out_of_memory;
+// 	}
+
+// 	cgltf_size read_size = SDL_ReadIO(file, file_data, file_size);
+
+// 	SDL_CloseIO(file);
+
+// 	if (read_size != file_size)
+// 	{
+// 		memory_free(memory_options->user_data, file_data);
+// 		return cgltf_result_io_error;
+// 	}
+
+// 	if (size)
+// 	{
+// 		*size = file_size;
+// 	}
+// 	if (data)
+// 	{
+// 		*data = file_data;
+// 	}
+
+// 	return cgltf_result_success;
+// }
+// bool loadModel(PathType modelPath)
+// {
+//     cgltf_options options = {};
+//     options.type = cgltf_file_type_invalid;
+//     options.json_token_count = 0;
+
+//     cgltf_memory_options memory_options = {};
+//     memory_options.user_data = NULL;
+//     memory_options.alloc_func = cgltf_SDL_alloc;
+//     memory_options.free_func = cgltf_SDL_free;
+
+//     options.memory = memory_options;
+
+//     cgltf_file_options file_options = {};
+//     file_options.user_data = NULL;
+//     file_options.read = cgltf_SDL_file_read;
+//     file_options.release = NULL;
+
+//     options.file = file_options;
+//     cgltf_data * data = NULL;
+
+//     cgltf_result res = cgltf_parse_file(&options, getPath(modelPath), &data);
+
+//     if (res != cgltf_result_success)
+//     {
+//         print("cgltf parse file fail: %d", res);
+//         return false;
+//     }
+
+//     res = cgltf_load_buffers(&options, data, getPath(modelPath));
+
+//     if (res != cgltf_result_success)
+//     {
+//         print("cgltf load buffers fail: %d", res);
+//         cgltf_free(data);
+//         return false;
+//     }
+
+    Uint32 i, j;
+    // cgltf_primitive * primitive = data->mesh->primitives;
+    // for (i = 0;i < primitive->attributes_count;i++)
+    // {
+    //     print("name: %s", primitive->attributes[i].name);
+    //     if (primitive->attributes[i].data != NULL)
+    //     {
+    //         for (j = 0;j < data->accessors[i].count;j++)
+    //         {
+    //             if (data->accessors[i].component_type == cgltf_component_type_r_32f)
+    //             {
+    //                 print("value: %f", *(float*)(data->accessors[i].buffer_view->buffer->data + j * data->accessors[i].stride));
+    //             }
+    //             else if (data->accessors[i].component_type == cgltf_component_type_r_16u)
+    //             {
+    //                 print("value: %u", *(Uint16*)(data->accessors[i].buffer_view->buffer->data + j * data->accessors[i].stride));
+    //             }
+    //             else if (data->accessors[i].component_type == cgltf_component_type_r_8u)
+    //             {
+    //                 print("value: %u", *(Uint8*)(data->accessors[i].buffer_view->buffer->data + j * data->accessors[i].stride));
+    //             }
+    //         }
+    //     }
+    // }
+
+//     cgltf_free(data);
+
+//     return true;
+// }
