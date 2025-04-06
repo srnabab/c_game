@@ -149,6 +149,16 @@ static bool resolutionChanged = false;
 
 static float mouse_x, mouse_y;
 
+static const Uint32 resolutions[][2] = {
+    {800, 600},
+    {1280, 720},
+    {1600, 900},
+    {1920, 1080},
+    {2560, 1440},
+    {3840, 2160},
+};
+static int resolutionIndex = 0;
+
 // Function to poll SDL events and process keyboard input
 bool process_input(void)
 {
@@ -224,10 +234,12 @@ bool process_input(void)
                 scene = Pause_Scene;
                 SDL_Delay(250);
 
+                resolutionIndex = (resolutionIndex + 1) % (sizeof(resolutions) / sizeof(resolutions[0]));
+
                 allInOne.pOldExtent2D->width = allInOne.pExtent2D->width;
                 allInOne.pOldExtent2D->height = allInOne.pExtent2D->height;
-                allInOne.pExtent2D->width = 1600;
-                allInOne.pExtent2D->height = 900;
+                allInOne.pExtent2D->width = resolutions[resolutionIndex][0];
+                allInOne.pExtent2D->height = resolutions[resolutionIndex][1];
                 
                 SDL_SetWindowSize(window_3D, allInOne.pExtent2D->width, allInOne.pExtent2D->height);
 

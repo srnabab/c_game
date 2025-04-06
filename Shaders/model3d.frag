@@ -93,7 +93,9 @@ void main()
     vec4 textureColor;
     if (ID == 1)
     {
-        textureColor = vec4(1.0, 0.0, 0.0, 1.0);
+        // textureColor = vec4(0.7, 0.8, 0.2, 1.0);
+        textureColor = texture(offscreenSampler, fragTexCoord);
+        // textureColor = vec4(fragTexCoord, 1.0, 1.0);
     }
     else
     {

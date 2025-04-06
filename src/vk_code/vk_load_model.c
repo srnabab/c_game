@@ -20,6 +20,11 @@
 
 extern G_SYNC allSync;
 
+static const vec2 positions[6] = {
+    {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 1.0f},\
+    {0.0f, 0.0f}, {1.0f, 1.0f}, {1.0f, 0.0f}
+};
+
 static void tinyobj_SDL_readFile(void *ctx, const char *filename, int is_mtl, const char *obj_filename, char **buf, size_t *len)
 {
     (void)ctx;
@@ -91,7 +96,8 @@ bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex4 * vert
 
     if (res == TINYOBJ_SUCCESS) 
     {
-        int i;
+        int i, groundTime, var;
+        groundTime = var = 0;
         if (attrib.num_vertices != attrib.num_texcoords)
         {
             for (i = 0;i < attrib.num_faces;i++)
@@ -114,10 +120,16 @@ bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex4 * vert
 
                 if (ground)
                 {
-                    float dot = glm_vec3_dot(vertices[vertexIndex].normal, (vec3){0.0f, 0.0f, 1.0f});
-                    if (SDL_abs(dot - 0.0f) < 0.0001f)
+                    float dot = glm_vec3_dot(vertices[vertexIndex].normal, (vec3){0.0f, 1.0f, 0.0f});
+                    if (dot > 0.9999f)
+                    // if (SDL_fabsf(vertices[vertexIndex].normal[0]) < 0.0001f && SDL_fabsf(vertices[vertexIndex].normal[2]) < 0.0001f && vertices[vertexIndex].normal[1] > 0.9999f)
                     {
                         vertices[vertexIndex].groupId = 1;
+
+                        vertices[vertexIndex].texCoord[0] = positions[(i + var * 3) % 6][0];
+                        vertices[vertexIndex].texCoord[1] = positions[(i + var * 3) % 6][1];
+                        groundTime++;
+                        if (groundTime % 3 == 0) var++;
                     }
                     else vertices[vertexIndex].groupId = 0;
                 }

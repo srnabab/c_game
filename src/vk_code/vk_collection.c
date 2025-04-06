@@ -345,13 +345,14 @@ bool CO_cleanFramebuffer(Uint32 count, VkFramebuffer * framebuffer)
             for (j = 0;j < count;j++)
             {
                 vkDestroyFramebuffer(CO.device, CO.frameBuffers[i + j], allInOne.pAllocationCallbacks);
-                CO.frameBuffers[i + j] = CO.frameBuffers[CO.frameBufferCount - 1];
-                CO.frameBufferCount--;
             }
+            memcpy(CO.frameBuffers + i, CO.frameBuffers + i + count, (CO.frameBufferCount - i - count) * sizeof(VkFramebuffer));
+            break;
         }
     }
 
     if (i == CO.frameBufferCount) return false;
+    CO.frameBufferCount -= count;
 
     for (i = 0;i < CO.frameBufferMemCount;i++)
     {
@@ -375,13 +376,14 @@ bool CO_cleanSwapchainImageView(Uint32 count, VkImageView * swapchainImageView)
             for (j = 0;j < count;j++)
             {
                 vkDestroyImageView(CO.device, CO.swapchainImageViews[i + j], allInOne.pAllocationCallbacks);
-                CO.swapchainImageViews[i + j] = CO.swapchainImageViews[CO.swapchainImageViewCount - 1];
-                CO.swapchainImageViewCount--;
             }
+            memcpy(CO.swapchainImageViews + i, CO.swapchainImageViews + i + count, (CO.swapchainImageViewCount - i - count) * sizeof(VkImageView));
+            break;
         }
     }
 
     if (i == CO.swapchainImageViewCount) return false;
+    CO.swapchainImageViewCount -= count;
 
     for (i = 0;i < CO.swapchainImageViewMemCount;i++)
     {

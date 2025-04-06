@@ -78,15 +78,15 @@ void recreateSwapchain(void)
 
 
     VkImageView modelImageViews[] = {modelColorTexture->imageView, modelNormalTexture->imageView, seprateShadowTexture->imageView, modelDepthTexutre->imageView};
-    // CO_cleanFramebuffer(2, *allInOne.ppDirectColorFramebuffer);
+    CO_cleanFramebuffer(2, *allInOne.ppDirectColorFramebuffer);
     createFrameBuffer(2, allInOne.pExtent2D->width, allInOne.pExtent2D->height, 4, modelImageViews, NULL, allInOne.pModelRenderPass, allInOne.ppDirectColorFramebuffer);
     CO_addFrameBuffer(2, *allInOne.ppDirectColorFramebuffer);// CO
 
-    // CO_cleanFramebuffer(oldImageCount3D, *allInOne.ppCombineFramebuffer);
+    CO_cleanFramebuffer(oldImageCount3D, *allInOne.ppCombineFramebuffer);
     createFrameBuffer(*allInOne.pImageCount3D, allInOne.pExtent2D->width, allInOne.pExtent2D->height, 1, NULL, *allInOne.ppSwapchain3DImageViews, allInOne.pCombineRenderPass, allInOne.ppCombineFramebuffer);
     CO_addFrameBuffer(*allInOne.pImageCount3D, *allInOne.ppCombineFramebuffer);// CO
 
-    // CO_cleanFramebuffer(oldImageCount3D, *allInOne.ppGraphic2dFramebuffer);
+    CO_cleanFramebuffer(oldImageCount3D, *allInOne.ppGraphic2dFramebuffer);
     createFrameBuffer(*allInOne.pImageCount3D, allInOne.pExtent2D->width, allInOne.pExtent2D->height, 1, NULL, *allInOne.ppSwapchain3DImageViews, allInOne.pRenderPass, allInOne.ppGraphic2dFramebuffer);
     CO_addFrameBuffer(*allInOne.pImageCount3D, *allInOne.ppGraphic2dFramebuffer);// CO
  
