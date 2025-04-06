@@ -20,6 +20,7 @@
 
 extern G_SYNC allSync;
 
+// It's to get a UV coordinate for a single quad
 static const vec2 positions[6] = {
     {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 1.0f},\
     {0.0f, 0.0f}, {1.0f, 1.0f}, {1.0f, 0.0f}
