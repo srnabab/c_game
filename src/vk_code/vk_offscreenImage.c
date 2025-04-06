@@ -1,7 +1,24 @@
 #include "vk_code_h/vk_offscreenImage.h"
 #include "vk_code_h/vk_drawTool.h"
+#include "vk_code_h/vk_all_struct.h"
 
-VkResult drawImageView(Uint32 width, Uint32 height, VkImageView imageView, VkCommandBuffer commandBuffer, VkRenderPass renderPass, VkFramebuffer framebuffer)
+extern VK_ALL allInOne;
+
+VkImageView drawSingleImageView(Uint32 width, Uint32 height, const char * innerName, VkCommandBuffer commandBuffer, VkRenderPass renderPass, VkPipeline pipeline, VkPipelineLayout pipelineLayout, Uint32 currentFrame)
+{
+    Uint32 frameBufferIndex = getFreeFramebufferIndex();
+    VkFramebuffer frameBuffer = getFrameBuffer(frameBufferIndex);
+
+    drawImageView(width, height, innerName, commandBuffer, renderPass, framebuffer, pipeline, pipelineLayout);
+    vkEndCommandBuffer(commandBuffer);
+
+    VkSubmitInfo submitInfo = {};
+    setSubmitInfo(NULL, 0, NULL, NULL, 1, &commandBuffer, 1, (*allInOne.ppTimelineSemaphore1) + currentFrame, &submitInfo);
+    vkQueueSubmit(*allInOne.pGraphicQueue, 1, &submitInfo, NULL);
+
+    return getFrameBufferImageView(frameBufferIndex);
+}
+VkResult drawImageView(Uint32 width, Uint32 height, const char * innerName, VkCommandBuffer commandBuffer, VkRenderPass renderPass, VkFramebuffer framebuffer, VkPipeline pipeline, VkPipelineLayout pipelineLayout)
 {
     VkResult result = VK_SUCCESS;
     result = beginCommandBuffer(commandBuffer);
@@ -27,9 +44,9 @@ VkResult drawImageView(Uint32 width, Uint32 height, VkImageView imageView, VkCom
 
     vkCmdBeginRenderPass(commandBuffer, &renderBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pCombine2DPipeline);
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
-    // drawPic(innerName, )
+    drawPic(innerName, 0, commandBuffer, pipelineLayout);
 
     vkCmdEndRenderPass(commandBuffer);
     

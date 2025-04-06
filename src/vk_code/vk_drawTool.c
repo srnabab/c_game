@@ -37,12 +37,25 @@ void setScissor(VkExtent2D extent2D, VkCommandBuffer commandBuffer)
 
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 }
-void drawPic(const char * innerName, Uint32 currentFrame, VkCommandBuffer commandBuffer)
+void setSubmitInfo(void * pNext, Uint32 waitSeamphoreCount, const VkSemaphore * pWaitSemaphores, VkPipelineStageFlagBits * pWaitDstStageMask, Uint32 commandBufferCount\
+, VkCommandBuffer * pCommadnBuffers, Uint32 singnalSemaphoreCount, const VkSemaphore * pSignalSemaphores, VkSubmitInfo * pSubmitInfo)
+{
+    pSubmitInfo->sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    pSubmitInfo->pNext = pNext;
+    pSubmitInfo->waitSemaphoreCount = waitSeamphoreCount;
+    pSubmitInfo->pWaitSemaphores = pWaitSemaphores;
+    pSubmitInfo->pWaitDstStageMask = pWaitDstStageMask;
+    pSubmitInfo->commandBufferCount = commandBufferCount;
+    pSubmitInfo->pCommandBuffers = pCommadnBuffers;
+    pSubmitInfo->signalSemaphoreCount = singnalSemaphoreCount;
+    pSubmitInfo->pSignalSemaphores = pSignalSemaphores;
+}
+void drawPic(const char * innerName, Uint32 currentFrame, VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout)
 {
     G_Texture_P * tempTexture = getTexture(innerName);
     if (tempTexture == NULL) return;
 
-    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pGraphicPipelineLayout, 0,
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0,
     1, tempTexture->pDescriptorSet + currentFrame, 0, NULL);
 
     SDL_LockMutex(allSync.renderMutex);

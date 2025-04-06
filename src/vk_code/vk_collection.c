@@ -335,6 +335,96 @@ bool CO_addFence(VkFence fence)
 
     return true;
 }
+bool CO_cleanFramebuffer(Uint32 count, VkFramebuffer * framebuffer)
+{
+    Uint32 i, j;
+    for (i = 0;i < CO.frameBufferCount;i++)
+    {
+        if (CO.frameBuffers[i] == *framebuffer)
+        {
+            for (j = 0;j < count;j++)
+            {
+                vkDestroyFramebuffer(CO.device, CO.frameBuffers[i + j], allInOne.pAllocationCallbacks);
+                CO.frameBuffers[i + j] = CO.frameBuffers[CO.frameBufferCount - 1];
+                CO.frameBufferCount--;
+            }
+        }
+    }
+
+    if (i == CO.frameBufferCount) return false;
+
+    for (i = 0;i < CO.frameBufferMemCount;i++)
+    {
+        if (CO.frameBufferMem[i] == framebuffer)
+        {
+            SDL_free(CO.frameBufferMem[i]);
+            CO.frameBufferMem[i] = CO.frameBufferMem[CO.frameBufferMemCount - 1];
+            CO.frameBufferMemCount--;
+            return true;
+        }
+    }
+    return false;
+}
+bool CO_cleanSwapchainImageView(Uint32 count, VkImageView * swapchainImageView)
+{
+    Uint32 i, j;
+    for (i = 0;i < CO.swapchainImageViewCount;i++)
+    {
+        if (CO.swapchainImageViews[i] == *swapchainImageView)
+        {
+            for (j = 0;j < count;j++)
+            {
+                vkDestroyImageView(CO.device, CO.swapchainImageViews[i + j], allInOne.pAllocationCallbacks);
+                CO.swapchainImageViews[i + j] = CO.swapchainImageViews[CO.swapchainImageViewCount - 1];
+                CO.swapchainImageViewCount--;
+            }
+        }
+    }
+
+    if (i == CO.swapchainImageViewCount) return false;
+
+    for (i = 0;i < CO.swapchainImageViewMemCount;i++)
+    {
+        if (CO.swapchainImageViewMem[i] == swapchainImageView)
+        {
+            SDL_free(CO.swapchainImageViewMem[i]);
+            CO.swapchainImageViewMem[i] = CO.swapchainImageViewMem[CO.swapchainImageViewMemCount - 1];
+            CO.swapchainImageViewMemCount--;
+            return true;
+        }
+    }
+    return false;
+}
+bool CO_cleanSwapchainImage(void * imageMem)
+{
+    Uint32 i;
+    for (i = 0;i < CO.swapchainImageMemCount;i++)
+    {
+        if (CO.swapchainImageMem[i] == imageMem)
+        {
+            SDL_free(CO.swapchainImageMem[i]);
+            CO.swapchainImageMem[i] = CO.swapchainImageMem[CO.swapchainImageMemCount - 1];
+            CO.swapchainImageMemCount--;
+            return true;
+        }
+    }
+    return false;
+}
+bool CO_cleanSwapchain(VkSwapchainKHR swapchain)
+{
+    Uint32 i;
+    for (i = 0;i < CO.swapchainCount;i++)
+    {
+        if (CO.swapchains[i] == swapchain)
+        {
+            vkDestroySwapchainKHR(CO.device, CO.swapchains[i], allInOne.pAllocationCallbacks);
+            CO.swapchains[i] = CO.swapchains[CO.swapchainCount - 1];
+            CO.swapchainCount--;
+            return true;
+        }
+    }
+    return false;
+}
 void CO_CleanAllVkResource(void)
 {
     Uint32 i;

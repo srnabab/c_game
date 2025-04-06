@@ -222,7 +222,7 @@ bool process_input(void)
             {
                 preScene = scene;
                 scene = Pause_Scene;
-                SDL_Delay(50);
+                SDL_Delay(250);
 
                 allInOne.pOldExtent2D->width = allInOne.pExtent2D->width;
                 allInOne.pOldExtent2D->height = allInOne.pExtent2D->height;
@@ -550,9 +550,12 @@ int update(void * arg)
     tileMapVertexInit(allInOne.pVertices2DCount, *allInOne.ppVertices2D);
     addModelMatrix(0, 0, 8, allInOne.pStaticModelPool, TEXTURE_MODEL);
     addModelMatrix(100, 0, 8, allInOne.pStaticModelPool, TEXTURE_MODEL);
-    addModelMatrix(0, 100, 8, allInOne.pStaticModelPool, TEXTURE_MODEL);
-    addModelMatrix(100, 100, 8, allInOne.pStaticModelPool, TEXTURE_MODEL);
-    addModelMatrix(0, 0, -1, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
+    addModelMatrix(0, 100 / HEIGHT_FACTOR, 8, allInOne.pStaticModelPool, TEXTURE_MODEL);
+    addModelMatrix(100, 100 / HEIGHT_FACTOR, 8, allInOne.pStaticModelPool, TEXTURE_MODEL);
+
+    addModelMatrix(0, 100 / HEIGHT_FACTOR, -1, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
+    addModelMatrix(-800, 100 / HEIGHT_FACTOR, -1, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
+    addModelMatrix(0, 900 / HEIGHT_FACTOR, -1, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
         
     SDL_Delay(300);
     

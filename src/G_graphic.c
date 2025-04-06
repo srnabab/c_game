@@ -421,6 +421,9 @@ static void initializeAllInOne(void)
     allInOne.pStaticModelPool = &staticModelPool;
 
     allInOne.pTextureSampler = &textureSampler;
+    allInOne.pNormalSampler = &normalSampler;
+    allInOne.pDepthSampler = &depthSampler;
+    allInOne.pShadowSampler = &shadowSampler;
 
     allInOne.ppGraphicUniformBuffer = &graphicUniformBuffers;
     allInOne.pppGraphicUniformBufferMapped = &graphicUniformBufferMapped;
@@ -574,8 +577,6 @@ void initVulkan(void)
     VkImageView modelImageViews[] = {modelColorTexture->imageView, modelNormalTexture->imageView, seprateShadowTexture->imageView, modelDepthTexutre->imageView};
     createFrameBuffer(2, allInOne.pExtent2D->width, allInOne.pExtent2D->height, 4, modelImageViews, NULL, &modelRenderPass, &directColorFramebuffer);
     CO_addFrameBuffer(2, directColorFramebuffer);// CO
-
-    loadImageResource(swapchainFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_UNDEFINED, TEXTURE_COMBINE_COLOR, NULL);
 
     createCombineRenderPass(swapchainFormat, &combineRenderPass);
     CO_addRenderPass(combineRenderPass);// CO

@@ -123,6 +123,9 @@ struct _VK_ALL
     G_StaticModelPool * pStaticModelPool;
 
     VkSampler * pTextureSampler;
+    VkSampler * pNormalSampler;
+    VkSampler * pDepthSampler;
+    VkSampler * pShadowSampler;
 
     VkBuffer (*ppGraphicUniformBuffer)[MAX_FRAMES_IN_FLIGHT];
     void * (*pppGraphicUniformBufferMapped)[MAX_FRAMES_IN_FLIGHT];

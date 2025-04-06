@@ -77,7 +77,7 @@ static void recordCommandBuffer2D(Uint32 imageIndex)
     // drawPic(TEXTURE_TILE_SET, currentFrame, currentCommandBuffer);
 
     //loading1 png
-    drawPic(TEXTURE_LOADING, currentFrame, currentCommandBuffer);
+    drawPic(TEXTURE_LOADING, currentFrame, currentCommandBuffer, *allInOne.pGraphicPipelineLayout);
 
     //circle
     // drawPic(TEXTURE_CIRCLE, currentFrame, currentCommandBuffer);
@@ -86,7 +86,7 @@ static void recordCommandBuffer2D(Uint32 imageIndex)
     // drawPic(TEXTURE_BOX, currentFrame, currentCommandBuffer);
 
     // main font png
-    drawPic(TEXTURE_FONT, currentFrame, currentCommandBuffer);
+    drawPic(TEXTURE_FONT, currentFrame, currentCommandBuffer, *allInOne.pGraphicPipelineLayout);
 
     vkCmdBindPipeline(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pParticlePipeline);
 
@@ -289,19 +289,6 @@ static void recordCommandBufferCombine(Uint32 imageIndex)
     vkCmdDraw(currentCommandBuffer, 6, 1, 0, 0);
 
     vkCmdEndRenderPass(currentCommandBuffer);
-}
-static void setSubmitInfo(void * pNext, Uint32 waitSeamphoreCount, const VkSemaphore * pWaitSemaphores, VkPipelineStageFlagBits * pWaitDstStageMask, Uint32 commandBufferCount\
-, VkCommandBuffer * pCommadnBuffers, Uint32 singnalSemaphoreCount, const VkSemaphore * pSignalSemaphores, VkSubmitInfo * pSubmitInfo)
-{
-    pSubmitInfo->sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    pSubmitInfo->pNext = pNext;
-    pSubmitInfo->waitSemaphoreCount = waitSeamphoreCount;
-    pSubmitInfo->pWaitSemaphores = pWaitSemaphores;
-    pSubmitInfo->pWaitDstStageMask = pWaitDstStageMask;
-    pSubmitInfo->commandBufferCount = commandBufferCount;
-    pSubmitInfo->pCommandBuffers = pCommadnBuffers;
-    pSubmitInfo->signalSemaphoreCount = singnalSemaphoreCount;
-    pSubmitInfo->pSignalSemaphores = pSignalSemaphores;
 }
 static void drawFirstScene(void)
 {

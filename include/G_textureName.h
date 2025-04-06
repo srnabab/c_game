@@ -16,6 +16,5 @@
 #define TEXTURE_SHADOW_MAP "shadowMap"
 #define TEXTURE_2D_COLOR "color2d"
 #define TEXTURE_BOX "box"
-#define TEXTURE_COMBINE_COLOR "combineColor"
 
 #endif

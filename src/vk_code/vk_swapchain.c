@@ -116,11 +116,6 @@ void getSwapchainNumber(VkSwapchainKHR swapchain, Uint32 * pImageCount)
 }
 void createSwapchainImage(VkSwapchainKHR swapchain, Uint32 * pImageCount, VkImage ** ppSwapchainImages)
 {
-    if (*ppSwapchainImages != NULL)
-    {
-        SDL_free(*ppSwapchainImages);
-        *ppSwapchainImages = NULL;
-    }
     *ppSwapchainImages = (VkImage *)SDL_malloc(*pImageCount * sizeof(VkImage));
     resultVulkan(vkGetSwapchainImagesKHR(*allInOne.pDevice, swapchain, pImageCount, *ppSwapchainImages), 0);
 }

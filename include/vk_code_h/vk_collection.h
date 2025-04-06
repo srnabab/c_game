@@ -104,6 +104,10 @@ extern bool SDLCALL CO_addBuffer(bool mapped, VkBuffer buffer, VkDeviceMemory bu
 extern bool SDLCALL CO_addDescriptorPool(VkDescriptorPool descriptorPool);
 extern bool SDLCALL CO_addSemaphore(VkSemaphore semaphore);
 extern bool SDLCALL CO_addFence(VkFence fence);
+extern bool SDLCALL CO_cleanFramebuffer(Uint32 count, VkFramebuffer * framebuffer);
+extern bool SDLCALL CO_cleanSwapchainImageView(Uint32 count, VkImageView * swapchainImageView);
+extern bool SDLCALL CO_cleanSwapchainImage(void * imageMem);
+extern bool SDLCALL CO_cleanSwapchain(VkSwapchainKHR swapchain);
 extern void SDLCALL CO_CleanAllVkResource(void);
 
 #include "SDL3/SDL_close_code.h"
