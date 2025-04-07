@@ -149,6 +149,7 @@ static VkFramebuffer * combineFrameBuffer = NULL;
 static VkPipelineShaderStageCreateInfo * graphciShaderStageCreateInfo = NULL;
 
 static VkPipelineShaderStageCreateInfo * modelShaderStageCreateInfo = NULL;
+static VkPipelineShaderStageCreateInfo * bottomShaderStageCreateInfo = NULL;
 static VkPipelineShaderStageCreateInfo * shadowShaderStageCreateInfo = NULL;
 
 static VkPipelineShaderStageCreateInfo * particleShaderStageCreateInfo = NULL;
@@ -162,6 +163,7 @@ static VkPipelineShaderStageCreateInfo * combineShaderStageCreateInfo = NULL;
 static VkDescriptorSetLayout * graphicDescriptorSetLayout = NULL;
 
 static VkDescriptorSetLayout * modelDescriptorSetLayout = NULL;
+static VkDescriptorSetLayout * bottomDescriptorSetLayout = NULL;
 static VkDescriptorSetLayout * shadowDescriptorSetLayout = NULL;
 
 static VkDescriptorSetLayout * particleDescriptorSetLayout = NULL;
@@ -180,6 +182,7 @@ static VkPipelineLayout computePipelineLayout = NULL;
 static VkRenderPass renderPass = NULL;
 
 static VkPipelineLayout modelPipelineLayout = NULL;
+static VkPipelineLayout bottomPipelineLayout = NULL;
 static VkRenderPass modelRenderPass = NULL;
 
 static VkPipelineLayout shadwoPipelineLayout = NULL;
@@ -195,6 +198,7 @@ static VkPipeline particlePipeline = NULL;
 static VkPipeline computePipeline = NULL;
 
 static VkPipeline modelPipeline = NULL;
+static VkPipeline bottomPipeline = NULL;
 static VkPipeline shadowPipeline = NULL;
 static VkPipeline SSGIPipeline = NULL;
 static VkPipeline combinePipeline = NULL;
@@ -271,6 +275,7 @@ static LightSpace lightSpaceubo = {};
 static VkDescriptorPool graphicDescriptorPool = NULL;
 static VkDescriptorSet * graphicDescriptorSets = NULL;
 static VkDescriptorSet * modelDescriptorSets = NULL;
+static VkDescriptorSet * bottomDescriptorSets = NULL;
 
 static VkDescriptorSet * particleDescriptorSets = NULL;
 
@@ -367,6 +372,9 @@ static void initializeAllInOne(void)
 
     allInOne.pModelPipelineLayout = &modelPipelineLayout;
     allInOne.pModelPipeline = &modelPipeline;
+
+    allInOne.pBottomPipelineLayout = &bottomPipelineLayout;
+    allInOne.pBottomPipeline = &bottomPipeline;
 
     allInOne.pShadowPipelineLayout = &shadwoPipelineLayout;
     allInOne.pShadowPipeline = &shadowPipeline;
@@ -661,7 +669,7 @@ void initVulkan(void)
     graphicDescriptorPoolSize[0].descriptorCount = 16;
     graphicDescriptorPoolSize[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     graphicDescriptorPoolSize[1].descriptorCount = 26;
-    createDescriptorPool(&device, 2, graphicDescriptorPoolSize, 22, &graphicDescriptorPool);
+    createDescriptorPool(&device, 2, graphicDescriptorPoolSize, 24, &graphicDescriptorPool);
     CO_addDescriptorPool(graphicDescriptorPool);// CO
 
     //graphic shader
@@ -675,9 +683,17 @@ void initVulkan(void)
     PathType modelTypes[] = {Model3dVertShader, Model3dFragShader};
     VkShaderModule * modelTempModule = NULL;
     Uint32 modelSetCount = CreateShaderModulesAndDescriptorSets(modelTypes, 2, &modelTempModule, &modelShaderStageCreateInfo, &modelDescriptorSetLayout, &modelPipelineLayout);
-    createDescriptorSets(&graphicDescriptorPool, modelDescriptorSetLayout, modelSetCount, 2, &modelDescriptorSets);
+    createDescriptorSets(&graphicDescriptorPool, modelDescriptorSetLayout, modelSetCount, 1, &modelDescriptorSets);
     createModelPipeline(extent2D, 2, modelShaderStageCreateInfo, modelPipelineLayout, modelRenderPass, &modelPipeline);
 
+    // 3d bottom shader
+    PathType bottomTypes[] = {Model3dVertShader, ModelBottomFragShader};
+    VkShaderModule * bottomTempModule = NULL;
+    Uint32 bottomSetCount = CreateShaderModulesAndDescriptorSets(bottomTypes, 2, &bottomTempModule, &bottomShaderStageCreateInfo, &bottomDescriptorSetLayout, &bottomPipelineLayout);
+    createDescriptorSets(&graphicDescriptorPool, bottomDescriptorSetLayout, bottomSetCount, 1, &bottomDescriptorSets);
+    createModelPipeline(extent2D, 2, bottomShaderStageCreateInfo, bottomPipelineLayout, modelRenderPass, &bottomPipeline);
+
+    // particle shader
     PathType particleTypes[] = {ParticleVertShader, ParticleFragShader};
     VkShaderModule * particleTempModule = NULL;
     Uint32 particleSetCount = CreateShaderModulesAndDescriptorSets(particleTypes, 2, &particleTempModule, &particleShaderStageCreateInfo, &particleDescriptorSetLayout, &particlePipelineLayout);
@@ -753,7 +769,7 @@ void initVulkan(void)
     CO_addFence(computeInFlightFences[0]);// CO
     CO_addFence(computeInFlightFences[1]);// CO
     
-    loadTileSet(TileSet1Png, TileSet1Tsd, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_TILE_SET, modelDescriptorSets + 2);
+    loadTileSet(TileSet1Png, TileSet1Tsd, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_TILE_SET, bottomDescriptorSets + 2);
     // loadTileMap(TileMap1TsdI, -400, -500, TEXTURE_TILE_SET);
     // loadTileMap(TileMap1TsdI, -1200, -1100, TEXTURE_TILE_SET);
     // loadTileMap(TileMap1TsdI, -1200, -300, TEXTURE_TILE_SET);
@@ -763,9 +779,9 @@ void initVulkan(void)
     // loadTileMap(TileMap1TsdI, 400, -300, TEXTURE_TILE_SET);
     // loadTileMap(TileMap1TsdI, 400, -1100, TEXTURE_TILE_SET);
     // loadTileMap(TileMap1TsdI, -400, -1100, TEXTURE_TILE_SET);
-    createStaticModelPool(&staticModelPool, 20);
+    createStaticModelPool(&staticModelPool, 58);
     loadStaticModel(&staticModelPool, 10, BoxObj, BoxPng, vertices3D, &vertices3DCount, indices3D, &indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_MODEL, modelDescriptorSets, false);
-    loadStaticModel(&staticModelPool, 10, BottomObj, BottomPng, vertices3D, &vertices3DCount, indices3D, &indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_BOTTOM, modelDescriptorSets + 2, true);
+    loadStaticModel(&staticModelPool, 48, BottomObj, BottomPng, vertices3D, &vertices3DCount, indices3D, &indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_BOTTOM, bottomDescriptorSets, true);
 
     loadImageResource(VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_GENERAL, TEXTURE_SSGI_STORAGE_IMAGE, SSGIDescriptorSets + 2);
 
@@ -827,8 +843,6 @@ void initVulkan(void)
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2, TEXTURE_SHADOW, shadowSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     addDescriptorSetToTexture(TEXTURE_SHADOW, bottomTexture->pDescriptorSet);
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2, TEXTURE_SHADOW, shadowSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4, TEXTURE_TILE_SET, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    addDescriptorSetToTexture(TEXTURE_TILE_SET, modelTexture->pDescriptorSet);
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4, TEXTURE_TILE_SET, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     // SSGI

@@ -37,7 +37,7 @@ add_custom_command(
     COMMENT "Generate PATH"
     VERBATIM
 )
-add_custom_target(GeneratePath DEPENDS "${RUN_ROOT}/Path")
+add_custom_target(GeneratePath ALL DEPENDS "${RUN_ROOT}/Path")
 
 add_custom_command(
     OUTPUT ${SRC_ROOT}/file/generated_function.c ${INCLUDE_ROOT}/file/generated_function.h
@@ -45,7 +45,7 @@ add_custom_command(
     COMMENT "Running Python script to generate code..."
     VERBATIM
 )
-add_custom_target(GenerateCode
+add_custom_target(GenerateCode ALL
     DEPENDS ${SRC_ROOT}/file/generated_function.c ${INCLUDE_ROOT}/file/generated_function.h
 )
 

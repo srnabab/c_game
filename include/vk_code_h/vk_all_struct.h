@@ -62,6 +62,9 @@ struct _VK_ALL
     VkPipelineLayout * pModelPipelineLayout;
     VkPipeline * pModelPipeline;
 
+    VkPipelineLayout * pBottomPipelineLayout;
+    VkPipeline * pBottomPipeline;
+
     VkPipelineLayout * pShadowPipelineLayout;
     VkPipeline * pShadowPipeline;
 

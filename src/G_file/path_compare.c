@@ -110,6 +110,10 @@ PathType pathCompare(char * buffer)
     {
         return Model3dFragShader;
     }
+    else if ((SDL_strcmp(buffer, "[ModelBottomFragShader]") == 0))
+    {
+        return ModelBottomFragShader;
+    }
     else if ((SDL_strcmp(buffer, "[Viking_roomPng]") == 0))
     {
         return Viking_roomPng;
@@ -157,14 +161,6 @@ PathType pathCompare(char * buffer)
     else if ((SDL_strcmp(buffer, "[Spirv_reflectExe]") == 0))
     {
         return Spirv_reflectExe;
-    }
-    else if ((SDL_strcmp(buffer, "[StartFragShader]") == 0))
-    {
-        return StartFragShader;
-    }
-    else if ((SDL_strcmp(buffer, "[StartVertShader]") == 0))
-    {
-        return StartVertShader;
     }
     else if ((SDL_strcmp(buffer, "[TriangleFragShader]") == 0))
     {

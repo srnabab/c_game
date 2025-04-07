@@ -210,7 +210,6 @@ static void recordCommandBuffer_3D(void)
 
     vkCmdBeginRenderPass(currentCommandBuffer, &renderBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-    vkCmdBindPipeline(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pModelPipeline);
 
     VkBuffer vertex3DBuffer[] = {(*allInOne.pVertexBuffer3D)[currentFrame], allInOne.pStaticModelPool->instanceBuffer[0], allInOne.pStaticModelPool->instanceBuffer[0]};
     VkDeviceSize offsets[] = {0, 0, allInOne.pStaticModelPool->totalInstanceCount * sizeof(mat4)};
@@ -219,9 +218,13 @@ static void recordCommandBuffer_3D(void)
     vkCmdBindIndexBuffer(currentCommandBuffer, (*allInOne.pIndexBuffer3D)[currentFrame], 0, VK_INDEX_TYPE_UINT32);
 
     // model
-    drawModel(TEXTURE_BOTTOM, currentFrame, currentCommandBuffer);
+    vkCmdBindPipeline(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pBottomPipeline);
 
-    drawModel(TEXTURE_MODEL, currentFrame, currentCommandBuffer);
+    drawModel(TEXTURE_BOTTOM, currentFrame, currentCommandBuffer, true);
+
+    vkCmdBindPipeline(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pModelPipeline);
+
+    drawModel(TEXTURE_MODEL, currentFrame, currentCommandBuffer, false);
 
     vkCmdEndRenderPass(currentCommandBuffer);
 }

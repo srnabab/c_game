@@ -11,6 +11,9 @@ layout(set = 0, binding = 3) uniform directionLight
     float lightIntensity;
 } sun;
 
+// layout(set = 1, binding = 4) uniform sampler2DArray offscreenSamplers;
+layout(set = 1, binding = 4) uniform sampler2D offscreenSamplers;
+
 layout(location = 0) in vec3 fragColor;
 layout(location = 1) in vec2 fragTexCoord;
 layout(location = 2) in vec3 inWorldPos;
@@ -33,31 +36,24 @@ float shadowFactor(vec3 N, float NdotL)
     vec4 fragPosLightSpace = sun.lightSapceMatrix * vec4(offsetWorldPos, 1.0);
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
     vec2 shadowCoord = projCoords.xy * 0.5 + 0.5;
-    // shadowCoord.y = 1.0 - shadowCoord.y;
     float currentDepth = projCoords.z;
 
     float bias = max(0.05 * (1.0 - NdotL), shadowBias);
 
     vec2 texelSize = 1.0 / textureSize(shadowSampler, 0);
-    // 2. 获取纹理像素大小，用于计算偏移
 
-    // 3. 循环采样周围区域
     float shadow = 0.0;
     for (int x = -1; x <= 1; ++x) 
     {
         for (int y = -1; y <= 1; ++y) 
         {
-            // 计算采样点的 UV 坐标
             vec2 offset = vec2(x, y) * texelSize * pcfRadius;
             vec2 sampleUV = shadowCoord + offset;
 
-            // 检查UV是否越界 (可选但推荐)
             if (sampleUV.x >= 0.0 && sampleUV.x <= 1.0 && sampleUV.y >= 0.0 && sampleUV.y <= 1.0) 
             {
-                // 4. 读取阴影图深度
                 float shadowMapDepth = texture(shadowSampler, vec3(sampleUV, currentDepth));
 
-                // 5. 进行深度比较
                 if (currentDepth <= shadowMapDepth + bias) 
                 {
                     shadow += 1.0;
@@ -65,13 +61,11 @@ float shadowFactor(vec3 N, float NdotL)
             } 
             else 
             {
-                // 处理边界外情况，可以认为不在阴影内
                 shadow += 1.0;
             }
         }
     }
 
-    // 6. 计算百分比
     shadow /= float(pcfSamples);
 
     float minShadowIntensity = 0.1;
@@ -88,9 +82,16 @@ void main()
 
     float shadow = shadowFactor(N, NdotL);
 
-    // vec3 albedoColor = fragColor;
     vec4 textureColor;
-    textureColor = texture(texSampler, fragTexCoord);
+    if (ID == 1)
+    {
+        // textureColor = texture(offscreenSamplers, vec3(fragTexCoord, float(instanceIndex)));
+        textureColor = texture(offscreenSamplers, vec2(fragTexCoord));
+    }
+    else
+    {
+        textureColor = texture(texSampler, fragTexCoord);
+    }
 
 
     vec3 diffuse = textureColor.rgb * sun.lightColor * sun.lightIntensity * NdotL;
@@ -106,18 +107,6 @@ void main()
     outNormalBuffer = vec4(inWorldNormal, 1.0);
 
     outShadowFactor = shadow * NdotL * sun.lightIntensity;
-    // outShadowFactor = shadow;
-    // outShadowFactor = 1.0;
 
     outColor = vec4(finalColor, textureColor.a);
-    // outColor = textureColor;
-    // outColor = vec4(fragPosLightSpace);
-    // outColor = vec4(projCoords, 1.0);
-    // outColor = vec4(shadowMapMinDepth);
-    // outColor = vec4(vec3(bias), 1.0);
-    // outColor = vec4(vec3(inWorldPos), 1.0);
-    // outColor = vec4(vec3(currentDepth), 1.0);
-    // outColor = vec4(textureColor.rgb * sun.lightIntensity, 1.0);
-    // outColor = vec4(vec3(NdotL), 1.0);// debug
-    // outColor = vec4(L * 0.5 + 0.5, 1.0);// debug
 }

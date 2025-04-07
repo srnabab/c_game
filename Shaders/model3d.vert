@@ -21,6 +21,7 @@ layout(location = 1) out vec2 fragTexCoord;
 layout(location = 2) out vec3 outWorldPos;
 layout(location = 3) out vec3 outWorldNormal;
 layout(location = 4) out uint outID;
+layout(location = 5) out int instanceIndex;
 
 void main() 
 {
@@ -31,6 +32,7 @@ void main()
     fragColor = inColor;
     fragTexCoord = inTexCoord;
     outID = ID;
+    instanceIndex = gl_InstanceIndex;
 
     gl_Position = ubo.proj * ubo.view * inModelMatrix * vec4(inPosition, 1.0);
 }
