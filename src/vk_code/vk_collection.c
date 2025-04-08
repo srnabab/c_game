@@ -309,6 +309,19 @@ bool CO_addBuffer(bool mapped, VkBuffer buffer, VkDeviceMemory bufferMemory, voi
 
     return true;
 }
+bool CO_addImageView(VkImageView imageView)
+{
+    void * ptr;
+    ptr = SDL_realloc(CO.imageViews, (CO.imageViewCount + 1) * sizeof(VkImageView));
+    if (ptr == NULL) return false;
+
+    CO.imageViews = ptr;
+
+    CO.imageViews[CO.imageViewCount] = imageView;
+    CO.imageViewCount++;
+
+    return true;
+}
 bool CO_addSemaphore(VkSemaphore semaphore)
 {
     void * ptr;
@@ -447,6 +460,17 @@ void CO_CleanAllVkResource(void)
             SDL_free(CO.buffers);
             CO.buffers = NULL;
             CO.bufferCount = 0;
+        }
+
+        if (CO.imageViewCount)
+        {
+            for (i = 0;i < CO.imageViewCount;i++)
+            {
+                vkDestroyImageView(CO.device, CO.imageViews[i], allInOne.pAllocationCallbacks);
+            }
+            SDL_free(CO.imageViews);
+            CO.imageViews = NULL;
+            CO.imageViewCount = 0;
         }
 
         if (CO.swapchainCount)

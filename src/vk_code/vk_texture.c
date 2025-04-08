@@ -66,11 +66,11 @@ void createTextureImageFromMem(void * pixels, Uint32 width, Uint32 height, VkDev
 
     createImage(width, height, format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, pTextureImage, pTextureImageMem);
 
-    transitionImageLayout(*pTextureImage, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    transitionImageLayout(*pTextureImage, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, 1);
     copyBufferToImage(pTextureImage, width, height, &stagingBuffer);
 
-    transitionImageLayout(*pTextureImage, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    
+    transitionImageLayout(*pTextureImage, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 1);
+
     vkDestroyBuffer(*allInOne.pDevice, stagingBuffer, allInOne.pAllocationCallbacks);
     vkFreeMemory(*allInOne.pDevice, stagingBufferMemory, allInOne.pAllocationCallbacks);
 }
@@ -126,7 +126,7 @@ VkResult copyBufferToImage(VkImage * pImage, Uint32 width, Uint32 height, VkBuff
 }
 void createTextureImageView(VkImage * pTextureImage, VkFormat format, VkImageAspectFlags aspectFlags, VkImageView * pTextureImageView)
 {
-    resultVulkan(createImageView(pTextureImage, format, aspectFlags, pTextureImageView), 0);
+    resultVulkan(createImageView(*pTextureImage, format, aspectFlags, pTextureImageView), 0);
 }
 // png_bytep readPNG(PathType type, Uint32 * pWidth, Uint32 * pHeight, Uint8 * pChannel)
 // {

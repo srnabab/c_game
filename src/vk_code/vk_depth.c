@@ -23,7 +23,7 @@ VkFormat createDepthResoures(VkImage * pDepthImage, VkDeviceMemory * pDepthImage
     
     resultVulkan(createImage(allInOne.pExtent2D->width, allInOne.pExtent2D->height, depthFormat, VK_IMAGE_TILING_OPTIMAL, usage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, pDepthImage, pDepthImageMem), 0);
 
-    resultVulkan(createImageView(pDepthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, pDepthImageView), 0);
+    resultVulkan(createImageView(*pDepthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, pDepthImageView), 0);
 
     // resultVulkan(transitionImageLayout(pDepthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL), 0);
 

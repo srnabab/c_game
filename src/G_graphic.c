@@ -144,6 +144,7 @@ static VkFramebuffer * graphic2DFramebuffer = NULL;
 
 static VkFramebuffer * shadowFrameBuffer = NULL;
 static VkFramebuffer * directColorFramebuffer = NULL;
+static VkFramebuffer * bottomImageArrayFramebuffers = NULL;
 static VkFramebuffer * combineFrameBuffer = NULL;
 
 static VkPipelineShaderStageCreateInfo * graphciShaderStageCreateInfo = NULL;
@@ -184,6 +185,7 @@ static VkRenderPass renderPass = NULL;
 static VkPipelineLayout modelPipelineLayout = NULL;
 static VkPipelineLayout bottomPipelineLayout = NULL;
 static VkRenderPass modelRenderPass = NULL;
+static VkRenderPass offscreenRenderPass = NULL;
 
 static VkPipelineLayout shadwoPipelineLayout = NULL;
 static VkRenderPass shadowRenderPass = NULL;
@@ -358,6 +360,7 @@ static void initializeAllInOne(void)
 
     allInOne.pRenderPass = &renderPass;
     allInOne.pModelRenderPass = &modelRenderPass;
+    allInOne.pOffscreenRenderPass = &offscreenRenderPass;
     allInOne.pShadowRenderPass = &shadowRenderPass;
     allInOne.pCombineRenderPass = &combineRenderPass;
 
@@ -586,6 +589,9 @@ void initVulkan(void)
     createFrameBuffer(2, allInOne.pExtent2D->width, allInOne.pExtent2D->height, 4, modelImageViews, NULL, &modelRenderPass, &directColorFramebuffer);
     CO_addFrameBuffer(2, directColorFramebuffer);// CO
 
+    createOffscreenRenderPass(VK_FORMAT_R8G8B8A8_SRGB, &offscreenRenderPass);
+    CO_addRenderPass(offscreenRenderPass);// CO
+
     createCombineRenderPass(swapchainFormat, &combineRenderPass);
     CO_addRenderPass(combineRenderPass);// CO
     createFrameBuffer(imageCount3D, allInOne.pExtent2D->width, allInOne.pExtent2D->height, 1, NULL, swapchain3DImageViews, &combineRenderPass, &combineFrameBuffer);
@@ -783,6 +789,18 @@ void initVulkan(void)
     loadStaticModel(&staticModelPool, 10, BoxObj, BoxPng, vertices3D, &vertices3DCount, indices3D, &indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_MODEL, modelDescriptorSets, false);
     loadStaticModel(&staticModelPool, 48, BottomObj, BottomPng, vertices3D, &vertices3DCount, indices3D, &indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_BOTTOM, bottomDescriptorSets, true);
 
+    VkImage imageArray = NULL;
+    VkDeviceMemory imageArrayMemory = NULL;
+    VkImageView imageArrayView = NULL;
+    VkImageView * imageArrayViews = NULL;
+    createImageArray(800, 800 / HEIGHT_FACTOR, 48, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &imageArray, &imageArrayMemory);
+    createImageViewArray(imageArray, 48, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, &imageArrayView);
+    addTexture(800, 800 / HEIGHT_FACTOR, VK_FORMAT_R8G8B8A8_SRGB, imageArray, imageArrayMemory, imageArrayView, bottomDescriptorSets + 2, TEXTURE_MAP_ARRAY);
+
+    createImageViewsForImageArray(imageArray, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, 48, &imageArrayViews);
+    createFrameBufferByImageArray(48, 800, 800 / HEIGHT_FACTOR, imageArrayViews, offscreenRenderPass, &bottomImageArrayFramebuffers);
+    CO_addFrameBuffer(48, bottomImageArrayFramebuffers);// CO
+
     loadImageResource(VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_GENERAL, TEXTURE_SSGI_STORAGE_IMAGE, SSGIDescriptorSets + 2);
 
     loadTexture(Loading1Png, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_LOADING, graphicDescriptorSets);
@@ -843,7 +861,7 @@ void initVulkan(void)
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2, TEXTURE_SHADOW, shadowSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     addDescriptorSetToTexture(TEXTURE_SHADOW, bottomTexture->pDescriptorSet);
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2, TEXTURE_SHADOW, shadowSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4, TEXTURE_TILE_SET, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4, TEXTURE_MAP_ARRAY, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     // SSGI
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, TEXTURE_MODEL_DEPTH, depthSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);

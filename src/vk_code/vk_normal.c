@@ -20,7 +20,7 @@ VkFormat createNormalResoures(VkImage * pNormalImage, VkDeviceMemory * pNormalIm
     
     resultVulkan(createImage(allInOne.pExtent2D->width, allInOne.pExtent2D->height, normalFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, pNormalImage, pNormalImageMem), 0);
 
-    resultVulkan(createImageView(pNormalImage, normalFormat, VK_IMAGE_ASPECT_COLOR_BIT, pNormalImageView), 0);
+    resultVulkan(createImageView(*pNormalImage, normalFormat, VK_IMAGE_ASPECT_COLOR_BIT, pNormalImageView), 0);
 
     // resultVulkan(transitionImageLayout(pNormalImage, normalFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL), 0);
 

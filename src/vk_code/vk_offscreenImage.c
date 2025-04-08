@@ -9,7 +9,7 @@ VkImageView drawSingleImageView(Uint32 width, Uint32 height, const char * innerN
     Uint32 frameBufferIndex = getFreeFramebufferIndex();
     VkFramebuffer frameBuffer = getFrameBuffer(frameBufferIndex);
 
-    drawImageView(width, height, innerName, commandBuffer, renderPass, framebuffer, pipeline, pipelineLayout);
+    drawImageView(width, height, innerName, commandBuffer, renderPass, frameBuffer, pipeline, pipelineLayout);
     vkEndCommandBuffer(commandBuffer);
 
     VkSubmitInfo submitInfo = {};

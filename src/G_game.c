@@ -853,6 +853,7 @@ int render(void * arg)
 {
     print("render init\n");
     Uint32 render_frame = 0;
+    Uint32 currentFrame = *allInOne.pCurrentFrame;
     while (game_is_running)
     {
         SDL_WaitSemaphore(allSync.renderSemaphore);
@@ -863,9 +864,10 @@ int render(void * arg)
             resolutionChanged = false;
         }
 
-        drawFrame(scene);
+        drawFrame(scene, currentFrame);
 
         *allInOne.pCurrentFrame = (*allInOne.pCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+        currentFrame = *allInOne.pCurrentFrame;
 
         draw_done = true;
 

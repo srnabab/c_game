@@ -78,6 +78,9 @@ struct _VK_COLLECTION
 
     BUFFER_PACK * buffers;
     Uint32 bufferCount;
+
+    VkImageView * imageViews;
+    Uint32 imageViewCount;
 };
 typedef struct _VK_COLLECTION VK_COLLECTION;
 
@@ -101,6 +104,7 @@ extern bool SDLCALL CO_addDescriptorSetLayout(Uint32 count, VkDescriptorSetLayou
 extern bool SDLCALL CO_addPieplineLayout(VkPipelineLayout pipelineLayout);
 extern bool SDLCALL CO_addPiepline(VkPipeline pipeline);
 extern bool SDLCALL CO_addBuffer(bool mapped, VkBuffer buffer, VkDeviceMemory bufferMemory, void* cpuMem);
+extern bool SDLCALL CO_addImageView(VkImageView imageView);
 extern bool SDLCALL CO_addDescriptorPool(VkDescriptorPool descriptorPool);
 extern bool SDLCALL CO_addSemaphore(VkSemaphore semaphore);
 extern bool SDLCALL CO_addFence(VkFence fence);

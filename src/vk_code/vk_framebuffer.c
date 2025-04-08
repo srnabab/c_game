@@ -1,6 +1,7 @@
 #include "vk_code_h/vk_framebuffer.h"
 #include "vk_code_h/vk_judge.h"
 #include "vk_code_h/vk_all_struct.h"
+#include "vk_code_h/vk_collection.h"
 
 #include "G_log.h"
 
@@ -64,6 +65,27 @@ void createFrameBuffer(uint32_t imageCount, Uint32 width, Uint32 height, Uint32 
         }
     }
     //printf("swapchain framebuffer created\n");
+}
+void createFrameBufferByImageArray(Uint32 imageCount, Uint32 width, Uint32 height, VkImageView * pImageViews, VkRenderPass renderPass, VkFramebuffer ** pFrameBuffer)
+{
+    Uint32 i;
+    *pFrameBuffer = (VkFramebuffer *)SDL_calloc(imageCount, sizeof(VkFramebuffer));
+
+    for (i = 0;i < imageCount;i++)
+    {
+        VkFramebufferCreateInfo framebufferInfo = {};
+        framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        framebufferInfo.pNext = NULL;
+        framebufferInfo.flags = 0;
+        framebufferInfo.renderPass = renderPass;
+        framebufferInfo.attachmentCount = 1;
+        framebufferInfo.pAttachments = pImageViews + i;
+        framebufferInfo.width = width;
+        framebufferInfo.height = height;
+        framebufferInfo.layers = 1;
+
+        resultVulkan(vkCreateFramebuffer(*allInOne.pDevice, &framebufferInfo, allInOne.pAllocationCallbacks, (*pFrameBuffer) + i), 1, *pFrameBuffer);
+    }
 }
 void destroyedFrameBuffer(uint32_t imageCount, VkFramebuffer * pSwapchainFramebuffer)
 {

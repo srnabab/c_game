@@ -47,6 +47,7 @@ struct _VK_ALL
     VkRenderPass * pRenderPass;
     // VkRenderPass * pCombine2DRenderPass;
     VkRenderPass * pModelRenderPass;
+    VkRenderPass * pOffscreenRenderPass;
     VkRenderPass * pShadowRenderPass;
     VkRenderPass * pCombineRenderPass;
 

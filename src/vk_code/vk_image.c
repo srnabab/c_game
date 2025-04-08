@@ -1,6 +1,7 @@
 #include "vk_code_h/vk_image.h"
 #include "vk_code_h/vk_buffer.h"
 #include "vk_code_h/vk_all_struct.h"
+#include "vk_code_h/vk_collection.h"
 
 #include "G_log.h"
 
@@ -8,28 +9,28 @@ extern VK_ALL allInOne;
 
 #define IDENTITY_COMPONENT ((VkComponentMapping){VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY})
 
-VkResult createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage * pImage, VkDeviceMemory * pImageMem)
+VkResult _createImage(void * pNext, VkImageCreateFlags flags, VkImageType imageType, VkFormat format, VkExtent3D extent, Uint32 mipLevels, Uint32 arrayLayers, VkSampleCountFlagBits samples\
+, VkImageTiling tiling, VkImageUsageFlags usage, VkSharingMode sharingMode, Uint32 queueFamilyIndexCount, const Uint32 * pQueueFamilyIndices, VkImageLayout initialLayout, VkImage * pImage\
+, VkMemoryPropertyFlags properties, VkDeviceMemory * pImageMem)
 {
     VkResult result = VK_SUCCESS;
 
     VkImageCreateInfo imageInfo = {};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    imageInfo.pNext = NULL;
-    imageInfo.flags = 0;
-    imageInfo.imageType = VK_IMAGE_TYPE_2D;
+    imageInfo.pNext = pNext;
+    imageInfo.flags = flags;
+    imageInfo.imageType = imageType;
     imageInfo.format = format;
-    imageInfo.extent.width = width;
-    imageInfo.extent.height = height;
-    imageInfo.extent.depth = 1;
-    imageInfo.mipLevels = 1;
-    imageInfo.arrayLayers = 1;
-    imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+    imageInfo.extent = extent;
+    imageInfo.mipLevels = mipLevels;
+    imageInfo.arrayLayers = arrayLayers;
+    imageInfo.samples = samples;
     imageInfo.tiling = tiling;
     imageInfo.usage = usage;
-    imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    imageInfo.queueFamilyIndexCount = 0;
-    imageInfo.pQueueFamilyIndices = NULL;
-    imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    imageInfo.sharingMode = sharingMode;
+    imageInfo.queueFamilyIndexCount = queueFamilyIndexCount;
+    imageInfo.pQueueFamilyIndices = pQueueFamilyIndices;
+    imageInfo.initialLayout = initialLayout;
 
     result |= vkCreateImage(*allInOne.pDevice, &imageInfo, allInOne.pAllocationCallbacks, pImage);
 
@@ -47,57 +48,90 @@ VkResult createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTi
 
     return result;
 }
-VkResult createImageView(VkImage * pImage, VkFormat format, VkImageAspectFlags aspectFlags, VkImageView * pImageView)
+VkResult createImage(Uint32 width, Uint32 height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage * pImage, VkDeviceMemory * pImageMem)
+{
+    VkResult res = _createImage(NULL, 0, VK_IMAGE_TYPE_2D, format, (VkExtent3D){width, height, 1}, 1, 1, VK_SAMPLE_COUNT_1_BIT, tiling, usage, VK_SHARING_MODE_EXCLUSIVE, 0, NULL, VK_IMAGE_LAYOUT_UNDEFINED, pImage, properties, pImageMem);
+    return res;
+}
+VkResult createImageArray(Uint32 width, Uint32 height, Uint32 arrayLayers, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage * pImage, VkDeviceMemory * pImageMem)
+{
+    VkResult res = _createImage(NULL, 0, VK_IMAGE_TYPE_2D, format, (VkExtent3D){width, height, 1}, 1, arrayLayers, VK_SAMPLE_COUNT_1_BIT, tiling, usage, VK_SHARING_MODE_EXCLUSIVE, 0, NULL, VK_IMAGE_LAYOUT_UNDEFINED, pImage, properties, pImageMem);
+    transitionImageLayout(*pImage, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, arrayLayers);
+    return res;
+}
+VkResult _createImageView(void * pNext, VkImageViewCreateFlags flags, VkImage image, VkImageViewType viewType, VkFormat format, VkComponentMapping components, VkImageAspectFlags aspectFlags\
+    , Uint32 baseMipLevel, Uint32 levelCount, Uint32 baseArrayLayer, Uint32 layerCount, VkImageView * pImageView)
 {
     VkResult result = VK_SUCCESS;
 
     VkImageViewCreateInfo viewInfo = {};
-
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    viewInfo.pNext = NULL;
-    viewInfo.flags = 0;
-    viewInfo.image = *pImage;
-    viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    viewInfo.pNext = pNext;
+    viewInfo.flags = flags;
+    viewInfo.image = image;
+    viewInfo.viewType = viewType;
     viewInfo.format = format;
-    viewInfo.components = IDENTITY_COMPONENT;
+    viewInfo.components = components;
     viewInfo.subresourceRange.aspectMask = aspectFlags;
-    viewInfo.subresourceRange.baseMipLevel = 0;
-    viewInfo.subresourceRange.levelCount = 1;
-    viewInfo.subresourceRange.baseArrayLayer = 0;
-    viewInfo.subresourceRange.layerCount = 1;
+    viewInfo.subresourceRange.baseMipLevel = baseMipLevel;
+    viewInfo.subresourceRange.levelCount = levelCount;
+    viewInfo.subresourceRange.baseArrayLayer = baseArrayLayer;
+    viewInfo.subresourceRange.layerCount = layerCount;
+
 
     result |= vkCreateImageView(*allInOne.pDevice, &viewInfo, allInOne.pAllocationCallbacks, pImageView);
 
     return result;
 }
-VkResult createImageViews(VkImage * pImages, uint32_t imageCount, VkFormat format, VkImageAspectFlags aspectFlags, VkImageView ** ppImageView)
+VkResult createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, VkImageView * pImageView)
 {
-    VkResult result = VK_SUCCESS;
-
-    VkImageViewCreateInfo * imageViewCreatInfo = (VkImageViewCreateInfo *)SDL_malloc(imageCount * sizeof(VkImageViewCreateInfo));
-
-    //printf("pImageview: %p\n", pSwapchainImageView);
-    //printf("imageview: %p\n", *pSwapchainImageView);
-    *ppImageView = (VkImageView *)SDL_calloc(imageCount, sizeof(VkImageView));
-
-    for (uint32_t i = 0;i < imageCount;i++)
-    {
-        result |= createImageView(pImages + i, format, aspectFlags, &(*ppImageView)[i]);
-    }
-
-    SDL_free(imageViewCreatInfo);
-    //printf("swapchainImageView created\n");
+    VkResult result = _createImageView(NULL, 0, image, VK_IMAGE_VIEW_TYPE_2D, format, IDENTITY_COMPONENT, aspectFlags, 0, 1, 0, 1, pImageView);
 
     return result;
 }
-void destroyImageViews(VkImageView * pImageView, uint32_t imageCount)
+VkResult createImageViews(VkImage * pImages, Uint32 imageCount, VkFormat format, VkImageAspectFlags aspectFlags, VkImageView ** ppImageView)
 {
-    for (uint32_t i = 0;i < imageCount;i++)
+    VkResult result = VK_SUCCESS;
+
+    *ppImageView = (VkImageView *)SDL_calloc(imageCount, sizeof(VkImageView));
+
+    for (Uint32 i = 0;i < imageCount;i++)
+    {
+        result |= createImageView(pImages[i], format, aspectFlags, (*ppImageView) + i);
+    }
+
+    return result;
+}
+VkResult createImageViewsForImageArray(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, Uint32 imageViewCount, VkImageView ** ppImageView)
+{
+    VkResult result = VK_SUCCESS;
+
+    *ppImageView = (VkImageView *)SDL_calloc(imageViewCount, sizeof(VkImageView));
+
+    for (Uint32 i = 0;i < imageViewCount;i++)
+    {
+        result |= _createImageView(NULL, 0, image, VK_IMAGE_VIEW_TYPE_2D, format, IDENTITY_COMPONENT, aspectFlags, 0, 1, i, 1, (*ppImageView) + i);
+        CO_addImageView((*ppImageView)[i]);
+    }
+
+    return result;
+}
+VkResult createImageViewArray(VkImage image, Uint32 layerCount, VkFormat format, VkImageAspectFlags aspectFlags, VkImageView * pImageView)
+{
+    VkResult result = VK_SUCCESS;
+
+    result |= _createImageView(NULL, 0, image, VK_IMAGE_VIEW_TYPE_2D_ARRAY, format, IDENTITY_COMPONENT, aspectFlags, 0, 1, 0, layerCount, pImageView);
+
+    return result;
+}
+void destroyImageViews(VkImageView * pImageView, Uint32 imageCount)
+{
+    for (Uint32 i = 0;i < imageCount;i++)
     {
         vkDestroyImageView(*allInOne.pDevice, pImageView[i], allInOne.pAllocationCallbacks);
     }
 }
-VkResult transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
+VkResult transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, Uint32 baseArrayLayer, Uint32 layerCount)
 {
     VkResult result  = VK_SUCCESS;
 
@@ -117,8 +151,8 @@ VkResult transitionImageLayout(VkImage image, VkFormat format, VkImageLayout old
     barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     barrier.subresourceRange.baseMipLevel = 0;
     barrier.subresourceRange.levelCount = 1;
-    barrier.subresourceRange.baseArrayLayer = 0;
-    barrier.subresourceRange.layerCount = 1;
+    barrier.subresourceRange.baseArrayLayer = baseArrayLayer;
+    barrier.subresourceRange.layerCount = layerCount;
 
     if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL || oldLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL || newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL || oldLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL) 
     {
@@ -163,6 +197,13 @@ VkResult transitionImageLayout(VkImage image, VkFormat format, VkImageLayout old
 
             sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
             destinationStage = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+        }
+        else if (newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+        {
+            barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+            sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+            destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
         }
     }
     else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) 

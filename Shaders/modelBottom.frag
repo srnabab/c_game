@@ -11,8 +11,8 @@ layout(set = 0, binding = 3) uniform directionLight
     float lightIntensity;
 } sun;
 
-// layout(set = 1, binding = 4) uniform sampler2DArray offscreenSamplers;
-layout(set = 1, binding = 4) uniform sampler2D offscreenSamplers;
+layout(set = 1, binding = 4) uniform sampler2DArray offscreenSamplers;
+// layout(set = 1, binding = 4) uniform sampler2D offscreenSamplers;
 
 layout(location = 0) in vec3 fragColor;
 layout(location = 1) in vec2 fragTexCoord;
@@ -85,8 +85,8 @@ void main()
     vec4 textureColor;
     if (ID == 1)
     {
-        // textureColor = texture(offscreenSamplers, vec3(fragTexCoord, float(instanceIndex)));
-        textureColor = texture(offscreenSamplers, vec2(fragTexCoord));
+        textureColor = texture(offscreenSamplers, vec3(fragTexCoord, float(instanceIndex)));
+        // textureColor = texture(offscreenSamplers, vec2(fragTexCoord));
     }
     else
     {
