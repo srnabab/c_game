@@ -45,6 +45,7 @@ typedef struct _G_StaticModelPool G_StaticModelPool;
 extern bool SDLCALL createStaticModelPool(G_StaticModelPool * pModelPool, Uint32 totalInstancecount);
 extern G_StaticModel* SDLCALL loadStaticModel(G_StaticModelPool * pModelPool, Uint32 instanceCount, PathType modelPath, PathType texturePath, Vertex4 * vertices, Uint32 * pVertexIndex, Uint32 * indices, Uint32 * pIndexIndex, VkFormat textureFormat, VkImageAspectFlags flags, const char * innerName, VkDescriptorSet * pDescriptorSet, bool ground);
 extern bool SDLCALL addModelMatrix(int32_t x, int32_t y, int32_t z, G_StaticModelPool * pModelPool, const char * innerName);
+extern bool SDLCALL setModelMatrixByIndex(int32_t x, int32_t y, int32_t z, G_StaticModelPool * pModelPool, const char * innerName, Uint32 index);
 extern bool SDLCALL getStaticModelDrawInfo(G_StaticModelPool * pModelPool, Uint32 * pFirstInstance, Uint32 * pInstanceCount, const char * innerName);
 extern void SDLCALL destroyStaticModelPool(G_StaticModelPool * pModelPool);
  

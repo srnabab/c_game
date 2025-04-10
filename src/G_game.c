@@ -21,6 +21,7 @@
 #include "G_file/G_file.h"
 #include "G_struct.h"
 #include "G_TileMap/G_TileSet.h"
+#include "G_map.h"
 #include "G_test.h"
 
 // Global variables
@@ -146,6 +147,7 @@ static Scene scene = First_Scene;
 static Scene preScene = Pause_Scene;
 
 static bool resolutionChanged = false; 
+static bool resolutionChanged2 = false; 
 
 static float mouse_x, mouse_y;
 
@@ -244,6 +246,7 @@ bool process_input(void)
                 SDL_SetWindowSize(window_3D, allInOne.pExtent2D->width, allInOne.pExtent2D->height);
 
                 resolutionChanged = true;
+                resolutionChanged2 = true;
 
                 physicalCoffectX = (float)allInOne.pExtent2D->width / LOGICAL_WIDTH;
                 physicalCoffectY = (float)allInOne.pExtent2D->height / LOGICAL_HEIGHT;
@@ -420,6 +423,7 @@ bool process_input(void)
                 {
                     cameraMove[3] = true;
                 }
+                // if ((key == SDLK_LEFT) && (event.key.repeat == false))
                 if (key == SDLK_LEFT)
                 {
                     cameraMove[2] = true;
@@ -557,6 +561,15 @@ int update(void * arg)
     Uint32 vertexStart = 0;
     Uint32 vertexEnd = *allInOne.pVertices2DCount;
 
+    Uint32 rowCount = 0;
+    Uint32 colCount = 0;
+
+    int firstBottom_X = 0;
+    int firstBottom_Y = 0;
+
+    int baseX = 0;
+    int baseY = 0;
+
     textureVertexInit(-32, -32, 64, 64, 0.2f, allInOne.pVertices2DCount, *allInOne.ppVertices2D, getTexture(TEXTURE_LOADING));
     
     tileMapVertexInit(allInOne.pVertices2DCount, *allInOne.ppVertices2D);
@@ -565,9 +578,10 @@ int update(void * arg)
     addModelMatrix(0, 100 / HEIGHT_FACTOR, 8, allInOne.pStaticModelPool, TEXTURE_MODEL);
     addModelMatrix(100, 100 / HEIGHT_FACTOR, 8, allInOne.pStaticModelPool, TEXTURE_MODEL);
 
-    addModelMatrix(0, 100 / HEIGHT_FACTOR, -1, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
-    addModelMatrix(-800, 100 / HEIGHT_FACTOR, -1, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
-    addModelMatrix(0, 900 / HEIGHT_FACTOR, -1, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
+    setMapBottom(allInOne.pExtent2D->width, allInOne.pExtent2D->height, 0, 0, &rowCount, &colCount, &firstBottom_X, &firstBottom_Y, &baseX, &baseY);
+    // addModelMatrix(0, 100 / HEIGHT_FACTOR, -1, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
+    // addModelMatrix(-800, 100 / HEIGHT_FACTOR, -1, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
+    // addModelMatrix(0, 900 / HEIGHT_FACTOR, -1, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
         
     SDL_Delay(300);
     
@@ -606,7 +620,7 @@ int update(void * arg)
         // pGraphicUbo->proj[1][1] *= -1;
 
         glm_mat4_identity(pGraphic3DUbo->model);
-        glm_lookat((vec3){-*pCamera_X, 4.0f + -*pCamera_Y / SDL_cosf(M_PI / 4), 4.0f}, (vec3){-*pCamera_X, -*pCamera_Y / SDL_cosf(M_PI / 4), 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, pGraphic3DUbo->view);
+        glm_lookat((vec3){*pCamera_X * aspect, 4.0f + *pCamera_Y * aspect2, 4.0f}, (vec3){*pCamera_X * aspect, *pCamera_Y * aspect2, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, pGraphic3DUbo->view);
         glm_ortho_vulkan(-aspect, aspect, -aspect2, aspect2, -0.001f, -100.0f, pGraphic3DUbo->proj);
         // glm_perspective(glm_rad(45.0f), aspect, 0.1f, 100.0f, pGraphic3DUbo->proj);
         // pGraphic3DUbo->proj[1][1] *= -1;
@@ -650,8 +664,8 @@ int update(void * arg)
 
         glm_mat4_copy(allInOne.pSunubo->lightSpace, allInOne.pLightSpaceUbo->lightSpace);
 
-        allInOne.pSSGIubo->cameraPosition[0] = -*pCamera_X;
-        allInOne.pSSGIubo->cameraPosition[1] = 4.0f + -*pCamera_Y / SDL_cosf(M_PI / 4);
+        allInOne.pSSGIubo->cameraPosition[0] = *pCamera_X;
+        allInOne.pSSGIubo->cameraPosition[1] = 4.0f + *pCamera_Y;
         allInOne.pSSGIubo->cameraPosition[2] = 4.0f;
 
         allInOne.pSSGIubo->rayStepSize = 0.05f;
@@ -706,22 +720,37 @@ int update(void * arg)
                 }
             }
 
+            if (resolutionChanged2)
+            {
+                rowCount = colCount = 0;
+                setMapBottom(allInOne.pExtent2D->width, allInOne.pExtent2D->height, *pCamera_X * (allInOne.pExtent2D->width / 2), *pCamera_Y * (allInOne.pExtent2D->height / 2), &rowCount, &colCount, &firstBottom_X, &firstBottom_Y, &baseX, &baseY);
+                resolutionChanged2 = false;
+            }
+
             if (cameraMove[0])
             {
-                *pCamera_Y -= 0.2f * delta_time;
+                *pCamera_Y -= 1.6f * delta_time;
                 //logMessage("camera y: %f, enabled: %d, delta time: %lf, last_frame_time: %lu ----%s", *allInOne.pCamera_Y, cameraMove[0], delta_time, last_frame_time, timeNow);
             }
             if (cameraMove[1])
             {
-                *pCamera_Y += 0.2f * delta_time;
+                *pCamera_Y += 1.6f * delta_time;
             }
             if (cameraMove[2])
             {
-                *pCamera_X += 0.2f * delta_time;
+                *pCamera_X += 0.6f * delta_time;
+                // *pCamera_X += 50.0f / 800.0f;
+                // print("camera x: %f", *pCamera_X);
             }
             if (cameraMove[3])
             {
-                *pCamera_X -= 0.2f * delta_time;
+                *pCamera_X -= 0.6f * delta_time;
+                // *pCamera_X -= 50.0f / 800.0f;
+                // print("camera x: %f", *pCamera_X);
+            }
+            if (cameraMove[0] || cameraMove[1] || cameraMove[2] || cameraMove[3])
+            {
+                setMapBottom(allInOne.pExtent2D->width, allInOne.pExtent2D->height, *pCamera_X * (allInOne.pExtent2D->width / 2), *pCamera_Y * (allInOne.pExtent2D->height / 2), &rowCount, &colCount, &firstBottom_X, &firstBottom_Y, &baseX, &baseY);
             }
 
             if (scene == First_Scene)

@@ -18,7 +18,8 @@ VkImageView drawSingleImageView(Uint32 width, Uint32 height, const char * innerN
 
     return getFrameBufferImageView(frameBufferIndex);
 }
-VkResult drawImageView(Uint32 width, Uint32 height, const char * innerName, VkCommandBuffer commandBuffer, VkRenderPass renderPass, VkFramebuffer framebuffer, VkPipeline pipeline, VkPipelineLayout pipelineLayout)
+VkResult drawImageView(Uint32 width, Uint32 height, const char * innerName, VkCommandBuffer commandBuffer, VkRenderPass renderPass, VkFramebuffer framebuffer, Uint32 vertexBufferCount, VkBuffer * vertexBuffers\
+    , Uint32 indexBufferCount, VkBuffer * indexBuffers, VkPipeline pipeline, VkPipelineLayout pipelineLayout)
 {
     VkResult result = VK_SUCCESS;
     result = beginCommandBuffer(commandBuffer);

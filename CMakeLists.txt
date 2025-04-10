@@ -73,6 +73,7 @@ add_executable(game ${SRC_ROOT}/main.c
                     ${SRC_ROOT}/G_resource.c
                     ${SRC_ROOT}/G_TileMap/G_TileSet.c
                     ${SRC_ROOT}/G_staticModel.c
+                    ${SRC_ROOT}/G_map.c
                     ${SRC_ROOT}/G_test.c
                     ${SRC_ROOT}/SDL_complement.c
                     ${SRC_ROOT}/spirv_reflect/spirv_reflect.c

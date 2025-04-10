@@ -146,6 +146,51 @@ bool addModelMatrix(int32_t x, int32_t y, int32_t z, G_StaticModelPool * pModelP
 
     return true;
 }
+bool setModelMatrixByIndex(int32_t x, int32_t y, int32_t z, G_StaticModelPool * pModelPool, const char * innerName, Uint32 index)
+{
+    SDL_LockMutex(pModelPool->mutex);
+
+    Uint32 i;
+    Uint32 modelCount = pModelPool->modelCount;
+    G_StaticModel * pModel;
+    vec3 tempVec3;
+    tempVec3[0] = x * METER_PER_PIXEL;
+    tempVec3[1] = y * METER_PER_PIXEL;
+    tempVec3[2] = z * METER_PER_PIXEL;
+
+    for (i = 0;i < modelCount;i++)
+    {
+        if (SDL_strcmp(pModelPool->models[i].innerName, innerName) == 0)
+        {
+            pModel = pModelPool->models + i;
+
+            break;
+        }
+    }
+
+    if (i == modelCount)
+    {
+        SDL_UnlockMutex(pModelPool->mutex);
+        return false;
+    }
+
+    if (index >= pModel->matrixCount)
+    {
+        SDL_UnlockMutex(pModelPool->mutex);
+        return false;
+    }
+
+    glm_mat4_identity(pModel->matrix[index]);
+    glm_translate(pModel->matrix[index], tempVec3);
+    glm_rotate(pModel->matrix[index], glm_rad(180.0f), (vec3){0.0f, 1.0f, 0.0f});
+    glm_rotate(pModel->matrix[index], glm_rad(-90.0f), (vec3){1.0f, 0.0f, 0.0f});
+
+    memcpy((mat4*)pModelPool->instanceBufferMemMapped[0] + pModel->firstInstance, pModel->matrix, sizeof(mat4) * pModel->matrixCount);
+    
+    SDL_UnlockMutex(pModelPool->mutex);
+
+    return true;
+}
 bool getStaticModelDrawInfo(G_StaticModelPool * pModelPool, Uint32 * pFirstInstance, Uint32 * pInstanceCount, const char * innerName)
 {
     SDL_LockMutex(pModelPool->mutex);

@@ -86,6 +86,8 @@ void main()
     if (ID == 1)
     {
         textureColor = texture(offscreenSamplers, vec3(fragTexCoord, float(instanceIndex)));
+        // float val = float(instanceIndex) / 48.0;
+        // textureColor = vec4(vec2(val), 1.0 - val, 1.0);
         // textureColor = texture(offscreenSamplers, vec2(fragTexCoord));
     }
     else
