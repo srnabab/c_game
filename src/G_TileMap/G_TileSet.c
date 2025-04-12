@@ -11,6 +11,27 @@ static Uint32 tileCap = 0;
 
 extern G_SYNC allSync;
 
+struct _TSD_Head
+{
+    char format[4];
+    Uint32 imageWidth;
+    Uint32 imageHeight;
+    Uint32 tileWidth;
+    Uint32 tileHeight;
+    Uint32 propertyCount;
+    Uint32 dataLen;
+};
+typedef struct _TSD_Head TSD_Head;
+
+struct _TSDI_Head
+{
+    char format[4];
+    Uint32 rowCount;
+    Uint32 colCount; 
+    Uint32 dataLen;
+};
+typedef struct _TSDI_Head TSDI_Head;
+
 void initTileMapSystem(void)
 {
     tileCap++;
@@ -44,37 +65,32 @@ static unsigned char* readTileSetData(PathType path, Uint32 * pTileWidth, Uint32
         return NULL;
     }
 
-    Uint32 tileWidth, tileHeight, tilePropertyCount, tileCount, imageWidth, imageHeight;
-    SDL_ReadIO(tsd, &imageWidth, sizeof(Uint32));
-    SDL_ReadIO(tsd, &imageHeight, sizeof(Uint32));
-    SDL_ReadIO(tsd, &tileWidth, sizeof(Uint32));
-    SDL_ReadIO(tsd, &tileHeight, sizeof(Uint32));
-    SDL_ReadIO(tsd, &tilePropertyCount, sizeof(Uint32));
-    SDL_ReadIO(tsd, &tileCount, sizeof(Uint32));
-    Uint32 dataLen = tileCount * (sizeof(Uint32) + tilePropertyCount * sizeof(bool));
+    TSD_Head head = {};
 
-    unsigned char * data = SDL_malloc(dataLen);
-    SDL_ReadIO(tsd, data, dataLen);
+    SDL_ReadIO(tsd, &head, sizeof(TSD_Head));
 
-    Uint32 crc32;
-    SDL_ReadIO(tsd, &crc32, sizeof(Uint32));
-    if (crc32 != SDL_crc32(0, data, dataLen))
-    {
-        *pTileWidth = *pTileHeight = *pTilePropertyCount = *pTileCount = *pImageWidth = *pImageHeight;
-        SDL_free(data);
-        SDL_CloseIO(tsd);
+    unsigned char * data = SDL_malloc(head.dataLen);
+    SDL_ReadIO(tsd, data, head.dataLen);
 
-        return NULL;
-    }
+    // Uint32 crc32;
+    // SDL_ReadIO(tsd, &crc32, sizeof(Uint32));
+    // if (crc32 != SDL_crc32(0, data, dataLen))
+    // {
+    //     *pTileWidth = *pTileHeight = *pTilePropertyCount = *pTileCount = *pImageWidth = *pImageHeight;
+    //     SDL_free(data);
+    //     SDL_CloseIO(tsd);
+
+    //     return NULL;
+    // }
     
     SDL_CloseIO(tsd);
 
-    *pImageWidth = imageWidth;
-    *pImageHeight = imageHeight;
-    *pTileWidth = tileWidth;
-    *pTileHeight = tileHeight;
-    *pTilePropertyCount = tilePropertyCount;
-    *pTileCount = tileCount;
+    *pImageWidth = head.imageWidth;
+    *pImageHeight = head.imageHeight;
+    *pTileWidth = head.tileWidth;
+    *pTileHeight = head.tileHeight;
+    *pTilePropertyCount = head.propertyCount;
+    *pTileCount= (head.imageWidth / head.tileWidth) * (head.imageHeight / head.tileHeight);
 
     return data;
 }
@@ -185,31 +201,34 @@ static Uint32 * loadTileMapData(PathType tileMapData, Uint32 * pRow, Uint32 * pC
     SDL_IOStream * tsdI = SDL_IOFromFile(getPath(tileMapData), "rb");
     if (tsdI == NULL);
 
-    SDL_ReadIO(tsdI, pRow, sizeof(Uint32));
-    SDL_ReadIO(tsdI, pCol, sizeof(Uint32));
-    Uint32 tileCount = *pRow * *pCol;
+    TSDI_Head head = {};
 
-    Uint32 * data = (Uint32*)SDL_malloc(tileCount * sizeof(Uint32));
+    SDL_ReadIO(tsdI, &head, sizeof(TSDI_Head));
+    Uint32 * data = (Uint32*)SDL_malloc(head.dataLen);
+
     if (data == NULL)
     {
         SDL_CloseIO(tsdI);
 
         return NULL;
     }
-    SDL_ReadIO(tsdI, data, tileCount * sizeof(Uint32));
+    SDL_ReadIO(tsdI, data, head.dataLen);
 
-    Uint32 crc32 = SDL_crc32(0, data, tileCount * sizeof(Uint32));
-    Uint32 crc32_check;
-    SDL_ReadIO(tsdI, &crc32_check, sizeof(Uint32));
-    if (crc32 != crc32_check) 
-    {
-        SDL_free(data);
-        SDL_CloseIO(tsdI);
+    // Uint32 crc32 = SDL_crc32(0, data, tileCount * sizeof(Uint32));
+    // Uint32 crc32_check;
+    // SDL_ReadIO(tsdI, &crc32_check, sizeof(Uint32));
+    // if (crc32 != crc32_check) 
+    // {
+    //     SDL_free(data);
+    //     SDL_CloseIO(tsdI);
 
-        return NULL;
-    }
+    //     return NULL;
+    // }
 
     SDL_CloseIO(tsdI);
+
+    *pRow = head.rowCount;
+    *pCol = head.colCount;
 
     return data;
 }
