@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    // --- Your existing options ---
+    "target": "ES2020", // Or ES2017, ES2018, ESNext, etc.
+    "module": "None", // Or "CommonJS", "ESNext" depending on your setup for Tiled scripts
+    "outDir": "C:/Users/srnabab/AppData/Local/Tiled/extensions",
+    "strict": true,
+    // ... other options ...
+
+    "moduleResolution": "node",
+
+    // --- Add or modify this line ---
+    // Explicitly list the libraries to include, EXCLUDING "dom"
+    "lib": [
+      "ES2020" // Or the ES version matching your target
+      // Add other libs if needed, e.g., "ESNext.AsyncIterable", but DO NOT add "dom"
+    ],
+
+    "noEmitOnError": true // Recommended: Prevents JS output if there are errors
+  },
+  "include": [
+    "*.ts", // Adjust to your source file location
+    "node_modules/@mapeditor/tiled-api/index.d.ts" // Ensure the Tiled types are included if not automatic
+  ],
+  "exclude": [
+    "node_modules",
+    // IMPORTANT: Do NOT exclude node_modules/@mapeditor/tiled-api if you rely on it being found automatically
+  ]
+}

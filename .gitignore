@@ -25,4 +25,4 @@ move_lib.ps1
 examples/
 examples.7z
 box2d_src/
-tiled_script/
+tiled_script/node_modules
