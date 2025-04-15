@@ -776,7 +776,7 @@ void initVulkan(void)
     CO_addFence(computeInFlightFences[1]);// CO
     
     loadTileSet(TileSet1Png, TileSet1Tsd, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_TILE_SET, bottomDescriptorSets + 2);
-    // loadTileMap(TileMap1TsdI, -400, -500, TEXTURE_TILE_SET);
+    loadTileMap(TileMap1TsdI, TEXTURE_TILE_SET);
     // loadTileMap(TileMap1TsdI, -1200, -1100, TEXTURE_TILE_SET);
     // loadTileMap(TileMap1TsdI, -1200, -300, TEXTURE_TILE_SET);
     // loadTileMap(TileMap1TsdI, -1200, 500, TEXTURE_TILE_SET);

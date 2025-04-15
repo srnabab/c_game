@@ -152,10 +152,11 @@ void tileMapVertexInit(Uint32 * pVertexCount, Vertex * pVertices)
             {
                 // print("texture ID: %u", pTexture->ID);
                 // print("texture refCount: %u", pTexture->refCount);
-                textureVertexInit_SetUV((float)pSet[i].maps[j].x + (float)tileWidth * m, (float)pSet[i].maps[j].y + (float)tileHeight * k, tileWidth, tileHeight, 0.01f, pVertexCount, pVertices, pSet[i].tileUV[pSet[i].maps[j].indeices[k * mapColCount + m]], pTexture);
+                // textureVertexInit_SetUV((float)pSet[i].maps[j].x + (float)tileWidth * m, (float)pSet[i].maps[j].y + (float)tileHeight * k, tileWidth, tileHeight, 0.01f, pVertexCount, pVertices, pSet[i].tileUV[pSet[i].maps[j].indeices[k * mapColCount + m]], pTexture);
             }
         }
     }
+    print("deprecated function be called");
     SDL_UnlockMutex(allSync.vertexMutex);
 }
 void texturePosUpdate(float x, float y, Vertex * pVertices, Uint32 offset)
