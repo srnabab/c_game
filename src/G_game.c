@@ -570,6 +570,8 @@ int update(void * arg)
     int baseX = 0;
     int baseY = 0;
 
+    int32_t groupID = -1;
+
     textureVertexInit(-32, -32, 64, 64, 0.2f, allInOne.pVertices2DCount, *allInOne.ppVertices2D, getTexture(TEXTURE_LOADING));
     
     tileMapVertexInit(allInOne.pVertices2DCount, *allInOne.ppVertices2D);
@@ -578,7 +580,7 @@ int update(void * arg)
     addModelMatrix(0, 100 / HEIGHT_FACTOR, 8, allInOne.pStaticModelPool, TEXTURE_MODEL);
     addModelMatrix(100, 100 / HEIGHT_FACTOR, 8, allInOne.pStaticModelPool, TEXTURE_MODEL);
 
-    setMapBottom(allInOne.pExtent2D->width, allInOne.pExtent2D->height, 0, 0, &rowCount, &colCount, &firstBottom_X, &firstBottom_Y, &baseX, &baseY);
+    setMapBottom(allInOne.pExtent2D->width, allInOne.pExtent2D->height, 0, 0, &rowCount, &colCount, &firstBottom_X, &firstBottom_Y, &baseX, &baseY, &groupID);
     // addModelMatrix(0, 100 / HEIGHT_FACTOR, -1, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
     // addModelMatrix(-800, 100 / HEIGHT_FACTOR, -1, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
     // addModelMatrix(0, 900 / HEIGHT_FACTOR, -1, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
@@ -723,7 +725,7 @@ int update(void * arg)
             if (resolutionChanged2)
             {
                 rowCount = colCount = 0;
-                setMapBottom(allInOne.pExtent2D->width, allInOne.pExtent2D->height, *pCamera_X * (allInOne.pExtent2D->width / 2), *pCamera_Y * (allInOne.pExtent2D->height / 2), &rowCount, &colCount, &firstBottom_X, &firstBottom_Y, &baseX, &baseY);
+                setMapBottom(allInOne.pExtent2D->width, allInOne.pExtent2D->height, *pCamera_X * (allInOne.pExtent2D->width / 2), *pCamera_Y * (allInOne.pExtent2D->height / 2), &rowCount, &colCount, &firstBottom_X, &firstBottom_Y, &baseX, &baseY, &groupID);
                 resolutionChanged2 = false;
             }
 
@@ -750,7 +752,7 @@ int update(void * arg)
             }
             if (cameraMove[0] || cameraMove[1] || cameraMove[2] || cameraMove[3])
             {
-                setMapBottom(allInOne.pExtent2D->width, allInOne.pExtent2D->height, *pCamera_X * (allInOne.pExtent2D->width / 2), *pCamera_Y * (allInOne.pExtent2D->height / 2), &rowCount, &colCount, &firstBottom_X, &firstBottom_Y, &baseX, &baseY);
+                setMapBottom(allInOne.pExtent2D->width, allInOne.pExtent2D->height, *pCamera_X * (allInOne.pExtent2D->width / 2), *pCamera_Y * (allInOne.pExtent2D->height / 2), &rowCount, &colCount, &firstBottom_X, &firstBottom_Y, &baseX, &baseY, &groupID);
             }
 
             if (scene == First_Scene)

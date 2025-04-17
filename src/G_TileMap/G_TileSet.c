@@ -124,6 +124,8 @@ static TILE_SET * loadTileSetData(PathType setDataPath, const char * innerName)
     {
         SDL_free(data);
 
+        SDL_UnlockMutex(allSync.tileSetMutex);
+
         return NULL;
     }
 
@@ -150,7 +152,7 @@ static TILE_SET * loadTileSetData(PathType setDataPath, const char * innerName)
         print("index: %u, show: %u", index, tileSet->tiles[index].property.show);
     }
 
-    SDL_strlcpy(tileSets[tileSetCount].innerName, innerName, sizeof(innerName));
+    SDL_strlcpy(tileSets[tileSetCount].innerName, innerName, SDL_strlen(innerName) + 1);
 
     tileSetCount++;
 
@@ -242,14 +244,16 @@ static Map_Group * getGroupPointer(Uint32 groupCount, Map_Group * mapGroups, int
 
     return NULL;
 }
-bool loadTileMap(PathType tileMapData, const char * innerName)
+bool loadTileMap(PathType tileMapData, const char * setInnerName, const char * mapInnerName)
 {
     SDL_LockMutex(allSync.tileSetMutex);
 
     Uint32 i, j;
-    TILE_SET * pSet = getTileSet(innerName);
+    TILE_SET * pSet = getTileSet(setInnerName);
     if (pSet == NULL)
     {
+        SDL_UnlockMutex(allSync.tileSetMutex);
+
         return false;
     }
 
@@ -307,9 +311,8 @@ bool loadTileMap(PathType tileMapData, const char * innerName)
             {
                 SDL_free(tempIDs[i]);
             }
-
             SDL_free(temp);
-
+            SDL_free(tempIDs);
             SDL_free(pSet->maps[pSet->mapCount].mapGroups);
 
             SDL_UnlockMutex(allSync.tileSetMutex);
@@ -331,9 +334,63 @@ bool loadTileMap(PathType tileMapData, const char * innerName)
         // minID = pSet->maps[pSet->mapCount].mapGroups[i].groupID > minID ? minID : pSet->maps[pSet->mapCount].mapGroups[i].groupID;
 
         pSet->maps[pSet->mapCount].mapGroups[i].indices = (Uint32**)SDL_malloc(row * sizeof(Uint32*));
+        if (pSet->maps[pSet->mapCount].mapGroups[i].indices == NULL)
+        {
+            i--;
+            for (;i > -1;i--)
+            {
+                for (j = 0;j < row;j++)
+                {
+                    SDL_free(pSet->maps[pSet->mapCount].mapGroups[i].indices[j]);
+                }
+                SDL_free(pSet->maps[pSet->mapCount].mapGroups[i].indices);
+            }
+
+            for (i = 0;i < groupCount;i++)
+            {
+                SDL_free(tempIDs[i]);
+            }
+            SDL_free(tempIDs);
+            SDL_free(temp);
+            SDL_free(pSet->maps[pSet->mapCount].mapGroups);
+
+            SDL_UnlockMutex(allSync.tileSetMutex);
+
+            return false;
+        }
         for (j = 0;j < row;j++)
         {
             pSet->maps[pSet->mapCount].mapGroups[i].indices[j] = (Uint32*)SDL_malloc(col * sizeof(Uint32));
+            if (pSet->maps[pSet->mapCount].mapGroups[i].indices[j] == NULL)
+            {
+                for (;j > -1;j--)
+                {
+                    SDL_free(pSet->maps[pSet->mapCount].mapGroups[i].indices[j]);
+                }
+                SDL_free(pSet->maps[pSet->mapCount].mapGroups[i].indices);
+                i--;
+
+                for (;i > -1;i--)
+                {
+                    for (j = 0;j < row;j++)
+                    {
+                        SDL_free(pSet->maps[pSet->mapCount].mapGroups[i].indices[j]);
+                    }
+                    SDL_free(pSet->maps[pSet->mapCount].mapGroups[i].indices);
+                }
+
+                for (i = 0;i < groupCount;i++)
+                {
+                    SDL_free(tempIDs[i]);
+                }
+                SDL_free(tempIDs);
+                SDL_free(temp);
+                SDL_free(pSet->maps[pSet->mapCount].mapGroups);
+
+                SDL_UnlockMutex(allSync.tileSetMutex);
+
+                return false;
+            }
             memcpy(pSet->maps[pSet->mapCount].mapGroups[i].indices[j], temp + (i * groupSize + 5 + col * j), col * sizeof(Uint32));
         }
     }
@@ -346,11 +403,6 @@ bool loadTileMap(PathType tileMapData, const char * innerName)
         pSet->maps[pSet->mapCount].mapGroups[i].down = getGroupPointer(groupCount, pSet->maps[pSet->mapCount].mapGroups, tempIDs[i][1]);
         pSet->maps[pSet->mapCount].mapGroups[i].left = getGroupPointer(groupCount, pSet->maps[pSet->mapCount].mapGroups, tempIDs[i][2]);
         pSet->maps[pSet->mapCount].mapGroups[i].right = getGroupPointer(groupCount, pSet->maps[pSet->mapCount].mapGroups, tempIDs[i][3]);
-        // pSet->maps[pSet->mapCount].mapGroups[i].groupID -= minID;
-        // pSet->maps[pSet->mapCount].mapGroups[i].upID -= minID;
-        // pSet->maps[pSet->mapCount].mapGroups[i].downID -= minID;
-        // pSet->maps[pSet->mapCount].mapGroups[i].leftID -= minID;
-        // pSet->maps[pSet->mapCount].mapGroups[i].rightID -= minID;
 
         print("ID: %d, upID: %d, downID: %d, leftID: %d, rightID: %d", pSet->maps[pSet->mapCount].mapGroups[i].groupID, (pSet->maps[pSet->mapCount].mapGroups[i].up == NULL) ? -1 : pSet->maps[pSet->mapCount].mapGroups[i].up->groupID,\
         (pSet->maps[pSet->mapCount].mapGroups[i].down == NULL) ? -1 : pSet->maps[pSet->mapCount].mapGroups[i].down->groupID, (pSet->maps[pSet->mapCount].mapGroups[i].left == NULL) ? -1 : pSet->maps[pSet->mapCount].mapGroups[i].left->groupID\
@@ -361,12 +413,107 @@ bool loadTileMap(PathType tileMapData, const char * innerName)
 
     SDL_free(tempIDs);
 
+    SDL_strlcpy(pSet->maps[pSet->mapCount].innerName, mapInnerName, SDL_strlen(mapInnerName) + 1);
+
     pSet->mapCount++;
     // SDL_Log("row: %u, col: %u, x: %d, y: %d", pSet->maps[pSet->mapCount].rowCount, pSet->maps[pSet->mapCount].colCount, pSet->maps[pSet->mapCount].x, pSet->maps[pSet->mapCount].y);
 
     SDL_UnlockMutex(allSync.tileSetMutex);
 
     return true;
+}
+Map_Group * getFirstMapGroup(const char * setInnerName, const char * mapInnerName)
+{
+    Uint32 i, j;
+
+    SDL_LockMutex(allSync.tileSetMutex);
+
+    for (i = 0;i < tileSetCount;i++)
+    {
+        if (SDL_strcmp(tileSets[i].innerName, setInnerName) == 0)
+        {
+            for (j = 0;j < tileSets[i].mapCount;j++)
+            {
+                if (SDL_strcmp(tileSets[i].maps[j].innerName, mapInnerName) == 0)
+                {
+                    SDL_UnlockMutex(allSync.tileSetMutex);
+
+                    return tileSets[i].maps[j].mapGroups + 0;
+                }
+            }
+
+            if (j == tileSets[i].mapCount)
+            {
+                SDL_UnlockMutex(allSync.tileSetMutex);
+
+                return NULL;
+            }
+        }
+    }
+
+    SDL_UnlockMutex(allSync.tileSetMutex);
+
+    return NULL;
+}
+Map_Group * getMapGroup(const char * setInnerName, const char * mapInnerName, int32_t groupID)
+{
+    Uint32 i, j, k;
+
+    SDL_LockMutex(allSync.tileSetMutex);
+
+    for (i = 0;i < tileSetCount;i++)
+    {
+        if (SDL_strcmp(tileSets[i].innerName, setInnerName) == 0)
+        {
+            for (j = 0;j < tileSets[i].mapCount;j++)
+            {
+                if (SDL_strcmp(tileSets[i].maps[j].innerName, mapInnerName) == 0)
+                {
+                    for (k = 0;k < tileSets[i].maps[j].groupCount;k++)
+                    {
+                        if (tileSets[i].maps[j].mapGroups[k].groupID == groupID)
+                        {
+                            SDL_UnlockMutex(allSync.tileSetMutex);
+
+                            return tileSets[i].maps[j].mapGroups + k;
+                        }
+                    }
+
+                    if (k == tileSets[i].maps[j].groupCount)
+                    {
+                        SDL_UnlockMutex(allSync.tileSetMutex);
+
+                        return NULL;
+                    }
+                }
+            }
+
+            if (j == tileSets[i].mapCount)
+            {
+                SDL_UnlockMutex(allSync.tileSetMutex);
+
+                return NULL;
+            }
+        }
+    }
+
+    SDL_UnlockMutex(allSync.tileSetMutex);
+
+    return NULL;
+}
+Map_Group * mapGroupToRight(Map_Group * mapGroup, int32_t moveCount)
+{
+    if (mapGroup == NULL) return NULL;
+
+    if (moveCount) return mapGroupToRight(mapGroup->right, moveCount - 1);
+    else return mapGroup;
+}
+Map_Group * mapGroupToDown(Map_Group * mapGroup, int32_t moveCount)
+{
+    if (mapGroup == NULL) return NULL;
+
+    if (moveCount) return mapGroupToDown(mapGroup->down, moveCount - 1);
+    else return mapGroup;
 }
 void deInitTileMapSystem(void)
 {

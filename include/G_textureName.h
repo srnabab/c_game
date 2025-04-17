@@ -4,9 +4,13 @@
 #define TEXTURE_LOADING "loading"
 #define TEXTURE_CIRCLE "circle"
 #define TEXTURE_FONT "font"
+
 #define TEXTURE_TILE_SET "tileSet"
+#define MAIN_TILE_MAP "tileMap1"
+
 #define TEXTURE_MODEL "model"
 #define TEXTURE_BOTTOM "bottom"
+
 #define TEXTURE_DEPTH "depth"
 #define TEXTURE_MODEL_COLOR "modelColor"
 #define TEXTURE_MODEL_DEPTH "modelDepth"

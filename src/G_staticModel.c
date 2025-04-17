@@ -92,6 +92,19 @@ G_StaticModel * loadStaticModel(G_StaticModelPool * pModelPool, Uint32 instanceC
 
     return pModelPool->models + modelCount;
 }
+static G_StaticModel * findStaticModel(G_StaticModelPool * pModelPool, const char * innerName)
+{
+    Uint32 i;
+    for (i = 0;i < pModelPool->modelCount;i++)
+    {
+        if (SDL_strcmp(pModelPool->models[i].innerName, innerName) == 0)
+        {
+            return pModelPool->models + i;
+        }
+    }
+
+    return NULL;
+}
 bool addModelMatrix(int32_t x, int32_t y, int32_t z, G_StaticModelPool * pModelPool, const char * innerName)
 {
     SDL_LockMutex(pModelPool->mutex);
@@ -146,31 +159,50 @@ bool addModelMatrix(int32_t x, int32_t y, int32_t z, G_StaticModelPool * pModelP
 
     return true;
 }
-bool setModelMatrixByIndex(int32_t x, int32_t y, int32_t z, G_StaticModelPool * pModelPool, const char * innerName, Uint32 index)
+bool deleteModelMatrixByIndex(G_StaticModelPool * pModelPool, const char * innerName, Uint32 index)
 {
     SDL_LockMutex(pModelPool->mutex);
 
-    Uint32 i;
-    Uint32 modelCount = pModelPool->modelCount;
+    G_StaticModel * pModel = findStaticModel(pModelPool, innerName);
+
+    if (index >= pModel->matrixCount)
+    {
+        SDL_UnlockMutex(pModelPool->mutex);
+
+        return false;
+    }
+    else if (index == pModel->matrixCount - 1)
+    {
+        pModel->matrixCount--;
+
+        SDL_UnlockMutex(pModelPool->mutex);
+
+        return true;
+    }
+
+    memmove((mat4*)pModelPool->instanceBufferMemMapped[0] + (pModel->firstInstance + index), (mat4*)pModelPool->instanceBufferMemMapped[0] + (pModel->firstInstance + index + 1), sizeof(mat4) * (pModel->matrixCount - index - 1)); 
+
+    pModel->matrixCount--;
+
+    SDL_UnlockMutex(pModelPool->mutex);
+
+    return true;
+}
+bool setModelMatrixByIndex(int32_t x, int32_t y, int32_t z, G_StaticModelPool * pModelPool, const char * innerName, Uint32 index)
+{
     G_StaticModel * pModel;
     vec3 tempVec3;
     tempVec3[0] = x * METER_PER_PIXEL;
     tempVec3[1] = y * METER_PER_PIXEL;
     tempVec3[2] = z * METER_PER_PIXEL;
 
-    for (i = 0;i < modelCount;i++)
-    {
-        if (SDL_strcmp(pModelPool->models[i].innerName, innerName) == 0)
-        {
-            pModel = pModelPool->models + i;
+    SDL_LockMutex(pModelPool->mutex);
 
-            break;
-        }
-    }
-
-    if (i == modelCount)
+    pModel = findStaticModel(pModelPool, innerName);
+    if (pModel == NULL)
     {
         SDL_UnlockMutex(pModelPool->mutex);
+
         return false;
     }
 

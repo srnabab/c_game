@@ -30,6 +30,7 @@ typedef struct _Map_Group Map_Group;
 /* x , y is point of top-left*/
 struct _TILE_MAP
 {
+    char innerName[16];
     Uint32 rowCount;
     Uint32 colCount;
     Uint32 groupCount;
@@ -83,7 +84,11 @@ extern void SDLCALL initTileMapSystem(void);
 extern void SDLCALL getTileSetCount(Uint32 * pTileSetCount);
 extern void SDLCALL getTileSetPtr(TILE_SET ** ppSet);
 extern bool SDLCALL loadTileSet(PathType setImagePath, PathType setDataPath, VkFormat format, VkImageAspectFlags flags, const char * innerName, VkDescriptorSet * pDescriptorSet);
-extern bool SDLCALL loadTileMap(PathType tileMapData, const char * innerName);
+extern bool SDLCALL loadTileMap(PathType tileMapData, const char * setInnerName, const char * mapInnerName);
+extern Map_Group* SDLCALL getFirstMapGroup(const char * setInnerName, const char * mapInnerName);
+extern Map_Group* SDLCALL getMapGroup(const char * setInnerName, const char * mapInnerName, int32_t groupID);
+extern Map_Group* SDLCALL mapGroupToRight(Map_Group * mapGroup, int32_t moveCount);
+extern Map_Group* SDLCALL mapGroupToDown(Map_Group * mapGroup, int32_t moveCount);
 extern void SDLCALL deInitTileMapSystem(void);
 
 #include "SDL3/SDL_close_code.h"
