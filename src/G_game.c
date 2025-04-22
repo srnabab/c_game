@@ -238,20 +238,20 @@ bool process_input(void)
 
                 resolutionIndex = (resolutionIndex + 1) % (sizeof(resolutions) / sizeof(resolutions[0]));
 
-                allInOne.pOldExtent2D->width = allInOne.pExtent2D->width;
-                allInOne.pOldExtent2D->height = allInOne.pExtent2D->height;
-                allInOne.pExtent2D->width = resolutions[resolutionIndex][0];
-                allInOne.pExtent2D->height = resolutions[resolutionIndex][1];
+                allInOne.oldExtent2D.width = allInOne.extent2D.width;
+                allInOne.oldExtent2D.height = allInOne.extent2D.height;
+                allInOne.extent2D.width = resolutions[resolutionIndex][0];
+                allInOne.extent2D.height = resolutions[resolutionIndex][1];
                 
-                SDL_SetWindowSize(window_3D, allInOne.pExtent2D->width, allInOne.pExtent2D->height);
+                SDL_SetWindowSize(window_3D, allInOne.extent2D.width, allInOne.extent2D.height);
 
                 resolutionChanged = true;
                 resolutionChanged2 = true;
 
-                physicalCoffectX = (float)allInOne.pExtent2D->width / LOGICAL_WIDTH;
-                physicalCoffectY = (float)allInOne.pExtent2D->height / LOGICAL_HEIGHT;
+                physicalCoffectX = (float)allInOne.extent2D.width / LOGICAL_WIDTH;
+                physicalCoffectY = (float)allInOne.extent2D.height / LOGICAL_HEIGHT;
                 
-                logMessage("sdl width: %u, height: %u", allInOne.pExtent2D->width, allInOne.pExtent2D->height);
+                logMessage("sdl width: %u, height: %u", allInOne.extent2D.width, allInOne.extent2D.height);
 
                 scene = preScene;
                 preScene = Pause_Scene;
@@ -268,7 +268,7 @@ bool process_input(void)
 
                 SDL_DisplayMode displayMode = {0};
 
-                SDL_GetClosestFullscreenDisplayMode(displayId, allInOne.pExtent2D->width, allInOne.pExtent2D->height, 0, false, &displayMode);
+                SDL_GetClosestFullscreenDisplayMode(displayId, allInOne.extent2D.width, allInOne.extent2D.height, 0, false, &displayMode);
                 SDL_SetWindowFullscreen(window_3D, 1);
                 SDL_SetWindowFullscreenMode(window_3D, &displayMode);
                 SDL_RaiseWindow(window_3D);
@@ -291,10 +291,10 @@ bool process_input(void)
                 SDL_Delay(50);
 
                 SDL_SetWindowFullscreen(window_3D, 0);
-                allInOne.pOldExtent2D->width = allInOne.pExtent2D->width;
-                allInOne.pOldExtent2D->height = allInOne.pExtent2D->height;
+                allInOne.oldExtent2D.width = allInOne.extent2D.width;
+                allInOne.oldExtent2D.height = allInOne.extent2D.height;
 
-                SDL_SetWindowSize(window_3D, allInOne.pExtent2D->width, allInOne.pExtent2D->height);
+                SDL_SetWindowSize(window_3D, allInOne.extent2D.width, allInOne.extent2D.height);
                 SDL_RaiseWindow(window_3D);
 
                 resolutionChanged = true;
@@ -559,7 +559,7 @@ int update(void * arg)
     Uint32 currentFrame;
 
     Uint32 vertexStart = 0;
-    Uint32 vertexEnd = *allInOne.pVertices2DCount;
+    Uint32 vertexEnd = allInOne.vertices2DCount;
 
     Uint32 rowCount = 0;
     Uint32 colCount = 0;
@@ -572,15 +572,15 @@ int update(void * arg)
 
     int32_t groupID = -1;
 
-    textureVertexInit(-32, -32, 64, 64, 0.2f, allInOne.pVertices2DCount, *allInOne.ppVertices2D, getTexture(TEXTURE_LOADING));
+    textureVertexInit(-32, -32, 64, 64, 0.2f, &allInOne.vertices2DCount, allInOne.pVertices2D, getTexture(TEXTURE_LOADING));
     
-    tileMapVertexInit(allInOne.pVertices2DCount, *allInOne.ppVertices2D);
+    tileMapVertexInit(&allInOne.vertices2DCount, allInOne.pVertices2D);
     addModelMatrix(0, 0, 8, allInOne.pStaticModelPool, TEXTURE_MODEL);
     addModelMatrix(100, 0, 8, allInOne.pStaticModelPool, TEXTURE_MODEL);
-    addModelMatrix(0, 100 / HEIGHT_FACTOR, 8, allInOne.pStaticModelPool, TEXTURE_MODEL);
-    addModelMatrix(100, 100 / HEIGHT_FACTOR, 8, allInOne.pStaticModelPool, TEXTURE_MODEL);
+    addModelMatrix(0, 100, 8, allInOne.pStaticModelPool, TEXTURE_MODEL);
+    addModelMatrix(100, 100, 8, allInOne.pStaticModelPool, TEXTURE_MODEL);
 
-    setMapBottom(allInOne.pExtent2D->width, allInOne.pExtent2D->height, 0, 0, &rowCount, &colCount, &firstBottom_X, &firstBottom_Y, &baseX, &baseY, &groupID);
+    setMapBottom(allInOne.extent2D.width, allInOne.extent2D.height, 0, 0, &rowCount, &colCount, &firstBottom_X, &firstBottom_Y, &baseX, &baseY, &groupID);
     // addModelMatrix(0, 100 / HEIGHT_FACTOR, -1, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
     // addModelMatrix(-800, 100 / HEIGHT_FACTOR, -1, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
     // addModelMatrix(0, 900 / HEIGHT_FACTOR, -1, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
@@ -610,10 +610,10 @@ int update(void * arg)
         delta_time = delta_time_ns / ((float)S_TO_NS);
         totalTime = totalTimeNs / ((float)S_TO_NS);
 
-        currentFrame = *allInOne.pCurrentFrame;
+        currentFrame = allInOne.currentFrame;
 
-        float aspect2 = 1.0f  * ((float)allInOne.pExtent2D->height / 600.0f);
-        float aspect = ((float)allInOne.pExtent2D->width / allInOne.pExtent2D->height) * aspect2;
+        float aspect2 = 1.0f  * ((float)allInOne.extent2D.height / 600.0f);
+        float aspect = ((float)allInOne.extent2D.width / allInOne.extent2D.height) * aspect2;
 
         glm_mat4_identity(pGraphicUbo->model);
         glm_lookat((vec3){*pCamera_X, *pCamera_Y, 100.0f}, (vec3){*pCamera_X, *pCamera_Y, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pGraphicUbo->view);
@@ -622,7 +622,7 @@ int update(void * arg)
         // pGraphicUbo->proj[1][1] *= -1;
 
         glm_mat4_identity(pGraphic3DUbo->model);
-        glm_lookat((vec3){*pCamera_X * aspect, 4.0f + *pCamera_Y * aspect2, 4.0f}, (vec3){*pCamera_X * aspect, *pCamera_Y * aspect2, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, pGraphic3DUbo->view);
+        glm_lookat((vec3){*pCamera_X * aspect, 0.0f + *pCamera_Y * aspect2, 10.0f}, (vec3){*pCamera_X * aspect, *pCamera_Y * aspect2, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pGraphic3DUbo->view);
         glm_ortho_vulkan(-aspect, aspect, -aspect2, aspect2, -0.001f, -100.0f, pGraphic3DUbo->proj);
         // glm_perspective(glm_rad(45.0f), aspect, 0.1f, 100.0f, pGraphic3DUbo->proj);
         // pGraphic3DUbo->proj[1][1] *= -1;
@@ -639,13 +639,13 @@ int update(void * arg)
         glm_mat4_inv(allInOne.pSSGIubo->inverseProjectionMatrix, allInOne.pSSGIubo->inverseProjectionMatrix);
 
         float x, y, z;
-        float factor_x = LIGHT_HEIGHT / (allInOne.pExtent2D->width / 2);
-        float factor_y = LIGHT_HEIGHT / (allInOne.pExtent2D->height / 2);
+        float factor_x = LIGHT_HEIGHT / (allInOne.extent2D.width / 2);
+        float factor_y = LIGHT_HEIGHT / (allInOne.extent2D.height / 2);
         
         // x = 400 * SDL_sinf_flip(totalTime / 3);
         SDL_LockMutex(allSync.inputMutex);
-        x = -mouse_x + (allInOne.pExtent2D->width / 2);
-        y = mouse_y - (allInOne.pExtent2D->height / 2);
+        x = mouse_x - (allInOne.extent2D.width / 2);
+        y = -mouse_y + (allInOne.extent2D.height / 2);
         // y = 0;
         SDL_UnlockMutex(allSync.inputMutex);
         x *= factor_x;
@@ -667,22 +667,22 @@ int update(void * arg)
         glm_mat4_copy(allInOne.pSunubo->lightSpace, allInOne.pLightSpaceUbo->lightSpace);
 
         allInOne.pSSGIubo->cameraPosition[0] = *pCamera_X;
-        allInOne.pSSGIubo->cameraPosition[1] = 4.0f + *pCamera_Y;
-        allInOne.pSSGIubo->cameraPosition[2] = 4.0f;
+        allInOne.pSSGIubo->cameraPosition[1] = 0.0f + *pCamera_Y;
+        allInOne.pSSGIubo->cameraPosition[2] = 10.0f;
 
         allInOne.pSSGIubo->rayStepSize = 0.05f;
         allInOne.pSSGIubo->maxRaySteps = 64;
         allInOne.pSSGIubo->ssgiStrength = 0.1f;
 
         SDL_LockMutex(allSync.vertexMutex);
-        memcpy((*allInOne.pppGraphicUniformBufferMapped)[currentFrame], pGraphicUbo, sizeof(UniformBufferObject));
-        memcpy((*allInOne.pppGraphic3DUniformBufferMapped)[currentFrame], pGraphic3DUbo, sizeof(UniformBufferObject));
-        memcpy((*allInOne.pppUIUniformBufferMapped)[currentFrame], pUIUbo, sizeof(UniformBufferObject));
+        memcpy(allInOne.ppGraphicUniformBufferMapped[currentFrame], pGraphicUbo, sizeof(UniformBufferObject));
+        memcpy(allInOne.ppGraphic3DUniformBufferMapped[currentFrame], pGraphic3DUbo, sizeof(UniformBufferObject));
+        memcpy(allInOne.ppUIUniformBufferMapped[currentFrame], pUIUbo, sizeof(UniformBufferObject));
 
-        memcpy((*allInOne.pppComputeUniformBufferMapped)[currentFrame], allInOne.pComputeUbo, sizeof(ComputeUniformBufferObject));
-        memcpy((*allInOne.pppSSGIUniformBufferMapped)[currentFrame], allInOne.pSSGIubo, sizeof(SSGIUniformBufferObject));
-        memcpy((*allInOne.pppSunUniformBufferMapped)[currentFrame], allInOne.pSunubo, sizeof(DirectionLight));
-        memcpy((*allInOne.pppLightSpaceUniformBufferMapped)[currentFrame], allInOne.pLightSpaceUbo , sizeof(LightSpace));
+        memcpy(allInOne.ppComputeUniformBufferMapped[currentFrame], allInOne.pComputeUbo, sizeof(ComputeUniformBufferObject));
+        memcpy(allInOne.ppSSGIUniformBufferMapped[currentFrame], allInOne.pSSGIubo, sizeof(SSGIUniformBufferObject));
+        memcpy(allInOne.ppSunUniformBufferMapped[currentFrame], allInOne.pSunubo, sizeof(DirectionLight));
+        memcpy(allInOne.ppLightSpaceUniformBufferMapped[currentFrame], allInOne.pLightSpaceUbo , sizeof(LightSpace));
         
         SDL_SignalSemaphore(allSync.vertexSemaphore);
         SDL_UnlockMutex(allSync.vertexMutex);
@@ -725,34 +725,34 @@ int update(void * arg)
             if (resolutionChanged2)
             {
                 rowCount = colCount = 0;
-                setMapBottom(allInOne.pExtent2D->width, allInOne.pExtent2D->height, *pCamera_X * (allInOne.pExtent2D->width / 2), *pCamera_Y * (allInOne.pExtent2D->height / 2), &rowCount, &colCount, &firstBottom_X, &firstBottom_Y, &baseX, &baseY, &groupID);
+                setMapBottom(allInOne.extent2D.width, allInOne.extent2D.height, *pCamera_X * (allInOne.extent2D.width / 2), *pCamera_Y * (allInOne.extent2D.height / 2), &rowCount, &colCount, &firstBottom_X, &firstBottom_Y, &baseX, &baseY, &groupID);
                 resolutionChanged2 = false;
             }
 
             if (cameraMove[0])
             {
-                *pCamera_Y -= 1.6f * delta_time;
+                *pCamera_Y += 1.6f * delta_time;
                 //logMessage("camera y: %f, enabled: %d, delta time: %lf, last_frame_time: %lu ----%s", *allInOne.pCamera_Y, cameraMove[0], delta_time, last_frame_time, timeNow);
             }
             if (cameraMove[1])
             {
-                *pCamera_Y += 1.6f * delta_time;
+                *pCamera_Y -= 1.6f * delta_time;
             }
             if (cameraMove[2])
             {
-                *pCamera_X += 0.6f * delta_time;
+                *pCamera_X -= 0.6f * delta_time;
                 // *pCamera_X += 50.0f / 800.0f;
                 // print("camera x: %f", *pCamera_X);
             }
             if (cameraMove[3])
             {
-                *pCamera_X -= 0.6f * delta_time;
+                *pCamera_X += 0.6f * delta_time;
                 // *pCamera_X -= 50.0f / 800.0f;
                 // print("camera x: %f", *pCamera_X);
             }
             if (cameraMove[0] || cameraMove[1] || cameraMove[2] || cameraMove[3])
             {
-                setMapBottom(allInOne.pExtent2D->width, allInOne.pExtent2D->height, *pCamera_X * (allInOne.pExtent2D->width / 2), *pCamera_Y * (allInOne.pExtent2D->height / 2), &rowCount, &colCount, &firstBottom_X, &firstBottom_Y, &baseX, &baseY, &groupID);
+                setMapBottom(allInOne.extent2D.width, allInOne.extent2D.height, *pCamera_X * (allInOne.extent2D.width / 2), *pCamera_Y * (allInOne.extent2D.height / 2), &rowCount, &colCount, &firstBottom_X, &firstBottom_Y, &baseX, &baseY, &groupID);
             }
 
             if (scene == First_Scene)
@@ -778,7 +778,7 @@ int update(void * arg)
                         getTexture(TEXTURE_FONT)->refCount = 0;
                         for (Uint32 i = 0;i < textLen;i++)
                         {
-                            textureVertexInit_SetUV(-300.0 + (float)i * 24.0, -100.0, 24, 24, 0.1f, allInOne.pVertices2DCount, *allInOne.ppVertices2D, UVs[i], getTexture(TEXTURE_FONT));
+                            textureVertexInit_SetUV(-300.0 + (float)i * 24.0, -100.0, 24, 24, 0.1f, &allInOne.vertices2DCount, allInOne.pVertices2D, UVs[i], getTexture(TEXTURE_FONT));
                         }
                     }
                     textDisplay = false;
@@ -827,14 +827,14 @@ int update(void * arg)
 
                 // if (ballAdd)
                 // {
-                //     //*allInOne.ppVertices2D = (Vertex *)realloc(*allInOne.ppVertices2D, count * sizeof(Vertex));
+                //     //allInOne.pVertices2D = (Vertex *)realloc(allInOne.pVertices2D, count * sizeof(Vertex));
                 //     int x = SDL_rand(250);
                 //     if (SDL_rand(2))
                 //     {
                 //         x *= -1;
                 //     }
                 //     // float averagePhysicalCoffect = (physicalCoffectX + physicalCoffectY) / 2.0f;
-                //     textureVertexInit(x * physicalCoffectX, 280 * physicalCoffectY, 16 * physicalCoffectY, 16 * physicalCoffectY, 0.9, allInOne.pVertices2DCount, *allInOne.ppVertices2D, getTexture(TEXTURE_CIRCLE));
+                //     textureVertexInit(x * physicalCoffectX, 280 * physicalCoffectY, 16 * physicalCoffectY, 16 * physicalCoffectY, 0.9, allInOne.vertices2DCount, allInOne.pVertices2D, getTexture(TEXTURE_CIRCLE));
 
                 //     ballStack.pushFn(&ballStack, &x);
                 //     //print("indices count: %u\n", indiceCount);
@@ -854,13 +854,13 @@ int update(void * arg)
             {
             }
 
-            vertexEnd = *allInOne.pVertices2DCount;
+            vertexEnd = allInOne.vertices2DCount;
             //print("time: %.2f\n", time);
             SDL_LockMutex(allSync.updateMutex);
 
-            memcpy((*allInOne.ppVertexBuffer2DMemMapped)[currentFrame], *allInOne.ppVertices2D, vertexEnd * sizeof(Vertex));// update vertex buffer
-            memcpy((*allInOne.ppVertexBuffer3DMemMapped)[currentFrame], *allInOne.ppVertices3D, 30000 * sizeof(Vertex));
-            memcpy((*allInOne.ppIndexBuffer3DMemMapped)[currentFrame], *allInOne.ppIndices3D, 45000 * sizeof(Uint32));
+            memcpy(allInOne.pVertexBuffer2DMemMapped[currentFrame], allInOne.pVertices2D, vertexEnd * sizeof(Vertex));// update vertex buffer
+            memcpy(allInOne.pVertexBuffer3DMemMapped[currentFrame], allInOne.pVertices3D, 30000 * sizeof(Vertex));
+            memcpy(allInOne.pIndexBuffer3DMemMapped[currentFrame], allInOne.pIndices3D, 45000 * sizeof(Uint32));
             // SDL_SignalSemaphore(allSync.vertexSemaphore);
 
             allInOne.pPushConstants->rotation = totalTime * glm_rad(580.0f);
@@ -884,7 +884,7 @@ int render(void * arg)
 {
     print("render init\n");
     Uint32 render_frame = 0;
-    Uint32 currentFrame = *allInOne.pCurrentFrame;
+    Uint32 currentFrame = allInOne.currentFrame;
     while (game_is_running)
     {
         SDL_WaitSemaphore(allSync.renderSemaphore);
@@ -895,10 +895,10 @@ int render(void * arg)
             resolutionChanged = false;
         }
 
-        drawFrame(scene, currentFrame);
+        drawFrame(scene, currentFrame, false);
 
-        *allInOne.pCurrentFrame = (*allInOne.pCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-        currentFrame = *allInOne.pCurrentFrame;
+        allInOne.currentFrame = (allInOne.currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+        currentFrame = allInOne.currentFrame;
 
         draw_done = true;
 

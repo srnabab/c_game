@@ -5,7 +5,7 @@
 
 #include "SDL3/SDL_begin_code.h"
 
-extern void SDLCALL createVertexBuffer(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkBuffer * pVertexBuffer, VkDeviceMemory * pVertexBufferMemory, void ** ppVertexBufferMemMapped, Uint32 bufferSize);
+extern void SDLCALL createVertexBuffer(VkBuffer * pVertexBuffer, VkDeviceMemory * pVertexBufferMemory, void ** ppVertexBufferMemMapped, Uint32 bufferSize);
 
 #include "SDL3/SDL_close_code.h"
 

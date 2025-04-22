@@ -77,7 +77,7 @@ void createGraphicRenderPass(VkFormat surfaceFormat, VkRenderPass * pRenderPass)
     renderPassCreateInfo.dependencyCount = 2;
     renderPassCreateInfo.pDependencies = dependency;
 
-    resultVulkan(vkCreateRenderPass(*allInOne.pDevice, &renderPassCreateInfo, allInOne.pAllocationCallbacks, pRenderPass), 0);
+    resultVulkan(vkCreateRenderPass(allInOne.device, &renderPassCreateInfo, allInOne.pAllocationCallbacks, pRenderPass), 0);
 
     //printf("renderPass created\n");
 }
@@ -138,7 +138,7 @@ void createModelRenderPass(VkFormat colorFormat, VkFormat normalFormat, VkFormat
     renderPassCreateInfo.dependencyCount = 1;
     renderPassCreateInfo.pDependencies = &dependency;
 
-    resultVulkan(vkCreateRenderPass(*allInOne.pDevice, &renderPassCreateInfo, allInOne.pAllocationCallbacks, pRenderPass), 0);
+    resultVulkan(vkCreateRenderPass(allInOne.device, &renderPassCreateInfo, allInOne.pAllocationCallbacks, pRenderPass), 0);
 
     //printf("renderPass created\n");
 }
@@ -203,7 +203,7 @@ void createShadowRenderPass(VkFormat depthFormat, VkRenderPass * pRenderPass)
     renderPassCreateInfo.dependencyCount = 2;
     renderPassCreateInfo.pDependencies = dependencies;
 
-    resultVulkan(vkCreateRenderPass(*allInOne.pDevice, &renderPassCreateInfo, allInOne.pAllocationCallbacks, pRenderPass), 0);
+    resultVulkan(vkCreateRenderPass(allInOne.device, &renderPassCreateInfo, allInOne.pAllocationCallbacks, pRenderPass), 0);
 
     //printf("renderPass created\n");
 }
@@ -271,7 +271,7 @@ void createCombineRenderPass(VkFormat colorFormat, VkRenderPass * pRenderPass)
     renderPassCreateInfo.dependencyCount = 0;
     renderPassCreateInfo.pDependencies = dependencies;
 
-    resultVulkan(vkCreateRenderPass(*allInOne.pDevice, &renderPassCreateInfo, allInOne.pAllocationCallbacks, pRenderPass), 0);
+    resultVulkan(vkCreateRenderPass(allInOne.device, &renderPassCreateInfo, allInOne.pAllocationCallbacks, pRenderPass), 0);
 
     //printf("renderPass created\n");
 }
@@ -302,5 +302,5 @@ void createOffscreenRenderPass(VkFormat format, VkRenderPass * pRenderPass)
     renderPassCreateInfo.dependencyCount = 1;
     renderPassCreateInfo.pDependencies = &dependency;
 
-    resultVulkan(vkCreateRenderPass(*allInOne.pDevice, &renderPassCreateInfo, allInOne.pAllocationCallbacks, pRenderPass), 0);
+    resultVulkan(vkCreateRenderPass(allInOne.device, &renderPassCreateInfo, allInOne.pAllocationCallbacks, pRenderPass), 0);
 }

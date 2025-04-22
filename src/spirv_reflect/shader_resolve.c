@@ -128,7 +128,7 @@ VkPipelineShaderStageCreateInfo ** ppShaderStageCreateInfo, VkDescriptorSetLayou
         layoutInfo.bindingCount = bindingsCount[i];
         layoutInfo.pBindings = ppSetLayoutBinding[i];
 
-        vkCreateDescriptorSetLayout(*allInOne.pDevice, &layoutInfo, allInOne.pAllocationCallbacks, (*ppDescriptorSetLayout) + i);
+        vkCreateDescriptorSetLayout(allInOne.device, &layoutInfo, allInOne.pAllocationCallbacks, (*ppDescriptorSetLayout) + i);
     }
     CO_addDescriptorSetLayout(setCount, (*ppDescriptorSetLayout));// CO
 
@@ -141,7 +141,7 @@ VkPipelineShaderStageCreateInfo ** ppShaderStageCreateInfo, VkDescriptorSetLayou
     pipelineLayoutCreateInfo.pushConstantRangeCount = pushConstantCount;
     pipelineLayoutCreateInfo.pPushConstantRanges = pPushConstantRange;
 
-    vkCreatePipelineLayout(*allInOne.pDevice, &pipelineLayoutCreateInfo, allInOne.pAllocationCallbacks, pPipelineLayout);
+    vkCreatePipelineLayout(allInOne.device, &pipelineLayoutCreateInfo, allInOne.pAllocationCallbacks, pPipelineLayout);
     CO_addPieplineLayout(*pPipelineLayout);
 
     // VkDescriptorSetLayout * layouts = (VkDescriptorSetLayout *)SDL_malloc(MAX_FRAMES_IN_FLIGHT * setCount * sizeof(VkDescriptorSetLayout));
@@ -161,7 +161,7 @@ VkPipelineShaderStageCreateInfo ** ppShaderStageCreateInfo, VkDescriptorSetLayou
     // allocInfo.descriptorPool = *pDescriptorPool;
     // allocInfo.pSetLayouts = layouts;
 
-    // vkAllocateDescriptorSets(*allInOne.pDevice, &allocInfo, *ppDescriptorSets);
+    // vkAllocateDescriptorSets(allInOne.device, &allocInfo, *ppDescriptorSets);
 
     // SDL_free(layouts);
     SDL_free(pPushConstantRange);

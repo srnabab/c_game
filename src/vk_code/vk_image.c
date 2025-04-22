@@ -1,3 +1,4 @@
+#include "vk_code_h/vk_queue.h"
 #include "vk_code_h/vk_image.h"
 #include "vk_code_h/vk_buffer.h"
 #include "vk_code_h/vk_all_struct.h"
@@ -32,19 +33,19 @@ VkResult _createImage(void * pNext, VkImageCreateFlags flags, VkImageType imageT
     imageInfo.pQueueFamilyIndices = pQueueFamilyIndices;
     imageInfo.initialLayout = initialLayout;
 
-    result |= vkCreateImage(*allInOne.pDevice, &imageInfo, allInOne.pAllocationCallbacks, pImage);
+    result |= vkCreateImage(allInOne.device, &imageInfo, allInOne.pAllocationCallbacks, pImage);
 
     VkMemoryRequirements memRequirements;
-    vkGetImageMemoryRequirements(*allInOne.pDevice, *pImage, &memRequirements);
+    vkGetImageMemoryRequirements(allInOne.device, *pImage, &memRequirements);
 
     VkMemoryAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
     allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
 
-    result |= vkAllocateMemory(*allInOne.pDevice, &allocInfo, allInOne.pAllocationCallbacks, pImageMem);
+    result |= vkAllocateMemory(allInOne.device, &allocInfo, allInOne.pAllocationCallbacks, pImageMem);
 
-    result |= vkBindImageMemory(*allInOne.pDevice, *pImage, *pImageMem, 0);
+    result |= vkBindImageMemory(allInOne.device, *pImage, *pImageMem, 0);
 
     return result;
 }
@@ -56,7 +57,7 @@ VkResult createImage(Uint32 width, Uint32 height, VkFormat format, VkImageTiling
 VkResult createImageArray(Uint32 width, Uint32 height, Uint32 arrayLayers, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage * pImage, VkDeviceMemory * pImageMem)
 {
     VkResult res = _createImage(NULL, 0, VK_IMAGE_TYPE_2D, format, (VkExtent3D){width, height, 1}, 1, arrayLayers, VK_SAMPLE_COUNT_1_BIT, tiling, usage, VK_SHARING_MODE_EXCLUSIVE, 0, NULL, VK_IMAGE_LAYOUT_UNDEFINED, pImage, properties, pImageMem);
-    transitionImageLayout(*pImage, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, arrayLayers);
+    transitionImageLayout(NULL, *pImage, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, arrayLayers);
     return res;
 }
 VkResult _createImageView(void * pNext, VkImageViewCreateFlags flags, VkImage image, VkImageViewType viewType, VkFormat format, VkComponentMapping components, VkImageAspectFlags aspectFlags\
@@ -79,7 +80,7 @@ VkResult _createImageView(void * pNext, VkImageViewCreateFlags flags, VkImage im
     viewInfo.subresourceRange.layerCount = layerCount;
 
 
-    result |= vkCreateImageView(*allInOne.pDevice, &viewInfo, allInOne.pAllocationCallbacks, pImageView);
+    result |= vkCreateImageView(allInOne.device, &viewInfo, allInOne.pAllocationCallbacks, pImageView);
 
     return result;
 }
@@ -128,15 +129,18 @@ void destroyImageViews(VkImageView * pImageView, Uint32 imageCount)
 {
     for (Uint32 i = 0;i < imageCount;i++)
     {
-        vkDestroyImageView(*allInOne.pDevice, pImageView[i], allInOne.pAllocationCallbacks);
+        vkDestroyImageView(allInOne.device, pImageView[i], allInOne.pAllocationCallbacks);
     }
 }
-VkResult transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, Uint32 baseArrayLayer, Uint32 layerCount)
+VkResult transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, Uint32 baseArrayLayer, Uint32 layerCount)
 {
     VkResult result  = VK_SUCCESS;
 
-    VkCommandBuffer commandBuffer = NULL;
-    result |= beginSingleTimeCommands(allInOne.pTransferCommandPool, &commandBuffer);
+    VkCommandBuffer singleCommandBuffer = NULL;
+    if (commandBuffer == NULL)
+    {
+        result |= beginSingleTimeCommands(allInOne.transferCommandPool, &singleCommandBuffer);
+    }
 
     VkImageMemoryBarrier barrier = {};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -254,14 +258,45 @@ VkResult transitionImageLayout(VkImage image, VkFormat format, VkImageLayout old
         sourceStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
         destinationStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     }
+    else if (oldLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+    {
+        barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+        barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+
+        sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+        destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+    }
+    else if (oldLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+    {
+        barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+        barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+
+        sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+        destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+    }
+    else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+    {
+        barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+        barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        
+        sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+    }
     else 
     {
         print("unsupported layout transition!");
     }
 
-    vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, NULL, 0, NULL, 1, &barrier);
+    if (commandBuffer == NULL)
+    {
+        vkCmdPipelineBarrier(singleCommandBuffer, sourceStage, destinationStage, 0, 0, NULL, 0, NULL, 1, &barrier);
 
-    result |= endSingleTimeCommands(allInOne.pTransferCommandPool, allInOne.pTransferQueue, &commandBuffer);
+        result |= endSingleTimeCommands(allInOne.transferCommandPool, getTransferQueue(), &singleCommandBuffer);
+    }
+    else
+    {
+        vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, NULL, 0, NULL, 1, &barrier);
+    }
 
     return result;
 }

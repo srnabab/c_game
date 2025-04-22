@@ -162,7 +162,7 @@ static int getBestPhysicalDeviceIndex(VkPhysicalDevice *pPhysicalDevices, Uint32
 void pickPhysicalDevice(void)
 {
     Uint32 deviceCount = 0;
-    resultVulkan(vkEnumeratePhysicalDevices(*allInOne.pInstance, &deviceCount, NULL), 0);
+    resultVulkan(vkEnumeratePhysicalDevices(allInOne.instance, &deviceCount, NULL), 0);
 
     if (deviceCount == 0)
     {
@@ -170,7 +170,7 @@ void pickPhysicalDevice(void)
     }
 
     VkPhysicalDevice * devices = (VkPhysicalDevice *)SDL_malloc(deviceCount * sizeof(VkPhysicalDevice));
-    resultVulkan(vkEnumeratePhysicalDevices(*allInOne.pInstance, &deviceCount, devices), 1, devices);
+    resultVulkan(vkEnumeratePhysicalDevices(allInOne.instance, &deviceCount, devices), 1, devices);
 
 	// VkPhysicalDevice device = devices[getBestPhysicalDeviceIndex(devices, deviceCount)];xx
     VkPhysicalDevice device = devices[GPU_CHOOSED];
@@ -181,7 +181,7 @@ void pickPhysicalDevice(void)
 	{
 		SDL_free(devices);
 		//printf("devive picked\n");
-		*allInOne.pPhysicalDevice = device;
+		allInOne.physicalDevice = device;
 	}
     else
     {
@@ -212,69 +212,66 @@ static bool * extensionSupportedCheck_Optional(Uint32 neededExtensionCount, char
 
     return group;
 }
-static Uint32 configureQueueCreateInfo(VkDeviceQueueCreateInfo * pCreateInfo, QueueFamily * indices, float * pQueuePriority)
+static Uint32 configureQueueCreateInfo(VkDeviceQueueCreateInfo * pCreateInfo, float * pQueuePriority)
 {
     Uint32 queueFamilyCount = 0;
-    Uint32 index[4] = {indices[0].familyIndice, indices[1].familyIndice, indices[2].familyIndice, indices[3].familyIndice};
 
-    //graphic, present
-    if (index[0] == index[1])
+    if (allInOne.queueFamilyIndices.graphicsFamily.familyIndice != -1)
     {
         pCreateInfo[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
         pCreateInfo[0].pNext = NULL;
         pCreateInfo[0].flags = 0;
-        pCreateInfo[0].queueFamilyIndex = indices[0].familyIndice;
-        pCreateInfo[0].queueCount = indices[0].queueCount;
+        pCreateInfo[0].queueFamilyIndex = allInOne.queueFamilyIndices.graphicsFamily.familyIndice;
+        pCreateInfo[0].queueCount = allInOne.queueFamilyIndices.graphicsFamily.queueCount;
         pCreateInfo[0].pQueuePriorities = pQueuePriority;
         queueFamilyCount++;
     }
-    else
-    {
-        pCreateInfo[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        pCreateInfo[0].pNext = NULL;
-        pCreateInfo[0].flags = 0;
-        pCreateInfo[0].queueFamilyIndex = indices[0].familyIndice;
-        pCreateInfo[0].queueCount = indices[0].queueCount;
-        pCreateInfo[0].pQueuePriorities = pQueuePriority;
-        queueFamilyCount++;
 
+    if (allInOne.queueFamilyIndices.computeFamily.familyIndice != -1)
+    {
         pCreateInfo[1].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
         pCreateInfo[1].pNext = NULL;
         pCreateInfo[1].flags = 0;
-        pCreateInfo[1].queueFamilyIndex = indices[1].familyIndice;
-        pCreateInfo[1].queueCount = indices[1].queueCount;
+        pCreateInfo[1].queueFamilyIndex = allInOne.queueFamilyIndices.computeFamily.familyIndice;
+        pCreateInfo[1].queueCount = allInOne.queueFamilyIndices.computeFamily.queueCount;
         pCreateInfo[1].pQueuePriorities = pQueuePriority;
         queueFamilyCount++;
     }
 
-    if (index[2] != index[0] && index[2] != index[1]) 
+    if (allInOne.queueFamilyIndices.transferFamily.familyIndice != -1)
     {
-        pCreateInfo[queueFamilyCount].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        pCreateInfo[queueFamilyCount].pNext = NULL;
-        pCreateInfo[queueFamilyCount].flags = 0;
-        pCreateInfo[queueFamilyCount].queueFamilyIndex = indices[2].familyIndice;
-        pCreateInfo[queueFamilyCount].queueCount = indices[2].queueCount;
-        pCreateInfo[queueFamilyCount].pQueuePriorities = pQueuePriority;
-        queueFamilyCount++;
+        pCreateInfo[2].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        pCreateInfo[2].pNext = NULL;
+        pCreateInfo[2].flags = 0;
+        pCreateInfo[2].queueFamilyIndex = allInOne.queueFamilyIndices.transferFamily.familyIndice;
+        pCreateInfo[2].queueCount = allInOne.queueFamilyIndices.transferFamily.queueCount;
+        pCreateInfo[2].pQueuePriorities = pQueuePriority;
+        queueFamilyCount++;       
     }
 
-    if (index[3] != index[0] && index[3] != index[1] && index[3] != index[0])
+    if (allInOne.queueFamilyIndices.presentFamily.familyIndice != -1)
     {
-        pCreateInfo[queueFamilyCount].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        pCreateInfo[queueFamilyCount].pNext = NULL;
-        pCreateInfo[queueFamilyCount].flags = 0;
-        pCreateInfo[queueFamilyCount].queueFamilyIndex = indices[3].familyIndice;
-        pCreateInfo[queueFamilyCount].queueCount = indices[3].queueCount;
-        pCreateInfo[queueFamilyCount].pQueuePriorities = pQueuePriority;
-        queueFamilyCount++;
+        if (allInOne.queueFamilyIndices.presentFamily.familyIndice == allInOne.queueFamilyIndices.graphicsFamily.familyIndice)
+        {
+            pCreateInfo[0].queueCount++;
+        }
+        else
+        {
+            pCreateInfo[3].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+            pCreateInfo[3].pNext = NULL;
+            pCreateInfo[3].flags = 0;
+            pCreateInfo[3].queueFamilyIndex = allInOne.queueFamilyIndices.presentFamily.familyIndice;
+            pCreateInfo[3].queueCount = allInOne.queueFamilyIndices.presentFamily.queueCount;
+            pCreateInfo[3].pQueuePriorities = pQueuePriority;
+            queueFamilyCount++;
+        }
     }
-
     return queueFamilyCount;
 }
 void createLogicalDevice(void)
 {
     VkPhysicalDeviceFeatures supportedFeatures;
-    vkGetPhysicalDeviceFeatures(*allInOne.pPhysicalDevice, &supportedFeatures);
+    vkGetPhysicalDeviceFeatures(allInOne.physicalDevice, &supportedFeatures);
 
     if (!supportedFeatures.samplerAnisotropy)
     {
@@ -299,9 +296,9 @@ void createLogicalDevice(void)
     };
 
     Uint32 physicalDeviceExtensionCount = 0;
-    vkEnumerateDeviceExtensionProperties(*allInOne.pPhysicalDevice, NULL, &physicalDeviceExtensionCount, NULL);
+    vkEnumerateDeviceExtensionProperties(allInOne.physicalDevice, NULL, &physicalDeviceExtensionCount, NULL);
     VkExtensionProperties * physicalDeviceExtension = (VkExtensionProperties*)SDL_malloc(physicalDeviceExtensionCount * sizeof(VkExtensionProperties));
-    vkEnumerateDeviceExtensionProperties(*allInOne.pPhysicalDevice, NULL, &physicalDeviceExtensionCount, physicalDeviceExtension);
+    vkEnumerateDeviceExtensionProperties(allInOne.physicalDevice, NULL, &physicalDeviceExtensionCount, physicalDeviceExtension);
 
     bool * enabledGroup = extensionSupportedCheck_Optional(optionalDeviceExtensionCount, (char **)vmaExtension, physicalDeviceExtensionCount, physicalDeviceExtension);
     SDL_free(physicalDeviceExtension);
@@ -326,13 +323,10 @@ void createLogicalDevice(void)
     }
     SDL_free(enabledGroup);
 
-    QueueFamily indices[4] = {allInOne.pQueueFamilyIndices->graphicsFamily, allInOne.pQueueFamilyIndices->presentFamily,
-         allInOne.pQueueFamilyIndices->computeFamily, allInOne.pQueueFamilyIndices->transferFamily};
-
     VkDeviceQueueCreateInfo queueCreateInfo[4];
 
     float queuePriority[] = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f};
-    Uint32 queueFamilyCount = configureQueueCreateInfo(queueCreateInfo, indices, queuePriority);
+    Uint32 queueFamilyCount = configureQueueCreateInfo(queueCreateInfo, queuePriority);
 
     Uint32 layersCount = 1;
     const char * validationLayers[] = {
@@ -365,7 +359,7 @@ void createLogicalDevice(void)
     createInfo.ppEnabledExtensionNames = (const char* const *)enabledExtension;
     createInfo.pEnabledFeatures = NULL;
 
-    resultVulkan(vkCreateDevice(*allInOne.pPhysicalDevice, &createInfo, allInOne.pAllocationCallbacks, allInOne.pDevice), 0);
+    resultVulkan(vkCreateDevice(allInOne.physicalDevice, &createInfo, allInOne.pAllocationCallbacks, &allInOne.device), 0);
 
     SDL_free(enabledExtension);
     //printf("logical device created\n");

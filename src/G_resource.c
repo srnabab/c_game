@@ -121,9 +121,9 @@ bool loadTexture(PathType path, VkFormat format, VkImageAspectFlags flags, const
     globalTexture[i].offsets = SDL_calloc(1, offsetof(G_Texture_P, offsets));
     if (globalTexture[i].offsets == NULL)
     {
-        vkFreeMemory(*allInOne.pDevice, globalTexture[i].imageMem, allInOne.pAllocationCallbacks);
-        vkDestroyImageView(*allInOne.pDevice, globalTexture[i].imageView, allInOne.pAllocationCallbacks);
-        vkDestroyImage(*allInOne.pDevice, globalTexture[i].image, allInOne.pAllocationCallbacks);
+        vkFreeMemory(allInOne.device, globalTexture[i].imageMem, allInOne.pAllocationCallbacks);
+        vkDestroyImageView(allInOne.device, globalTexture[i].imageView, allInOne.pAllocationCallbacks);
+        vkDestroyImage(allInOne.device, globalTexture[i].image, allInOne.pAllocationCallbacks);
 
         SDL_UnlockMutex(allSync.textureMutex);
 
@@ -189,7 +189,7 @@ bool loadDepthResource(const char * innerName, bool sample)
     VkImageView imageView = NULL;
     VkFormat depthFormat = createDepthResoures(&image, &imageMem, &imageView, sample);
 
-    addTexture(allInOne.pExtent2D->width, allInOne.pExtent2D->height, depthFormat, image, imageMem, imageView, NULL, innerName);
+    addTexture(allInOne.extent2D.width, allInOne.extent2D.height, depthFormat, image, imageMem, imageView, NULL, innerName);
 
     return true;
 }
@@ -199,7 +199,7 @@ bool loadNormalResource(const char * innerName)
     VkDeviceMemory imageMem = NULL;
     VkImageView imageView = NULL;
     VkFormat normalFormat = createNormalResoures(&image, &imageMem, &imageView);
-    addTexture(allInOne.pExtent2D->width, allInOne.pExtent2D->height, normalFormat, image, imageMem, imageView, NULL, innerName);
+    addTexture(allInOne.extent2D.width, allInOne.extent2D.height, normalFormat, image, imageMem, imageView, NULL, innerName);
 
     return true;
 }
@@ -212,14 +212,14 @@ bool loadImageResource(VkFormat format, VkImageTiling tiling, VkImageUsageFlags 
    
     Uint32 ID = HashID(innerName);
 
-    createImage(allInOne.pExtent2D->width, allInOne.pExtent2D->height, format, tiling, usage, properties, &globalTexture[i].image, &globalTexture[i].imageMem);
+    createImage(allInOne.extent2D.width, allInOne.extent2D.height, format, tiling, usage, properties, &globalTexture[i].image, &globalTexture[i].imageMem);
 
     createImageView(globalTexture[i].image, format, VK_IMAGE_ASPECT_COLOR_BIT, &globalTexture[i].imageView);
 
-    if (targetLayout != VK_IMAGE_LAYOUT_UNDEFINED) transitionImageLayout(globalTexture[i].image, format, VK_IMAGE_LAYOUT_UNDEFINED, targetLayout, 0, 1);
+    if (targetLayout != VK_IMAGE_LAYOUT_UNDEFINED) transitionImageLayout(NULL, globalTexture[i].image, format, VK_IMAGE_LAYOUT_UNDEFINED, targetLayout, 0, 1);
 
-    globalTexture[i].source_width = allInOne.pExtent2D->width;
-    globalTexture[i].source_height = allInOne.pExtent2D->height;
+    globalTexture[i].source_width = allInOne.extent2D.width;
+    globalTexture[i].source_height = allInOne.extent2D.height;
     globalTexture[i].format = format;
     SDL_strlcpy(globalTexture[i].innerName, innerName, 16);
 
@@ -355,9 +355,9 @@ bool unloadTexture(const char * innerName)
 
     if (i == tableCount) return false;
 
-    if (globalTexture[i].imageMem != NULL) vkFreeMemory(*allInOne.pDevice, globalTexture[i].imageMem, allInOne.pAllocationCallbacks);
-    if (globalTexture[i].imageView != NULL) vkDestroyImageView(*allInOne.pDevice, globalTexture[i].imageView, allInOne.pAllocationCallbacks);
-    if (globalTexture[i].image != NULL) vkDestroyImage(*allInOne.pDevice, globalTexture[i].image, allInOne.pAllocationCallbacks);
+    if (globalTexture[i].imageMem != NULL) vkFreeMemory(allInOne.device, globalTexture[i].imageMem, allInOne.pAllocationCallbacks);
+    if (globalTexture[i].imageView != NULL) vkDestroyImageView(allInOne.device, globalTexture[i].imageView, allInOne.pAllocationCallbacks);
+    if (globalTexture[i].image != NULL) vkDestroyImage(allInOne.device, globalTexture[i].image, allInOne.pAllocationCallbacks);
     if (globalTexture[i].offsets != NULL) SDL_free(globalTexture[i].offsets);
     emptyTexture(globalTexture + i);
 
@@ -371,9 +371,9 @@ void unloadAllTexture(void)
     {
         if (globalTexture[i].innerName[0] != '\0')
         {
-            vkDestroyImageView(*allInOne.pDevice, globalTexture[i].imageView, allInOne.pAllocationCallbacks);
-            vkDestroyImage(*allInOne.pDevice, globalTexture[i].image, allInOne.pAllocationCallbacks);
-            vkFreeMemory(*allInOne.pDevice, globalTexture[i].imageMem, allInOne.pAllocationCallbacks);
+            vkDestroyImageView(allInOne.device, globalTexture[i].imageView, allInOne.pAllocationCallbacks);
+            vkDestroyImage(allInOne.device, globalTexture[i].image, allInOne.pAllocationCallbacks);
+            vkFreeMemory(allInOne.device, globalTexture[i].imageMem, allInOne.pAllocationCallbacks);
             SDL_free(globalTexture[i].offsets);
             emptyTexture(globalTexture + i);
         }

@@ -541,7 +541,7 @@ bool addGraphicPipelineCreateInfo(Uint32 stageCount, VkPipelineShaderStageCreate
 VkResult executeCreateGraphicsPipelines(VkPipelineCache pipelinesCache)
 {
     VkPipeline tempGraphicsPipeline[10];
-    VkResult result = vkCreateGraphicsPipelines(*allInOne.pDevice, NULL, graphicsPipelineCreateInfoCount, graphicsPipelineCreateInfos, allInOne.pAllocationCallbacks, tempGraphicsPipeline);
+    VkResult result = vkCreateGraphicsPipelines(allInOne.device, NULL, graphicsPipelineCreateInfoCount, graphicsPipelineCreateInfos, allInOne.pAllocationCallbacks, tempGraphicsPipeline);
 
     for  (Uint32 i = 0;i < graphicsPipelineCreateInfoCount;i++)
     {
@@ -566,7 +566,7 @@ VkResult executeCreateGraphicsPipelines(VkPipelineCache pipelinesCache)
 
     return result;
 }
-bool addComputePipeline(VkPipelineShaderStageCreateInfo * pShaderStageCreateInfo, VkPipelineLayout * pComputePipelineLayout, VkPipeline basePipelineHandle, Uint32 basePipelineIndex, VkPipeline * pComputePipeline)
+bool addComputePipeline(VkPipelineShaderStageCreateInfo * pShaderStageCreateInfo, VkPipelineLayout computePipelineLayout, VkPipeline basePipelineHandle, Uint32 basePipelineIndex, VkPipeline * pComputePipeline)
 {
     if (computePipelineCreateInfoCount == 10) return false;
 
@@ -575,7 +575,7 @@ bool addComputePipeline(VkPipelineShaderStageCreateInfo * pShaderStageCreateInfo
     pipelineInfo.pNext = NULL;
     pipelineInfo.flags = 0;
     pipelineInfo.stage = *pShaderStageCreateInfo;
-    pipelineInfo.layout = *pComputePipelineLayout;
+    pipelineInfo.layout = computePipelineLayout;
     pipelineInfo.basePipelineHandle = basePipelineHandle;
     pipelineInfo.basePipelineIndex = basePipelineIndex;
 
@@ -585,12 +585,12 @@ bool addComputePipeline(VkPipelineShaderStageCreateInfo * pShaderStageCreateInfo
 
     return true;
 
-    vkCreateComputePipelines(*allInOne.pDevice, NULL, 1, &pipelineInfo, allInOne.pAllocationCallbacks, pComputePipeline);
+    vkCreateComputePipelines(allInOne.device, NULL, 1, &pipelineInfo, allInOne.pAllocationCallbacks, pComputePipeline);
 }
 VkResult executeCreateComputePipelines(VkPipelineCache pipelinesCache)
 {
     VkPipeline tempComputePipelines[10];
-    VkResult result = vkCreateComputePipelines(*allInOne.pDevice, NULL, computePipelineCreateInfoCount, computePipelineCreateInfos, allInOne.pAllocationCallbacks, tempComputePipelines);
+    VkResult result = vkCreateComputePipelines(allInOne.device, NULL, computePipelineCreateInfoCount, computePipelineCreateInfos, allInOne.pAllocationCallbacks, tempComputePipelines);
 
     for (Uint32 i = 0;i < computePipelineCreateInfoCount;i++)
     {

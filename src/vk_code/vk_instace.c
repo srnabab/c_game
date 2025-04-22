@@ -204,7 +204,7 @@ void createInstance(void)
     createInfo.enabledExtensionCount = requiredExtensionCount;
     createInfo.ppEnabledExtensionNames = (const char * const *)requiredExtension;
 
-    resultVulkan(vkCreateInstance(&createInfo, allInOne.pAllocationCallbacks, allInOne.pInstance), 1, requiredExtension);
+    resultVulkan(vkCreateInstance(&createInfo, allInOne.pAllocationCallbacks, &allInOne.instance), 1, requiredExtension);
 
     SDL_free(requiredExtension);
 

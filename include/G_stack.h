@@ -11,7 +11,7 @@
 struct _G_Stack;
 
 typedef bool (*Push)(struct _G_Stack * stack, void * data);
-typedef void (*Pop)(struct _G_Stack * stack, void * data);
+typedef bool (*Pop)(struct _G_Stack * stack, void * data);
 
 typedef struct _G_Stack
 {

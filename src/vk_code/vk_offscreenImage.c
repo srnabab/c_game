@@ -1,3 +1,4 @@
+#include "vk_code_h/vk_queue.h"
 #include "vk_code_h/vk_offscreenImage.h"
 #include "vk_code_h/vk_drawTool.h"
 #include "vk_code_h/vk_all_struct.h"
@@ -14,7 +15,7 @@ VkImageView drawSingleImageView(Uint32 width, Uint32 height, const char * innerN
 
     VkSubmitInfo submitInfo = {};
     setSubmitInfo(NULL, 0, NULL, NULL, 1, &commandBuffer, 1, (*allInOne.ppTimelineSemaphore1) + currentFrame, &submitInfo);
-    vkQueueSubmit(*allInOne.pGraphicQueue, 1, &submitInfo, NULL);
+    vkQueueSubmit(getGraphicQueue(), 1, &submitInfo, NULL);
 
     return getFrameBufferImageView(frameBufferIndex);
 }

@@ -89,12 +89,12 @@ void drawModel(const char * innerName, Uint32 currentFrame, VkCommandBuffer comm
     if (bottom)
     {
         VkDescriptorSet descriptorSet[] = {tempTexture->pDescriptorSet[currentFrame], tempTexture->pDescriptorSet[currentFrame + 2]};
-        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pBottomPipelineLayout, 0,
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, allInOne.bottomPipelineLayout, 0,
         2, descriptorSet, 0, NULL);
     }
     else
     {
-        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, *allInOne.pModelPipelineLayout, 0,
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, allInOne.modelPipelineLayout, 0,
         1, tempTexture->pDescriptorSet + currentFrame, 0, NULL);
     }
    

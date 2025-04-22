@@ -15,8 +15,8 @@
 
 typedef struct _QueueFamily
 {
-    Uint32 familyIndice;
-    Uint32 queueCount;
+    int32_t familyIndice;
+    int32_t queueCount;
 } QueueFamily;
 
 typedef struct _QueueFamilyIndices{

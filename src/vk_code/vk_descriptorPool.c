@@ -49,7 +49,7 @@ void createDescriptorSets(VkDescriptorPool * pDescriptorPool, VkDescriptorSetLay
     allocInfo.descriptorPool = *pDescriptorPool;
     allocInfo.pSetLayouts = layouts;
 
-    logMessage("%d", vkAllocateDescriptorSets(*allInOne.pDevice, &allocInfo, *ppDescriptorSets));
+    logMessage("%d", vkAllocateDescriptorSets(allInOne.device, &allocInfo, *ppDescriptorSets));
 
     SDL_free(layouts);
 }
@@ -264,7 +264,7 @@ static void updateDescriptorSets(G_DescriptorSet_Update * pUpdate, Uint32 update
             }
         }
     }
-    vkUpdateDescriptorSets(*allInOne.pDevice, updateCount * MAX_FRAMES_IN_FLIGHT, pWriteDescriptorSets, 0, NULL);
+    vkUpdateDescriptorSets(allInOne.device, updateCount * MAX_FRAMES_IN_FLIGHT, pWriteDescriptorSets, 0, NULL);
 
     for (i = 0;i < updateCount * MAX_FRAMES_IN_FLIGHT;i++)
     {

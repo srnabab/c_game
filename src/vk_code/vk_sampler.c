@@ -9,7 +9,7 @@ extern VK_ALL allInOne;
 void createTextureSampler(VkSampler * pSampler)
 {
     VkPhysicalDeviceProperties properties = {};
-    vkGetPhysicalDeviceProperties(*allInOne.pPhysicalDevice, &properties);
+    vkGetPhysicalDeviceProperties(allInOne.physicalDevice, &properties);
 
     VkSamplerCreateInfo samplerInfo = {};
     samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -31,13 +31,13 @@ void createTextureSampler(VkSampler * pSampler)
     samplerInfo.borderColor = VK_BORDER_COLOR_INT_TRANSPARENT_BLACK;
     samplerInfo.unnormalizedCoordinates = VK_FALSE;
 
-    resultVulkan(vkCreateSampler(*allInOne.pDevice, &samplerInfo, allInOne.pAllocationCallbacks, pSampler), 0);
+    resultVulkan(vkCreateSampler(allInOne.device, &samplerInfo, allInOne.pAllocationCallbacks, pSampler), 0);
 }
 // linear, linear, clamp to edge, anisotropy
 void createNormalSampler(VkSampler * pSampler)
 {
     VkPhysicalDeviceProperties properties = {};
-    vkGetPhysicalDeviceProperties(*allInOne.pPhysicalDevice, &properties);
+    vkGetPhysicalDeviceProperties(allInOne.physicalDevice, &properties);
 
     VkSamplerCreateInfo samplerInfo = {};
     samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -59,7 +59,7 @@ void createNormalSampler(VkSampler * pSampler)
     samplerInfo.borderColor = VK_BORDER_COLOR_INT_TRANSPARENT_BLACK;
     samplerInfo.unnormalizedCoordinates = VK_FALSE;
 
-    resultVulkan(vkCreateSampler(*allInOne.pDevice, &samplerInfo, allInOne.pAllocationCallbacks, pSampler), 0);
+    resultVulkan(vkCreateSampler(allInOne.device, &samplerInfo, allInOne.pAllocationCallbacks, pSampler), 0);
 }
 // linear, false, clamp to border, false, compare, less, opaque white
 void createDepthSampler(VkSampler * pSampler)
@@ -84,7 +84,7 @@ void createDepthSampler(VkSampler * pSampler)
     samplerInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
     samplerInfo.unnormalizedCoordinates = VK_FALSE;
 
-    resultVulkan(vkCreateSampler(*allInOne.pDevice, &samplerInfo, allInOne.pAllocationCallbacks, pSampler), 0);
+    resultVulkan(vkCreateSampler(allInOne.device, &samplerInfo, allInOne.pAllocationCallbacks, pSampler), 0);
 }
 void createShadowSampler(VkSampler * pSampler)
 {
@@ -108,5 +108,5 @@ void createShadowSampler(VkSampler * pSampler)
     samplerInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
     samplerInfo.unnormalizedCoordinates = VK_FALSE;
 
-    resultVulkan(vkCreateSampler(*allInOne.pDevice, &samplerInfo, allInOne.pAllocationCallbacks, pSampler), 0);
+    resultVulkan(vkCreateSampler(allInOne.device, &samplerInfo, allInOne.pAllocationCallbacks, pSampler), 0);
 }

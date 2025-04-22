@@ -182,17 +182,9 @@ PathType pathCompare(char * buffer)
     {
         return EmojiPng;
     }
-    else if ((SDL_strcmp(buffer, "[H1w1Png]") == 0))
-    {
-        return H1w1Png;
-    }
     else if ((SDL_strcmp(buffer, "[IconPng]") == 0))
     {
         return IconPng;
-    }
-    else if ((SDL_strcmp(buffer, "[LinePng]") == 0))
-    {
-        return LinePng;
     }
     else if ((SDL_strcmp(buffer, "[Loading1Png]") == 0))
     {
@@ -205,10 +197,6 @@ PathType pathCompare(char * buffer)
     else if ((SDL_strcmp(buffer, "[Non_existPng]") == 0))
     {
         return Non_existPng;
-    }
-    else if ((SDL_strcmp(buffer, "[PixelsPng]") == 0))
-    {
-        return PixelsPng;
     }
     else if ((SDL_strcmp(buffer, "[ExitPng]") == 0))
     {

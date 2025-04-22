@@ -11,14 +11,16 @@ static bool defaultPushFn(G_Stack * pStack, void * data)
 
     return true;
 }
-static void defaultPopFn(G_Stack * pStack, void * data)
+static bool defaultPopFn(G_Stack * pStack, void * data)
 {
-    if (StackIsEmpty(*pStack)) return;
+    if (StackIsEmpty(*pStack)) return false;
 
     SDL_LockMutex(pStack->mutex);
     pStack->top--;
     memcpy(data, (char*)pStack->data + (pStack->dataSize * (pStack->top + 1)), pStack->dataSize);
     SDL_UnlockMutex(pStack->mutex);
+
+    return true;
 }
 bool initStack(G_Stack * stack, size_t dataSize, Push pushFn, Pop popFn)
 {

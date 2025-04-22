@@ -10,12 +10,12 @@ extern VK_ALL allInOne;
 void getSurfaceFormats(VkSurfaceKHR surface, VkSurfaceFormatKHR * pSurfaceFormat)
 {
     uint32_t surfaceFormatCount = 0;
-    resultVulkan(vkGetPhysicalDeviceSurfaceFormatsKHR(*allInOne.pPhysicalDevice, surface, &surfaceFormatCount, NULL), 0);
+    resultVulkan(vkGetPhysicalDeviceSurfaceFormatsKHR(allInOne.physicalDevice, surface, &surfaceFormatCount, NULL), 0);
     
     VkSurfaceFormatKHR * surfaceFormat = (VkSurfaceFormatKHR *)SDL_malloc(surfaceFormatCount * sizeof(VkSurfaceFormatKHR));
     if (surfaceFormatCount != 0)
     {
-        resultVulkan(vkGetPhysicalDeviceSurfaceFormatsKHR(*allInOne.pPhysicalDevice, surface, &surfaceFormatCount, surfaceFormat), 1, surfaceFormat);
+        resultVulkan(vkGetPhysicalDeviceSurfaceFormatsKHR(allInOne.physicalDevice, surface, &surfaceFormatCount, surfaceFormat), 1, surfaceFormat);
     }
 
     bool selected = false;
@@ -37,12 +37,12 @@ void getSurfaceFormats(VkSurfaceKHR surface, VkSurfaceFormatKHR * pSurfaceFormat
 void getPresentModes(VkPresentModeKHR * pPresentMode)
 {
     uint32_t presentModeCount;
-    resultVulkan(vkGetPhysicalDeviceSurfacePresentModesKHR(*allInOne.pPhysicalDevice, *allInOne.pSurface3D, &presentModeCount, NULL), 0);
+    resultVulkan(vkGetPhysicalDeviceSurfacePresentModesKHR(allInOne.physicalDevice, allInOne.surface3D, &presentModeCount, NULL), 0);
 
     VkPresentModeKHR * presentModes = (VkPresentModeKHR *)SDL_malloc(presentModeCount * sizeof(VkPresentModeKHR));
     if (presentModeCount != 0) 
     {
-        resultVulkan(vkGetPhysicalDeviceSurfacePresentModesKHR(*allInOne.pPhysicalDevice, *allInOne.pSurface3D, &presentModeCount, presentModes), 1, presentModes);
+        resultVulkan(vkGetPhysicalDeviceSurfacePresentModesKHR(allInOne.physicalDevice, allInOne.surface3D, &presentModeCount, presentModes), 1, presentModes);
     
         for (uint32_t i = 0;i < presentModeCount;i++)
         {
@@ -60,7 +60,7 @@ void getPresentModes(VkPresentModeKHR * pPresentMode)
 }
 void getSurfaceCapabilities(VkSurfaceKHR surface, VkSurfaceCapabilitiesKHR * pSurfaceCapabilities)
 {
-    resultVulkan(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(*allInOne.pPhysicalDevice, surface, pSurfaceCapabilities), 0);
+    resultVulkan(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(allInOne.physicalDevice, surface, pSurfaceCapabilities), 0);
 }
 void createSwapchain(VkSurfaceKHR surface, VkSurfaceCapabilitiesKHR surfaceCapabilities, VkSurfaceFormatKHR surfaceFormat, VkPresentModeKHR presentMode, VkSwapchainKHR * pSwapchain, VkSwapchainKHR oldSwapchain)
 {
@@ -69,7 +69,7 @@ void createSwapchain(VkSurfaceKHR surface, VkSurfaceCapabilitiesKHR surfaceCapab
     if (surfaceCapabilities.maxImageCount > 0 && imageCount > surfaceCapabilities.maxImageCount)
         imageCount = surfaceCapabilities.maxImageCount;
         
-    if (*allInOne.pSwapchain3D == NULL)
+    if (allInOne.swapchain3D == NULL)
     {
         //printf("imageCount: %u\n", imageCount);
     }
@@ -82,7 +82,7 @@ void createSwapchain(VkSurfaceKHR surface, VkSurfaceCapabilitiesKHR surfaceCapab
     createInfo.minImageCount = imageCount;
     createInfo.imageFormat = surfaceFormat.format;
     createInfo.imageColorSpace = surfaceFormat.colorSpace;
-    createInfo.imageExtent = *allInOne.pExtent2D;
+    createInfo.imageExtent = allInOne.extent2D;
     createInfo.imageArrayLayers = 1;
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
     createInfo.imageSharingMode = 0;
@@ -94,8 +94,8 @@ void createSwapchain(VkSurfaceKHR surface, VkSurfaceCapabilitiesKHR surfaceCapab
     createInfo.clipped = VK_TRUE;
     createInfo.oldSwapchain = oldSwapchain;
 
-    uint32_t queueFamilyIndices[3] = {allInOne.pQueueFamilyIndices->graphicsFamily.familyIndice, allInOne.pQueueFamilyIndices->presentFamily.familyIndice, allInOne.pQueueFamilyIndices->computeFamily.familyIndice};
-    if (allInOne.pQueueFamilyIndices->graphicsFamily.familyIndice != allInOne.pQueueFamilyIndices->presentFamily.familyIndice) 
+    uint32_t queueFamilyIndices[3] = {allInOne.queueFamilyIndices.graphicsFamily.familyIndice, allInOne.queueFamilyIndices.presentFamily.familyIndice, allInOne.queueFamilyIndices.computeFamily.familyIndice};
+    if (allInOne.queueFamilyIndices.graphicsFamily.familyIndice != allInOne.queueFamilyIndices.presentFamily.familyIndice) 
     {
         createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
         createInfo.queueFamilyIndexCount = 2;
@@ -108,16 +108,16 @@ void createSwapchain(VkSurfaceKHR surface, VkSurfaceCapabilitiesKHR surfaceCapab
         createInfo.pQueueFamilyIndices = NULL; // Optional
     }
 
-    resultVulkan(vkCreateSwapchainKHR(*allInOne.pDevice, &createInfo, allInOne.pAllocationCallbacks, pSwapchain), 0);
+    resultVulkan(vkCreateSwapchainKHR(allInOne.device, &createInfo, allInOne.pAllocationCallbacks, pSwapchain), 0);
 }
 void getSwapchainNumber(VkSwapchainKHR swapchain, Uint32 * pImageCount)
 {
-    resultVulkan(vkGetSwapchainImagesKHR(*allInOne.pDevice, swapchain, pImageCount, NULL), 0);
+    resultVulkan(vkGetSwapchainImagesKHR(allInOne.device, swapchain, pImageCount, NULL), 0);
 }
 void createSwapchainImage(VkSwapchainKHR swapchain, Uint32 * pImageCount, VkImage ** ppSwapchainImages)
 {
     *ppSwapchainImages = (VkImage *)SDL_malloc(*pImageCount * sizeof(VkImage));
-    resultVulkan(vkGetSwapchainImagesKHR(*allInOne.pDevice, swapchain, pImageCount, *ppSwapchainImages), 0);
+    resultVulkan(vkGetSwapchainImagesKHR(allInOne.device, swapchain, pImageCount, *ppSwapchainImages), 0);
 }
 void createSwapchainImageView(VkImage * pSwapchainImages, Uint32 imageCount, VkFormat swapchainFormat, VkImageAspectFlags aspectFlags, VkImageView ** ppSwapchainImageViews)
 {

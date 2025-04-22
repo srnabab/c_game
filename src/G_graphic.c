@@ -4,6 +4,7 @@
 #include "G_resource.h"
 #include "G_TileMap/G_TileSet.h"
 #include "G_staticModel.h"
+#include "G_map.h"
 #include "G_custom_math.h"
 
 #include "SDL3/SDL_video.h"
@@ -122,30 +123,9 @@ bool initWindow_3D(void)
     return true;
 }
 
-static VkInstance instance = NULL;
-
-static VkPhysicalDevice physicalDevice = NULL;
-
-static QueueFamilyIndices queueIndices = {};
-static VkDevice device = NULL;
-static VkQueue graphicQueue = NULL;
-static VkQueue presentQueue = NULL;
-static VkQueue computeQueue = NULL;
-static VkQueue transferQueue = NULL;
-
 static VkAllocationCallbacks SDL_allocationCallBacks = {};
 
-static VkExtent2D extent2D = {};
-static VkExtent2D oldExtent2D = {};
-
 static VkFormat swapchainFormat = 0;
-
-static VkFramebuffer * graphic2DFramebuffer = NULL;
-
-static VkFramebuffer * shadowFrameBuffer = NULL;
-static VkFramebuffer * directColorFramebuffer = NULL;
-static VkFramebuffer * bottomImageArrayFramebuffers = NULL;
-static VkFramebuffer * combineFrameBuffer = NULL;
 
 static VkPipelineShaderStageCreateInfo * graphciShaderStageCreateInfo = NULL;
 
@@ -174,134 +154,36 @@ static VkDescriptorSetLayout * computeDescriptorSetLayout = NULL;
 static VkDescriptorSetLayout * SSGIDescriptorSetLayout = NULL;
 static VkDescriptorSetLayout * combineDescriptorSetLayout = NULL;
 
-static VkPipelineLayout graphicPipelineLayout = NULL;
-
-static VkPipelineLayout particlePipelineLayout = NULL;
-
-static VkPipelineLayout computePipelineLayout = NULL;
-
-static VkRenderPass renderPass = NULL;
-
-static VkPipelineLayout modelPipelineLayout = NULL;
-static VkPipelineLayout bottomPipelineLayout = NULL;
-static VkRenderPass modelRenderPass = NULL;
-static VkRenderPass offscreenRenderPass = NULL;
-
-static VkPipelineLayout shadwoPipelineLayout = NULL;
-static VkRenderPass shadowRenderPass = NULL;
-
-static VkPipelineLayout SSGIPipelineLayout = NULL;
-
-static VkPipelineLayout combinePipelineLayout = NULL;
-static VkRenderPass combineRenderPass = NULL;
-
-static VkPipeline graphicPipeline = NULL;
-static VkPipeline particlePipeline = NULL;
-static VkPipeline computePipeline = NULL;
-
-static VkPipeline modelPipeline = NULL;
-static VkPipeline bottomPipeline = NULL;
-static VkPipeline shadowPipeline = NULL;
-static VkPipeline SSGIPipeline = NULL;
-static VkPipeline combinePipeline = NULL;
-
-static VkCommandPool graphicCommandPool = NULL;
-static VkCommandPool presentCommandPool = NULL;
-static VkCommandPool transferCommandPool = NULL;
-static VkCommandPool computeCommandPool = NULL;
-
-static VkSampler textureSampler = NULL;
-static VkSampler normalSampler = NULL;
-static VkSampler depthSampler = NULL;
-static VkSampler shadowSampler = NULL;
-
-static VkBuffer vertexBuffer2D[MAX_FRAMES_IN_FLIGHT];
-static VkDeviceMemory vertexBuffer2DMem[MAX_FRAMES_IN_FLIGHT];
-static void * vertexBuffer2DMemMapped[MAX_FRAMES_IN_FLIGHT];
-static Uint32 vertices2DCount = 0;
-static Vertex * vertices2D = NULL;
-
-static VkBuffer indexBuffer2D[1];
-static VkDeviceMemory indexBuffer2DMem[1];
-static void * indexBuffer2DMemMapped[1];
-static Uint16 * indices2D = NULL;
-
-static VkBuffer vertexBuffer3D[MAX_FRAMES_IN_FLIGHT];
-static VkDeviceMemory vertexBuffer3DMem[MAX_FRAMES_IN_FLIGHT];
-static void * vertexBuffer3DMemMapped[MAX_FRAMES_IN_FLIGHT];
-static Uint32 vertices3DCount = 0;
-static Vertex4 * vertices3D = NULL;
-
-static VkBuffer indexBuffer3D[MAX_FRAMES_IN_FLIGHT];
-static VkDeviceMemory indexBuffer3DMem[MAX_FRAMES_IN_FLIGHT];
-static void * indexBuffer3DMemMapped[MAX_FRAMES_IN_FLIGHT];
-static Uint32 indices3DCount = 0;
-static Uint32 * indices3D = NULL;
-
-static VkBuffer graphicUniformBuffers[MAX_FRAMES_IN_FLIGHT];
 static VkDeviceMemory graphicUniformBuffersMemory[MAX_FRAMES_IN_FLIGHT];
-static void* graphicUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
 static UniformBufferObject ubo = {};
 
-static VkBuffer graphic3DUniformBuffers[MAX_FRAMES_IN_FLIGHT];
 static VkDeviceMemory graphic3DUniformBuffersMemory[MAX_FRAMES_IN_FLIGHT];
-static void* graphic3DUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
 static UniformBufferObject ubo3D = {};
 
-static VkBuffer UIUniformBuffers[MAX_FRAMES_IN_FLIGHT];
 static VkDeviceMemory UIUniformBuffersMemory[MAX_FRAMES_IN_FLIGHT];
-static void* UIUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
 static UniformBufferObject uboUI = {};
 
-static VkBuffer computeUniformBuffers[MAX_FRAMES_IN_FLIGHT];
 static VkDeviceMemory computeUniformBuffersmemory[MAX_FRAMES_IN_FLIGHT];
-static void* computeUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
 static ComputeUniformBufferObject computeUbo = {};
 
-static VkBuffer SSGIUniformBuffers[MAX_FRAMES_IN_FLIGHT];
 static VkDeviceMemory SSGIUniformBufferMem[MAX_FRAMES_IN_FLIGHT];
-static void* SSGIUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
 static SSGIUniformBufferObject SSGIubo = {};
 
-static VkBuffer SunUniformBuffer[MAX_FRAMES_IN_FLIGHT];
 static VkDeviceMemory SunUniformBufferMem[MAX_FRAMES_IN_FLIGHT];
-static void* SunUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
 static DirectionLight  Sunubo = {};
 
-static VkBuffer lightSpaceUniformBuffer[MAX_FRAMES_IN_FLIGHT];
 static VkDeviceMemory lightSpaceUniformBufferMem[MAX_FRAMES_IN_FLIGHT];
-static void* lightSpaceUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
 static LightSpace lightSpaceubo = {};
 
 
 static VkDescriptorPool graphicDescriptorPool = NULL;
-static VkDescriptorSet * graphicDescriptorSets = NULL;
-static VkDescriptorSet * modelDescriptorSets = NULL;
-static VkDescriptorSet * bottomDescriptorSets = NULL;
-
-static VkDescriptorSet * particleDescriptorSets = NULL;
 
 static VkDescriptorPool computeDescriptorPool = NULL;
-static VkDescriptorSet * computeDescriptorSets = NULL;
-
-static VkDescriptorSet * shadowDescriptorSets = NULL;
-static VkDescriptorSet * SSGIDescriptorSets = NULL;
-static VkDescriptorSet * combineDescriptorSets = NULL;
 
 static VkCommandBuffer graphicCommandBuffer[MAX_FRAMES_IN_FLIGHT];
 static VkCommandBuffer presentCommandBuffer[MAX_FRAMES_IN_FLIGHT];
 static VkCommandBuffer computeCommandBuffer[MAX_FRAMES_IN_FLIGHT];
 static VkCommandBuffer transferCommandBuffer[MAX_FRAMES_IN_FLIGHT];
-
-static VkSemaphore timelineSemaphore1[MAX_FRAMES_IN_FLIGHT];
-
-static VkSemaphore imageAvailableSemaphore[MAX_FRAMES_IN_FLIGHT];
-static VkSemaphore renderFinishedSemaphore[MAX_FRAMES_IN_FLIGHT];
-
-static VkFence graphicInFlightFence[2];
-static VkFence computeInFlightFences[2];
-
-static Uint32 currentFrame = 0;
 
 static float camera_X = 0.0f;
 static float camera_Y = 0.0f;
@@ -311,23 +193,9 @@ static float pictureY = 0;
 
 // static bool moveEnabled = false;
 
-static VkBuffer shaderStorageBuffers[MAX_FRAMES_IN_FLIGHT];
 static VkDeviceMemory shaderStorageBuffersMem[MAX_FRAMES_IN_FLIGHT];
 
 static PushConstants picturePushConstants = {0.0f};
-
-static VkSurfaceKHR surface3D = NULL;
-
-static VkSurfaceFormatKHR surface3DFormat = {};
-static VkPresentModeKHR presentMode3D = 0;
-static VkSurfaceCapabilitiesKHR surface3DCapabilities = {};
-
-static VkSwapchainKHR swapchain3D = NULL;
-static Uint32 imageCount3D = 0;
-
-static VkImage * swapchain3DImages = NULL;
-static VkImageView * swapchain3DImageViews = NULL;
-static VkFramebuffer * swapchain3DFramebuffer = NULL;
 
 static G_StaticModelPool staticModelPool = {};
 
@@ -338,158 +206,20 @@ static void initializeAllInOne(void)
 {
     allInOne.pAllocationCallbacks = &SDL_allocationCallBacks;
 
-    allInOne.pInstance = &instance;
-
-    allInOne.pPhysicalDevice = &physicalDevice;
-
-    allInOne.pDevice = &device;
-
-    allInOne.pQueueFamilyIndices = &queueIndices;
-    allInOne.pGraphicQueue = &graphicQueue;
-    allInOne.pPresentQueue = &presentQueue;
-    allInOne.pComputeQueue = &computeQueue;
-    allInOne.pTransferQueue = &transferQueue;
-    
-    allInOne.pGraphicCommandPool = &graphicCommandPool;
-    allInOne.pPresentCommandPool = &presentCommandPool;
-    allInOne.pComputeCommandPool = &computeCommandPool;
-    allInOne.pTransferCommandPool = &transferCommandPool;
-
-    allInOne.pExtent2D = &extent2D;
-    allInOne.pOldExtent2D = &oldExtent2D;
-
-    allInOne.pRenderPass = &renderPass;
-    allInOne.pModelRenderPass = &modelRenderPass;
-    allInOne.pOffscreenRenderPass = &offscreenRenderPass;
-    allInOne.pShadowRenderPass = &shadowRenderPass;
-    allInOne.pCombineRenderPass = &combineRenderPass;
-
-    allInOne.pGraphicPipelineLayout = &graphicPipelineLayout;
-    allInOne.pGraphicPipeline = &graphicPipeline;
-
-    allInOne.pParticlePipelineLayout = &particlePipelineLayout;
-    allInOne.pParticlePipeline = &particlePipeline;
-
-    allInOne.pComputePipelineLayout = &computePipelineLayout;
-    allInOne.pComputePipeline = &computePipeline;
-
-    allInOne.pModelPipelineLayout = &modelPipelineLayout;
-    allInOne.pModelPipeline = &modelPipeline;
-
-    allInOne.pBottomPipelineLayout = &bottomPipelineLayout;
-    allInOne.pBottomPipeline = &bottomPipeline;
-
-    allInOne.pShadowPipelineLayout = &shadwoPipelineLayout;
-    allInOne.pShadowPipeline = &shadowPipeline;
-
-    allInOne.pSSGIPipelineLayout = &SSGIPipelineLayout;
-    allInOne.pSSGIPipeline = &SSGIPipeline;
-
-    allInOne.pCombinePipelineLayout = &combinePipelineLayout;
-    allInOne.pCombinePipeline = &combinePipeline;
-
-    allInOne.pSurface3D = &surface3D;
-    allInOne.pSurface3DFormat = &surface3DFormat;
-    allInOne.pSurface3DCapabilities = &surface3DCapabilities;
-    allInOne.pPresentMode3D = &presentMode3D;
-    allInOne.pSwapchain3D = &swapchain3D;
-    allInOne.pImageCount3D = &imageCount3D;
-    allInOne.ppSwapchain3DImages = &swapchain3DImages;
-    allInOne.ppSwapchain3DImageViews = &swapchain3DImageViews;
-
-
-    allInOne.ppGraphic2dFramebuffer = &graphic2DFramebuffer;
-    allInOne.ppSwapchain3DFramebuffer = &swapchain3DFramebuffer;
-    allInOne.ppShadowFramebuffer = &shadowFrameBuffer;
-    allInOne.ppDirectColorFramebuffer = &directColorFramebuffer;
-    allInOne.ppCombineFramebuffer = &combineFrameBuffer;
-
-    allInOne.pVertexBuffer2D = &vertexBuffer2D;
-    allInOne.maxVertices2DCount = (BALLCOUNT + MAX_CHARACTERS) * 4 * 2;
-    allInOne.ppVertices2D = &vertices2D;
-    allInOne.pVertices2DCount = &vertices2DCount;
-    allInOne.pVertexBuffer2DMem = &vertexBuffer2DMem;
-    allInOne.ppVertexBuffer2DMemMapped = &vertexBuffer2DMemMapped;
-
-    allInOne.pIndexBuffer2D = &indexBuffer2D;
-    allInOne.ppIndices2D = &indices2D;
-    allInOne.pIndexBuffer2DMem = &indexBuffer2DMem;
-    allInOne.ppIndexBuffer2DMemMapped = &indexBuffer2DMemMapped;
-
-    allInOne.pVertexBuffer3D = &vertexBuffer3D;
-    allInOne.maxVertices3DCount = (BALLCOUNT + MAX_CHARACTERS) * 4 * 2;
-    allInOne.ppVertices3D = &vertices3D;
-    allInOne.pVertices3DCount = &vertices3DCount;
-    allInOne.pVertexBuffer3DMem = &vertexBuffer3DMem;
-    allInOne.ppVertexBuffer3DMemMapped = &vertexBuffer3DMemMapped;
-
-    allInOne.pIndexBuffer3D = &indexBuffer3D;
-    allInOne.ppIndices3D = &indices3D;
-    allInOne.pIndices3DCount = &indices3DCount;
-    allInOne.pIndexBuffer3DMem = &indexBuffer3DMem;
-    allInOne.ppIndexBuffer3DMemMapped = &indexBuffer3DMemMapped;
-
     allInOne.pStaticModelPool = &staticModelPool;
-
-    allInOne.pTextureSampler = &textureSampler;
-    allInOne.pNormalSampler = &normalSampler;
-    allInOne.pDepthSampler = &depthSampler;
-    allInOne.pShadowSampler = &shadowSampler;
-
-    allInOne.ppGraphicUniformBuffer = &graphicUniformBuffers;
-    allInOne.pppGraphicUniformBufferMapped = &graphicUniformBufferMapped;
     allInOne.pGraphicUbo = &ubo;
-
-    allInOne.ppGraphic3DUniformBuffer = &graphic3DUniformBuffers;
-    allInOne.pppGraphic3DUniformBufferMapped = &graphic3DUniformBufferMapped;
     allInOne.pGraphic3DUbo = &ubo3D;
-
-    allInOne.ppUIUniformBuffer = &UIUniformBuffers;
-    allInOne.pppUIUniformBufferMapped = &UIUniformBufferMapped;
     allInOne.pUIUbo = &uboUI;
-
-    allInOne.ppSSGIUniformBuffer = &SSGIUniformBuffers;
-    allInOne.pppSSGIUniformBufferMapped = &SSGIUniformBufferMapped;
     allInOne.pSSGIubo = &SSGIubo;
-
-    allInOne.ppLightSpaceUniformBuffer = &lightSpaceUniformBuffer;
-    allInOne.pppLightSpaceUniformBufferMapped = &lightSpaceUniformBufferMapped;
     allInOne.pLightSpaceUbo = &lightSpaceubo;
-
-    allInOne.ppSunUniformBuffer = &SunUniformBuffer;
-    allInOne.pppSunUniformBufferMapped = &SunUniformBufferMapped;
     allInOne.pSunubo = &Sunubo;
 
-    allInOne.ppGraphicDescriptorSets = &graphicDescriptorSets;
-
-    allInOne.ppParticleDescriptorSets = &particleDescriptorSets;
-
     allInOne.pComputeUbo = &computeUbo;
-
-    allInOne.pppComputeUniformBufferMapped = &computeUniformBufferMapped;
-
-    allInOne.ppComputeDescriptorSets = &computeDescriptorSets;
-
-    allInOne.ppShadowDescriptorSets = &shadowDescriptorSets;
-    allInOne.ppSSGIDescriptorSets = &SSGIDescriptorSets;
-    allInOne.ppCombineDescriptorSets = &combineDescriptorSets;
-
-    allInOne.ppShaderStorageBuffers = &shaderStorageBuffers;
 
     allInOne.ppGraphicCommandBuffer = &graphicCommandBuffer;
     allInOne.ppPresentCommandBuffer = &presentCommandBuffer;
     allInOne.ppComputeCommandBuffer = &computeCommandBuffer;
     allInOne.ppTransferCommandBuffer = &transferCommandBuffer;
-
-    allInOne.ppTimelineSemaphore1 = &timelineSemaphore1;
-    allInOne.ppImageAvailableSemaphore = &imageAvailableSemaphore;
-    allInOne.ppRenderFinishedSemaphore = &renderFinishedSemaphore;
-
-    allInOne.ppGraphicInFlightFence = &graphicInFlightFence;
-
-    allInOne.ppComputeInFlightFence = &computeInFlightFences;
-
-    allInOne.pCurrentFrame = &currentFrame;
 
     allInOne.pCamera_X = &camera_X;
     allInOne.pCamera_Y = &camera_Y;
@@ -498,6 +228,11 @@ static void initializeAllInOne(void)
     allInOne.pPictureY = &pictureY;
 
     allInOne.pPushConstants = &picturePushConstants;
+
+    initStack(&allInOne.bottomImageDrawStack, sizeof(FromTo), NULL, NULL);
+    initStack(&allInOne.bottomImageMoveStack, sizeof(DrawHere), NULL, NULL);
+
+    // allInOne.timelineSemaphoreSignalValue = 0;
 }
 
 void initVulkan(void)
@@ -521,57 +256,54 @@ void initVulkan(void)
     vulkanVersion();
 
     createInstance();
-    CO_addInstance(instance);// CO
+    CO_addInstance(allInOne.instance);// CO
 
-    createSurface(window_3D, &surface3D);
-    CO_addSurface(surface3D);// Co
+    createSurface(window_3D, &allInOne.surface3D);
+    CO_addSurface(allInOne.surface3D);// Co
 
     pickPhysicalDevice();
 
     findQueueFamilies();
     createLogicalDevice();
-    CO_addDevice(device);// CO
+    CO_addDevice(allInOne.device);// CO
 
-    createQueue(queueIndices.graphicsFamily.familyIndice, &graphicQueue);
-    createQueue(queueIndices.presentFamily.familyIndice, &presentQueue);
-    createQueue(queueIndices.computeFamily.familyIndice, &computeQueue);
-    createQueue(queueIndices.transferFamily.familyIndice, &transferQueue);
+    createQueue();
 
-    createCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, queueIndices.graphicsFamily.familyIndice, &graphicCommandPool);
-    CO_addCommandPool(graphicCommandPool);// CO
-    createCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, queueIndices.presentFamily.familyIndice, &presentCommandPool);
-    CO_addCommandPool(presentCommandPool);// CO
-    createCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, queueIndices.computeFamily.familyIndice, &computeCommandPool);
-    CO_addCommandPool(computeCommandPool);// CO
-    createCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, queueIndices.transferFamily.familyIndice, &transferCommandPool);
-    CO_addCommandPool(transferCommandPool);// CO
+    createCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, allInOne.queueFamilyIndices.graphicsFamily.familyIndice, &allInOne.graphicCommandPool);
+    CO_addCommandPool(allInOne.graphicCommandPool);// CO
+    createCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, allInOne.queueFamilyIndices.presentFamily.familyIndice, &allInOne.presentCommandPool);
+    CO_addCommandPool(allInOne.presentCommandPool);// CO
+    createCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, allInOne.queueFamilyIndices.computeFamily.familyIndice, &allInOne.computeCommandPool);
+    CO_addCommandPool(allInOne.computeCommandPool);// CO
+    createCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, allInOne.queueFamilyIndices.transferFamily.familyIndice, &allInOne.transferCommandPool);
+    CO_addCommandPool(allInOne.transferCommandPool);// CO
 
-    getSurfaceFormats(surface3D, &surface3DFormat);
-    getPresentModes(&presentMode3D);
-    getSurfaceCapabilities(surface3D, &surface3DCapabilities);
+    getSurfaceFormats(allInOne.surface3D, &allInOne.surface3DFormat);
+    getPresentModes(&allInOne.presentMode3D);
+    getSurfaceCapabilities(allInOne.surface3D, &allInOne.surface3DCapabilities);
     
-    extent2D.width = width;
-    extent2D.height = height;
+    allInOne.extent2D.width = width;
+    allInOne.extent2D.height = height;
 
-    createSwapchain(surface3D, surface3DCapabilities, surface3DFormat, presentMode3D, &swapchain3D, NULL);
-    CO_addSwapchain(swapchain3D);// CO
+    createSwapchain(allInOne.surface3D, allInOne.surface3DCapabilities, allInOne.surface3DFormat, allInOne.presentMode3D, &allInOne.swapchain3D, NULL);
+    CO_addSwapchain(allInOne.swapchain3D);// CO
 
-    getSwapchainNumber(swapchain3D, &imageCount3D);
-    createSwapchainImage(swapchain3D, &imageCount3D, &swapchain3DImages);
-    CO_addSwapchainImage(swapchain3DImages);// CO
+    getSwapchainNumber(allInOne.swapchain3D, &allInOne.imageCount3D);
+    createSwapchainImage(allInOne.swapchain3D, &allInOne.imageCount3D, &allInOne.pSwapchain3DImages);
+    CO_addSwapchainImage(allInOne.pSwapchain3DImages);// CO
 
-    swapchainFormat = surface3DFormat.format;
+    swapchainFormat = allInOne.surface3DFormat.format;
 
     //swapchain3D image view
-    createSwapchainImageView(swapchain3DImages, imageCount3D, swapchainFormat, VK_IMAGE_ASPECT_COLOR_BIT, &swapchain3DImageViews);
-    CO_addSwapchainImageView(imageCount3D, swapchain3DImageViews);// CO
+    createSwapchainImageView(allInOne.pSwapchain3DImages, allInOne.imageCount3D, swapchainFormat, VK_IMAGE_ASPECT_COLOR_BIT, &allInOne.pSwapchain3DImageViews);
+    CO_addSwapchainImageView(allInOne.imageCount3D, allInOne.pSwapchain3DImageViews);// CO
 
     loadShadowResource(TEXTURE_SHADOW, SHADOW_MAPPING_WIDTH, SHADOW_MAPPING_HEIGHT);
     G_Texture_P * modelShadowTexture = getTexture(TEXTURE_SHADOW);
-    createShadowRenderPass(modelShadowTexture->format, &shadowRenderPass);
-    CO_addRenderPass(shadowRenderPass);// CO
-    createFrameBuffer(2, SHADOW_MAPPING_WIDTH, SHADOW_MAPPING_HEIGHT, 1, &modelShadowTexture->imageView, NULL, &shadowRenderPass, &shadowFrameBuffer);
-    CO_addFrameBuffer(2, shadowFrameBuffer);// CO
+    createShadowRenderPass(modelShadowTexture->format, &allInOne.shadowRenderPass);
+    CO_addRenderPass(allInOne.shadowRenderPass);// CO
+    createFrameBuffer(2, SHADOW_MAPPING_WIDTH, SHADOW_MAPPING_HEIGHT, 1, &modelShadowTexture->imageView, NULL, allInOne.shadowRenderPass, &allInOne.pShadowFramebuffer);
+    CO_addFrameBuffer(2, allInOne.pShadowFramebuffer);// CO
 
     loadDepthResource(TEXTURE_MODEL_DEPTH, true);
     loadImageResource(VK_FORMAT_R16_SFLOAT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_UNDEFINED, TEXTURE_SHADOW_MAP, NULL);
@@ -582,91 +314,93 @@ void initVulkan(void)
     G_Texture_P * modelNormalTexture = getTexture(TEXTURE_NORMAL);
     G_Texture_P * modelColorTexture = getTexture(TEXTURE_MODEL_COLOR);
     G_Texture_P * seprateShadowTexture = getTexture(TEXTURE_SHADOW_MAP);
-    createModelRenderPass(modelColorTexture->format, modelNormalTexture->format, seprateShadowTexture->format, modelDepthTexutre->format, &modelRenderPass);
-    CO_addRenderPass(modelRenderPass);// CO
+    createModelRenderPass(modelColorTexture->format, modelNormalTexture->format, seprateShadowTexture->format, modelDepthTexutre->format, &allInOne.modelRenderPass);
+    CO_addRenderPass(allInOne.modelRenderPass);// CO
 
     VkImageView modelImageViews[] = {modelColorTexture->imageView, modelNormalTexture->imageView, seprateShadowTexture->imageView, modelDepthTexutre->imageView};
-    createFrameBuffer(2, allInOne.pExtent2D->width, allInOne.pExtent2D->height, 4, modelImageViews, NULL, &modelRenderPass, &directColorFramebuffer);
-    CO_addFrameBuffer(2, directColorFramebuffer);// CO
+    createFrameBuffer(2, allInOne.extent2D.width, allInOne.extent2D.height, 4, modelImageViews, NULL, allInOne.modelRenderPass, &allInOne.pDirectColorFramebuffer);
+    CO_addFrameBuffer(2, allInOne.pDirectColorFramebuffer);// CO
 
-    createOffscreenRenderPass(VK_FORMAT_R8G8B8A8_SRGB, &offscreenRenderPass);
-    CO_addRenderPass(offscreenRenderPass);// CO
+    createOffscreenRenderPass(VK_FORMAT_R8G8B8A8_SRGB, &allInOne.offscreenRenderPass);
+    CO_addRenderPass(allInOne.offscreenRenderPass);// CO
 
-    createCombineRenderPass(swapchainFormat, &combineRenderPass);
-    CO_addRenderPass(combineRenderPass);// CO
-    createFrameBuffer(imageCount3D, allInOne.pExtent2D->width, allInOne.pExtent2D->height, 1, NULL, swapchain3DImageViews, &combineRenderPass, &combineFrameBuffer);
-    CO_addFrameBuffer(imageCount3D, combineFrameBuffer);// CO
+    createCombineRenderPass(swapchainFormat, &allInOne.combineRenderPass);
+    CO_addRenderPass(allInOne.combineRenderPass);// CO
+    createFrameBuffer(allInOne.imageCount3D, allInOne.extent2D.width, allInOne.extent2D.height, 1, NULL, allInOne.pSwapchain3DImageViews, allInOne.combineRenderPass, &allInOne.pCombineFramebuffer);
+    CO_addFrameBuffer(allInOne.imageCount3D, allInOne.pCombineFramebuffer);// CO
 
-    createGraphicRenderPass(swapchainFormat, &renderPass);
-    CO_addRenderPass(renderPass);// CO
-    createFrameBuffer(imageCount3D, allInOne.pExtent2D->width, allInOne.pExtent2D->height, 1, NULL, swapchain3DImageViews, &renderPass, &graphic2DFramebuffer);
-    CO_addFrameBuffer(imageCount3D, graphic2DFramebuffer);// CO
+    createGraphicRenderPass(swapchainFormat, &allInOne.renderPass);
+    CO_addRenderPass(allInOne.renderPass);// CO
+    createFrameBuffer(allInOne.imageCount3D, allInOne.extent2D.width, allInOne.extent2D.height, 1, NULL, allInOne.pSwapchain3DImageViews, allInOne.renderPass, &allInOne.pGraphic2dFramebuffer);
+    CO_addFrameBuffer(allInOne.imageCount3D, allInOne.pGraphic2dFramebuffer);// CO
  
-    createTextureSampler(&textureSampler);
-    CO_addSampler(textureSampler);// CO
-    createNormalSampler(&normalSampler);
-    CO_addSampler(normalSampler);// CO
-    createDepthSampler(&depthSampler);
-    CO_addSampler(depthSampler);// CO
-    createShadowSampler(&shadowSampler);
-    CO_addSampler(shadowSampler);// CO
+    createTextureSampler(&allInOne.textureSampler);
+    CO_addSampler(allInOne.textureSampler);// CO
+    createNormalSampler(&allInOne.normalSampler);
+    CO_addSampler(allInOne.normalSampler);// CO
+    createDepthSampler(&allInOne.depthSampler);
+    CO_addSampler(allInOne.depthSampler);// CO
+    createShadowSampler(&allInOne.shadowSampler);
+    CO_addSampler(allInOne.shadowSampler);// CO
 
-    vertices2D = (Vertex*)SDL_calloc(VERTEX_COUNT_IN_BUFFER_2D, sizeof(Vertex));
+    allInOne.pVertices2D = (Vertex*)SDL_calloc(VERTEX_COUNT_IN_BUFFER_2D, sizeof(Vertex));
     allInOne.maxVertices2DCount = VERTEX_COUNT_IN_BUFFER_2D;
 
-    createVertexBuffer(&physicalDevice, &device, vertexBuffer2D, vertexBuffer2DMem, vertexBuffer2DMemMapped, VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex));
-    CO_addBuffer(true, vertexBuffer2D[0], vertexBuffer2DMem[0], NULL);// CO
-    createVertexBuffer(&physicalDevice, &device, vertexBuffer2D + 1, vertexBuffer2DMem + 1, vertexBuffer2DMemMapped + 1, VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex));
-    CO_addBuffer(true, vertexBuffer2D[1], vertexBuffer2DMem[1], vertices2D);// CO
+    createVertexBuffer(allInOne.vertexBuffer2D + 0, allInOne.pVertexBuffer2DMem + 0, allInOne.pVertexBuffer2DMemMapped + 0, VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex));
+    CO_addBuffer(true, allInOne.vertexBuffer2D[0], allInOne.pVertexBuffer2DMem[0], NULL);// CO
+    createVertexBuffer(allInOne.vertexBuffer2D + 1, allInOne.pVertexBuffer2DMem + 1, allInOne.pVertexBuffer2DMemMapped + 1, VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex));
+    CO_addBuffer(true, allInOne.vertexBuffer2D[1], allInOne.pVertexBuffer2DMem[1], allInOne.pVertices2D);// CO
 
-    indices2D = (Uint16 *)SDL_calloc(INDEX_COUNT_IN_BUFFER_2D, sizeof(Uint16 ));
-    indexInitialize(indices2D, MAX_UNIT_COUNT_2D);
+    allInOne.pIndices2D = (Uint16 *)SDL_calloc(INDEX_COUNT_IN_BUFFER_2D, sizeof(Uint16 ));
+    indexInitialize(allInOne.pIndices2D, MAX_UNIT_COUNT_2D);
 
-    createIndexBuffer(&physicalDevice, &device, indexBuffer2D, indexBuffer2DMem, indexBuffer2DMemMapped, indices2D, INDEX_COUNT_IN_BUFFER_2D, sizeof(Uint16), false);
-    CO_addBuffer(false, indexBuffer2D[0], indexBuffer2DMem[0], NULL);// CO
+    createIndexBuffer(&allInOne.indexBuffer2D, &allInOne.indexBuffer2DMem, &allInOne.pIndexBuffer2DMemMapped, allInOne.pIndices2D, INDEX_COUNT_IN_BUFFER_2D, sizeof(Uint16), false);
+    CO_addBuffer(false, allInOne.indexBuffer2D, allInOne.indexBuffer2DMem, NULL);// CO
 
-    SDL_free(indices2D);
+    SDL_free(allInOne.pIndices2D);
 
-    vertices3D = (Vertex4*)SDL_calloc(30000, sizeof(Vertex4));
+    allInOne.pVertices3D = (Vertex4*)SDL_calloc(30000, sizeof(Vertex4));
     allInOne.maxVertices3DCount = 30000;
-    indices3D = (Uint32*)SDL_calloc(45000, sizeof(Uint32));
-    createVertexBuffer(&physicalDevice, &device, vertexBuffer3D, vertexBuffer3DMem, vertexBuffer3DMemMapped, 30000 * sizeof(Vertex4));
-    CO_addBuffer(true, vertexBuffer3D[0], vertexBuffer3DMem[0], NULL);// CO
-    createVertexBuffer(&physicalDevice, &device, vertexBuffer3D + 1, vertexBuffer3DMem + 1, vertexBuffer3DMemMapped + 1, 30000 * sizeof(Vertex4));
-    CO_addBuffer(true, vertexBuffer3D[1], vertexBuffer3DMem[1], vertices3D);// CO
-    createIndexBuffer(&physicalDevice, &device, indexBuffer3D, indexBuffer3DMem, indexBuffer3DMemMapped, indices3D, 45000, sizeof(Uint32), true);
-    CO_addBuffer(true, indexBuffer3D[0], indexBuffer3DMem[0], NULL);// CO
-    createIndexBuffer(&physicalDevice, &device, indexBuffer3D + 1, indexBuffer3DMem + 1, indexBuffer3DMemMapped + 1, indices3D, 45000, sizeof(Uint32), true);
-    CO_addBuffer(true, indexBuffer3D[1], indexBuffer3DMem[1], indices3D);// CO
+    allInOne.pIndices3D = (Uint32*)SDL_calloc(45000, sizeof(Uint32));
+    createVertexBuffer(allInOne.vertexBuffer3D + 0, allInOne.vertexBuffer3DMem + 0, allInOne.pVertexBuffer3DMemMapped + 0, 30000 * sizeof(Vertex4));
+    CO_addBuffer(true, allInOne.vertexBuffer3D[0], allInOne.vertexBuffer3DMem[0], NULL);// CO
+    createVertexBuffer(allInOne.vertexBuffer3D + 1, allInOne.vertexBuffer3DMem + 1, allInOne.pVertexBuffer3DMemMapped + 1, 30000 * sizeof(Vertex4));
+    CO_addBuffer(true, allInOne.vertexBuffer3D[1], allInOne.vertexBuffer3DMem[1], NULL);// CO
 
-    createUniformBufferByBuffering(&graphicUniformBuffers, &graphicUniformBuffersMemory, &graphicUniformBufferMapped, sizeof(UniformBufferObject));
-    CO_addBuffer(true, graphicUniformBuffers[0], graphicUniformBuffersMemory[0], NULL);// CO
-    CO_addBuffer(true, graphicUniformBuffers[1], graphicUniformBuffersMemory[1], NULL);// CO
-    createUniformBufferByBuffering(&graphic3DUniformBuffers, &graphic3DUniformBuffersMemory, &graphic3DUniformBufferMapped, sizeof(UniformBufferObject));
-    CO_addBuffer(true, graphic3DUniformBuffers[0], graphic3DUniformBuffersMemory[0], NULL);// CO
-    CO_addBuffer(true, graphic3DUniformBuffers[1], graphic3DUniformBuffersMemory[1], NULL);// CO
-    createUniformBufferByBuffering(&UIUniformBuffers, &UIUniformBuffersMemory, &UIUniformBufferMapped, sizeof(UniformBufferObject));
-    CO_addBuffer(true, UIUniformBuffers[0], UIUniformBuffersMemory[0], NULL);// CO
-    CO_addBuffer(true, UIUniformBuffers[1], UIUniformBuffersMemory[1], NULL);// CO
+    createIndexBuffer(allInOne.indexBuffer3D + 0, allInOne.indexBuffer3DMem + 0, allInOne.pIndexBuffer3DMemMapped + 0, allInOne.pIndices3D, 45000, sizeof(Uint32), true);
+    CO_addBuffer(true, allInOne.indexBuffer3D[0], allInOne.indexBuffer3DMem[0], NULL);// CO
+    createIndexBuffer(allInOne.indexBuffer3D + 1, allInOne.indexBuffer3DMem + 1, allInOne.pIndexBuffer3DMemMapped + 1, allInOne.pIndices3D, 45000, sizeof(Uint32), true);
+    CO_addBuffer(true, allInOne.indexBuffer3D[1], allInOne.indexBuffer3DMem[1], allInOne.pIndices3D);// CO
 
-    createUniformBufferByBuffering(&computeUniformBuffers, &computeUniformBuffersmemory, &computeUniformBufferMapped, sizeof(ComputeUniformBufferObject));
-    CO_addBuffer(true, computeUniformBuffers[0], computeUniformBuffersmemory[0], NULL);// CO
-    CO_addBuffer(true, computeUniformBuffers[1], computeUniformBuffersmemory[1], NULL);// CO
+    createUniformBufferByBuffering(&allInOne.pGraphicUniformBuffer, &graphicUniformBuffersMemory, &allInOne.ppGraphicUniformBufferMapped, sizeof(UniformBufferObject));
+    CO_addBuffer(true, allInOne.pGraphicUniformBuffer[0], graphicUniformBuffersMemory[0], NULL);// CO
+    CO_addBuffer(true, allInOne.pGraphicUniformBuffer[1], graphicUniformBuffersMemory[1], NULL);// CO
+    createUniformBufferByBuffering(&allInOne.pGraphic3DUniformBuffer, &graphic3DUniformBuffersMemory, &allInOne.ppGraphic3DUniformBufferMapped, sizeof(UniformBufferObject));
+    CO_addBuffer(true, allInOne.pGraphic3DUniformBuffer[0], graphic3DUniformBuffersMemory[0], NULL);// CO
+    CO_addBuffer(true, allInOne.pGraphic3DUniformBuffer[1], graphic3DUniformBuffersMemory[1], NULL);// CO
+    createUniformBufferByBuffering(&allInOne.pUIUniformBuffer, &UIUniformBuffersMemory, &allInOne.ppUIUniformBufferMapped, sizeof(UniformBufferObject));
+    CO_addBuffer(true, allInOne.pUIUniformBuffer[0], UIUniformBuffersMemory[0], NULL);// CO
+    CO_addBuffer(true, allInOne.pUIUniformBuffer[1], UIUniformBuffersMemory[1], NULL);// CO
 
-    createUniformBufferByBuffering(&SSGIUniformBuffers, &SSGIUniformBufferMem, &SSGIUniformBufferMapped, sizeof(SSGIUniformBufferObject));
-    CO_addBuffer(true, SSGIUniformBuffers[0], SSGIUniformBufferMem[0], NULL);// CO
-    CO_addBuffer(true, SSGIUniformBuffers[1], SSGIUniformBufferMem[1], NULL);// CO
+    createUniformBufferByBuffering(&allInOne.pComputeUniformBuffer, &computeUniformBuffersmemory, &allInOne.ppComputeUniformBufferMapped, sizeof(ComputeUniformBufferObject));
+    CO_addBuffer(true, allInOne.pComputeUniformBuffer[0], computeUniformBuffersmemory[0], NULL);// CO
+    CO_addBuffer(true, allInOne.pComputeUniformBuffer[1], computeUniformBuffersmemory[1], NULL);// CO
 
-    createUniformBufferByBuffering(&SunUniformBuffer, &SunUniformBufferMem, &SunUniformBufferMapped, sizeof(DirectionLight));
-    CO_addBuffer(true, SunUniformBuffer[0], SunUniformBufferMem[0], NULL);// CO
-    CO_addBuffer(true, SunUniformBuffer[1], SunUniformBufferMem[1], NULL);// CO
-    createUniformBufferByBuffering(&lightSpaceUniformBuffer, &lightSpaceUniformBufferMem, &lightSpaceUniformBufferMapped, sizeof(LightSpace));
-    CO_addBuffer(true, lightSpaceUniformBuffer[0], lightSpaceUniformBufferMem[0], NULL);// CO
-    CO_addBuffer(true, lightSpaceUniformBuffer[1], lightSpaceUniformBufferMem[1], NULL);// CO
+    createUniformBufferByBuffering(&allInOne.pSSGIUniformBuffer, &SSGIUniformBufferMem, &allInOne.ppSSGIUniformBufferMapped, sizeof(SSGIUniformBufferObject));
+    CO_addBuffer(true, allInOne.pSSGIUniformBuffer[0], SSGIUniformBufferMem[0], NULL);// CO
+    CO_addBuffer(true, allInOne.pSSGIUniformBuffer[1], SSGIUniformBufferMem[1], NULL);// CO
 
-    createShaderStorageBuffers(&physicalDevice, &device, &shaderStorageBuffers, &shaderStorageBuffersMem);
-    CO_addBuffer(false, shaderStorageBuffers[0], shaderStorageBuffersMem[0], NULL);// CO
-    CO_addBuffer(false, shaderStorageBuffers[1], shaderStorageBuffersMem[1], NULL);// CO
+    createUniformBufferByBuffering(&allInOne.pSunUniformBuffer, &SunUniformBufferMem, &allInOne.ppSunUniformBufferMapped, sizeof(DirectionLight));
+    CO_addBuffer(true, allInOne.pSunUniformBuffer[0], SunUniformBufferMem[0], NULL);// CO
+    CO_addBuffer(true, allInOne.pSunUniformBuffer[1], SunUniformBufferMem[1], NULL);// CO
+
+    createUniformBufferByBuffering(&allInOne.pLightSpaceUniformBuffer, &lightSpaceUniformBufferMem, &allInOne.ppLightSpaceUniformBufferMapped, sizeof(LightSpace));
+    CO_addBuffer(true, allInOne.pLightSpaceUniformBuffer[0], lightSpaceUniformBufferMem[0], NULL);// CO
+    CO_addBuffer(true, allInOne.pLightSpaceUniformBuffer[1], lightSpaceUniformBufferMem[1], NULL);// CO
+
+    createShaderStorageBuffers(&allInOne.pShaderStorageBuffer, &shaderStorageBuffersMem);
+    CO_addBuffer(false, allInOne.pShaderStorageBuffer[0], shaderStorageBuffersMem[0], NULL);// CO
+    CO_addBuffer(false, allInOne.pShaderStorageBuffer[1], shaderStorageBuffersMem[1], NULL);// CO
 
     /*unfixed code*/
 
@@ -675,50 +409,50 @@ void initVulkan(void)
     graphicDescriptorPoolSize[0].descriptorCount = 16;
     graphicDescriptorPoolSize[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     graphicDescriptorPoolSize[1].descriptorCount = 26;
-    createDescriptorPool(&device, 2, graphicDescriptorPoolSize, 24, &graphicDescriptorPool);
+    createDescriptorPool(&allInOne.device, 2, graphicDescriptorPoolSize, 24, &graphicDescriptorPool);
     CO_addDescriptorPool(graphicDescriptorPool);// CO
 
     //graphic shader
     PathType graphicTypes[] = {TriangleVertShader, TriangleFragShader};
     VkShaderModule * graphicTempModule = NULL;
-    Uint32 graphicSetCount = CreateShaderModulesAndDescriptorSets(graphicTypes, 2, &graphicTempModule, &graphciShaderStageCreateInfo, &graphicDescriptorSetLayout, &graphicPipelineLayout);
-    createDescriptorSets(&graphicDescriptorPool, graphicDescriptorSetLayout, graphicSetCount, 5, &graphicDescriptorSets);
-    createGraphicsPipeline(extent2D, 2, graphciShaderStageCreateInfo, graphicPipelineLayout, renderPass, &graphicPipeline);
+    Uint32 graphicSetCount = CreateShaderModulesAndDescriptorSets(graphicTypes, 2, &graphicTempModule, &graphciShaderStageCreateInfo, &graphicDescriptorSetLayout, &allInOne.graphicPipelineLayout);
+    createDescriptorSets(&graphicDescriptorPool, graphicDescriptorSetLayout, graphicSetCount, 5, &allInOne.pGraphicDescriptorSets);
+    createGraphicsPipeline(allInOne.extent2D, 2, graphciShaderStageCreateInfo, allInOne.graphicPipelineLayout, allInOne.renderPass, &allInOne.graphicPipeline);
 
     //3d model shader
     PathType modelTypes[] = {Model3dVertShader, Model3dFragShader};
     VkShaderModule * modelTempModule = NULL;
-    Uint32 modelSetCount = CreateShaderModulesAndDescriptorSets(modelTypes, 2, &modelTempModule, &modelShaderStageCreateInfo, &modelDescriptorSetLayout, &modelPipelineLayout);
-    createDescriptorSets(&graphicDescriptorPool, modelDescriptorSetLayout, modelSetCount, 1, &modelDescriptorSets);
-    createModelPipeline(extent2D, 2, modelShaderStageCreateInfo, modelPipelineLayout, modelRenderPass, &modelPipeline);
+    Uint32 modelSetCount = CreateShaderModulesAndDescriptorSets(modelTypes, 2, &modelTempModule, &modelShaderStageCreateInfo, &modelDescriptorSetLayout, &allInOne.modelPipelineLayout);
+    createDescriptorSets(&graphicDescriptorPool, modelDescriptorSetLayout, modelSetCount, 1, &allInOne.pModelDescriptorSets);
+    createModelPipeline(allInOne.extent2D, 2, modelShaderStageCreateInfo, allInOne.modelPipelineLayout, allInOne.modelRenderPass, &allInOne.modelPipeline);
 
     // 3d bottom shader
     PathType bottomTypes[] = {Model3dVertShader, ModelBottomFragShader};
     VkShaderModule * bottomTempModule = NULL;
-    Uint32 bottomSetCount = CreateShaderModulesAndDescriptorSets(bottomTypes, 2, &bottomTempModule, &bottomShaderStageCreateInfo, &bottomDescriptorSetLayout, &bottomPipelineLayout);
-    createDescriptorSets(&graphicDescriptorPool, bottomDescriptorSetLayout, bottomSetCount, 1, &bottomDescriptorSets);
-    createModelPipeline(extent2D, 2, bottomShaderStageCreateInfo, bottomPipelineLayout, modelRenderPass, &bottomPipeline);
+    Uint32 bottomSetCount = CreateShaderModulesAndDescriptorSets(bottomTypes, 2, &bottomTempModule, &bottomShaderStageCreateInfo, &bottomDescriptorSetLayout, &allInOne.bottomPipelineLayout);
+    createDescriptorSets(&graphicDescriptorPool, bottomDescriptorSetLayout, bottomSetCount, 1, &allInOne.pBottomDescriptorSets);
+    createModelPipeline(allInOne.extent2D, 2, bottomShaderStageCreateInfo, allInOne.bottomPipelineLayout, allInOne.modelRenderPass, &allInOne.bottomPipeline);
 
     // particle shader
     PathType particleTypes[] = {ParticleVertShader, ParticleFragShader};
     VkShaderModule * particleTempModule = NULL;
-    Uint32 particleSetCount = CreateShaderModulesAndDescriptorSets(particleTypes, 2, &particleTempModule, &particleShaderStageCreateInfo, &particleDescriptorSetLayout, &particlePipelineLayout);
-    createDescriptorSets(&graphicDescriptorPool, particleDescriptorSetLayout, particleSetCount, 1, &particleDescriptorSets);
-    createParticlePipeline(extent2D, 2, particleShaderStageCreateInfo, particlePipelineLayout, renderPass, &particlePipeline);
+    Uint32 particleSetCount = CreateShaderModulesAndDescriptorSets(particleTypes, 2, &particleTempModule, &particleShaderStageCreateInfo, &particleDescriptorSetLayout, &allInOne.particlePipelineLayout);
+    createDescriptorSets(&graphicDescriptorPool, particleDescriptorSetLayout, particleSetCount, 1, &allInOne.pParticleDescriptorSets);
+    createParticlePipeline(allInOne.extent2D, 2, particleShaderStageCreateInfo, allInOne.particlePipelineLayout, allInOne.renderPass, &allInOne.particlePipeline);
 
     // combine Shader
     PathType combineTypes[] = {CombineVertShader, CombineFragShader};
     VkShaderModule * combineTempModule = NULL;
-    Uint32 combineSetCount = CreateShaderModulesAndDescriptorSets(combineTypes, 2, &combineTempModule, &combineShaderStageCreateInfo, &combineDescriptorSetLayout, &combinePipelineLayout);
-    createDescriptorSets(&graphicDescriptorPool, combineDescriptorSetLayout, combineSetCount, 1, &combineDescriptorSets);
-    createCombinePipeline(extent2D, 2, combineShaderStageCreateInfo, combinePipelineLayout, combineRenderPass, &combinePipeline);
+    Uint32 combineSetCount = CreateShaderModulesAndDescriptorSets(combineTypes, 2, &combineTempModule, &combineShaderStageCreateInfo, &combineDescriptorSetLayout, &allInOne.combinePipelineLayout);
+    createDescriptorSets(&graphicDescriptorPool, combineDescriptorSetLayout, combineSetCount, 1, &allInOne.pCombineDescriptorSets);
+    createCombinePipeline(allInOne.extent2D, 2, combineShaderStageCreateInfo, allInOne.combinePipelineLayout, allInOne.combineRenderPass, &allInOne.combinePipeline);
 
     //shadow shader
     PathType shadowTypes[] = {ShadowVertShader, EmptyFragShader};
     VkShaderModule * shadowTempModule = NULL;
-    Uint32 shadowSetCount = CreateShaderModulesAndDescriptorSets(shadowTypes, 2, &shadowTempModule, &shadowShaderStageCreateInfo, &shadowDescriptorSetLayout, &shadwoPipelineLayout);
-    createDescriptorSets(&graphicDescriptorPool, shadowDescriptorSetLayout, shadowSetCount, 1, &shadowDescriptorSets);
-    createShadowPipeline((VkExtent2D){SHADOW_MAPPING_WIDTH, SHADOW_MAPPING_HEIGHT}, 2, shadowShaderStageCreateInfo, shadwoPipelineLayout, shadowRenderPass, &shadowPipeline);
+    Uint32 shadowSetCount = CreateShaderModulesAndDescriptorSets(shadowTypes, 2, &shadowTempModule, &shadowShaderStageCreateInfo, &shadowDescriptorSetLayout, &allInOne.shadowPipelineLayout);
+    createDescriptorSets(&graphicDescriptorPool, shadowDescriptorSetLayout, shadowSetCount, 1, &allInOne.pShadowDescriptorSets);
+    createShadowPipeline((VkExtent2D){SHADOW_MAPPING_WIDTH, SHADOW_MAPPING_HEIGHT}, 2, shadowShaderStageCreateInfo, allInOne.shadowPipelineLayout, allInOne.shadowRenderPass, &allInOne.shadowPipeline);
 
     executeCreateGraphicsPipelines(NULL);
 
@@ -732,50 +466,50 @@ void initVulkan(void)
     computeDescriptorPoolSize[2].descriptorCount = 10;
     computeDescriptorPoolSize[3].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
     computeDescriptorPoolSize[3].descriptorCount = 2;
-    createDescriptorPool(&device, 4, computeDescriptorPoolSize, 8, &computeDescriptorPool);
+    createDescriptorPool(&allInOne.device, 4, computeDescriptorPoolSize, 8, &computeDescriptorPool);
     CO_addDescriptorPool(computeDescriptorPool);// CO
 
     //compute shader
     PathType computeTypes[] = {ParticleCompShader};
     VkShaderModule * computeTempModule = NULL;
-    Uint32 computeSetCount = CreateShaderModulesAndDescriptorSets(computeTypes, 1, &computeTempModule, &computeShaderStageCreateInfo, &computeDescriptorSetLayout, &computePipelineLayout);
-    createDescriptorSets(&computeDescriptorPool, computeDescriptorSetLayout, computeSetCount, 1, &computeDescriptorSets);
-    addComputePipeline(computeShaderStageCreateInfo, &computePipelineLayout, NULL, 0, &computePipeline);
+    Uint32 computeSetCount = CreateShaderModulesAndDescriptorSets(computeTypes, 1, &computeTempModule, &computeShaderStageCreateInfo, &computeDescriptorSetLayout, &allInOne.computePipelineLayout);
+    createDescriptorSets(&computeDescriptorPool, computeDescriptorSetLayout, computeSetCount, 1, &allInOne.pComputeDescriptorSets);
+    addComputePipeline(computeShaderStageCreateInfo, allInOne.computePipelineLayout, NULL, 0, &allInOne.computePipeline);
 
     // SSGI shader
     PathType SSGITypes[] = {SSGICompShader};
     VkShaderModule * SSGITempModule = NULL;
-    Uint32 SSGISetCount = CreateShaderModulesAndDescriptorSets(SSGITypes, 1, &SSGITempModule, &SSGIShaderStageCreateInfo, &SSGIDescriptorSetLayout, &SSGIPipelineLayout);
-    createDescriptorSets(&computeDescriptorPool, SSGIDescriptorSetLayout, SSGISetCount, 1, &SSGIDescriptorSets);
-    addComputePipeline(SSGIShaderStageCreateInfo, &SSGIPipelineLayout, NULL, 0, &SSGIPipeline);
+    Uint32 SSGISetCount = CreateShaderModulesAndDescriptorSets(SSGITypes, 1, &SSGITempModule, &SSGIShaderStageCreateInfo, &SSGIDescriptorSetLayout, &allInOne.SSGIPipelineLayout);
+    createDescriptorSets(&computeDescriptorPool, SSGIDescriptorSetLayout, SSGISetCount, 1, &allInOne.pSSGIDescriptorSets);
+    addComputePipeline(SSGIShaderStageCreateInfo, allInOne.SSGIPipelineLayout, NULL, 0, &allInOne.SSGIPipeline);
 
     executeCreateComputePipelines(NULL);
 
-    createCommandbufferByBuffering(VK_COMMAND_BUFFER_LEVEL_PRIMARY, &graphicCommandPool, &graphicCommandBuffer);
-    createCommandbufferByBuffering(VK_COMMAND_BUFFER_LEVEL_PRIMARY, &presentCommandPool, &presentCommandBuffer);
-    createCommandbufferByBuffering(VK_COMMAND_BUFFER_LEVEL_PRIMARY, &computeCommandPool, &computeCommandBuffer);
-    createCommandbufferByBuffering(VK_COMMAND_BUFFER_LEVEL_PRIMARY, &transferCommandPool, &transferCommandBuffer);
+    createCommandbufferByBuffering(VK_COMMAND_BUFFER_LEVEL_PRIMARY, allInOne.graphicCommandPool, &graphicCommandBuffer);
+    createCommandbufferByBuffering(VK_COMMAND_BUFFER_LEVEL_PRIMARY, allInOne.presentCommandPool, &presentCommandBuffer);
+    createCommandbufferByBuffering(VK_COMMAND_BUFFER_LEVEL_PRIMARY, allInOne.computeCommandPool, &computeCommandBuffer);
+    createCommandbufferByBuffering(VK_COMMAND_BUFFER_LEVEL_PRIMARY, allInOne.transferCommandPool, &transferCommandBuffer);
 
-    createTimelineSemaphoreByBuffering(&timelineSemaphore1);
-    CO_addSemaphore(timelineSemaphore1[0]);// CO
-    CO_addSemaphore(timelineSemaphore1[1]);// CO
+    createTimelineSemaphoreByBuffering(&allInOne.pTimelineSemaphore1);
+    CO_addSemaphore(allInOne.pTimelineSemaphore1[0]);// CO
+    CO_addSemaphore(allInOne.pTimelineSemaphore1[1]);// CO
 
-    createSemaphoreByBuffering(&imageAvailableSemaphore);
-    CO_addSemaphore(imageAvailableSemaphore[0]);// CO
-    CO_addSemaphore(imageAvailableSemaphore[1]);// CO
-    createSemaphoreByBuffering(&renderFinishedSemaphore);
-    CO_addSemaphore(renderFinishedSemaphore[0]);// CO
-    CO_addSemaphore(renderFinishedSemaphore[1]);// CO
+    createSemaphoreByBuffering(&allInOne.pImageAvailableSemaphore);
+    CO_addSemaphore(allInOne.pImageAvailableSemaphore[0]);// CO
+    CO_addSemaphore(allInOne.pImageAvailableSemaphore[1]);// CO
+    createSemaphoreByBuffering(&allInOne.pRenderFinishedSemaphore);
+    CO_addSemaphore(allInOne.pRenderFinishedSemaphore[0]);// CO
+    CO_addSemaphore(allInOne.pRenderFinishedSemaphore[1]);// CO
  
-    createFenceByBuffering(&graphicInFlightFence);
-    CO_addFence(graphicInFlightFence[0]);// CO
-    CO_addFence(graphicInFlightFence[1]);// CO
+    createFenceByBuffering(&allInOne.pGraphicInFlightFence);
+    CO_addFence(allInOne.pGraphicInFlightFence[0]);// CO
+    CO_addFence(allInOne.pGraphicInFlightFence[1]);// CO
 
-    createFenceByBuffering(&computeInFlightFences);
-    CO_addFence(computeInFlightFences[0]);// CO
-    CO_addFence(computeInFlightFences[1]);// CO
+    createFenceByBuffering(&allInOne.pComputeInFlightFence);
+    CO_addFence(allInOne.pComputeInFlightFence[0]);// CO
+    CO_addFence(allInOne.pComputeInFlightFence[1]);// CO
     
-    loadTileSet(TileSet1Png, TileSet1Tsd, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_TILE_SET, bottomDescriptorSets + 2);
+    loadTileSet(TileSet1Png, TileSet1Tsd, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_TILE_SET, allInOne.pBottomDescriptorSets + 2);
     loadTileMap(TileMap1TsdI, TEXTURE_TILE_SET, MAIN_TILE_MAP);
     // loadTileMap(TileMap1TsdI, -1200, -1100, TEXTURE_TILE_SET);
     // loadTileMap(TileMap1TsdI, -1200, -300, TEXTURE_TILE_SET);
@@ -786,31 +520,32 @@ void initVulkan(void)
     // loadTileMap(TileMap1TsdI, 400, -1100, TEXTURE_TILE_SET);
     // loadTileMap(TileMap1TsdI, -400, -1100, TEXTURE_TILE_SET);
     createStaticModelPool(&staticModelPool, 58);
-    loadStaticModel(&staticModelPool, 10, BoxObj, BoxPng, vertices3D, &vertices3DCount, indices3D, &indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_MODEL, modelDescriptorSets, false);
-    loadStaticModel(&staticModelPool, 48, BottomObj, BottomPng, vertices3D, &vertices3DCount, indices3D, &indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_BOTTOM, bottomDescriptorSets, true);
+    loadStaticModel(&staticModelPool, 10, BoxObj, BoxPng, allInOne.pVertices3D, &allInOne.vertices3DCount, allInOne.pIndices3D, &allInOne.indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_MODEL, allInOne.pModelDescriptorSets, false);
+    loadStaticModel(&staticModelPool, 48, BottomObj, BottomPng, allInOne.pVertices3D, &allInOne.vertices3DCount, allInOne.pIndices3D, &allInOne.indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_BOTTOM, allInOne.pBottomDescriptorSets, true);
 
     VkImage imageArray = NULL;
     VkDeviceMemory imageArrayMemory = NULL;
     VkImageView imageArrayView = NULL;
     VkImageView * imageArrayViews = NULL;
-    createImageArray(800, 800 / HEIGHT_FACTOR, 48, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &imageArray, &imageArrayMemory);
+    createImageArray(800, 800, 48, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT\
+        , VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &imageArray, &imageArrayMemory);
     createImageViewArray(imageArray, 48, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, &imageArrayView);
-    addTexture(800, 800 / HEIGHT_FACTOR, VK_FORMAT_R8G8B8A8_SRGB, imageArray, imageArrayMemory, imageArrayView, bottomDescriptorSets + 2, TEXTURE_MAP_ARRAY);
+    addTexture(800, 800, VK_FORMAT_R8G8B8A8_SRGB, imageArray, imageArrayMemory, imageArrayView, allInOne.pBottomDescriptorSets + 2, TEXTURE_MAP_ARRAY);
 
     createImageViewsForImageArray(imageArray, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, 48, &imageArrayViews);
-    createFrameBufferByImageArray(48, 800, 800 / HEIGHT_FACTOR, imageArrayViews, offscreenRenderPass, &bottomImageArrayFramebuffers);
-    CO_addFrameBuffer(48, bottomImageArrayFramebuffers);// CO
+    createFrameBufferByImageArray(48, 800, 800, imageArrayViews, allInOne.offscreenRenderPass, &allInOne.pBottomImageArrayFramebuffers);
+    CO_addFrameBuffer(48, allInOne.pBottomImageArrayFramebuffers);// CO
 
-    loadImageResource(VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_GENERAL, TEXTURE_SSGI_STORAGE_IMAGE, SSGIDescriptorSets + 2);
+    loadImageResource(VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_GENERAL, TEXTURE_SSGI_STORAGE_IMAGE, allInOne.pSSGIDescriptorSets + 2);
 
-    loadTexture(Loading1Png, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_LOADING, graphicDescriptorSets);
-    loadTexture(CirclePng, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_CIRCLE, graphicDescriptorSets + 2);
-    loadTexture(MainFontPng, VK_FORMAT_R8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_FONT, graphicDescriptorSets + 4);
+    loadTexture(Loading1Png, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_LOADING, allInOne.pGraphicDescriptorSets);
+    loadTexture(CirclePng, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_CIRCLE, allInOne.pGraphicDescriptorSets + 2);
+    loadTexture(MainFontPng, VK_FORMAT_R8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_FONT, allInOne.pGraphicDescriptorSets + 4);
     // loadTexture(Box1Png, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_BOX, graphicDescriptorSets + 8);
 
-    addDescriptorSetToTexture(TEXTURE_MODEL_DEPTH, SSGIDescriptorSets + 0);
-    addDescriptorSetToTexture(TEXTURE_NORMAL, SSGIDescriptorSets + 0);
-    addDescriptorSetToTexture(TEXTURE_MODEL_COLOR, SSGIDescriptorSets + 0);
+    addDescriptorSetToTexture(TEXTURE_MODEL_DEPTH, allInOne.pSSGIDescriptorSets + 0);
+    addDescriptorSetToTexture(TEXTURE_NORMAL, allInOne.pSSGIDescriptorSets + 0);
+    addDescriptorSetToTexture(TEXTURE_MODEL_COLOR, allInOne.pSSGIDescriptorSets + 0);
 
     G_Texture_P * loadingTexture = getTexture(TEXTURE_LOADING);
     G_Texture_P * circleTexture = getTexture(TEXTURE_CIRCLE);
@@ -824,28 +559,28 @@ void initVulkan(void)
     // G_Texture_P * SSGIStorageTexture = getTexture(TEXTURE_SSGI_STORAGE_IMAGE);
 
     // UI
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, loadingTexture->pDescriptorSet, UIUniformBuffers, 0, sizeof(UniformBufferObject));//0
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, fontTexture->pDescriptorSet, UIUniformBuffers, 0, sizeof(UniformBufferObject));
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, loadingTexture->pDescriptorSet, allInOne.pUIUniformBuffer, 0, sizeof(UniformBufferObject));//0
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, fontTexture->pDescriptorSet, allInOne.pUIUniformBuffer, 0, sizeof(UniformBufferObject));
 
     // graphic
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, circleTexture->pDescriptorSet, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, circleTexture->pDescriptorSet, allInOne.pGraphicUniformBuffer, 0, sizeof(UniformBufferObject));
     // addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, tileSetTexture->pDescriptorSet, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
     // addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, getTexture(TEXTURE_BOX)->pDescriptorSet, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
 
     // model
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, modelTexture->pDescriptorSet, graphic3DUniformBuffers, 0, sizeof(UniformBufferObject));//4
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, bottomTexture->pDescriptorSet, graphic3DUniformBuffers, 0, sizeof(UniformBufferObject));
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3, modelTexture->pDescriptorSet, SunUniformBuffer, 0, sizeof(DirectionLight));
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3, bottomTexture->pDescriptorSet, SunUniformBuffer, 0, sizeof(DirectionLight));
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, shadowDescriptorSets, lightSpaceUniformBuffer, 0, sizeof(LightSpace));
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, modelTexture->pDescriptorSet, allInOne.pGraphic3DUniformBuffer, 0, sizeof(UniformBufferObject));//4
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, bottomTexture->pDescriptorSet, allInOne.pGraphic3DUniformBuffer, 0, sizeof(UniformBufferObject));
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3, modelTexture->pDescriptorSet, allInOne.pSunUniformBuffer, 0, sizeof(DirectionLight));
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3, bottomTexture->pDescriptorSet, allInOne.pSunUniformBuffer, 0, sizeof(DirectionLight));
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, allInOne.pShadowDescriptorSets, allInOne.pLightSpaceUniformBuffer, 0, sizeof(LightSpace));
 
     // SSGI
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3, normalTexture->pDescriptorSet, SSGIUniformBuffers, 0, sizeof(SSGIUniformBufferObject));
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3, normalTexture->pDescriptorSet, allInOne.pSSGIUniformBuffer, 0, sizeof(SSGIUniformBufferObject));
 
     // graphics
-    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_LOADING, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_CIRCLE, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);//8
-    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_FONT, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_LOADING, allInOne.textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_CIRCLE, allInOne.textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);//8
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_FONT, allInOne.textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     // addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_TILE_SET, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     // addDescriptorSetToTexture(TEXTURE_2D_COLOR, combine2DDescriptorSets);
     // addDescriptorSetToTexture(TEXTURE_SHADOW_MAP, combine2DDescriptorSets);
@@ -855,35 +590,35 @@ void initVulkan(void)
     // model
     addShadowDescriptorSetToTexture(TEXTURE_MODEL, shadowTexture->pDescriptorSet);
     addShadowDescriptorSetToTexture(TEXTURE_BOTTOM, shadowTexture->pDescriptorSet);
-    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_MODEL, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_BOTTOM, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);//12
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_MODEL, allInOne.textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_BOTTOM, allInOne.textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);//12
     addDescriptorSetToTexture(TEXTURE_SHADOW, modelTexture->pDescriptorSet);
-    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2, TEXTURE_SHADOW, shadowSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2, TEXTURE_SHADOW, allInOne.shadowSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     addDescriptorSetToTexture(TEXTURE_SHADOW, bottomTexture->pDescriptorSet);
-    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2, TEXTURE_SHADOW, shadowSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4, TEXTURE_MAP_ARRAY, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2, TEXTURE_SHADOW, allInOne.shadowSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4, TEXTURE_MAP_ARRAY, allInOne.textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     // SSGI
-    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, TEXTURE_MODEL_DEPTH, depthSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_NORMAL, normalSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2, TEXTURE_MODEL_COLOR, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, TEXTURE_MODEL_DEPTH, allInOne.depthSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_NORMAL, allInOne.normalSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2, TEXTURE_MODEL_COLOR, allInOne.textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 4, TEXTURE_SSGI_STORAGE_IMAGE, NULL, VK_IMAGE_LAYOUT_GENERAL);
 
     // graphic
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, particleDescriptorSets, graphicUniformBuffers, 0, sizeof(UniformBufferObject));//16
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, allInOne.pParticleDescriptorSets, allInOne.pGraphicUniformBuffer, 0, sizeof(UniformBufferObject));//16
 
     // compute
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, computeDescriptorSets, computeUniformBuffers, 0, sizeof(ComputeUniformBufferObject));
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, computeDescriptorSets, shaderStorageBuffers, 0, sizeof(Particle) * PARTICLE_COUNT);
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 2, computeDescriptorSets, shaderStorageBuffers, 0, sizeof(Particle) * PARTICLE_COUNT);
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, allInOne.pComputeDescriptorSets, allInOne.pComputeUniformBuffer, 0, sizeof(ComputeUniformBufferObject));
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, allInOne.pComputeDescriptorSets, allInOne.pShaderStorageBuffer, 0, sizeof(Particle) * PARTICLE_COUNT);
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 2, allInOne.pComputeDescriptorSets, allInOne.pShaderStorageBuffer, 0, sizeof(Particle) * PARTICLE_COUNT);
 
     executeUpdateDescriptorSets();
 
-    addDescriptorSetToTexture(TEXTURE_MODEL_COLOR, combineDescriptorSets + 0);
-    addDescriptorSetToTexture(TEXTURE_SSGI_STORAGE_IMAGE, combineDescriptorSets + 0);
+    addDescriptorSetToTexture(TEXTURE_MODEL_COLOR, allInOne.pCombineDescriptorSets + 0);
+    addDescriptorSetToTexture(TEXTURE_SSGI_STORAGE_IMAGE, allInOne.pCombineDescriptorSets + 0);
     // combine
-    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, TEXTURE_MODEL_COLOR, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_SSGI_STORAGE_IMAGE, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);//16
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, TEXTURE_MODEL_COLOR, allInOne.textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_SSGI_STORAGE_IMAGE, allInOne.textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);//16
 
     executeUpdateDescriptorSets();
 
@@ -896,7 +631,7 @@ void cleanVulkan(void)
 {
     print("\nclean begin");
 
-    vkDeviceWaitIdle(device);
+    vkDeviceWaitIdle(allInOne.device);
 
     destroyStaticModelPool(&staticModelPool);
     unloadAllTexture();

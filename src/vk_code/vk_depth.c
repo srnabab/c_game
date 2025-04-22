@@ -11,7 +11,7 @@ extern VK_ALL allInOne;
 void findDepthFormat(VkImageTiling tiling, VkFormatFeatureFlags features, VkFormat * pDepthFormat)
 {
     VkFormat candiates[3] = {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT};
-    findSupportFormat(candiates, allInOne.pPhysicalDevice, tiling, features, pDepthFormat);
+    findSupportFormat(candiates, &allInOne.physicalDevice, tiling, features, pDepthFormat);
 }
 VkFormat createDepthResoures(VkImage * pDepthImage, VkDeviceMemory * pDepthImageMem, VkImageView * pDepthImageView, bool sample)
 {
@@ -21,7 +21,7 @@ VkFormat createDepthResoures(VkImage * pDepthImage, VkDeviceMemory * pDepthImage
     VkFormat depthFormat = 0;;
     findDepthFormat(VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT, &depthFormat);
     
-    resultVulkan(createImage(allInOne.pExtent2D->width, allInOne.pExtent2D->height, depthFormat, VK_IMAGE_TILING_OPTIMAL, usage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, pDepthImage, pDepthImageMem), 0);
+    resultVulkan(createImage(allInOne.extent2D.width, allInOne.extent2D.height, depthFormat, VK_IMAGE_TILING_OPTIMAL, usage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, pDepthImage, pDepthImageMem), 0);
 
     resultVulkan(createImageView(*pDepthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, pDepthImageView), 0);
 

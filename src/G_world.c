@@ -184,7 +184,7 @@ void updateCircle(void)
         {
             b2Vec2 position = b2Body_GetPosition(bodyIds[i]);
             
-            texturePosUpdate((position.x * SCALE_FACTOR_INV - 24.0f) * physicalCoffectY, (position.y * SCALE_FACTOR_INV - 24.0f) * physicalCoffectY, *allInOne.ppVertices2D, tempTexture->offsets[refCount].offset + currentOffset * 4);
+            texturePosUpdate((position.x * SCALE_FACTOR_INV - 24.0f) * physicalCoffectY, (position.y * SCALE_FACTOR_INV - 24.0f) * physicalCoffectY, allInOne.pVertices2D, tempTexture->offsets[refCount].offset + currentOffset * 4);
             if (tempTexture->offsets[refCount].count == currentOffset + 1)
             {
                 refCount++;

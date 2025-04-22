@@ -36,11 +36,11 @@ static void initializeParticles(Particle ** ppParticles, VkExtent2D extent2D)
         (*ppParticles)[i].color[3] = 1.0f;
     }
 }
-void createShaderStorageBuffers(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkBuffer (*ppShaderStorageBuffers)[2], VkDeviceMemory (*ppShaderStorageBuffersMem)[2])
+void createShaderStorageBuffers(VkBuffer (*ppShaderStorageBuffers)[2], VkDeviceMemory (*ppShaderStorageBuffersMem)[2])
 {
     Particle * particles = NULL;
     particles = (Particle *)SDL_malloc(PARTICLE_COUNT * sizeof(Particle));
-    initializeParticles(&particles, *allInOne.pExtent2D);
+    initializeParticles(&particles, allInOne.extent2D);
 
     VkDeviceSize bufferSize = sizeof(Particle) * PARTICLE_COUNT;
 
@@ -49,9 +49,9 @@ void createShaderStorageBuffers(VkPhysicalDevice * pPhysicalDevice, VkDevice * p
     createBuffer(&stagingBuffer, &stagingBufferMemory, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
     void * data = NULL;
-    vkMapMemory(*pDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+    vkMapMemory(allInOne.device, stagingBufferMemory, 0, bufferSize, 0, &data);
     memcpy(data, particles, bufferSize);
-    vkUnmapMemory(*pDevice, stagingBufferMemory);
+    vkUnmapMemory(allInOne.device, stagingBufferMemory);
 
     for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
     {
@@ -60,7 +60,7 @@ void createShaderStorageBuffers(VkPhysicalDevice * pPhysicalDevice, VkDevice * p
         copyBuffer(&stagingBuffer, (*ppShaderStorageBuffers) + i, bufferSize);
     }
 
-    vkDestroyBuffer(*pDevice, stagingBuffer, allInOne.pAllocationCallbacks);
-    vkFreeMemory(*pDevice, stagingBufferMemory, allInOne.pAllocationCallbacks);
+    vkDestroyBuffer(allInOne.device, stagingBuffer, allInOne.pAllocationCallbacks);
+    vkFreeMemory(allInOne.device, stagingBufferMemory, allInOne.pAllocationCallbacks);
     SDL_free(particles);
 }

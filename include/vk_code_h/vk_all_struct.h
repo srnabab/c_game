@@ -11,11 +11,11 @@ struct _VK_ALL
 {
     VkAllocationCallbacks * pAllocationCallbacks;
 
-    VkInstance * pInstance;
+    VkInstance instance;
 
-    VkPhysicalDevice * pPhysicalDevice;
+    VkPhysicalDevice physicalDevice;
 
-    VkDevice * pDevice;
+    VkDevice device;
 
     // VkSurfaceCapabilitiesKHR * pSurface2DCapabilities;
     // VkSurfaceFormatKHR * pSurface2DFormat;
@@ -23,153 +23,152 @@ struct _VK_ALL
 
     // VkSurfaceKHR * pSurface2D;
     
-    QueueFamilyIndices * pQueueFamilyIndices;
-    VkQueue * pGraphicQueue;
-    VkQueue * pPresentQueue;
-    VkQueue * pComputeQueue;
-    VkQueue * pTransferQueue;
+    QueueFamilyIndices queueFamilyIndices;
+    VkQueue pGraphicQueue[16];
+    VkQueue pPresentQueue[16];
+    VkQueue pComputeQueue[16];
+    VkQueue pTransferQueue[16];
     
-    VkCommandPool * pGraphicCommandPool;
-    VkCommandPool * pPresentCommandPool;
-    VkCommandPool * pComputeCommandPool;
-    VkCommandPool * pTransferCommandPool;
+    VkCommandPool graphicCommandPool;
+    VkCommandPool presentCommandPool;
+    VkCommandPool computeCommandPool;
+    VkCommandPool transferCommandPool;
 
-    VkExtent2D * pExtent2D;
-    VkExtent2D * pOldExtent2D;
+    VkExtent2D extent2D;
+    VkExtent2D oldExtent2D;
+
     // Uint32 * pImageCount2D;
-
     // VkSwapchainKHR * pSwapchain2D;
     // VkImage ** ppSwapchain2DImages;
     // VkImageView ** ppSwapchain2DImageViews;
     // VkFramebuffer ** ppSwapchain2DFramebuffer;
 
 
-    VkRenderPass * pRenderPass;
+    VkRenderPass renderPass;
     // VkRenderPass * pCombine2DRenderPass;
-    VkRenderPass * pModelRenderPass;
-    VkRenderPass * pOffscreenRenderPass;
-    VkRenderPass * pShadowRenderPass;
-    VkRenderPass * pCombineRenderPass;
+    VkRenderPass modelRenderPass;
+    VkRenderPass offscreenRenderPass;
+    VkRenderPass shadowRenderPass;
+    VkRenderPass combineRenderPass;
 
-    VkPipelineLayout * pGraphicPipelineLayout;
-    VkPipeline * pGraphicPipeline;
+    VkPipelineLayout graphicPipelineLayout;
+    VkPipeline graphicPipeline;
 
-    VkPipelineLayout * pParticlePipelineLayout;
-    VkPipeline * pParticlePipeline;
+    VkPipelineLayout particlePipelineLayout;
+    VkPipeline particlePipeline;
 
-    VkPipelineLayout * pComputePipelineLayout;
-    VkPipeline * pComputePipeline;
+    VkPipelineLayout computePipelineLayout;
+    VkPipeline computePipeline;
 
-    VkPipelineLayout * pModelPipelineLayout;
-    VkPipeline * pModelPipeline;
+    VkPipelineLayout modelPipelineLayout;
+    VkPipeline modelPipeline;
 
-    VkPipelineLayout * pBottomPipelineLayout;
-    VkPipeline * pBottomPipeline;
+    VkPipelineLayout bottomPipelineLayout;
+    VkPipeline bottomPipeline;
 
-    VkPipelineLayout * pShadowPipelineLayout;
-    VkPipeline * pShadowPipeline;
+    VkPipelineLayout shadowPipelineLayout;
+    VkPipeline shadowPipeline;
 
-    VkPipelineLayout * pSSGIPipelineLayout;
-    VkPipeline * pSSGIPipeline;
+    VkPipelineLayout SSGIPipelineLayout;
+    VkPipeline SSGIPipeline;
 
-    VkPipelineLayout * pCombinePipelineLayout;
-    VkPipeline * pCombinePipeline;
+    VkPipelineLayout combinePipelineLayout;
+    VkPipeline combinePipeline;
 
     // VkPipelineLayout * pCombine2DPipelineLayout;
     // VkPipeline * pCombine2DPipeline;
 
+    VkSurfaceKHR surface3D;
 
-    
-    VkSurfaceKHR * pSurface3D;
+    VkSurfaceCapabilitiesKHR surface3DCapabilities;
+    VkSurfaceFormatKHR surface3DFormat;
+    VkPresentModeKHR presentMode3D;
 
-    VkSurfaceCapabilitiesKHR * pSurface3DCapabilities;
-    VkSurfaceFormatKHR * pSurface3DFormat;
-    VkPresentModeKHR * pPresentMode3D;
+    VkSwapchainKHR swapchain3D;
+    Uint32 imageCount3D;
 
-    VkSwapchainKHR * pSwapchain3D;
-    Uint32 * pImageCount3D;
+    VkImage * pSwapchain3DImages;
+    VkImageView * pSwapchain3DImageViews;
 
-    VkImage ** ppSwapchain3DImages;
-    VkImageView ** ppSwapchain3DImageViews;
+    VkFramebuffer * pGraphic2dFramebuffer;
+    VkFramebuffer * pSwapchain3DFramebuffer;
+    VkFramebuffer * pShadowFramebuffer;
+    VkFramebuffer * pDirectColorFramebuffer;
+    VkFramebuffer * pCombineFramebuffer;
+    VkFramebuffer * pBottomImageArrayFramebuffers;
 
-    VkFramebuffer ** ppGraphic2dFramebuffer;
-    VkFramebuffer ** ppSwapchain3DFramebuffer;
-    VkFramebuffer ** ppShadowFramebuffer;
-    VkFramebuffer ** ppDirectColorFramebuffer;
-    VkFramebuffer ** ppCombineFramebuffer;
-
-    VkBuffer (*pVertexBuffer2D)[MAX_FRAMES_IN_FLIGHT];
+    VkBuffer vertexBuffer2D[MAX_FRAMES_IN_FLIGHT];
     Uint32 maxVertices2DCount;
-    Vertex ** ppVertices2D;
-    Uint32 * pVertices2DCount;
-    VkDeviceMemory (*pVertexBuffer2DMem)[MAX_FRAMES_IN_FLIGHT];
-    void* (*ppVertexBuffer2DMemMapped)[MAX_FRAMES_IN_FLIGHT];
+    Vertex * pVertices2D;
+    Uint32 vertices2DCount;
+    VkDeviceMemory pVertexBuffer2DMem[MAX_FRAMES_IN_FLIGHT];
+    void* pVertexBuffer2DMemMapped[MAX_FRAMES_IN_FLIGHT];
 
-    VkBuffer (*pIndexBuffer2D)[1];
-    Uint16 ** ppIndices2D;
-    Uint32 * pIndices2DCount;
-    VkDeviceMemory (*pIndexBuffer2DMem)[1];
-    void* (*ppIndexBuffer2DMemMapped)[1];
+    VkBuffer indexBuffer2D;
+    Uint16 * pIndices2D;
+    Uint32 indices2DCount;
+    VkDeviceMemory indexBuffer2DMem;
+    void* pIndexBuffer2DMemMapped;
 
-    VkBuffer (*pVertexBuffer3D)[MAX_FRAMES_IN_FLIGHT];
+    VkBuffer vertexBuffer3D[MAX_FRAMES_IN_FLIGHT];
     Uint32 maxVertices3DCount;
-    Vertex4 ** ppVertices3D;
-    Uint32 * pVertices3DCount;
-    VkDeviceMemory (*pVertexBuffer3DMem)[MAX_FRAMES_IN_FLIGHT];
-    void* (*ppVertexBuffer3DMemMapped)[MAX_FRAMES_IN_FLIGHT];
+    Vertex4 * pVertices3D;
+    Uint32 vertices3DCount;
+    VkDeviceMemory vertexBuffer3DMem[MAX_FRAMES_IN_FLIGHT];
+    void* pVertexBuffer3DMemMapped[MAX_FRAMES_IN_FLIGHT];
 
-    VkBuffer (*pIndexBuffer3D)[MAX_FRAMES_IN_FLIGHT];
-    Uint32 ** ppIndices3D;
-    Uint32 * pIndices3DCount;
-    VkDeviceMemory (*pIndexBuffer3DMem)[MAX_FRAMES_IN_FLIGHT];
-    void* (*ppIndexBuffer3DMemMapped)[MAX_FRAMES_IN_FLIGHT];
+    VkBuffer indexBuffer3D[MAX_FRAMES_IN_FLIGHT];
+    Uint32 * pIndices3D;
+    Uint32 indices3DCount;
+    VkDeviceMemory indexBuffer3DMem[MAX_FRAMES_IN_FLIGHT];
+    void* pIndexBuffer3DMemMapped[MAX_FRAMES_IN_FLIGHT];
 
     G_StaticModelPool * pStaticModelPool;
 
-    VkSampler * pTextureSampler;
-    VkSampler * pNormalSampler;
-    VkSampler * pDepthSampler;
-    VkSampler * pShadowSampler;
+    VkSampler textureSampler;
+    VkSampler normalSampler;
+    VkSampler depthSampler;
+    VkSampler shadowSampler;
 
-    VkBuffer (*ppGraphicUniformBuffer)[MAX_FRAMES_IN_FLIGHT];
-    void * (*pppGraphicUniformBufferMapped)[MAX_FRAMES_IN_FLIGHT];
+    VkBuffer pGraphicUniformBuffer[MAX_FRAMES_IN_FLIGHT];
+    void * ppGraphicUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
     UniformBufferObject * pGraphicUbo;
 
-    VkBuffer (*ppGraphic3DUniformBuffer)[MAX_FRAMES_IN_FLIGHT];
-    void * (*pppGraphic3DUniformBufferMapped)[MAX_FRAMES_IN_FLIGHT];
+    VkBuffer pGraphic3DUniformBuffer[MAX_FRAMES_IN_FLIGHT];
+    void * ppGraphic3DUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
     UniformBufferObject * pGraphic3DUbo;
 
-    VkBuffer (*ppUIUniformBuffer)[MAX_FRAMES_IN_FLIGHT];
-    void * (*pppUIUniformBufferMapped)[MAX_FRAMES_IN_FLIGHT];
+    VkBuffer pUIUniformBuffer[MAX_FRAMES_IN_FLIGHT];
+    void * ppUIUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
     UniformBufferObject * pUIUbo;
 
-    VkBuffer (*ppSSGIUniformBuffer)[MAX_FRAMES_IN_FLIGHT];
-    void * (*pppSSGIUniformBufferMapped)[MAX_FRAMES_IN_FLIGHT];
-    SSGIUniformBufferObject * pSSGIubo;
-
-    VkBuffer (*ppLightSpaceUniformBuffer)[MAX_FRAMES_IN_FLIGHT];
-    void * (*pppLightSpaceUniformBufferMapped)[MAX_FRAMES_IN_FLIGHT];
-    LightSpace * pLightSpaceUbo;
-
-    VkBuffer (*ppSunUniformBuffer)[MAX_FRAMES_IN_FLIGHT];
-    void * (*pppSunUniformBufferMapped)[MAX_FRAMES_IN_FLIGHT];
-    DirectionLight * pSunubo;
-
-    VkDescriptorSet ** ppGraphicDescriptorSets;
-
-    VkDescriptorSet ** ppParticleDescriptorSets;
-
-    VkBuffer (*ppShaderStorageBuffers)[MAX_FRAMES_IN_FLIGHT];
-
+    VkBuffer pComputeUniformBuffer[MAX_FRAMES_IN_FLIGHT];
+    void* ppComputeUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
     struct _ComputeUniformBufferObject * pComputeUbo;
 
-    void* (*pppComputeUniformBufferMapped)[MAX_FRAMES_IN_FLIGHT];
+    VkBuffer pSSGIUniformBuffer[MAX_FRAMES_IN_FLIGHT];
+    void * ppSSGIUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
+    SSGIUniformBufferObject * pSSGIubo;
 
-    VkDescriptorSet ** ppComputeDescriptorSets;
+    VkBuffer pLightSpaceUniformBuffer[MAX_FRAMES_IN_FLIGHT];
+    void * ppLightSpaceUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
+    LightSpace * pLightSpaceUbo;
 
-    VkDescriptorSet ** ppShadowDescriptorSets;
-    VkDescriptorSet ** ppSSGIDescriptorSets;
-    VkDescriptorSet ** ppCombineDescriptorSets;
+    VkBuffer pSunUniformBuffer[MAX_FRAMES_IN_FLIGHT];
+    void * ppSunUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
+    DirectionLight * pSunubo;
+
+    VkBuffer pShaderStorageBuffer[MAX_FRAMES_IN_FLIGHT];
+
+    VkDescriptorSet * pGraphicDescriptorSets;
+    VkDescriptorSet * pParticleDescriptorSets;
+    VkDescriptorSet * pComputeDescriptorSets;
+    VkDescriptorSet * pModelDescriptorSets;
+    VkDescriptorSet * pBottomDescriptorSets;
+
+    VkDescriptorSet * pShadowDescriptorSets;
+    VkDescriptorSet * pSSGIDescriptorSets;
+    VkDescriptorSet * pCombineDescriptorSets;
     // VkDescriptorSet ** ppCombine2dDescriptorSets;
 
     VkCommandBuffer (*ppGraphicCommandBuffer)[MAX_FRAMES_IN_FLIGHT];
@@ -177,16 +176,17 @@ struct _VK_ALL
     VkCommandBuffer (*ppComputeCommandBuffer)[MAX_FRAMES_IN_FLIGHT];
     VkCommandBuffer (*ppTransferCommandBuffer)[MAX_FRAMES_IN_FLIGHT];
 
-    VkSemaphore (*ppTimelineSemaphore1)[MAX_FRAMES_IN_FLIGHT];
+    VkSemaphore pTimelineSemaphore1[MAX_FRAMES_IN_FLIGHT];
 
-    VkSemaphore (*ppImageAvailableSemaphore)[MAX_FRAMES_IN_FLIGHT];
-    VkSemaphore (*ppRenderFinishedSemaphore)[MAX_FRAMES_IN_FLIGHT];
+    VkSemaphore pImageAvailableSemaphore[MAX_FRAMES_IN_FLIGHT];
+    VkSemaphore pRenderFinishedSemaphore[MAX_FRAMES_IN_FLIGHT];
+    VkSemaphore pCopyFinishedSemaphore[MAX_FRAMES_IN_FLIGHT];
 
-    VkFence (*ppGraphicInFlightFence)[MAX_FRAMES_IN_FLIGHT];
+    VkFence pGraphicInFlightFence[MAX_FRAMES_IN_FLIGHT];
 
-    VkFence (*ppComputeInFlightFence)[MAX_FRAMES_IN_FLIGHT];
+    VkFence pComputeInFlightFence[MAX_FRAMES_IN_FLIGHT];
 
-    Uint32 * pCurrentFrame;
+    Uint32 currentFrame;
 
     float * pCamera_X;
     float * pCamera_Y;
@@ -199,6 +199,11 @@ struct _VK_ALL
     G_Texture_P * pGlobalTexture;
 
     G_Stack shaderModuleStack;
+
+    G_Stack bottomImageMoveStack;
+    G_Stack bottomImageDrawStack;
+
+    Uint32 timelineSemaphoreSignalValue;
 };
 typedef struct _VK_ALL VK_ALL;
 

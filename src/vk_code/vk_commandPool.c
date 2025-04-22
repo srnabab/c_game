@@ -16,32 +16,32 @@ void createCommandPool(VkCommandPoolCreateFlags flag, Uint32 graphicsFamilyIndic
     commandPoolCreateInfo.flags = flag;
     commandPoolCreateInfo.queueFamilyIndex = graphicsFamilyIndice;
 
-    resultVulkan(vkCreateCommandPool(*allInOne.pDevice, &commandPoolCreateInfo, allInOne.pAllocationCallbacks, pCommandPool), 0);
+    resultVulkan(vkCreateCommandPool(allInOne.device, &commandPoolCreateInfo, allInOne.pAllocationCallbacks, pCommandPool), 0);
     logMessage("command pool created\n");
 } 
-void createCommandbufferByBuffering(VkCommandBufferLevel level, VkCommandPool * pCommandPool, VkCommandBuffer (*ppCommandBuffer)[MAX_FRAMES_IN_FLIGHT])
+void createCommandbufferByBuffering(VkCommandBufferLevel level, VkCommandPool commandPool, VkCommandBuffer (*ppCommandBuffer)[MAX_FRAMES_IN_FLIGHT])
 { 
     VkCommandBufferAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.pNext = NULL;
-    allocInfo.commandPool = *pCommandPool;
+    allocInfo.commandPool = commandPool;
     allocInfo.level = level;
     allocInfo.commandBufferCount = MAX_FRAMES_IN_FLIGHT;
 
-    resultVulkan(vkAllocateCommandBuffers(*allInOne.pDevice, &allocInfo, *ppCommandBuffer), 0);
+    resultVulkan(vkAllocateCommandBuffers(allInOne.device, &allocInfo, *ppCommandBuffer), 0);
     logMessage("command buffer allocated\n");
 }
-void createCommandBuffer(VkCommandBufferLevel level, VkCommandPool * pCommandPool, VkCommandBuffer ** ppCommandBuffer, Uint32 bufferCount)
+void createCommandBuffer(VkCommandBufferLevel level, VkCommandPool commandPool, VkCommandBuffer ** ppCommandBuffer, Uint32 bufferCount)
 {
     *ppCommandBuffer = (VkCommandBuffer*)SDL_malloc(bufferCount * sizeof(VkCommandBuffer));
 
     VkCommandBufferAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.pNext = NULL;
-    allocInfo.commandPool = *pCommandPool;
+    allocInfo.commandPool = commandPool;
     allocInfo.level = level;
     allocInfo.commandBufferCount = bufferCount;
 
-    vkAllocateCommandBuffers(*allInOne.pDevice, &allocInfo, *ppCommandBuffer);
+    vkAllocateCommandBuffers(allInOne.device, &allocInfo, *ppCommandBuffer);
     logMessage("command buffer allocated\n");
 }

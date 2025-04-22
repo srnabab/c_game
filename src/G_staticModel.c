@@ -15,7 +15,7 @@ bool createStaticModelPool(G_StaticModelPool * pModelPool, Uint32 totalInstancec
 
     // model matrix buffer and inverse transpose matrix buffer
     createBuffer(pModelPool->instanceBuffer + 0, pModelPool->instanceBufferMem + 0, bufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    vkMapMemory(*allInOne.pDevice, pModelPool->instanceBufferMem[0], 0, bufferSize, 0, pModelPool->instanceBufferMemMapped + 0);
+    vkMapMemory(allInOne.device, pModelPool->instanceBufferMem[0], 0, bufferSize, 0, pModelPool->instanceBufferMemMapped + 0);
     memset(pModelPool->instanceBufferMemMapped[0], 0, bufferSize);
 
     pModelPool->totalInstanceCount = totalInstancecount;

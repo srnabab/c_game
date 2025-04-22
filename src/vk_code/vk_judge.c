@@ -1,7 +1,8 @@
 #include "vk_code_h/vk_judge.h"
 #include "vk_code_h/vk_recreate.h"
 
-#include "G_log.h" 
+#include "G_game.h"
+#include "G_log.h"
 
 extern bool game_is_running;
 
@@ -48,5 +49,6 @@ void resultVulkan(VkResult result, Uint32 num, ...)
     {
 end:
         game_is_running = false;
+        destroy();
     }
 }

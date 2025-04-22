@@ -57,7 +57,7 @@
 
 #define BOTTOM_WIDTH 800
 // #define BOTTOM_HEIGHT (800 / HEIGHT_FACTOR + 1)
-#define BOTTOM_HEIGHT 1132
+#define BOTTOM_HEIGHT 800
 #define BOTTOM_LENGTH 800
 
 #endif

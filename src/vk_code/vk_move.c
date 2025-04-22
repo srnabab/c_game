@@ -20,7 +20,7 @@ void initializeMovingBuffer(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevi
 }
 void vertexInitialize(float x, float y, float width, float height, float depth, Uint32 vertexCount, Vertex * pVertices)
 {
-    float WindowHeight = (float)allInOne.pExtent2D->height;
+    float WindowHeight = (float)allInOne.extent2D.height;
     float xOffset = width / (WindowHeight / 2);
     float yOffset = height / (WindowHeight / 2);
 
@@ -165,8 +165,8 @@ void texturePosUpdate(float x, float y, Vertex * pVertices, Uint32 offset)
 }
 void vertexPosUpdate(float x, float y, Vertex * pVertices, Uint32 vertexCount)
 {
-    float NDCx = x / (allInOne.pExtent2D->height / 2);
-    float NDCy = y / (allInOne.pExtent2D->height / 2);
+    float NDCx = x / (allInOne.extent2D.height / 2);
+    float NDCy = y / (allInOne.extent2D.height / 2);
 
     float offSetX = NDCx - pVertices[vertexCount].pos[0];
     float offSetY = NDCy - pVertices[vertexCount].pos[1];

@@ -44,7 +44,7 @@ VkResult createShaderModuleFromMem(size_t codeSize, const Uint32 * pCode, VkShad
     createInfo.codeSize = codeSize;
     createInfo.pCode = pCode;
 
-    return vkCreateShaderModule(*allInOne.pDevice, &createInfo, allInOne.pAllocationCallbacks, pShaderModule);
+    return vkCreateShaderModule(allInOne.device, &createInfo, allInOne.pAllocationCallbacks, pShaderModule);
 }
 void addShaderStageCreateInfo(VkShaderModule * pShaderModule, VkShaderStageFlags stage, uint32_t * pShaderCount, VkPipelineShaderStageCreateInfo ** pPipelineShaderStageCreateInfo)
 {
