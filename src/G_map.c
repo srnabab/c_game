@@ -486,7 +486,7 @@ static bool findInUint32Array(Uint32 * array, Uint32 arraySize, Uint32 num)
 void moveBottomImage(Uint32 currentFrame)
 {
     FromTo tempFromTo = {};
-    VkCommandBuffer commandBuffer = (*allInOne.ppTransferCommandBuffer)[currentFrame];
+    VkCommandBuffer commandBuffer = allInOne.pTransferCommandBuffer[currentFrame];
     G_Texture_P * imageArray = getTexture(TEXTURE_MAP_ARRAY);
     Uint32 arrayCap = allInOne.bottomImageMoveStack.top + 1;
     Uint32 offset = 0;
@@ -530,7 +530,7 @@ void moveBottomImage(Uint32 currentFrame)
         region.extent.width = BOTTOM_HEIGHT;
         region.extent.depth = 1; 
 
-        vkCmdCopyImage((*allInOne.ppTransferCommandBuffer)[currentFrame], imageArray->image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, imageArray->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL\
+        vkCmdCopyImage(allInOne.pTransferCommandBuffer[currentFrame], imageArray->image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, imageArray->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL\
             , 1, &region);
 
         transitionImageLayout(commandBuffer, imageArray->image, imageArray->format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, tempFromTo.to, 1);

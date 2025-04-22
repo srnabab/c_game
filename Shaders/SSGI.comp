@@ -55,7 +55,8 @@ void main()
         float sampledDepth = texture(depthTexture, sampleUV).r;
         float currentDepth = (ubo.projectionMatrix * vec4(currentRayPos, 1.0)).z / (ubo.projectionMatrix * vec4(currentRayPos, 1.0)).w;
 
-        if (sampledDepth < currentDepth) { // 碰撞发生
+        if (sampledDepth < currentDepth) 
+        { // 碰撞发生
             // 采样碰撞点的颜色/反射率 (如果 G-Buffer 中有)
             vec3 reflectedColor = texture(colorTexture, sampleUV).rgb; // 默认白色反射率
             // vec3 reflectedColor = vec3(1.0); // 默认白色反射率

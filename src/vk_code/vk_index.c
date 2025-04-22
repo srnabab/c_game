@@ -42,7 +42,7 @@ void createIndexBuffer(VkBuffer * pIndexBuffer, VkDeviceMemory * pIndexBufferMem
 
         resultVulkan(createBuffer(pIndexBuffer, pIndexBufferMemory, bufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT), 0);
 
-        copyBuffer(&stagingBuffer, pIndexBuffer, bufferSize);
+        copyBuffer(NULL, &stagingBuffer, pIndexBuffer, bufferSize);
         
         vkDestroyBuffer(allInOne.device, stagingBuffer, allInOne.pAllocationCallbacks);
         vkFreeMemory(allInOne.device, stagingBufferMemory, allInOne.pAllocationCallbacks);

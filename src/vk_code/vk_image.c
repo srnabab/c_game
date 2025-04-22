@@ -1,4 +1,5 @@
 #include "vk_code_h/vk_queue.h"
+#include "vk_code_h/vk_drawTool.h"
 #include "vk_code_h/vk_image.h"
 #include "vk_code_h/vk_buffer.h"
 #include "vk_code_h/vk_all_struct.h"
@@ -139,7 +140,11 @@ VkResult transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkF
     VkCommandBuffer singleCommandBuffer = NULL;
     if (commandBuffer == NULL)
     {
-        result |= beginSingleTimeCommands(allInOne.transferCommandPool, &singleCommandBuffer);
+        result |= beginSingleTimeCommands(allInOne.graphicCommandPool, &singleCommandBuffer);
+    }
+    else
+    {
+        beginCommandBuffer(commandBuffer);
     }
 
     VkImageMemoryBarrier barrier = {};
@@ -291,11 +296,12 @@ VkResult transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkF
     {
         vkCmdPipelineBarrier(singleCommandBuffer, sourceStage, destinationStage, 0, 0, NULL, 0, NULL, 1, &barrier);
 
-        result |= endSingleTimeCommands(allInOne.transferCommandPool, getTransferQueue(), &singleCommandBuffer);
+        result |= endSingleTimeCommands(allInOne.graphicCommandPool, getGraphic2dQueue(), &singleCommandBuffer);
     }
     else
     {
         vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, NULL, 0, NULL, 1, &barrier);
+        vkEndCommandBuffer(commandBuffer);
     }
 
     return result;

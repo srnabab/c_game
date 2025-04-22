@@ -171,10 +171,10 @@ struct _VK_ALL
     VkDescriptorSet * pCombineDescriptorSets;
     // VkDescriptorSet ** ppCombine2dDescriptorSets;
 
-    VkCommandBuffer (*ppGraphicCommandBuffer)[MAX_FRAMES_IN_FLIGHT];
-    VkCommandBuffer (*ppPresentCommandBuffer)[MAX_FRAMES_IN_FLIGHT];
-    VkCommandBuffer (*ppComputeCommandBuffer)[MAX_FRAMES_IN_FLIGHT];
-    VkCommandBuffer (*ppTransferCommandBuffer)[MAX_FRAMES_IN_FLIGHT];
+    VkCommandBuffer pGraphicCommandBuffer[MAX_FRAMES_IN_FLIGHT];
+    VkCommandBuffer pPresentCommandBuffer[MAX_FRAMES_IN_FLIGHT];
+    VkCommandBuffer pComputeCommandBuffer[MAX_FRAMES_IN_FLIGHT];
+    VkCommandBuffer pTransferCommandBuffer[MAX_FRAMES_IN_FLIGHT];
 
     VkSemaphore pTimelineSemaphore1[MAX_FRAMES_IN_FLIGHT];
 

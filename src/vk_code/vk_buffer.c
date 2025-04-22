@@ -1,4 +1,5 @@
 #include "vk_code_h/vk_queue.h"
+#include "vk_code_h/vk_drawTool.h"
 #include "vk_code_h/vk_buffer.h"
 #include "vk_code_h/vk_all_struct.h"
 
@@ -84,21 +85,36 @@ VkResult endSingleTimeCommands(VkCommandPool commandPool, VkQueue queue, VkComma
 
     return result;
 }
-VkResult copyBuffer(VkBuffer * pSrcBuffer, VkBuffer * pDstBuffer, VkDeviceSize size)
+VkResult copyBuffer(VkCommandBuffer commandBuffer, VkBuffer * pSrcBuffer, VkBuffer * pDstBuffer, VkDeviceSize size)
 {
     VkResult result = VK_SUCCESS;
 
-    VkCommandBuffer commandBuffer = NULL;
-    result |= beginSingleTimeCommands(allInOne.transferCommandPool, &commandBuffer);
+    VkCommandBuffer singleTimeCommandBuffer = NULL;
+    if (commandBuffer == NULL)
+    {
+        result |= beginSingleTimeCommands(allInOne.graphicCommandPool, &singleTimeCommandBuffer);
+    }
+    else
+    {
+        beginCommandBuffer(commandBuffer);
+    }
 
     VkBufferCopy copyRegion = {};
     copyRegion.srcOffset = 0;
     copyRegion.dstOffset = 0;
     copyRegion.size = size;
 
-    vkCmdCopyBuffer(commandBuffer, *pSrcBuffer, *pDstBuffer, 1, &copyRegion);
+    if (commandBuffer == NULL)
+    {
+        vkCmdCopyBuffer(singleTimeCommandBuffer, *pSrcBuffer, *pDstBuffer, 1, &copyRegion);
+        result |= endSingleTimeCommands(allInOne.graphicCommandPool, getGraphic2dQueue(), &singleTimeCommandBuffer);
+    }
+    else
+    {
+        vkCmdCopyBuffer(commandBuffer, *pSrcBuffer, *pDstBuffer, 1, &copyRegion);
+        vkEndCommandBuffer(commandBuffer);
+    }
 
-    result |= endSingleTimeCommands(allInOne.transferCommandPool, getTransferQueue(), &commandBuffer);
 
     if (result)
         return 0x7FFFFFFF;

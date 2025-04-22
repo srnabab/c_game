@@ -180,11 +180,6 @@ static VkDescriptorPool graphicDescriptorPool = NULL;
 
 static VkDescriptorPool computeDescriptorPool = NULL;
 
-static VkCommandBuffer graphicCommandBuffer[MAX_FRAMES_IN_FLIGHT];
-static VkCommandBuffer presentCommandBuffer[MAX_FRAMES_IN_FLIGHT];
-static VkCommandBuffer computeCommandBuffer[MAX_FRAMES_IN_FLIGHT];
-static VkCommandBuffer transferCommandBuffer[MAX_FRAMES_IN_FLIGHT];
-
 static float camera_X = 0.0f;
 static float camera_Y = 0.0f;
 
@@ -215,11 +210,6 @@ static void initializeAllInOne(void)
     allInOne.pSunubo = &Sunubo;
 
     allInOne.pComputeUbo = &computeUbo;
-
-    allInOne.ppGraphicCommandBuffer = &graphicCommandBuffer;
-    allInOne.ppPresentCommandBuffer = &presentCommandBuffer;
-    allInOne.ppComputeCommandBuffer = &computeCommandBuffer;
-    allInOne.ppTransferCommandBuffer = &transferCommandBuffer;
 
     allInOne.pCamera_X = &camera_X;
     allInOne.pCamera_Y = &camera_Y;
@@ -309,11 +299,13 @@ void initVulkan(void)
     loadImageResource(VK_FORMAT_R16_SFLOAT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_UNDEFINED, TEXTURE_SHADOW_MAP, NULL);
     loadNormalResource(TEXTURE_NORMAL);
     loadImageResource(swapchainFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_UNDEFINED, TEXTURE_MODEL_COLOR, NULL);
+    loadImageResource(swapchainFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_UNDEFINED, TEXTURE_2D_COLOR, NULL);
 
     G_Texture_P * modelDepthTexutre = getTexture(TEXTURE_MODEL_DEPTH);
     G_Texture_P * modelNormalTexture = getTexture(TEXTURE_NORMAL);
     G_Texture_P * modelColorTexture = getTexture(TEXTURE_MODEL_COLOR);
     G_Texture_P * seprateShadowTexture = getTexture(TEXTURE_SHADOW_MAP);
+    G_Texture_P * color2dTexture = getTexture(TEXTURE_2D_COLOR);
     createModelRenderPass(modelColorTexture->format, modelNormalTexture->format, seprateShadowTexture->format, modelDepthTexutre->format, &allInOne.modelRenderPass);
     CO_addRenderPass(allInOne.modelRenderPass);// CO
 
@@ -331,8 +323,9 @@ void initVulkan(void)
 
     createGraphicRenderPass(swapchainFormat, &allInOne.renderPass);
     CO_addRenderPass(allInOne.renderPass);// CO
-    createFrameBuffer(allInOne.imageCount3D, allInOne.extent2D.width, allInOne.extent2D.height, 1, NULL, allInOne.pSwapchain3DImageViews, allInOne.renderPass, &allInOne.pGraphic2dFramebuffer);
-    CO_addFrameBuffer(allInOne.imageCount3D, allInOne.pGraphic2dFramebuffer);// CO
+    VkImageView color2dImageViews[] = {color2dTexture->imageView};
+    createFrameBuffer(2, allInOne.extent2D.width, allInOne.extent2D.height, 1, color2dImageViews, NULL, allInOne.renderPass, &allInOne.pGraphic2dFramebuffer);
+    CO_addFrameBuffer(2, allInOne.pGraphic2dFramebuffer);// CO
  
     createTextureSampler(&allInOne.textureSampler);
     CO_addSampler(allInOne.textureSampler);// CO
@@ -485,10 +478,10 @@ void initVulkan(void)
 
     executeCreateComputePipelines(NULL);
 
-    createCommandbufferByBuffering(VK_COMMAND_BUFFER_LEVEL_PRIMARY, allInOne.graphicCommandPool, &graphicCommandBuffer);
-    createCommandbufferByBuffering(VK_COMMAND_BUFFER_LEVEL_PRIMARY, allInOne.presentCommandPool, &presentCommandBuffer);
-    createCommandbufferByBuffering(VK_COMMAND_BUFFER_LEVEL_PRIMARY, allInOne.computeCommandPool, &computeCommandBuffer);
-    createCommandbufferByBuffering(VK_COMMAND_BUFFER_LEVEL_PRIMARY, allInOne.transferCommandPool, &transferCommandBuffer);
+    createCommandbufferByBuffering(VK_COMMAND_BUFFER_LEVEL_PRIMARY, allInOne.graphicCommandPool, &allInOne.pGraphicCommandBuffer);
+    createCommandbufferByBuffering(VK_COMMAND_BUFFER_LEVEL_PRIMARY, allInOne.presentCommandPool, &allInOne.pPresentCommandBuffer);
+    createCommandbufferByBuffering(VK_COMMAND_BUFFER_LEVEL_PRIMARY, allInOne.computeCommandPool, &allInOne.pComputeCommandBuffer);
+    createCommandbufferByBuffering(VK_COMMAND_BUFFER_LEVEL_PRIMARY, allInOne.transferCommandPool, &allInOne.pTransferCommandBuffer);
 
     createTimelineSemaphoreByBuffering(&allInOne.pTimelineSemaphore1);
     CO_addSemaphore(allInOne.pTimelineSemaphore1[0]);// CO
@@ -616,9 +609,11 @@ void initVulkan(void)
 
     addDescriptorSetToTexture(TEXTURE_MODEL_COLOR, allInOne.pCombineDescriptorSets + 0);
     addDescriptorSetToTexture(TEXTURE_SSGI_STORAGE_IMAGE, allInOne.pCombineDescriptorSets + 0);
+    addDescriptorSetToTexture(TEXTURE_2D_COLOR, allInOne.pCombineDescriptorSets + 0);
     // combine
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, TEXTURE_MODEL_COLOR, allInOne.textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_SSGI_STORAGE_IMAGE, allInOne.textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);//16
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2, TEXTURE_2D_COLOR, allInOne.textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);//16
 
     executeUpdateDescriptorSets();
 

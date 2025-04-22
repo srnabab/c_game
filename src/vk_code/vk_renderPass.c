@@ -48,8 +48,8 @@ void createGraphicRenderPass(VkFormat surfaceFormat, VkRenderPass * pRenderPass)
 {
     VkAttachmentDescription colorAttachment = {};
 
-    setAttachmentDescription(0, surfaceFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE\
-        , VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, &colorAttachment);
+    setAttachmentDescription(0, surfaceFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE\
+        , VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, &colorAttachment);
 
     VkAttachmentReference colorAttachmentRef = {};
     colorAttachmentRef.attachment = 0;
@@ -59,10 +59,10 @@ void createGraphicRenderPass(VkFormat surfaceFormat, VkRenderPass * pRenderPass)
     setSubpassDescription(0, VK_PIPELINE_BIND_POINT_GRAPHICS, 0, NULL, 1, &colorAttachmentRef, NULL, NULL, 0, NULL, &subpass1);
 
     VkSubpassDependency dependency[2];
-    setSubpassDependency(VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT\
-        , VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT, 0, &dependency[0]);
+    setSubpassDependency(VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT\
+        , VK_ACCESS_COLOR_ATTACHMENT_READ_BIT, 0, &dependency[0]);
 
-    setSubpassDependency(0, VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, 0, 0, &dependency[1]);
+    // setSubpassDependency(0, VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, 0, 0, &dependency[1]);
 
     VkAttachmentDescription attachments[] = {colorAttachment};
 
@@ -74,7 +74,7 @@ void createGraphicRenderPass(VkFormat surfaceFormat, VkRenderPass * pRenderPass)
     renderPassCreateInfo.pAttachments = attachments;
     renderPassCreateInfo.subpassCount = 1;
     renderPassCreateInfo.pSubpasses = &subpass1;
-    renderPassCreateInfo.dependencyCount = 2;
+    renderPassCreateInfo.dependencyCount = 1;
     renderPassCreateInfo.pDependencies = dependency;
 
     resultVulkan(vkCreateRenderPass(allInOne.device, &renderPassCreateInfo, allInOne.pAllocationCallbacks, pRenderPass), 0);
@@ -219,7 +219,7 @@ void createCombineRenderPass(VkFormat colorFormat, VkRenderPass * pRenderPass)
     attachment[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     attachment[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
     attachment[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    attachment[0].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    attachment[0].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
     VkAttachmentReference attachmentRef[2];
     attachmentRef[0].attachment = 0;
@@ -246,9 +246,9 @@ void createCombineRenderPass(VkFormat colorFormat, VkRenderPass * pRenderPass)
     dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
     dependencies[0].dstSubpass = 0;
     dependencies[0].srcStageMask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT; // Adjust if inputs come from Compute
-    dependencies[0].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     dependencies[0].srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT; // Adjust if inputs come from Compute
-    dependencies[0].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+    dependencies[0].dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
     dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT; // Usually safe for post-processing
 
     // Dependency from this subpass to external (next pass)

@@ -1,4 +1,5 @@
 #include "vk_code_h/vk_queue.h"
+#include "vk_code_h/vk_drawTool.h"
 #include "vk_code_h/vk_texture.h"
 #include "vk_code_h/vk_image.h"
 #include "vk_code_h/vk_buffer.h"
@@ -68,7 +69,7 @@ void createTextureImageFromMem(void * pixels, Uint32 width, Uint32 height, VkDev
     createImage(width, height, format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, pTextureImage, pTextureImageMem);
 
     transitionImageLayout(NULL, *pTextureImage, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, 1);
-    copyBufferToImage(pTextureImage, width, height, &stagingBuffer);
+    copyBufferToImage(NULL, pTextureImage, width, height, &stagingBuffer);
 
     transitionImageLayout(NULL, *pTextureImage, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 1);
 
@@ -95,12 +96,19 @@ unsigned char * readPNG(PathType type, Uint32 * pWidth, Uint32 * pHeight, Uint8 
 
     return pixels;
 }
-VkResult copyBufferToImage(VkImage * pImage, Uint32 width, Uint32 height, VkBuffer * pBuffer)
+VkResult copyBufferToImage(VkCommandBuffer commandBuffer, VkImage * pImage, Uint32 width, Uint32 height, VkBuffer * pBuffer)
 {
     VkResult result = VK_SUCCESS;
 
-    VkCommandBuffer commandBuffer = NULL;
-    result |= beginSingleTimeCommands(allInOne.transferCommandPool, &commandBuffer);
+    VkCommandBuffer singleTimeCommandBuffer = NULL;
+    if (commandBuffer == NULL)
+    {
+        result |= beginSingleTimeCommands(allInOne.graphicCommandPool, &singleTimeCommandBuffer);
+    }
+    else
+    {
+        beginCommandBuffer(commandBuffer);
+    }
 
     VkBufferImageCopy region = {};
     region.bufferOffset = 0;
@@ -119,9 +127,16 @@ VkResult copyBufferToImage(VkImage * pImage, Uint32 width, Uint32 height, VkBuff
         1
     };
 
-    vkCmdCopyBufferToImage(commandBuffer, *pBuffer, *pImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
-    
-    result |= endSingleTimeCommands(allInOne.transferCommandPool, getTransferQueue(), &commandBuffer);
+    if (commandBuffer == NULL)
+    {
+        vkCmdCopyBufferToImage(singleTimeCommandBuffer, *pBuffer, *pImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+        result |= endSingleTimeCommands(allInOne.graphicCommandPool, getGraphic2dQueue(), &singleTimeCommandBuffer);
+    }
+    else
+    {
+        vkCmdCopyBufferToImage(commandBuffer, *pBuffer, *pImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+        vkEndCommandBuffer(commandBuffer);
+    }
 
     return result;
 }

@@ -25,22 +25,13 @@ void main()
     fragTexCoord = inTexCoord;
     fragDepth = inPosition.z;
 
-    if (inPosition.z == 0.2)
-    {
-        mat2 rotationMatrix = mat2(
-            cos(PushConstants.rotation), -sin(PushConstants.rotation),
-            sin(PushConstants.rotation), cos(PushConstants.rotation)
-        );
-        vec2 rotatedPosition = rotationMatrix * inPosition.xy;
+    mat2 rotationMatrix = mat2(
+        cos(PushConstants.rotation), -sin(PushConstants.rotation),
+        sin(PushConstants.rotation), cos(PushConstants.rotation)
+    );
+    vec3 rotatedPosition = vec3(rotationMatrix * inPosition.xy, inPosition.z);
 
-        gl_Position = ubo.proj * ubo.view * ubo.model * vec4(rotatedPosition, inPosition.z, 1.0);
-    }
-    else if (inPosition.z == 0.1)
-    {
-        gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 1.0);
-    }
-    else
-    {
-        gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 1.0);
-    }
+    vec3 position = rotatedPosition * step(abs(inPosition.z - 0.2), 0.0) + inPosition * sign(abs(inPosition.z - 0.2));
+
+    gl_Position = ubo.proj * ubo.view * ubo.model * vec4(position, 1.0);
 }

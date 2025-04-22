@@ -10,12 +10,8 @@ layout(location = 0) out vec4 outColor;
 
 void main() 
 {
-    if (fragDepth == 0.1)
-    {
-        outColor = vec4(vec3(1.0), texture(texSampler, fragTexCoord).r);
-    }
-    else
-    {
-        outColor = texture(texSampler, fragTexCoord);
-    }
+    vec4 color = texture(texSampler, fragTexCoord);
+
+    outColor = vec4(vec3(1.0), color.r) * step(abs(fragDepth - 0.1), 0.0) +
+        color * sign(abs(fragDepth - 0.1));
 }

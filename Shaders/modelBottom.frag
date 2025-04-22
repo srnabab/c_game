@@ -83,17 +83,10 @@ void main()
     float shadow = shadowFactor(N, NdotL);
 
     vec4 textureColor;
-    if (ID == 1)
-    {
-        textureColor = texture(offscreenSamplers, vec3(fragTexCoord, float(instanceIndex)));
-        // float val = float(instanceIndex) / 48.0;
-        // textureColor = vec4(vec2(val), 1.0 - val, 1.0);
-        // textureColor = texture(offscreenSamplers, vec2(fragTexCoord));
-    }
-    else
-    {
-        textureColor = texture(texSampler, fragTexCoord);
-    }
+    float val = float(instanceIndex) / 48.0;
+
+    textureColor = texture(texSampler, fragTexCoord) * abs(ID - 1) + vec4(vec2(val), 1.0 - val, 1.0) * ID;
+    // textureColor = texture(texSampler, fragTexCoord) * abs(ID - 1) + texture(offscreenSamplers, vec3(fragTexCoord, float(instanceIndex))) * ID;
 
 
     vec3 diffuse = textureColor.rgb * sun.lightColor * sun.lightIntensity * NdotL;
