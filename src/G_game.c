@@ -82,7 +82,7 @@ void setup(int argc, char* argv[])
     initLog(arg);
 
     game_is_running = initWindow_3D();
-    logMessage("game_is_running: %d", game_is_running);
+    print("game_is_running: %d", game_is_running);
     if (game_is_running == false) return;
 
     SDL_StopTextInput(window_3D);
@@ -192,8 +192,8 @@ bool process_input(void)
     while(SDL_PollEvent(&event))
     {
         SDL_Keycode key = event.key.key;
-        // logMessage("preKeyState: %u, keyState: %u, key: %s(%u)", preKeyState, event.type, SDL_GetKeyName(key), key);
-        // logMessage("pressed Key:%u", pressedKey);
+        // print("preKeyState: %u, keyState: %u, key: %s(%u)", preKeyState, event.type, SDL_GetKeyName(key), key);
+        // print("pressed Key:%u", pressedKey);
         
         if (event.type == SDL_EVENT_WINDOW_MINIMIZED)
         {
@@ -251,7 +251,7 @@ bool process_input(void)
                 physicalCoffectX = (float)allInOne.extent2D.width / LOGICAL_WIDTH;
                 physicalCoffectY = (float)allInOne.extent2D.height / LOGICAL_HEIGHT;
                 
-                logMessage("sdl width: %u, height: %u", allInOne.extent2D.width, allInOne.extent2D.height);
+                print("sdl width: %u, height: %u", allInOne.extent2D.width, allInOne.extent2D.height);
 
                 scene = preScene;
                 preScene = Pause_Scene;
@@ -260,7 +260,7 @@ bool process_input(void)
             }
             if (key == SDLK_F10)
             {
-                logMessage("F10");
+                print("F10");
 
                 preScene = scene;
                 scene = Pause_Scene;
@@ -275,7 +275,7 @@ bool process_input(void)
 
                 resolutionChanged = true;
 
-                logMessage("fullscreen");
+                print("fullscreen");
 
                 scene = preScene;
                 preScene = Pause_Scene;
@@ -284,7 +284,7 @@ bool process_input(void)
             }
             if (key == SDLK_F9)
             {
-                logMessage("F9");
+                print("F9");
 
                 preScene = scene;
                 scene = Pause_Scene;
@@ -299,7 +299,7 @@ bool process_input(void)
 
                 resolutionChanged = true;
 
-                logMessage("windowed");
+                print("windowed");
 
                 scene = preScene;
                 preScene = Pause_Scene;
@@ -328,8 +328,8 @@ bool process_input(void)
 
             if (event.type == SDL_EVENT_MOUSE_MOTION)
             {
-                //logMessage("mouse moving: %d", event.type);
-                // logMessage("mouse: (%f, %f)", event.motion.x, event.motion.y);
+                //print("mouse moving: %d", event.type);
+                // print("mouse: (%f, %f)", event.motion.x, event.motion.y);
 
                 SDL_LockMutex(allSync.inputMutex);
                 mouse_x = event.motion.x;
@@ -369,14 +369,14 @@ bool process_input(void)
                     // if (key == SDLK_Q)
                     // {
                     //     scale = true;
-                    //     // logMessage("scale: %d", scale);
+                    //     // print("scale: %d", scale);
                     // }
                 }
                 if (key == SDLK_T)
                 {
                     textLine++;
                     textDisplay = true;
-                    logMessage("textline: %u", textLine);
+                    print("textline: %u", textLine);
                     // pushMessage(SDL_MESSAGEBOX_INFORMATION, "text line", "textline: %u\n", textLine);
                 }
                 if (key == SDLK_RIGHT)
@@ -703,7 +703,7 @@ int update(void * arg)
             {
                 // sceneCleaned = cleanScene(preScene);
                 sceneCleaned = true;
-                logMessage("clean scene");
+                print("clean scene");
             }
 
             static int id_click = 0;
@@ -732,7 +732,7 @@ int update(void * arg)
             if (cameraMove[0])
             {
                 *pCamera_Y += 1.6f * delta_time;
-                //logMessage("camera y: %f, enabled: %d, delta time: %lf, last_frame_time: %lu ----%s", *allInOne.pCamera_Y, cameraMove[0], delta_time, last_frame_time, timeNow);
+                //print("camera y: %f, enabled: %d, delta time: %lf, last_frame_time: %lu ----%s", *allInOne.pCamera_Y, cameraMove[0], delta_time, last_frame_time, timeNow);
             }
             if (cameraMove[1])
             {
@@ -765,20 +765,20 @@ int update(void * arg)
                 }
 
                 accumlateTime(delta_time_ns);
-                // logMessage("TotalTime: %fms", totalTime);
+                // print("TotalTime: %fms", totalTime);
 
                 if (textDisplay)
                 {
                     Uint32 textLen = 0;
-                    if (textLine == 1) getTextUV("一二三", &textLen);
-                    else if (textLine == 2) getTextUV("哈哈哈哈哈哈哈哈哈", &textLen);
+                    if (textLine == 2) getTextUV("一二三", &textLen);
+                    else if (textLine == 1) getTextUV("哈哈哈哈哈哈哈哈哈", &textLen);
 
                     if (textLine < 3)
                     {
                         getTexture(TEXTURE_FONT)->refCount = 0;
                         for (Uint32 i = 0;i < textLen;i++)
                         {
-                            textureVertexInit_SetUV(-300.0 + (float)i * 24.0, -100.0, 24, 24, 0.1f, &allInOne.vertices2DCount, allInOne.pVertices2D, UVs[i], getTexture(TEXTURE_FONT));
+                            textureVertexInit_SetUV(-300.0 + (float)i * FONT_SIZE, -100.0, FONT_SIZE, FONT_SIZE, 0.1f, &allInOne.vertices2DCount, allInOne.pVertices2D, UVs[i], getTexture(TEXTURE_FONT));
                         }
                     }
                     textDisplay = false;
@@ -795,7 +795,7 @@ int update(void * arg)
                 // if (pictureMove[0])
                 // {
                 //     *allInOne.pPictureY += 200 * delta_time;
-                //     //logMessage("y: %f, enabled: %d, delta time: %lf, last_frame_time: %lu ----%s", *allInOne.pPictureY, pictureMove[0], delta_time, last_frame_time, timeNow);
+                //     //print("y: %f, enabled: %d, delta time: %lf, last_frame_time: %lu ----%s", *allInOne.pPictureY, pictureMove[0], delta_time, last_frame_time, timeNow);
                 // }
                 // if (pictureMove[1])
                 // {
@@ -867,8 +867,8 @@ int update(void * arg)
             
             SDL_UnlockMutex(allSync.updateMutex);
 
-            //logMessage("test: %lf", testNum);
-            //logMessage("delta time:%f", delta_time);
+            //print("test: %lf", testNum);
+            //print("delta time:%f", delta_time);
             update_frame++;
             
             update_done = true;
@@ -902,7 +902,7 @@ int render(void * arg)
 
         draw_done = true;
 
-        //logMessage("render frames: %d ----%s", render_frame, timeNow);
+        //print("render frames: %d ----%s", render_frame, timeNow);
 
         render_frame++;
 

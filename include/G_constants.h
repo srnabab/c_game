@@ -60,4 +60,6 @@
 #define BOTTOM_HEIGHT 800
 #define BOTTOM_LENGTH 800
 
+#define FONT_SIZE 24
+
 #endif

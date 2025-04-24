@@ -176,14 +176,15 @@ struct _VK_ALL
     VkCommandBuffer pComputeCommandBuffer[MAX_FRAMES_IN_FLIGHT];
     VkCommandBuffer pTransferCommandBuffer[MAX_FRAMES_IN_FLIGHT];
 
-    VkSemaphore pTimelineSemaphore1[MAX_FRAMES_IN_FLIGHT];
+    VkSemaphore pTimelineSemaphore2d[MAX_FRAMES_IN_FLIGHT];
+    VkSemaphore pTimelineSemaphore3d[MAX_FRAMES_IN_FLIGHT];
 
     VkSemaphore pImageAvailableSemaphore[MAX_FRAMES_IN_FLIGHT];
     VkSemaphore pRenderFinishedSemaphore[MAX_FRAMES_IN_FLIGHT];
     VkSemaphore pCopyFinishedSemaphore[MAX_FRAMES_IN_FLIGHT];
+    VkSemaphore pComputeSemaphore[MAX_FRAMES_IN_FLIGHT];
 
     VkFence pGraphicInFlightFence[MAX_FRAMES_IN_FLIGHT];
-
     VkFence pComputeInFlightFence[MAX_FRAMES_IN_FLIGHT];
 
     Uint32 currentFrame;

@@ -21,7 +21,7 @@ static Uint64 getPhysicalDeviceTotalMemory(VkPhysicalDeviceMemoryProperties *pPh
 			physicalDeviceTotalMemory += pPhysicalDeviceMemoryProperties->memoryHeaps[i].size;
 		}
 	}
-	logMessage("device memory: %llu", physicalDeviceTotalMemory);
+	print("device memory: %llu", physicalDeviceTotalMemory);
 	return physicalDeviceTotalMemory;
 }
 static bool requiredExtensionSupportedCheck(Uint32 extensionCount, char ** extension, Uint32 physicalDeviceExtensionCount, VkExtensionProperties * pExtensionProperties)
@@ -46,7 +46,7 @@ static bool requiredExtensionSupportedCheck(Uint32 extensionCount, char ** exten
     count++;
     if (count != extensionCount)
     {
-        logMessage("extension not supported");
+        print("extension not supported");
         return false;
     }
 
@@ -127,29 +127,31 @@ static int getBestPhysicalDeviceIndex(VkPhysicalDevice *pPhysicalDevices, Uint32
 		}
 
 		Uint32 apiVersion = physicalDeviceProperties[i].apiVersion;
-		logMessage("apiVersion: %u.%u.%u", VK_API_VERSION_MAJOR(apiVersion), VK_API_VERSION_MINOR(apiVersion), VK_API_VERSION_PATCH(apiVersion));
+		print("apiVersion: %u.%u.%u", VK_API_VERSION_MAJOR(apiVersion), VK_API_VERSION_MINOR(apiVersion), VK_API_VERSION_PATCH(apiVersion));
 
 		Uint32 driverVersion = physicalDeviceProperties[i].driverVersion;
-		logMessage("driverVersion: %u.%u", (driverVersion >> 14) & 0x3FF, driverVersion & 0x3FFF);
+		print("driverVersion: %u.%u", (driverVersion >> 14) & 0x3FF, driverVersion & 0x3FFF);
 
-		logMessage("vendor Id: %x", physicalDeviceProperties[i].vendorID);
+		print("vendor Id: %x", physicalDeviceProperties[i].vendorID);
 
-		logMessage("device Id: %x", physicalDeviceProperties[i].deviceID);
+		print("device Id: %x", physicalDeviceProperties[i].deviceID);
 
-		logMessage("device type: %u", physicalDeviceProperties[i].deviceType);
+		print("device type: %u", physicalDeviceProperties[i].deviceType);
 
-		logMessage(physicalDeviceProperties[i].deviceName);
+		print(physicalDeviceProperties[i].deviceName);
 	
-		logMessage("max uniform buffers: %u, max storage buffers: %u", physicalDeviceProperties[i].limits.maxDescriptorSetUniformBuffers, physicalDeviceProperties[i].limits.maxDescriptorSetStorageBuffers);
+		print("max uniform buffers: %u, max storage buffers: %u", physicalDeviceProperties[i].limits.maxDescriptorSetUniformBuffers, physicalDeviceProperties[i].limits.maxDescriptorSetStorageBuffers);
 
-		logMessage("max color attachments: %u", physicalDeviceProperties[i].limits.maxColorAttachments);
+        print("max image samplers: %u", physicalDeviceProperties[i].limits.maxPerStageDescriptorSamplers);
+
+		print("max color attachments: %u", physicalDeviceProperties[i].limits.maxColorAttachments);
 
 		char pipelineCacheUUID[VK_UUID_SIZE * 2];
 		for (unsigned j = 0;j < VK_UUID_SIZE;j++)
 		{
 			SDL_snprintf(pipelineCacheUUID + 2 * j, 255, "%x", physicalDeviceProperties[i].pipelineCacheUUID[j]);
 		}
-		logMessage(pipelineCacheUUID);
+		print(pipelineCacheUUID);
 
         SDL_free(physicalDeviceExtension);
 	}
@@ -166,14 +168,14 @@ void pickPhysicalDevice(void)
 
     if (deviceCount == 0)
     {
-        logMessage("failed to find GPUs with Vulkan support");
+        print("failed to find GPUs with Vulkan support");
     }
 
     VkPhysicalDevice * devices = (VkPhysicalDevice *)SDL_malloc(deviceCount * sizeof(VkPhysicalDevice));
     resultVulkan(vkEnumeratePhysicalDevices(allInOne.instance, &deviceCount, devices), 1, devices);
 
-	// VkPhysicalDevice device = devices[getBestPhysicalDeviceIndex(devices, deviceCount)];xx
-    VkPhysicalDevice device = devices[GPU_CHOOSED];
+	VkPhysicalDevice device = devices[getBestPhysicalDeviceIndex(devices, deviceCount)];
+    device = devices[GPU_CHOOSED];
 	VkPhysicalDeviceFeatures deviceFeatures;
 	vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
 
@@ -188,8 +190,8 @@ void pickPhysicalDevice(void)
         SDL_free(devices);
     }
 
-    if (GPU_CHOOSED) logMessage("device picked: INTEL_GPU");
-    else logMessage("device picked: RTX_2060");
+    if (GPU_CHOOSED) print("device picked: INTEL_GPU");
+    else print("device picked: RTX_2060");
 }
 static bool * extensionSupportedCheck_Optional(Uint32 neededExtensionCount, char ** neededExtensions, Uint32 extensionCount, VkExtensionProperties * pExtensionProperties)
 {
@@ -314,11 +316,11 @@ void createLogicalDevice(void)
         {
             enabledExtension[enabledExtensionCount] = (char*)vmaExtension[i];
             enabledExtensionCount++;
-            logMessage("device extension:%s supported", vmaExtension[i]);
+            print("device extension:%s supported", vmaExtension[i]);
         }
         else
         {
-            logMessage("device extension:%s not supported by device", vmaExtension[i]);
+            print("device extension:%s not supported by device", vmaExtension[i]);
         }
     }
     SDL_free(enabledGroup);

@@ -9,14 +9,14 @@ layout(set = 0, binding = 2) uniform sampler2D scene2dColorSampler;
 layout(location = 0) out vec4 finalColor;
 
 void main() {
-    vec3 directLightAndEmissive = texture(sceneColorSampler, uv).rgb;
+    vec4 directLightAndEmissive = texture(sceneColorSampler, uv);
     vec3 indirectLight = texture(ssgiResultSampler, uv).rgb;
 
     vec4 scene2dColor = texture(scene2dColorSampler, uv);
     // vec4 scene2dColor = vec4(0.0);
 
     // Additive blending: Combine direct and indirect lighting
-    vec3 combinedLight = directLightAndEmissive + indirectLight;
+    vec3 combinedLight = directLightAndEmissive.rgb + indirectLight;
 
     // Optional: Apply tonemapping, gamma correction etc. here or in a later pass
     // combinedLight = Tonemap(combinedLight);
@@ -25,4 +25,6 @@ void main() {
     // finalColor = vec4(combinedLight, 1.0);
     // finalColor = vec4(uv, 0.0, 1.0); // For testing: just output the UV coordinates
     finalColor = texture(sceneColorSampler, uv) * step(abs(scene2dColor.a), 0.0) + scene2dColor; // For testing: just output the scene color
+    // finalColor = vec4(combinedLight, directLightAndEmissive.a) * step(abs(scene2dColor.a), 0.0) + scene2dColor;
+    // finalColor = scene2dColor;
 }

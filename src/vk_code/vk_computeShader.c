@@ -46,19 +46,20 @@ void createShaderStorageBuffers(VkBuffer (*ppShaderStorageBuffers)[2], VkDeviceM
 
     VkBuffer stagingBuffer = NULL;
     VkDeviceMemory stagingBufferMemory = NULL;
-    createBuffer(&stagingBuffer, &stagingBufferMemory, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    createBuffer(&stagingBuffer, &stagingBufferMemory, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, NULL, 0, 0);
 
     void * data = NULL;
     vkMapMemory(allInOne.device, stagingBufferMemory, 0, bufferSize, 0, &data);
     memcpy(data, particles, bufferSize);
     vkUnmapMemory(allInOne.device, stagingBufferMemory);
 
-    for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
-    {
-        createBuffer((*ppShaderStorageBuffers) + i, (*ppShaderStorageBuffersMem) + i, bufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    createBuffer((*ppShaderStorageBuffers) + 0, (*ppShaderStorageBuffersMem) + 0, bufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, NULL, 0, 0);
+    copyBuffer(NULL, allInOne.computeCommandPool, &stagingBuffer, (*ppShaderStorageBuffers) + 0, bufferSize);
 
-        copyBuffer(NULL, &stagingBuffer, (*ppShaderStorageBuffers) + i, bufferSize);
-    }
+    createBuffer((*ppShaderStorageBuffers) + 1, (*ppShaderStorageBuffersMem) + 1, bufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, NULL, 0, 0);
+    copyBuffer(NULL, allInOne.graphicCommandPool, &stagingBuffer, (*ppShaderStorageBuffers) + 1, bufferSize);
+    releaseBufferFromQueue(allInOne.graphicCommandPool, VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, allInOne.queueFamilyIndices.graphicsFamily.familyIndice, allInOne.queueFamilyIndices.computeFamily.familyIndice\
+    , (*ppShaderStorageBuffers)[1], bufferSize);
 
     vkDestroyBuffer(allInOne.device, stagingBuffer, allInOne.pAllocationCallbacks);
     vkFreeMemory(allInOne.device, stagingBufferMemory, allInOne.pAllocationCallbacks);

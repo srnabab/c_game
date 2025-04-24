@@ -107,14 +107,14 @@ int textureGenerate(const char* fontPath, const char* hashTablePath, const char*
     FT_Library ft;
     if (FT_Init_FreeType(&ft)) 
     {
-        // logMessage("Could not init FreeType Library");
+        // print("Could not init FreeType Library");
         return -2;
     }
 
     FT_Face face;
     if (FT_New_Face(ft, fontPath, 0, &face)) 
     {
-        // logMessage("Failed to load font");
+        // print("Failed to load font");
         return -3;
     }
 
@@ -187,7 +187,7 @@ int textureGenerate(const char* fontPath, const char* hashTablePath, const char*
 
         if (FT_Load_Char(face, utf32, FT_LOAD_RENDER | FT_LOAD_COLOR)) 
         {
-            // logMessage("Failed to load Glyph");
+            // print("Failed to load Glyph");
             return -7;
         }
 

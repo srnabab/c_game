@@ -54,7 +54,7 @@ static bool initSDL(void)
         int temp = SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "", "Error initializing SDL.\n", NULL);
         if (!temp)
         {
-            logMessage("Error show messagebox\n");
+            print("Error show messagebox\n");
             return false;
         }
         return false;
@@ -88,20 +88,20 @@ bool initWindow_3D(void)
     SDL_DisplayID * displays = SDL_GetDisplays(&count);
     for (int i = 0;i < count;i++)
     {
-        logMessage("display id:%u, name:%s", displays[i], SDL_GetDisplayName(displays[i]));
+        print("display id:%u, name:%s", displays[i], SDL_GetDisplayName(displays[i]));
     }
     displayId = displays[0];
     SDL_DisplayMode ** modes = NULL;
     modes = SDL_GetFullscreenDisplayModes(displayId, &count);
     for (int i = 0;i < count;i++)
     {
-        logMessage("id %u format: %u: %u x %u, %uHz", modes[i]->displayID, modes[i]->format, modes[i]->w, modes[i]->h, modes[i]->refresh_rate);
+        print("id %u format: %u: %u x %u, %lfHz", modes[i]->displayID, modes[i]->format, modes[i]->w, modes[i]->h, modes[i]->refresh_rate);
     }
 
     physicalCoffectX = (float)width / LOGICAL_WIDTH;
     physicalCoffectY = (float)height / LOGICAL_HEIGHT;
 
-    logMessage("window_3D initialized");
+    print("window_3D initialized");
 
     Uint32 iconWidth, iconHeight;
     iconWidth = iconHeight = 0;         
@@ -228,7 +228,7 @@ static void initializeAllInOne(void)
 void initVulkan(void)
 {
     /*fixed compoent*/
-    logMessage("initializing...");
+    print("initializing...");
 
     initGlobalTexture();
 
@@ -399,7 +399,7 @@ void initVulkan(void)
 
     VkDescriptorPoolSize graphicDescriptorPoolSize[2];
     graphicDescriptorPoolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    graphicDescriptorPoolSize[0].descriptorCount = 16;
+    graphicDescriptorPoolSize[0].descriptorCount = 22;
     graphicDescriptorPoolSize[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     graphicDescriptorPoolSize[1].descriptorCount = 26;
     createDescriptorPool(&allInOne.device, 2, graphicDescriptorPoolSize, 24, &graphicDescriptorPool);
@@ -483,17 +483,27 @@ void initVulkan(void)
     createCommandbufferByBuffering(VK_COMMAND_BUFFER_LEVEL_PRIMARY, allInOne.computeCommandPool, &allInOne.pComputeCommandBuffer);
     createCommandbufferByBuffering(VK_COMMAND_BUFFER_LEVEL_PRIMARY, allInOne.transferCommandPool, &allInOne.pTransferCommandBuffer);
 
-    createTimelineSemaphoreByBuffering(&allInOne.pTimelineSemaphore1);
-    CO_addSemaphore(allInOne.pTimelineSemaphore1[0]);// CO
-    CO_addSemaphore(allInOne.pTimelineSemaphore1[1]);// CO
+    createTimelineSemaphoreByBuffering(&allInOne.pTimelineSemaphore2d);
+    CO_addSemaphore(allInOne.pTimelineSemaphore2d[0]);// CO
+    CO_addSemaphore(allInOne.pTimelineSemaphore2d[1]);// CO
+
+    createTimelineSemaphoreByBuffering(&allInOne.pTimelineSemaphore3d);
+    CO_addSemaphore(allInOne.pTimelineSemaphore3d[0]);// CO
+    CO_addSemaphore(allInOne.pTimelineSemaphore3d[1]);// CO
+
 
     createSemaphoreByBuffering(&allInOne.pImageAvailableSemaphore);
     CO_addSemaphore(allInOne.pImageAvailableSemaphore[0]);// CO
     CO_addSemaphore(allInOne.pImageAvailableSemaphore[1]);// CO
+
     createSemaphoreByBuffering(&allInOne.pRenderFinishedSemaphore);
     CO_addSemaphore(allInOne.pRenderFinishedSemaphore[0]);// CO
     CO_addSemaphore(allInOne.pRenderFinishedSemaphore[1]);// CO
- 
+
+    createSemaphoreByBuffering(&allInOne.pComputeSemaphore);
+    CO_addSemaphore(allInOne.pComputeSemaphore[0]);// CO
+    CO_addSemaphore(allInOne.pComputeSemaphore[1]);// CO
+
     createFenceByBuffering(&allInOne.pGraphicInFlightFence);
     CO_addFence(allInOne.pGraphicInFlightFence[0]);// CO
     CO_addFence(allInOne.pGraphicInFlightFence[1]);// CO

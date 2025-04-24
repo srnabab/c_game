@@ -12,6 +12,7 @@
 
 extern bool SDLCALL findQueueFamilies(void);
 extern void SDLCALL createQueue(void);
+extern VkQueue SDLCALL getFirstQueueByCommandPool(VkCommandPool commandPool);
 extern VkQueue SDLCALL getGraphic2dQueue(void);
 extern VkQueue SDLCALL getGraphic3dQueue(void);
 extern VkQueue SDLCALL getPresentQueue(void);

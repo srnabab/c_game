@@ -39,7 +39,7 @@ static unsigned char* readTileSetData(PathType path, Uint32 * pTileWidth, Uint32
     SDL_IOStream * tsd = SDL_IOFromFile(getPath(path), "rb");
     if (tsd == NULL)
     {
-        logMessage("%s open failed", getPath(path));
+        print("%s open failed", getPath(path));
         *pTileWidth = *pTileHeight = *pTilePropertyCount = *pTileCount = 0;
 
         return NULL;

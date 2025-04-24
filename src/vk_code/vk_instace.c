@@ -32,7 +32,7 @@ static bool extensionSupportedCheck_Must(uint32_t neededExtensionCount, char ** 
     count++;
     if (count != neededExtensionCount)
     {
-        logMessage("extension not supported");
+        print("extension not supported");
         return false;
     }
 
@@ -129,7 +129,7 @@ void createInstance(void)
     else
     {
         layersCount = 0;
-        logMessage("validation layers not found");
+        print("validation layers not found");
     }
 
     uint32_t extensionCount = 0;
@@ -208,5 +208,5 @@ void createInstance(void)
 
     SDL_free(requiredExtension);
 
-    logMessage("instance created");
+    print("instance created");
 }

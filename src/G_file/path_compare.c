@@ -70,6 +70,10 @@ PathType pathCompare(char * buffer)
     {
         return Model3dVertShader;
     }
+    else if ((SDL_strcmp(buffer, "[MainFontPng]") == 0))
+    {
+        return MainFontPng;
+    }
     else if ((SDL_strcmp(buffer, "[Viking_room_CopyPng]") == 0))
     {
         return Viking_room_CopyPng;
@@ -189,10 +193,6 @@ PathType pathCompare(char * buffer)
     else if ((SDL_strcmp(buffer, "[Loading1Png]") == 0))
     {
         return Loading1Png;
-    }
-    else if ((SDL_strcmp(buffer, "[MainFontPng]") == 0))
-    {
-        return MainFontPng;
     }
     else if ((SDL_strcmp(buffer, "[Non_existPng]") == 0))
     {

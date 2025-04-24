@@ -14,7 +14,7 @@ void createUniformBufferByBuffering(VkBuffer (*ppUniformBuffers)[2], VkDeviceMem
     {
         (*pppUniformBuffersMapped)[i] = NULL;
 
-        resultVulkan(createBuffer(&(*ppUniformBuffers)[i], &(*ppUniformBuffersMem)[i], bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT),
+        resultVulkan(createBuffer(&(*ppUniformBuffers)[i], &(*ppUniformBuffersMem)[i], bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, NULL, 0, 0),
         3, *ppUniformBuffers, *ppUniformBuffersMem, *pppUniformBuffersMapped);
 
         resultVulkan(vkMapMemory(allInOne.device, (*ppUniformBuffersMem)[i], 0, bufferSize, 0, &(*pppUniformBuffersMapped)[i]),

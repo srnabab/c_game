@@ -12,14 +12,14 @@ bool findQueueFamilies(void)
 {
     uint32_t queueFamilyCount = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(allInOne.physicalDevice, &queueFamilyCount, NULL);
-    logMessage("queueFamilyCount: %u", queueFamilyCount);
+    print("queueFamilyCount: %u", queueFamilyCount);
 
     VkQueueFamilyProperties * queueFamily = (VkQueueFamilyProperties *)SDL_malloc(queueFamilyCount * sizeof(VkQueueFamilyProperties));
     vkGetPhysicalDeviceQueueFamilyProperties(allInOne.physicalDevice, &queueFamilyCount, queueFamily);
 
     for (uint32_t i = 0;i < queueFamilyCount;i++)
     {
-        logMessage("queueFlags: %d", queueFamily[i].queueFlags);
+        print("queueFlags: %d", queueFamily[i].queueFlags);
     }
     allInOne.queueFamilyIndices.graphicsFamily.familyIndice = -1;
     allInOne.queueFamilyIndices.computeFamily.familyIndice = -1;
@@ -258,6 +258,27 @@ void createQueue(void)
         }
         allInOne.queueFamilyIndices.presentFamily.familyIndice = allInOne.queueFamilyIndices.graphicsFamily.familyIndice;
     }
+}
+VkQueue getFirstQueueByCommandPool(VkCommandPool commandPool)
+{
+    if (commandPool == allInOne.graphicCommandPool)
+    {
+        return allInOne.pGraphicQueue[0];
+    }
+    else if (commandPool == allInOne.presentCommandPool)
+    {
+        return allInOne.pPresentQueue[0];
+    }
+    else if (commandPool == allInOne.computeCommandPool)
+    {
+        return allInOne.pComputeQueue[0];
+    }
+    else if (commandPool == allInOne.transferCommandPool)
+    {
+        return allInOne.pTransferQueue[0];
+    }
+
+    return allInOne.pGraphicQueue[0];
 }
 VkQueue getGraphic3dQueue(void)
 {

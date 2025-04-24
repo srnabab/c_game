@@ -13,7 +13,7 @@ void createFrameBuffer(uint32_t imageCount, Uint32 width, Uint32 height, Uint32 
     VkImageView * pImageViewAttachments = (VkImageView *)SDL_malloc(attachmentCount * sizeof(VkImageView));
 
     *pSwapchainFramebuffer = (VkFramebuffer *)SDL_calloc(imageCount, sizeof(VkFramebuffer));
-    logMessage("framebuffer width: %u, height: %u\n", allInOne.extent2D.width, allInOne.extent2D.height);
+    print("framebuffer width: %u, height: %u\n", allInOne.extent2D.width, allInOne.extent2D.height);
 
     if (pSwapchainImageView == NULL)
     {

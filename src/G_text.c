@@ -16,10 +16,10 @@ bool initTextSystem(void)
 
     if ((fp = SDL_IOFromFile(getPath(MainFontHashTable), "rb")) == NULL)
     {
-        textureGenerate(getPath(MainFont), getPath(MainFontHashTable), getPath(MainFontPng), 1, 60, &failed);
+        textureGenerate(getPath(MainFont), getPath(MainFontHashTable), getPath(MainFontPng), 1, 72, &failed);
         if (failed)
         {
-            logMessage("font error(%d)", failed);
+            print("font error(%d)", failed);
         }
         fp = SDL_IOFromFile(getPath(MainFontHashTable), "rb");
         if (fp == NULL)
@@ -37,7 +37,7 @@ bool initTextSystem(void)
         print("%d\n", code);
         if (failed)
         {
-            logMessage("font error(%d)", failed);
+            print("font error(%d)", failed);
         }
         fp = SDL_IOFromFile(getPath(EmojiHashTable), "rb");
         if (fp == NULL)
@@ -49,7 +49,7 @@ bool initTextSystem(void)
     // for (int x = 0;x < 2;x++)
     // for (int i = 0;i < 5000;i++)
     // {
-    //     logMessage("uv: %f", hash[x][i].uv[0][0]);
+    //     print("uv: %f", hash[x][i].uv[0][0]);
     // }
 
    return true;
@@ -67,14 +67,14 @@ void getTextUV(char * text, uint32_t * textLen)
     for (size_t i = 0;i < u32Len;i++)
     {
         int index = find_value(textHash, u32Result[i]);
-        logMessage("U+%X, index: %d", u32Result[i], index);
+        print("U+%X, index: %d", u32Result[i], index);
         if (index != -1)
         {
             for (int x = 0;x < 4;x++)
             {
                 UVs[i][x][0] = textHash[index].uv[x][0];
                 UVs[i][x][1] = textHash[index].uv[x][1];
-                logMessage("u: %f, v: %f", UVs[i][x][0], UVs[i][x][1]);
+                print("u: %f, v: %f", UVs[i][x][0], UVs[i][x][1]);
             }
         }
     }

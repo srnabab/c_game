@@ -49,7 +49,7 @@ void createDescriptorSets(VkDescriptorPool * pDescriptorPool, VkDescriptorSetLay
     allocInfo.descriptorPool = *pDescriptorPool;
     allocInfo.pSetLayouts = layouts;
 
-    logMessage("%d", vkAllocateDescriptorSets(allInOne.device, &allocInfo, *ppDescriptorSets));
+    print("%d", vkAllocateDescriptorSets(allInOne.device, &allocInfo, *ppDescriptorSets));
 
     SDL_free(layouts);
 }

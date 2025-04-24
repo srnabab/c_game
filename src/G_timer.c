@@ -65,7 +65,7 @@ static Timer * findTimer(int id)
 {
     if (id == 129)
     {
-        logMessage("here");
+        print("here");
     }
     for (int i = 0;i < 128;i++)
     {

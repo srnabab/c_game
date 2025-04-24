@@ -17,7 +17,7 @@ void createCommandPool(VkCommandPoolCreateFlags flag, Uint32 graphicsFamilyIndic
     commandPoolCreateInfo.queueFamilyIndex = graphicsFamilyIndice;
 
     resultVulkan(vkCreateCommandPool(allInOne.device, &commandPoolCreateInfo, allInOne.pAllocationCallbacks, pCommandPool), 0);
-    logMessage("command pool created\n");
+    print("command pool created\n");
 } 
 void createCommandbufferByBuffering(VkCommandBufferLevel level, VkCommandPool commandPool, VkCommandBuffer (*ppCommandBuffer)[MAX_FRAMES_IN_FLIGHT])
 { 
@@ -29,7 +29,7 @@ void createCommandbufferByBuffering(VkCommandBufferLevel level, VkCommandPool co
     allocInfo.commandBufferCount = MAX_FRAMES_IN_FLIGHT;
 
     resultVulkan(vkAllocateCommandBuffers(allInOne.device, &allocInfo, *ppCommandBuffer), 0);
-    logMessage("command buffer allocated\n");
+    print("command buffer allocated\n");
 }
 void createCommandBuffer(VkCommandBufferLevel level, VkCommandPool commandPool, VkCommandBuffer ** ppCommandBuffer, Uint32 bufferCount)
 {
@@ -43,5 +43,5 @@ void createCommandBuffer(VkCommandBufferLevel level, VkCommandPool commandPool, 
     allocInfo.commandBufferCount = bufferCount;
 
     vkAllocateCommandBuffers(allInOne.device, &allocInfo, *ppCommandBuffer);
-    logMessage("command buffer allocated\n");
+    print("command buffer allocated\n");
 }
