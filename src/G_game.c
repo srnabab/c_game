@@ -891,11 +891,11 @@ int render(void * arg)
 
         if (resolutionChanged)
         {
-            recreateSwapchain();
+            recreateSwapchain(currentFrame);
             resolutionChanged = false;
         }
 
-        drawFrame(scene, currentFrame, false);
+        drawFrame(scene, currentFrame, allInOne.extent2D.width, allInOne.extent2D.height);
 
         allInOne.currentFrame = (allInOne.currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
         currentFrame = allInOne.currentFrame;

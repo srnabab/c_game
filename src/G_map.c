@@ -4,6 +4,7 @@
 #include "G_log.h"
 
 #include "vk_code_h/vk_queue.h"
+#include "vk_code_h/vk_buffer.h"
 #include "vk_code_h/vk_image.h"
 #include "vk_code_h/vk_drawTool.h"
 #include "vk_code_h/vk_all_struct.h"
@@ -485,60 +486,102 @@ static bool findInUint32Array(Uint32 * array, Uint32 arraySize, Uint32 num)
 }
 void moveBottomImage(Uint32 currentFrame)
 {
-    FromTo tempFromTo = {};
-    VkCommandBuffer commandBuffer = allInOne.pTransferCommandBuffer[currentFrame];
-    G_Texture_P * imageArray = getTexture(TEXTURE_MAP_ARRAY);
-    Uint32 arrayCap = allInOne.bottomImageMoveStack.top + 1;
-    Uint32 offset = 0;
-    Uint32 * notShaderReadOnly = (Uint32*)SDL_malloc(arrayCap * sizeof(Uint32));
+    // if (StackIsEmpty(allInOne.bottomImageMoveStack) == true) return;
 
-    beginCommandBuffer(commandBuffer);
-    while (StackIsEmpty(allInOne.bottomImageMoveStack) == false)
-    {
-        allInOne.bottomImageMoveStack.popFn(&allInOne.bottomImageMoveStack, &tempFromTo);
-        transitionImageLayout(commandBuffer, imageArray->image, imageArray->format, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, tempFromTo.from, 1);
-        notShaderReadOnly[offset] = tempFromTo.from;
-        offset++;
+    // FromTo tempFromTo = {};
+    // VkCommandBuffer commandBuffer = allInOne.pTransferCommandBuffer[currentFrame];
+    // G_Texture_P * imageArray = getTexture(TEXTURE_MAP_ARRAY);
 
-        if (findInUint32Array(notShaderReadOnly, arrayCap, tempFromTo.to))
-        {
-            transitionImageLayout(commandBuffer, imageArray->image, imageArray->format, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, tempFromTo.to, 1);
-        }
-        else
-        {
-            transitionImageLayout(commandBuffer, imageArray->image, imageArray->format, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, tempFromTo.to, 1);
-            notShaderReadOnly[offset] = tempFromTo.from;
-            offset++;
-        }
+    // Uint32 arrayCap = (allInOne.bottomImageMoveStack.top + 1) * 2;
+    // Uint32 offset = 0;
+    // Uint32 imageMemoryBarrierCount = 0;
+    // Uint32 * notShaderReadOnly = (Uint32*)SDL_malloc(arrayCap * sizeof(Uint32));
+    // if (notShaderReadOnly == NULL)
+    // {
+    //     print("Error allocating memory for notShaderReadOnly\n");
+    //     return;
+    // }
 
-        VkImageCopy region = {};
-        region.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        region.srcSubresource.mipLevel = 0;
-        region.srcSubresource.baseArrayLayer = tempFromTo.from;
-        region.srcSubresource.layerCount = 1;
-        region.srcOffset.x = 0;
-        region.srcOffset.y = 0;
-        region.srcOffset.z = 0;
-        region.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        region.dstSubresource.mipLevel = 0;
-        region.dstSubresource.baseArrayLayer = tempFromTo.to;
-        region.dstSubresource.layerCount = 1;
-        region.dstOffset.x = 0;
-        region.dstOffset.y = 0;
-        region.dstOffset.z = 0;
-        region.extent.width = BOTTOM_WIDTH;
-        region.extent.width = BOTTOM_HEIGHT;
-        region.extent.depth = 1; 
+    // Uint32 graphicFamiltIndice = allInOne.queueFamilyIndices.graphicsFamily.familyIndice;
+    // Uint32 transferFamiltIndice = allInOne.queueFamilyIndices.transferFamily.familyIndice;
+    // Uint32 i;
 
-        vkCmdCopyImage(allInOne.pTransferCommandBuffer[currentFrame], imageArray->image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, imageArray->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL\
-            , 1, &region);
+    // VkImageMemoryBarrier imageMemoryBarrierGet[48];
+    // VkImageMemoryBarrier imageMemoryBarrierRelease[48];
 
-        transitionImageLayout(commandBuffer, imageArray->image, imageArray->format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, tempFromTo.to, 1);
-    }
-    VkSubmitInfo submitInfo = {};
+    // for (i = 0;i < arrayCap / 2;i++)
+    // {
+    //     if (findInUint32Array(notShaderReadOnly, arrayCap, ((FromTo*)allInOne.bottomImageMoveStack.data)[i].from) == false)
+    //     {
+    //         _setImageMemoryBarrier(NULL, 0, VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, graphicFamiltIndice\
+    //             , transferFamiltIndice, imageArray->image, VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, ((FromTo*)allInOne.bottomImageMoveStack.data)[i].from, 1, imageMemoryBarrierGet + i);
 
-    setSubmitInfo(NULL, 0, NULL, NULL, 1, &commandBuffer, 0, NULL, &submitInfo);
-    vkQueueSubmit(getTransferQueue(), 1, &submitInfo, NULL);
+    //         _setImageMemoryBarrier(NULL, 0, VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT, )
+
+    //         notShaderReadOnly[imageMemoryBarrierCount] = ((FromTo*)allInOne.bottomImageMoveStack.data)[i].from;
+    //         imageMemoryBarrierCount++;
+    //     }
+
+    //     if (findInUint32Array(notShaderReadOnly, arrayCap, ((FromTo*)allInOne.bottomImageMoveStack.data)[i].to) == false)
+    //     {
+    //         _setImageMemoryBarrier(NULL, 0, VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, graphicFamiltIndice\
+    //             , transferFamiltIndice, imageArray->image, VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, ((FromTo*)allInOne.bottomImageMoveStack.data)[i].to, 1, imageMemoryBarrierGet + i);
+    //         notShaderReadOnly[imageMemoryBarrierCount] = ((FromTo*)allInOne.bottomImageMoveStack.data)[i].to;
+    //         imageMemoryBarrierCount++;
+    //     }
+    // }
+    // memset(notShaderReadOnly, 0, arrayCap * sizeof(Uint32));
+
+    // beginCommandBuffer(commandBuffer);
+    // vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, imageMemoryBarrierCount, imageMemoryBarrier);
+    // offset = 0;
+
+    // while (StackIsEmpty(allInOne.bottomImageMoveStack) == false)
+    // {
+    //     allInOne.bottomImageMoveStack.popFn(&allInOne.bottomImageMoveStack, &tempFromTo);
+    //     transitionImageLayout(commandBuffer, imageArray->image, imageArray->format, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, tempFromTo.from, 1);
+    //     notShaderReadOnly[offset] = tempFromTo.from;
+    //     offset++;
+
+    //     if (findInUint32Array(notShaderReadOnly, arrayCap, tempFromTo.to))
+    //     {
+    //         transitionImageLayout(commandBuffer, imageArray->image, imageArray->format, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, tempFromTo.to, 1);
+    //     }
+    //     else
+    //     {
+    //         transitionImageLayout(commandBuffer, imageArray->image, imageArray->format, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, tempFromTo.to, 1);
+    //         notShaderReadOnly[offset] = tempFromTo.from;
+    //         offset++;
+    //     }
+
+    //     VkImageCopy region = {};
+    //     region.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    //     region.srcSubresource.mipLevel = 0;
+    //     region.srcSubresource.baseArrayLayer = tempFromTo.from;
+    //     region.srcSubresource.layerCount = 1;
+    //     region.srcOffset.x = 0;
+    //     region.srcOffset.y = 0;
+    //     region.srcOffset.z = 0;
+    //     region.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    //     region.dstSubresource.mipLevel = 0;
+    //     region.dstSubresource.baseArrayLayer = tempFromTo.to;
+    //     region.dstSubresource.layerCount = 1;
+    //     region.dstOffset.x = 0;
+    //     region.dstOffset.y = 0;
+    //     region.dstOffset.z = 0;
+    //     region.extent.width = BOTTOM_WIDTH;
+    //     region.extent.width = BOTTOM_HEIGHT;
+    //     region.extent.depth = 1; 
+
+    //     vkCmdCopyImage(allInOne.pTransferCommandBuffer[currentFrame], imageArray->image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, imageArray->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL\
+    //         , 1, &region);
+
+    //     transitionImageLayout(commandBuffer, imageArray->image, imageArray->format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, tempFromTo.to, 1);
+    // }
+    // VkSubmitInfo submitInfo = {};
+
+    // setSubmitInfo(NULL, 0, NULL, NULL, 1, &commandBuffer, 0, NULL, &submitInfo);
+    // vkQueueSubmit(getTransferQueue(), 1, &submitInfo, NULL);
     
-    vkEndCommandBuffer(commandBuffer);
+    // vkEndCommandBuffer(commandBuffer);
 }

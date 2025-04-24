@@ -228,7 +228,7 @@ static void recordComputeCommandBuffer(Uint32 currentFrame)
     , allInOne.pShaderStorageBuffer[currentFrame], 0, sizeof(Particle) * PARTICLE_COUNT, &bufferMemoryBarrierRelease);
     vkCmdPipelineBarrier(currentCommandBuffer, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, NULL, 1, &bufferMemoryBarrierRelease, 0, NULL);
 }
-static void recordSSGICommandBuffer(Uint32 currentFrame)
+static void recordSSGICommandBuffer(Uint32 currentFrame, Uint32 width, Uint32 height)
 {
     VkCommandBuffer currentCommandBuffer = allInOne.pGraphicCommandBuffer[currentFrame];
 
@@ -251,7 +251,7 @@ static void recordSSGICommandBuffer(Uint32 currentFrame)
     VkDescriptorSet descriptorSets[] = {allInOne.pSSGIDescriptorSets[currentFrame], (allInOne.pSSGIDescriptorSets + 2)[currentFrame]};
     vkCmdBindDescriptorSets(currentCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, allInOne.SSGIPipelineLayout, 0, 2, descriptorSets, 0, NULL);
 
-    vkCmdDispatch(currentCommandBuffer, (allInOne.extent2D.width + 8 - 1) / 8, (allInOne.extent2D.height + 8 - 1) / 8, 1);
+    vkCmdDispatch(currentCommandBuffer, (width + 8 - 1) / 8, (height + 8 - 1) / 8, 1);
 }
 static void recordCommandBufferCombine(Uint32 imageIndex, Uint32 currentFrame)
 {
@@ -290,7 +290,7 @@ static void recordCommandBufferCombine(Uint32 imageIndex, Uint32 currentFrame)
 
     vkCmdEndRenderPass(currentCommandBuffer);
 }
-static void drawFirstScene(Uint32 currentFrame, bool bottomDrawed)
+static void drawFirstScene(Uint32 currentFrame, Uint32 width, Uint32 height)
 {
     VkSemaphore * timelineSemaphore2d = allInOne.pTimelineSemaphore2d + currentFrame;
     Uint64 waitValue2D[] = {0, 0};
@@ -365,7 +365,7 @@ static void drawFirstScene(Uint32 currentFrame, bool bottomDrawed)
     resultVulkan(vkResetFences(allInOne.device, 1, &allInOne.pGraphicInFlightFence[currentFrame]), 0);
 
     vkResetCommandBuffer(allInOne.pGraphicCommandBuffer[currentFrame], 0);
-    recordSSGICommandBuffer(currentFrame);
+    recordSSGICommandBuffer(currentFrame, width, height);
     vkEndCommandBuffer(allInOne.pGraphicCommandBuffer[currentFrame]);
 
     VkPipelineStageFlags SSGIWaitStage[] = {VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT};
@@ -442,12 +442,12 @@ static void drawFirstScene(Uint32 currentFrame, bool bottomDrawed)
     presentInfo_3D.pResults = NULL;
     resultVulkan(vkQueuePresentKHR(getPresentQueue(), &presentInfo_3D), 0);
 }
-void drawFrame(Scene scene, Uint32 currentFrame, bool bottomDrawed)
+void drawFrame(Scene scene, Uint32 currentFrame, Uint32 width, Uint32 height)
 {
     switch (scene)
     {
         case First_Scene:
-        drawFirstScene(currentFrame, bottomDrawed);
+        drawFirstScene(currentFrame, width, height);
         break;
         
         case Pause_Scene:

@@ -5,7 +5,7 @@
 
 #include "SDL3/SDL_begin_code.h"
 
-extern void SDLCALL recreateSwapchain(void);
+extern void SDLCALL recreateSwapchain(Uint32 currentFrame);
 
 #include "SDL3/SDL_close_code.h"
 

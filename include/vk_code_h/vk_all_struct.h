@@ -197,7 +197,7 @@ struct _VK_ALL
 
     PushConstants * pPushConstants;
 
-    G_Texture_P * pGlobalTexture;
+    G_Texture_Head * pGlobalTexture;
 
     G_Stack shaderModuleStack;
 

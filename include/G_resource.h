@@ -7,9 +7,14 @@
 
 #include "SDL3/SDL_begin_code.h"
 
+struct _G_Texture_P;
+
 struct _G_Texture_P
 {
 	char innerName[16];
+
+	struct _G_Texture_P * next;
+	struct _G_Texture_P * prev;
     
 	Uint32 ID;
 	Uint32 source_width;
@@ -24,15 +29,22 @@ struct _G_Texture_P
 	VkDescriptorSet * pShadowDescriptorSet;
 	VkFramebuffer frameBuffer;
 
+    Uint32 offsetSize;
+	Uint32 refCount;
 	struct _offsets
 	{
 		Uint32 offset;
 		Uint32 count;
 	} * offsets;
-    Uint32 offsetSize;
-	Uint32 refCount;
 };
 typedef struct _G_Texture_P G_Texture_P;
+
+struct _G_Texture_Head
+{
+	G_Texture_P * pTexture;
+	G_Texture_P * pMiddleTexture;
+};
+typedef struct _G_Texture_Head G_Texture_Head;
 
 struct _G_Texture
 {
@@ -83,7 +95,7 @@ extern bool SDLCALL loadImageResource(VkFormat format, VkImageTiling tiling, VkI
 extern bool SDLCALL addDescriptorSetToTexture(const char * innerName, VkDescriptorSet * pDescriptorSet);
 extern bool SDLCALL addShadowDescriptorSetToTexture(const char * innerName, VkDescriptorSet * pDescriptorSet);
 extern bool SDLCALL textureOffsetsAdd(G_Texture_P * pTexture, Uint32 offset);
-extern void SDLCALL emptyTextureRefCount(void);
+// extern void SDLCALL emptyTextureRefCount(void);
 extern bool SDLCALL unloadTexture(const char * innerName);
 extern void SDLCALL unloadAllTexture(void);
 

@@ -1,5 +1,6 @@
 #include "G_constants.h"
 
+#include "vk_code_h/vk_buffer.h"
 #include "vk_code_h/vk_recreate.h"
 #include "vk_code_h/vk_swapchain.h"
 #include "vk_code_h/vk_image.h"
@@ -15,7 +16,7 @@
 
 extern VK_ALL allInOne;
 
-void recreateSwapchain(void)
+void recreateSwapchain(Uint32 currentFrame)
 {
     resultVulkan(vkDeviceWaitIdle(allInOne.device), 0);
  
@@ -43,6 +44,7 @@ void recreateSwapchain(void)
     unloadTexture(TEXTURE_MODEL_COLOR);
     unloadTexture(TEXTURE_SHADOW_MAP);
     unloadTexture(TEXTURE_SSGI_STORAGE_IMAGE);
+    unloadTexture(TEXTURE_2D_COLOR);
 
     loadDepthResource(TEXTURE_MODEL_DEPTH, true);
     loadNormalResource(TEXTURE_NORMAL);
@@ -50,11 +52,13 @@ void recreateSwapchain(void)
     loadImageResource(VK_FORMAT_R16_SFLOAT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_UNDEFINED, TEXTURE_SHADOW_MAP, NULL);
     loadImageResource(VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_GENERAL, TEXTURE_SSGI_STORAGE_IMAGE\
         , allInOne.pSSGIDescriptorSets + 2);
+    loadImageResource(allInOne.surface3DFormat.format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_UNDEFINED, TEXTURE_2D_COLOR, NULL);
 
     G_Texture_P * modelDepthTexutre = getTexture(TEXTURE_MODEL_DEPTH);
     G_Texture_P * modelNormalTexture = getTexture(TEXTURE_NORMAL);
     G_Texture_P * modelColorTexture = getTexture(TEXTURE_MODEL_COLOR);
     G_Texture_P * seprateShadowTexture = getTexture(TEXTURE_SHADOW_MAP);
+    G_Texture_P * color2dTexture = getTexture(TEXTURE_2D_COLOR);
 
     addDescriptorSetToTexture(TEXTURE_MODEL_DEPTH, allInOne.pSSGIDescriptorSets + 0);
     addDescriptorSetToTexture(TEXTURE_NORMAL, allInOne.pSSGIDescriptorSets + 0);
@@ -68,9 +72,11 @@ void recreateSwapchain(void)
  
     addDescriptorSetToTexture(TEXTURE_MODEL_COLOR, allInOne.pCombineDescriptorSets + 0);
     addDescriptorSetToTexture(TEXTURE_SSGI_STORAGE_IMAGE, allInOne.pCombineDescriptorSets + 0);
+    addDescriptorSetToTexture(TEXTURE_2D_COLOR, allInOne.pCombineDescriptorSets + 0);
     // combine
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, TEXTURE_MODEL_COLOR, allInOne.textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_SSGI_STORAGE_IMAGE, allInOne.textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);//16
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2, TEXTURE_2D_COLOR, allInOne.textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);//16
 
     executeUpdateDescriptorSets();
 
@@ -85,8 +91,11 @@ void recreateSwapchain(void)
     CO_addFrameBuffer(allInOne.imageCount3D, allInOne.pCombineFramebuffer);// CO
 
     CO_cleanFramebuffer(oldImageCount3D, allInOne.pGraphic2dFramebuffer);
-    createFrameBuffer(allInOne.imageCount3D, allInOne.extent2D.width, allInOne.extent2D.height, 1, NULL, allInOne.pSwapchain3DImageViews, allInOne.renderPass, &allInOne.pGraphic2dFramebuffer);
-    CO_addFrameBuffer(allInOne.imageCount3D, allInOne.pGraphic2dFramebuffer);// CO
+    createFrameBuffer(2, allInOne.extent2D.width, allInOne.extent2D.height, 1, &color2dTexture->imageView, NULL, allInOne.renderPass, &allInOne.pGraphic2dFramebuffer);
+    CO_addFrameBuffer(2, allInOne.pGraphic2dFramebuffer);// CO
+
+    releaseBufferFromQueue(allInOne.graphicCommandPool, VK_ACCESS_SHADER_READ_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, allInOne.queueFamilyIndices.graphicsFamily.familyIndice, allInOne.queueFamilyIndices.computeFamily.familyIndice\
+        , allInOne.pShaderStorageBuffer[(currentFrame + 1) % MAX_FRAMES_IN_FLIGHT], sizeof(Particle) * PARTICLE_COUNT);
  
     CO_cleanSwapchainImageView(oldImageCount3D, oldSwapchainImageView3D);
     CO_cleanSwapchainImage(oldSwapchain3DImages);
