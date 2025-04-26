@@ -154,6 +154,8 @@ static void recordCommandBufferShadow(Uint32 currentFrame)
     drawShadow(TEXTURE_MODEL, currentCommandBuffer);
 
     vkCmdEndRenderPass(currentCommandBuffer);
+
+    setTextureImageLayout(getTexture(TEXTURE_SHADOW), VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, 0, 1);
 }
 
 static void recordCommandBuffer_3D(Uint32 currentFrame)
@@ -163,7 +165,7 @@ static void recordCommandBuffer_3D(Uint32 currentFrame)
     beginCommandBuffer(currentCommandBuffer);
 
     G_Texture_P * shadowTexture = getTexture(TEXTURE_SHADOW);
-    transitionImageLayout(currentCommandBuffer, shadowTexture->image, shadowTexture->format, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 1);
+    transitionImageLayout(currentCommandBuffer, shadowTexture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 1);
 
     setViewport(allInOne.extent2D, currentCommandBuffer);
     setScissor(allInOne.extent2D, currentCommandBuffer);
@@ -234,14 +236,14 @@ static void recordSSGICommandBuffer(Uint32 currentFrame, Uint32 width, Uint32 he
 
     beginCommandBuffer(currentCommandBuffer);
 
-    G_Texture_P * depthTexture = getTexture(TEXTURE_MODEL_DEPTH);
-    transitionImageLayout(currentCommandBuffer, depthTexture->image, depthTexture->format, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 1);
-    G_Texture_P * normalTexture = getTexture(TEXTURE_NORMAL);
-    transitionImageLayout(currentCommandBuffer, normalTexture->image, normalTexture->format, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 1);
-    G_Texture_P * colorTexture = getTexture(TEXTURE_MODEL_COLOR);
-    transitionImageLayout(currentCommandBuffer, colorTexture->image, colorTexture->format, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 1);
+    // G_Texture_P * depthTexture = getTexture(TEXTURE_MODEL_DEPTH);
+    // transitionImageLayout(currentCommandBuffer, depthTexture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 1);
+    // G_Texture_P * normalTexture = getTexture(TEXTURE_NORMAL);
+    // transitionImageLayout(currentCommandBuffer, normalTexture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 1);
+    // G_Texture_P * colorTexture = getTexture(TEXTURE_MODEL_COLOR);
+    // transitionImageLayout(currentCommandBuffer, colorTexture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 1);
     G_Texture_P * ssgiTexture = getTexture(TEXTURE_SSGI_STORAGE_IMAGE);
-    transitionImageLayout(currentCommandBuffer, ssgiTexture->image, ssgiTexture->format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, 0, 1);
+    transitionImageLayout(currentCommandBuffer, ssgiTexture, VK_IMAGE_LAYOUT_GENERAL, 0, 1);
 
     setViewport(allInOne.extent2D, currentCommandBuffer);
     setScissor(allInOne.extent2D, currentCommandBuffer);
@@ -260,7 +262,7 @@ static void recordCommandBufferCombine(Uint32 imageIndex, Uint32 currentFrame)
     beginCommandBuffer(currentCommandBuffer);
 
     G_Texture_P * ssgiTexture = getTexture(TEXTURE_SSGI_STORAGE_IMAGE);
-    transitionImageLayout(currentCommandBuffer, ssgiTexture->image, ssgiTexture->format, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 1);
+    transitionImageLayout(currentCommandBuffer, ssgiTexture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 1);
 
     setViewport(allInOne.extent2D, currentCommandBuffer);
     setScissor(allInOne.extent2D, currentCommandBuffer);

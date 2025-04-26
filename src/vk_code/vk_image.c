@@ -5,9 +5,11 @@
 #include "vk_code_h/vk_all_struct.h"
 #include "vk_code_h/vk_collection.h"
 
+#include "G_struct.h"
 #include "G_log.h"
 
 extern VK_ALL allInOne;
+extern G_SYNC allSync;
 
 #define IDENTITY_COMPONENT ((VkComponentMapping){VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY})
 
@@ -58,7 +60,6 @@ VkResult createImage(Uint32 width, Uint32 height, VkFormat format, VkImageTiling
 VkResult createImageArray(Uint32 width, Uint32 height, Uint32 arrayLayers, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage * pImage, VkDeviceMemory * pImageMem)
 {
     VkResult res = _createImage(NULL, 0, VK_IMAGE_TYPE_2D, format, (VkExtent3D){width, height, 1}, 1, arrayLayers, VK_SAMPLE_COUNT_1_BIT, tiling, usage, VK_SHARING_MODE_EXCLUSIVE, 0, NULL, VK_IMAGE_LAYOUT_UNDEFINED, pImage, properties, pImageMem);
-    transitionImageLayout(NULL, *pImage, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, arrayLayers);
     return res;
 }
 VkResult _createImageView(void * pNext, VkImageViewCreateFlags flags, VkImage image, VkImageViewType viewType, VkFormat format, VkComponentMapping components, VkImageAspectFlags aspectFlags\
@@ -133,7 +134,7 @@ void destroyImageViews(VkImageView * pImageView, Uint32 imageCount)
         vkDestroyImageView(allInOne.device, pImageView[i], allInOne.pAllocationCallbacks);
     }
 }
-VkResult transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, Uint32 baseArrayLayer, Uint32 layerCount)
+VkResult _transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, Uint32 baseArrayLayer, Uint32 layerCount)
 {
     VkResult result  = VK_SUCCESS;
 
@@ -239,6 +240,14 @@ VkResult transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkF
         sourceStage = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
         destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
     }
+    else if (oldLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_GENERAL)
+    {
+        srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+        dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_SHADER_READ_BIT;
+
+        sourceStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        destinationStage = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+    }
     else if (oldLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
     {
         srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
@@ -274,6 +283,11 @@ VkResult transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkF
     else 
     {
         print("unsupported layout transition!");
+        if (commandBuffer == NULL)
+        {
+            endSingleTimeCommands(allInOne.graphicCommandPool, getGraphic2dQueue(), &singleCommandBuffer);
+        }
+        return false;
     }
 
     VkImageMemoryBarrier barrier = {};
@@ -289,6 +303,23 @@ VkResult transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkF
     {
         vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, NULL, 0, NULL, 1, &barrier);
     }
+
+    return result;
+}
+VkResult transitionImageLayout(VkCommandBuffer commandBuffer, G_Texture_P * pTexture, VkImageLayout newLayout, Uint32 baseArrayLayer, Uint32 layerCount)
+{
+    VkResult result = VK_SUCCESS;
+
+    if (pTexture->layouts == NULL) return result;
+
+    SDL_LockMutex(allSync.textureMutex);
+    result |= _transitionImageLayout(commandBuffer, pTexture->image, pTexture->format, pTexture->layouts[baseArrayLayer], newLayout, baseArrayLayer, layerCount);
+
+    for (Uint32 i = baseArrayLayer;i < pTexture->layoutCount;i++)
+    {
+        pTexture->layouts[i] = newLayout;
+    }
+    SDL_UnlockMutex(allSync.textureMutex);
 
     return result;
 }

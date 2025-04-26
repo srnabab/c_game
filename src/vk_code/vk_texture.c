@@ -68,10 +68,10 @@ void createTextureImageFromMem(void * pixels, Uint32 width, Uint32 height, VkDev
 
     createImage(width, height, format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, pTextureImage, pTextureImageMem);
 
-    transitionImageLayout(NULL, *pTextureImage, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, 1);
+    _transitionImageLayout(NULL, *pTextureImage, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, 1);
     copyBufferToImage(NULL, pTextureImage, width, height, &stagingBuffer);
 
-    transitionImageLayout(NULL, *pTextureImage, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 1);
+    _transitionImageLayout(NULL, *pTextureImage, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 1);
 
     vkDestroyBuffer(allInOne.device, stagingBuffer, allInOne.pAllocationCallbacks);
     vkFreeMemory(allInOne.device, stagingBufferMemory, allInOne.pAllocationCallbacks);

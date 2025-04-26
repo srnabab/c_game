@@ -98,6 +98,7 @@ extern bool SDLCALL loadImageResource(VkFormat format, VkImageTiling tiling, VkI
 extern bool SDLCALL addDescriptorSetToTexture(const char * innerName, VkDescriptorSet * pDescriptorSet);
 extern bool SDLCALL addShadowDescriptorSetToTexture(const char * innerName, VkDescriptorSet * pDescriptorSet);
 extern bool SDLCALL textureOffsetsAdd(G_Texture_P * pTexture, Uint32 offset);
+extern void SDLCALL setTextureImageLayout(G_Texture_P * pTexture, VkImageLayout layout, Uint32 baseArrayLayer, Uint32 layerCount);
 // extern void SDLCALL emptyTextureRefCount(void);
 extern bool SDLCALL unloadTexture(const char * innerName);
 extern void SDLCALL unloadAllTexture(void);

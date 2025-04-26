@@ -537,6 +537,7 @@ void initVulkan(void)
         , VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &imageArray, &imageArrayMemory);
     createImageViewArray(imageArray, 48, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, &imageArrayView);
     addTexture(800, 800, VK_FORMAT_R8G8B8A8_SRGB, imageArray, imageArrayMemory, imageArrayView, allInOne.pBottomDescriptorSets + 2, 48, VK_IMAGE_LAYOUT_UNDEFINED, TEXTURE_MAP_ARRAY);
+    transitionImageLayout(NULL, getTexture(TEXTURE_MAP_ARRAY), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 48);
 
     createImageViewsForImageArray(imageArray, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, 48, &imageArrayViews);
     createFrameBufferByImageArray(48, 800, 800, imageArrayViews, allInOne.offscreenRenderPass, &allInOne.pBottomImageArrayFramebuffers);

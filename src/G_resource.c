@@ -291,7 +291,7 @@ bool loadImageResource(VkFormat format, VkImageTiling tiling, VkImageUsageFlags 
 
     createImageView(pTexture->image, format, VK_IMAGE_ASPECT_COLOR_BIT, &pTexture->imageView);
 
-    if (targetLayout != VK_IMAGE_LAYOUT_UNDEFINED) transitionImageLayout(NULL, pTexture->image, format, VK_IMAGE_LAYOUT_UNDEFINED, targetLayout, 0, 1);
+    if (targetLayout != VK_IMAGE_LAYOUT_UNDEFINED) _transitionImageLayout(NULL, pTexture->image, format, VK_IMAGE_LAYOUT_UNDEFINED, targetLayout, 0, 1);
 
     pTexture->source_width = allInOne.extent2D.width;
     pTexture->source_height = allInOne.extent2D.height;
@@ -402,6 +402,20 @@ bool textureOffsetsAdd(G_Texture_P * pTexture, Uint32 offset)
     SDL_UnlockMutex(allSync.textureMutex);
 
     return true;
+}
+void setTextureImageLayout(G_Texture_P * pTexture, VkImageLayout layout, Uint32 baseArrayLayer, Uint32 layerCount)
+{
+    if (pTexture == NULL) return;
+
+    SDL_LockMutex(allSync.textureMutex);
+
+    if (pTexture->layouts == NULL) return;
+    for (Uint32 i = baseArrayLayer;i < layerCount;i++)
+    {
+        pTexture->layouts[i] = layout;
+    }
+
+    SDL_UnlockMutex(allSync.textureMutex);
 }
 bool unloadTexture(const char * innerName)
 {

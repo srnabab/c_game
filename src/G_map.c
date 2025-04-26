@@ -514,7 +514,7 @@ void moveBottomImage(Uint32 currentFrame)
     //     if (findInUint32Array(notShaderReadOnly, arrayCap, ((FromTo*)allInOne.bottomImageMoveStack.data)[i].from) == false)
     //     {
     //         _setImageMemoryBarrier(NULL, 0, VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, graphicFamiltIndice\
-    //             , transferFamiltIndice, imageArray->image, VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, ((FromTo*)allInOne.bottomImageMoveStack.data)[i].from, 1, imageMemoryBarrierGet + i);
+                , transferFamiltIndice, imageArray->image, VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, ((FromTo*)allInOne.bottomImageMoveStack.data)[i].from, 1, imageMemoryBarrierGet + i);
 
     //         _setImageMemoryBarrier(NULL, 0, VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT, )
 
@@ -525,7 +525,7 @@ void moveBottomImage(Uint32 currentFrame)
     //     if (findInUint32Array(notShaderReadOnly, arrayCap, ((FromTo*)allInOne.bottomImageMoveStack.data)[i].to) == false)
     //     {
     //         _setImageMemoryBarrier(NULL, 0, VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, graphicFamiltIndice\
-    //             , transferFamiltIndice, imageArray->image, VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, ((FromTo*)allInOne.bottomImageMoveStack.data)[i].to, 1, imageMemoryBarrierGet + i);
+                , transferFamiltIndice, imageArray->image, VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, ((FromTo*)allInOne.bottomImageMoveStack.data)[i].to, 1, imageMemoryBarrierGet + i);
     //         notShaderReadOnly[imageMemoryBarrierCount] = ((FromTo*)allInOne.bottomImageMoveStack.data)[i].to;
     //         imageMemoryBarrierCount++;
     //     }
@@ -574,7 +574,7 @@ void moveBottomImage(Uint32 currentFrame)
     //     region.extent.depth = 1; 
 
     //     vkCmdCopyImage(allInOne.pTransferCommandBuffer[currentFrame], imageArray->image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, imageArray->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL\
-    //         , 1, &region);
+            , 1, &region);
 
     //     transitionImageLayout(commandBuffer, imageArray->image, imageArray->format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, tempFromTo.to, 1);
     // }
