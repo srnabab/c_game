@@ -39,6 +39,8 @@ struct _G_StaticModelPool
     SDL_Mutex * mutex;
 };
 typedef struct _G_StaticModelPool G_StaticModelPool;
+// typedef struct _G_StaticModelPool_T G_StaticModelPool_T;
+// typedef G_StaticModelPool_T* G_StaticModelPool;
 
 #include "SDL3/SDL_begin_code.h"
 

@@ -22,6 +22,8 @@ static PopList * root = NULL;
 bool initPopWindow(void)
 {
     root = (PopList*)SDL_malloc(sizeof(PopList));
+    if (root == NULL) return false;
+
     root->next = NULL;
     root->node = NULL;
     

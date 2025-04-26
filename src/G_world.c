@@ -19,7 +19,7 @@ static b2Polygon groundBox[4];
 static b2ShapeDef groundShapeDef[4];
 static b2ShapeId groundShapeId[4];
 
-static SDL_Thread * worldThread;
+static SDL_Thread * worldThread = NULL;
 
 static G_Thread_Pool worldThreadPool = {};
 
@@ -220,11 +220,14 @@ uint32_t getBoxCount(void)
 }
 void cleanWorld(void)
 {
-    SDL_SignalSemaphore(allSync.worldSemaphore);
-    deInitStack(&ballStack);
-    SDL_WaitThread(worldThread, NULL);
-    destroyThreadPool(&worldThreadPool);
-    b2DestroyWorld(worldId);
+    if (worldThread != NULL)
+    {
+        SDL_SignalSemaphore(allSync.worldSemaphore);
+        deInitStack(&ballStack);
+        SDL_WaitThread(worldThread, NULL);
+        destroyThreadPool(&worldThreadPool);
+        b2DestroyWorld(worldId);
+    }
 }
 void destroyFloor(void)
 {

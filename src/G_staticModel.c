@@ -13,6 +13,8 @@ bool createStaticModelPool(G_StaticModelPool * pModelPool, Uint32 totalInstancec
 {
     VkDeviceSize bufferSize = sizeof(mat4) * totalInstancecount * 2;
 
+    // *pModelPool = (G_StaticModelPool)SDL_malloc(sizeof(G_StaticModelPool_T));
+
     // model matrix buffer and inverse transpose matrix buffer
     createBuffer(pModelPool->instanceBuffer + 0, pModelPool->instanceBufferMem + 0, bufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, NULL, 0, 0);
     vkMapMemory(allInOne.device, pModelPool->instanceBufferMem[0], 0, bufferSize, 0, pModelPool->instanceBufferMemMapped + 0);
@@ -262,6 +264,16 @@ bool getStaticModelDrawInfo(G_StaticModelPool * pModelPool, Uint32 * pFirstInsta
 }
 void destroyStaticModelPool(G_StaticModelPool * pModelPool)
 {
+    if (pModelPool == NULL)
+    {
+        return;
+    }
+
+    if (pModelPool->models == NULL)
+    {
+        return;
+    }
+
     destroyBuffer(pModelPool->instanceBuffer[0], pModelPool->instanceBufferMem[0]);
 
     for (Uint32 i = 0;i < pModelPool->modelCount;i++)
@@ -270,6 +282,8 @@ void destroyStaticModelPool(G_StaticModelPool * pModelPool)
     }
     SDL_free(pModelPool->models);
     SDL_free(pModelPool->offsets);
+
+    SDL_DestroyMutex(pModelPool->mutex);
 
     pModelPool->totalInstanceCount = 0;
     pModelPool->modelCount = 0;

@@ -91,10 +91,12 @@ bool unloadMusic(char * name)
 }
 bool initMusicManagement(void)
 {
-    if (!initStack(&stack, sizeof(Uint8), NULL, NULL))
-        return false;
+    bool res;
+    res = initStack(&stack, sizeof(Uint8), NULL, NULL);
+    if (res == false) return false;
 
-    Mix_OpenAudio(0, NULL);
+    res = Mix_OpenAudio(0, NULL);
+    if (res == false) return false;
     
     return true;
 }
@@ -109,6 +111,7 @@ bool deInitMusicManagement(void)
         }
     }
     deInitStack(&stack);
+    Mix_Quit();
 
     return true;
 }

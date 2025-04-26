@@ -80,7 +80,7 @@ struct _TSDI_Head
 };
 typedef struct _TSDI_Head TSDI_Head;
 
-extern void SDLCALL initTileMapSystem(void);
+extern bool SDLCALL initTileMapSystem(void);
 extern void SDLCALL getTileSetCount(Uint32 * pTileSetCount);
 extern void SDLCALL getTileSetPtr(TILE_SET ** ppSet);
 extern bool SDLCALL loadTileSet(PathType setImagePath, PathType setDataPath, VkFormat format, VkImageAspectFlags flags, const char * innerName, VkDescriptorSet * pDescriptorSet);

@@ -26,3 +26,4 @@ examples/
 examples.7z
 box2d_src/
 tiled_script/node_modules
+project_graph_script/

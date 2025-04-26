@@ -26,6 +26,7 @@
 
 // Global variables
 bool game_is_running = false;
+int _Code = 0;
 
 extern SDL_Window * window_3D;
 extern SDL_DisplayID displayId;
@@ -44,32 +45,52 @@ G_SYNC allSync = {};
 
 static SDL_MessageBoxData * boxData;
 
-static void initAllSync(void)
+static bool initAllSync(void)
 {
     allSync.inputMutex = SDL_CreateMutex();
+    if (allSync.inputMutex == NULL) return false;
     allSync.updateMutex = SDL_CreateMutex();
+    if (allSync.updateMutex == NULL) return false;
     allSync.renderMutex = SDL_CreateMutex();
+    if (allSync.renderMutex == NULL) return false;
     allSync.logMutex = SDL_CreateMutex();
+    if (allSync.logMutex == NULL) return false;
     allSync.printMutex = SDL_CreateMutex();
+    if (allSync.printMutex == NULL) return false;
     allSync.popWindowMutex = SDL_CreateMutex();
+    if (allSync.popWindowMutex == NULL) return false;
     allSync.textureMutex = SDL_CreateMutex();
+    if (allSync.textureMutex == NULL) return false;
     allSync.timerMutex = SDL_CreateMutex();
+    if (allSync.timerMutex == NULL) return false;
     allSync.descriptorUpdateMutex = SDL_CreateMutex();
+    if (allSync.descriptorUpdateMutex == NULL) return false;
     allSync.vertexMutex = SDL_CreateMutex();
+    if (allSync.vertexMutex == NULL) return false;
     allSync.tileSetMutex = SDL_CreateMutex();
+    if (allSync.tileSetMutex == NULL) return false;
 
     allSync.updateSemaphore = SDL_CreateSemaphore(0);
+    if (allSync.updateSemaphore == NULL) return false;
     allSync.renderSemaphore = SDL_CreateSemaphore(0);
+    if (allSync.renderSemaphore == NULL) return false;
     allSync.vertexSemaphore = SDL_CreateSemaphore(0);
+    if (allSync.vertexSemaphore == NULL) return false;
     allSync.signalSemaphore = SDL_CreateSemaphore(0);
+    if (allSync.signalSemaphore == NULL) return false;
     allSync.logSemaphore = SDL_CreateSemaphore(0);
+    if (allSync.logSemaphore == NULL) return false;
     allSync.worldSemaphore = SDL_CreateSemaphore(0);
+    if (allSync.worldSemaphore == NULL) return false;
+
+    return true;
 }
 // Setup function that runs once at the beginning of our program
 void setup(int argc, char* argv[]) 
 {
+    int res = 0;
 #if TEST
-    int res = TestAll();
+    res = TestAll();
     if (res != 0) 
     {
         exit(-1);
@@ -77,15 +98,37 @@ void setup(int argc, char* argv[])
 #endif
 
     int arg = initFileSystem(argc, argv);
-    initAllSync();
+    res = arg;
+    if (res < 0) goto clean;
 
-    initLog(arg);
+    res = initAllSync();
+    if (res == false) 
+    {
+        res = -5;
+        goto clean;
+    }
+
+    res = initLog(arg);
+    if (res == false)
+    {
+        res = -6;
+        goto clean;
+    }
 
     game_is_running = initWindow_3D();
     print("game_is_running: %d", game_is_running);
-    if (game_is_running == false) return;
+    if (game_is_running == false)
+    {
+        res = -7;
+        goto clean;
+    }
 
-    SDL_StopTextInput(window_3D);
+    res = SDL_StopTextInput(window_3D);
+    if (res == false)
+    {
+        res = -8;
+        goto clean;
+    }
 
     static SDL_MessageBoxButtonData buttons[2] = {
         {SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "No"},
@@ -103,20 +146,51 @@ void setup(int argc, char* argv[])
 
     boxData = &messageBoxData;
 
+    res = initPopWindow();
+    if (res == false)
+    {
+        res = -9;
+        goto clean;
+    }
+
     initWorld();
 
     initTimerSystem();
-    initTextSystem();
-    initTileMapSystem();
+    res = initTextSystem();
+    if (res == false)
+    {
+        res = -10;
+        goto clean;
+    }
+    res = initTileMapSystem();
+    if (res == false)
+    {
+        res = -11;
+        goto clean;
+    }
 
     initVulkan();
-    initPopWindow();
-    initMusicManagement();
+
+    res = initMusicManagement();
+    if (res == false)
+    {
+        res = -12;
+        goto clean;
+    }
+
     loadMusic((char*)getPath(MainBackgroundMusic1Wav), "test");
 
     sdl_pid_update = SDL_CreateThread(&update, "update", NULL);
     sdl_pid_draw = SDL_CreateThread(&render, "render", NULL);
     sdl_pid_signal = SDL_CreateThread(&signal_trans, "signal", NULL);
+
+clean:
+    if (res < 0)
+    {
+        _Code = res;
+        game_is_running = false;
+        return;
+    }
 }
 
 static bool cameraMove[4];
@@ -954,6 +1028,18 @@ static void destroyAllSync(void)
 // Function to destroy SDL window_2D and renderer
 void destroy(void) 
 {
+    if (_Code < 0)
+    {
+        if (window_3D != NULL)
+        {
+            char buffer[256];
+            SDL_snprintf(buffer, 255, "Error %8x: %s", _Code, SDL_GetError());
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", buffer, window_3D);
+        }
+        else
+        print("Error %x: %s", _Code, SDL_GetError());
+    }
+
     SDL_WaitThread(sdl_pid_signal, NULL);
     print("signal end\n");
     SDL_SignalSemaphore(allSync.updateSemaphore);
@@ -979,5 +1065,5 @@ void destroy(void)
     SDL_Delay(1000);
     destroyAllSync();
     SDL_Quit();
-    exit(0);
+    exit(_Code);
 }

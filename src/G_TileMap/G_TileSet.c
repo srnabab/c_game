@@ -12,10 +12,12 @@ static Uint32 tileCap = 0;
 extern G_SYNC allSync;
 
 
-void initTileMapSystem(void)
+bool initTileMapSystem(void)
 {
     tileCap++;
     tileSets = SDL_calloc(tileCap, sizeof(TILE_SET));
+    if (tileSets == NULL) return false;
+
     memset(tileSets, 0, sizeof(TILE_SET));
 }
 void getTileSetCount(Uint32 * pTileSetCount)

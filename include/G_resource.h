@@ -25,6 +25,9 @@ struct _G_Texture_P
 	VkImageView imageView;
 	VkDeviceMemory imageMem;
 
+	VkImageLayout * layouts;
+	Uint32 layoutCount;
+
 	VkDescriptorSet * pDescriptorSet;
 	VkDescriptorSet * pShadowDescriptorSet;
 	VkFramebuffer frameBuffer;
@@ -86,7 +89,7 @@ typedef struct _G_DescriptorSet_Update G_DescriptorSet_Update;
 extern void SDLCALL logAllTexture(void);
 extern void SDLCALL initGlobalTexture(void);
 extern bool SDLCALL loadTexture(PathType path, VkFormat format, VkImageAspectFlags flags, const char * innerName, VkDescriptorSet * pDescriptorSet);
-extern bool SDLCALL addTexture(Uint32 width, Uint32 height, VkFormat format, VkImage image, VkDeviceMemory imageMem, VkImageView imageView, VkDescriptorSet * pDescriptorSet, const char * innerName);
+extern bool SDLCALL addTexture(Uint32 width, Uint32 height, VkFormat format, VkImage image, VkDeviceMemory imageMem, VkImageView imageView, VkDescriptorSet * pDescriptorSet, Uint32 layerCount, VkImageLayout initLayout, const char * innerName);
 extern G_Texture_P * SDLCALL getTexture(const char * innerName);
 extern bool SDLCALL loadShadowResource(const char * innerName, Uint32 width, Uint32 height);
 extern bool SDLCALL loadDepthResource(const char * innerName, bool sample);

@@ -79,8 +79,7 @@ bool initWindow_3D(void)
    //create sdl window_3D and sign window_3D as a vulkan window_3D
     if (!initSDL()) return false;
     window_3D = SDL_CreateWindow("Vulkan_3D", width, height, SDL_WINDOW_VULKAN | SDL_WINDOW_HIGH_PIXEL_DENSITY);
-    if (window_3D == NULL)
-        return false;
+    if (window_3D == NULL) return false;
 
     CO_addWindow(window_3D);
     
@@ -107,6 +106,10 @@ bool initWindow_3D(void)
     iconWidth = iconHeight = 0;         
     uint8_t iconChannel;
     void * iconPixels = readPNG(IconPng, &iconWidth, &iconHeight, &iconChannel);
+    if (iconPixels == NULL)
+    {
+        return false;
+    }
     SDL_Surface * iconSurface = SDL_CreateSurfaceFrom(iconWidth, iconHeight, SDL_PIXELFORMAT_RGBA32, iconPixels, iconWidth * iconChannel);
     if (iconSurface == NULL)
     {
@@ -533,7 +536,7 @@ void initVulkan(void)
     createImageArray(800, 800, 48, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT\
         , VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &imageArray, &imageArrayMemory);
     createImageViewArray(imageArray, 48, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, &imageArrayView);
-    addTexture(800, 800, VK_FORMAT_R8G8B8A8_SRGB, imageArray, imageArrayMemory, imageArrayView, allInOne.pBottomDescriptorSets + 2, TEXTURE_MAP_ARRAY);
+    addTexture(800, 800, VK_FORMAT_R8G8B8A8_SRGB, imageArray, imageArrayMemory, imageArrayView, allInOne.pBottomDescriptorSets + 2, 48, VK_IMAGE_LAYOUT_UNDEFINED, TEXTURE_MAP_ARRAY);
 
     createImageViewsForImageArray(imageArray, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, 48, &imageArrayViews);
     createFrameBufferByImageArray(48, 800, 800, imageArrayViews, allInOne.offscreenRenderPass, &allInOne.pBottomImageArrayFramebuffers);

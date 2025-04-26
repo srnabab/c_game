@@ -27,6 +27,8 @@ static void emptyTexture(G_Texture_P * pTexture)
     pTexture->image = VK_NULL_HANDLE;
     pTexture->imageView = VK_NULL_HANDLE;
     pTexture->imageMem = VK_NULL_HANDLE;
+    pTexture->layouts = NULL;
+    pTexture->layoutCount = 0;
     pTexture->pDescriptorSet = VK_NULL_HANDLE;
     pTexture->frameBuffer = VK_NULL_HANDLE;
     pTexture->offsets = NULL;
@@ -95,6 +97,7 @@ static void deleteTexture(G_Texture_P * pTexture)
 {
     if (pTexture == NULL) return;
     if (pTexture->offsets != NULL) SDL_free(pTexture->offsets);
+    if (pTexture->layouts != NULL) SDL_free(pTexture->layouts);
     if (pTexture->imageMem != NULL) vkFreeMemory(allInOne.device, pTexture->imageMem, allInOne.pAllocationCallbacks);
     if (pTexture->imageView != NULL) vkDestroyImageView(allInOne.device, pTexture->imageView, allInOne.pAllocationCallbacks);
     if (pTexture->image != NULL) vkDestroyImage(allInOne.device, pTexture->image, allInOne.pAllocationCallbacks);
@@ -141,16 +144,31 @@ bool loadTexture(PathType path, VkFormat format, VkImageAspectFlags flags, const
     
     SDL_free(pixels);
 
-
     pTexture->offsets = SDL_calloc(1, sizeof(G_Texture_P) - offsetof(G_Texture_P, offsets));
     if (pTexture->offsets == NULL)
     {
         vkFreeMemory(allInOne.device, pTexture->imageMem, allInOne.pAllocationCallbacks);
         vkDestroyImageView(allInOne.device, pTexture->imageView, allInOne.pAllocationCallbacks);
         vkDestroyImage(allInOne.device, pTexture->image, allInOne.pAllocationCallbacks);
+        deleteTexture(pTexture);
 
         return false;
     }
+
+    pTexture->layoutCount = 1;
+    pTexture->layouts = SDL_calloc(pTexture->layoutCount, sizeof(VkImageLayout));
+    if (pTexture->layouts == NULL)
+    {
+        SDL_free(pTexture->offsets);
+        vkFreeMemory(allInOne.device, pTexture->imageMem, allInOne.pAllocationCallbacks);
+        vkDestroyImageView(allInOne.device, pTexture->imageView, allInOne.pAllocationCallbacks);
+        vkDestroyImage(allInOne.device, pTexture->image, allInOne.pAllocationCallbacks);
+        deleteTexture(pTexture);
+
+        return false;
+    }
+
+    pTexture->layouts[0] = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
     pTexture->offsetSize = 1;
 
@@ -169,11 +187,26 @@ bool loadTexture(PathType path, VkFormat format, VkImageAspectFlags flags, const
 
     return true;
 }
-bool addTexture(Uint32 width, Uint32 height, VkFormat format, VkImage image, VkDeviceMemory imageMem, VkImageView imageView, VkDescriptorSet * pDescriptorSet, const char * innerName)
+bool addTexture(Uint32 width, Uint32 height, VkFormat format, VkImage image, VkDeviceMemory imageMem, VkImageView imageView, VkDescriptorSet * pDescriptorSet, Uint32 layerCount, VkImageLayout initLayout, const char * innerName)
 {
     SDL_LockMutex(allSync.textureMutex);
 
     G_Texture_P * pTexture = getEmptyTexture();
+
+    SDL_UnlockMutex(allSync.textureMutex);
+
+    pTexture->layouts = SDL_calloc(layerCount, sizeof(VkImageLayout));
+    if (pTexture->layouts == NULL)
+    {
+        deleteTexture(pTexture);
+
+        return false;
+    }
+    pTexture->layoutCount = layerCount;
+    for (Uint32 i = 0;i < layerCount;i++)
+    {
+        pTexture->layouts[i] = initLayout;
+    }
    
     Uint32 ID = HashID(innerName);
 
@@ -184,11 +217,14 @@ bool addTexture(Uint32 width, Uint32 height, VkFormat format, VkImage image, VkD
     pTexture->source_width = width;
     pTexture->source_height = height;
     pTexture->format = format;
-    SDL_strlcpy(pTexture->innerName, innerName, 16);
 
     pTexture->pDescriptorSet = pDescriptorSet;
 
     pTexture->ID = ID;
+
+    SDL_LockMutex(allSync.textureMutex);
+
+    SDL_strlcpy(pTexture->innerName, innerName, 16);
 
     SDL_UnlockMutex(allSync.textureMutex);
 
@@ -205,7 +241,7 @@ bool loadShadowResource(const char * innerName, Uint32 width, Uint32 height)
     createImage(width, height, depthFormat, VK_IMAGE_TILING_OPTIMAL, usage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &image, &imageMem);
     createImageView(image, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, &imageView);
 
-    addTexture(width, height, depthFormat, image, imageMem, imageView, NULL, innerName);
+    addTexture(width, height, depthFormat, image, imageMem, imageView, NULL, 1, VK_IMAGE_LAYOUT_UNDEFINED, innerName);
 
     return true;
 }
@@ -216,7 +252,7 @@ bool loadDepthResource(const char * innerName, bool sample)
     VkImageView imageView = NULL;
     VkFormat depthFormat = createDepthResoures(&image, &imageMem, &imageView, sample);
 
-    addTexture(allInOne.extent2D.width, allInOne.extent2D.height, depthFormat, image, imageMem, imageView, NULL, innerName);
+    addTexture(allInOne.extent2D.width, allInOne.extent2D.height, depthFormat, image, imageMem, imageView, NULL, 1, VK_IMAGE_LAYOUT_UNDEFINED, innerName);
 
     return true;
 }
@@ -226,7 +262,7 @@ bool loadNormalResource(const char * innerName)
     VkDeviceMemory imageMem = NULL;
     VkImageView imageView = NULL;
     VkFormat normalFormat = createNormalResoures(&image, &imageMem, &imageView);
-    addTexture(allInOne.extent2D.width, allInOne.extent2D.height, normalFormat, image, imageMem, imageView, NULL, innerName);
+    addTexture(allInOne.extent2D.width, allInOne.extent2D.height, normalFormat, image, imageMem, imageView, NULL, 1, VK_IMAGE_LAYOUT_UNDEFINED, innerName);
 
     return true;
 }
@@ -237,7 +273,19 @@ bool loadImageResource(VkFormat format, VkImageTiling tiling, VkImageUsageFlags 
 
     G_Texture_P * pTexture = getEmptyTexture();
    
+    SDL_UnlockMutex(allSync.textureMutex);
+
     Uint32 ID = HashID(innerName);
+
+    pTexture->layouts = SDL_calloc(1, sizeof(VkImageLayout));
+    if (pTexture->layouts == NULL)
+    {
+        deleteTexture(pTexture);
+
+        return false;
+    }
+    pTexture->layoutCount = 1;
+    pTexture->layouts[0] = targetLayout;
 
     createImage(allInOne.extent2D.width, allInOne.extent2D.height, format, tiling, usage, properties, &pTexture->image, &pTexture->imageMem);
 
@@ -248,11 +296,14 @@ bool loadImageResource(VkFormat format, VkImageTiling tiling, VkImageUsageFlags 
     pTexture->source_width = allInOne.extent2D.width;
     pTexture->source_height = allInOne.extent2D.height;
     pTexture->format = format;
-    SDL_strlcpy(pTexture->innerName, innerName, 16);
 
     if (pDescriptorSet != NULL) pTexture->pDescriptorSet = pDescriptorSet;
 
     pTexture->ID = ID;
+
+    SDL_LockMutex(allSync.textureMutex);
+
+    SDL_strlcpy(pTexture->innerName, innerName, 16);
 
     SDL_UnlockMutex(allSync.textureMutex);
 

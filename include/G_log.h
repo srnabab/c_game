@@ -11,7 +11,7 @@
 #define LOG_ENABLED 1
 #define LOG_TXT 2
 
-extern void SDLCALL initLog(Uint8 log);
+extern bool SDLCALL initLog(Uint8 log);
 extern void SDLCALL logMessage(char * format, ...);
 extern void SDLCALL destroyLog(void);
 

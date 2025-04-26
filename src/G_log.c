@@ -142,7 +142,6 @@ static int putMessage_file(void * arg)
 }
 static int putMessage_print(void * arg)
 {
-    SDL_CloseIO(log_file);
     while(1)
     {
         SDL_WaitSemaphore(allSync.logSemaphore);
@@ -159,25 +158,39 @@ static int putMessage_print(void * arg)
     }
     return 0;
 }
-void initLog(Uint8 log)
+bool initLog(Uint8 log)
 {
     if (!(log & LOG_ENABLED))
-        return;
+        return true;
 
     if ((log_file = SDL_IOFromFile(getPath(LogPath), "a")) == NULL)
     {
         SDL_Log("open log file failed: %s\n", getPath(LogPath));
-        return;
+        return false;
     }
 
     if (log & LOG_TXT)
     {
         log_thread = SDL_CreateThread(&putMessage_file, "log_txt", NULL);
+
+        if (log_thread == NULL)
+        {
+            SDL_CloseIO(log_file);
+            return false;
+        }
     }
     else
     {
+        SDL_CloseIO(log_file);
         log_thread = SDL_CreateThread(&putMessage_print, "log_print", NULL);
+
+        if (log_thread == NULL)
+        {
+            return false;
+        }
     }
+
+    return true;
 }
 void logMessage(char * format, ...)
 {
