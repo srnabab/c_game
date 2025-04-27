@@ -14,6 +14,7 @@
 
 #include "G_log.h"
 #include "G_struct.h"
+#include "G_map.h"
 
 extern VK_ALL allInOne;
 extern G_SYNC allSync;
@@ -157,7 +158,44 @@ static void recordCommandBufferShadow(Uint32 currentFrame)
 
     setTextureImageLayout(getTexture(TEXTURE_SHADOW), VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, 0, 1);
 }
+static void recordCommandBuffer_Bottom(Uint32 currentFrame)
+{
+    VkCommandBuffer currentCommandBuffer = allInOne.pGraphicCommandBuffer[currentFrame];
 
+    VkExtent2D bottomExtent2D = {BOTTOM_WIDTH, BOTTOM_HEIGHT};
+    G_Texture_P * imageArray = getTexture(TEXTURE_MAP_ARRAY);
+
+    DrawHere tempDrawHere = {};
+
+    VkOffset2D offset = {0, 0};
+    VkRect2D renderArea = {offset, bottomExtent2D};
+
+    VkClearValue clearValue[1];
+    clearValue[0].color = (VkClearColorValue){{0.0f, 0.0f, 0.0f, 1.0f}};
+
+    beginCommandBuffer(currentCommandBuffer);
+
+    setViewport(bottomExtent2D, currentCommandBuffer);
+    setScissor(bottomExtent2D, currentCommandBuffer);
+
+    while (StackIsEmpty(allInOne.bottomImageDrawStack) == false)
+    {
+        allInOne.bottomImageDrawStack.popFn(&allInOne.bottomImageDrawStack, &tempDrawHere);
+
+        VkRenderPassBeginInfo renderBeginInfo = {};
+        renderBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderBeginInfo.pNext = NULL;
+        renderBeginInfo.renderPass = allInOne.offscreenRenderPass;
+        renderBeginInfo.framebuffer = allInOne.pBottomImageArrayFramebuffers[tempDrawHere.BottomID];
+        renderBeginInfo.renderArea = renderArea;
+        renderBeginInfo.clearValueCount = 1;
+        renderBeginInfo.pClearValues = clearValue;
+
+        vkCmdBeginRenderPass(currentCommandBuffer, &renderBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+        vkCmdEndRenderPass(currentCommandBuffer);
+    }
+}
 static void recordCommandBuffer_3D(Uint32 currentFrame)
 {
     VkCommandBuffer currentCommandBuffer = allInOne.pGraphicCommandBuffer[currentFrame];
@@ -292,7 +330,7 @@ static void recordCommandBufferCombine(Uint32 imageIndex, Uint32 currentFrame)
 
     vkCmdEndRenderPass(currentCommandBuffer);
 }
-static void drawFirstScene(Uint32 currentFrame, Uint32 width, Uint32 height)
+static void drawFirstScene(Uint32 currentFrame, Uint32 width, Uint32 height, bool bottomMoved)
 {
     VkSemaphore * timelineSemaphore2d = allInOne.pTimelineSemaphore2d + currentFrame;
     Uint64 waitValue2D[] = {0, 0};
@@ -340,6 +378,32 @@ static void drawFirstScene(Uint32 currentFrame, Uint32 width, Uint32 height)
     SDL_WaitSemaphore(allSync.vertexSemaphore);
     resultVulkan(vkQueueSubmit(getGraphic3dQueue(), 1, &submitInfoShadow, allInOne.pGraphicInFlightFence[currentFrame]), 0);
     signalValue3D[0]++;
+
+    if (StackIsEmpty(allInOne.bottomImageDrawStack) == false)
+    {
+        if (bottomMoved == true)
+        {
+            vkWaitForFences(allInOne.device, 1, &allInOne.pTransferInFlightFence[currentFrame], VK_TRUE, UINT64_MAX);
+            bottomMoved = false;
+        }
+        vkWaitForFences(allInOne.device, 1, &allInOne.pGraphicInFlightFence[currentFrame], VK_TRUE, UINT64_MAX);
+        resultVulkan(vkResetCommandBuffer(allInOne.pGraphicCommandBuffer[currentFrame], 0), 0);
+        recordCommandBuffer_Bottom(currentFrame);
+        resultVulkan(vkEndCommandBuffer(allInOne.pGraphicCommandBuffer[currentFrame]), 0);
+
+        waitValue3D[0] = signalValue3D[0] - 1;
+        timelineSemaphoreInfo.waitSemaphoreValueCount = 1;
+        timelineSemaphoreInfo.pWaitSemaphoreValues = waitValue3D;
+        timelineSemaphoreInfo.signalSemaphoreValueCount = 1;
+        timelineSemaphoreInfo.pSignalSemaphoreValues = signalValue3D;
+
+        VkPipelineStageFlags waitStage_Bottom[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+        VkSubmitInfo submitInfoBottom = {};
+        setSubmitInfo(&timelineSemaphoreInfo, 1, timelineSemaphore3d, waitStage_Bottom, 1, allInOne.pGraphicCommandBuffer + currentFrame, 1, timelineSemaphore3d, &submitInfoBottom);
+        resultVulkan(vkQueueSubmit(getGraphic3dQueue(), 1, &submitInfoBottom, allInOne.pGraphicInFlightFence[currentFrame]), 0);
+        signalValue3D[0]++;
+    }
+ 
 
     // 3d object
     vkWaitForFences(allInOne.device, 1, &allInOne.pGraphicInFlightFence[currentFrame], VK_TRUE, UINT64_MAX);
@@ -444,12 +508,12 @@ static void drawFirstScene(Uint32 currentFrame, Uint32 width, Uint32 height)
     presentInfo_3D.pResults = NULL;
     resultVulkan(vkQueuePresentKHR(getPresentQueue(), &presentInfo_3D), 0);
 }
-void drawFrame(Scene scene, Uint32 currentFrame, Uint32 width, Uint32 height)
+void drawFrame(Scene scene, Uint32 currentFrame, Uint32 width, Uint32 height, bool bottomMoved)
 {
     switch (scene)
     {
         case First_Scene:
-        drawFirstScene(currentFrame, width, height);
+        drawFirstScene(currentFrame, width, height, false);
         break;
         
         case Pause_Scene:

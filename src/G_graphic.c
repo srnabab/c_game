@@ -514,7 +514,11 @@ void initVulkan(void)
     createFenceByBuffering(&allInOne.pComputeInFlightFence);
     CO_addFence(allInOne.pComputeInFlightFence[0]);// CO
     CO_addFence(allInOne.pComputeInFlightFence[1]);// CO
-    
+
+    createFenceByBuffering(&allInOne.pTransferInFlightFence);
+    CO_addFence(allInOne.pTransferInFlightFence[0]);// CO
+    CO_addFence(allInOne.pTransferInFlightFence[1]);// CO
+   
     loadTileSet(TileSet1Png, TileSet1Tsd, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_TILE_SET, allInOne.pBottomDescriptorSets + 2);
     loadTileMap(TileMap1TsdI, TEXTURE_TILE_SET, MAIN_TILE_MAP);
     // loadTileMap(TileMap1TsdI, -1200, -1100, TEXTURE_TILE_SET);

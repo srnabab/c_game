@@ -111,9 +111,9 @@ bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex4 * vert
                 vertices[vertexIndex].texCoord[0] = attrib.texcoords[attrib.faces[i].vt_idx * 2 + 0];
                 vertices[vertexIndex].texCoord[1] = 1 - attrib.texcoords[attrib.faces[i].vt_idx * 2 + 1];
 
-                vertices[vertexIndex].color[0] = 1.0f;
-                vertices[vertexIndex].color[1] = 1.0f;
-                vertices[vertexIndex].color[2] = 1.0f;
+                vertices[vertexIndex].color[0] = 0.0f;
+                vertices[vertexIndex].color[1] = 0.0f;
+                vertices[vertexIndex].color[2] = 0.0f;
 
                 vertices[vertexIndex].normal[0] = attrib.normals[attrib.faces[i].vn_idx * 3 + 0];
                 vertices[vertexIndex].normal[1] = attrib.normals[attrib.faces[i].vn_idx * 3 + 1];
@@ -125,16 +125,16 @@ bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex4 * vert
                     if (dot > 0.9999f)
                     // if (SDL_fabsf(vertices[vertexIndex].normal[0]) < 0.0001f && SDL_fabsf(vertices[vertexIndex].normal[2]) < 0.0001f && vertices[vertexIndex].normal[1] > 0.9999f)
                     {
-                        vertices[vertexIndex].groupId = 1;
+                        vertices[vertexIndex].color[0] = 1.0f;
 
                         vertices[vertexIndex].texCoord[0] = positions[(i + var * 3) % 6][0];
                         vertices[vertexIndex].texCoord[1] = positions[(i + var * 3) % 6][1];
                         groundTime++;
                         if (groundTime % 3 == 0) var++;
                     }
-                    else vertices[vertexIndex].groupId = 0;
+                    else vertices[vertexIndex].color[0] = 0.0f;
                 }
-                else vertices[vertexIndex].groupId = 0;
+                else vertices[vertexIndex].color[0] = 0.0f;
 
                 indexIndex++;
                 vertexIndex++;

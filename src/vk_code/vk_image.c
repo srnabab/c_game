@@ -134,16 +134,8 @@ void destroyImageViews(VkImageView * pImageView, Uint32 imageCount)
         vkDestroyImageView(allInOne.device, pImageView[i], allInOne.pAllocationCallbacks);
     }
 }
-VkResult _transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, Uint32 baseArrayLayer, Uint32 layerCount)
+bool getImageFlags(VkImageLayout oldLayout, VkImageLayout newLayout, VkFormat format, VkImageAspectFlags * pAspectMask, VkAccessFlags * pSrcAccessMask, VkAccessFlags * pDstAccessMask, VkPipelineStageFlags * pSourceStage, VkPipelineStageFlags * pDestinationStage)
 {
-    VkResult result  = VK_SUCCESS;
-
-    VkCommandBuffer singleCommandBuffer = NULL;
-    if (commandBuffer == NULL)
-    {
-        result |= beginSingleTimeCommands(allInOne.graphicCommandPool, &singleCommandBuffer);
-    }
-
     VkAccessFlags srcAccessMask = 0;
     VkAccessFlags dstAccessMask = 0;
     VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -283,6 +275,34 @@ VkResult _transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, Vk
     else 
     {
         print("unsupported layout transition!");
+        return false;
+    }
+
+    *pAspectMask = aspectMask;
+    *pSrcAccessMask = srcAccessMask;
+    *pDstAccessMask = dstAccessMask;
+    *pSourceStage = sourceStage;
+    *pDestinationStage = destinationStage;
+
+    return true;
+}
+VkResult _transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, Uint32 baseArrayLayer, Uint32 layerCount)
+{
+    VkResult result  = VK_SUCCESS;
+
+    VkCommandBuffer singleCommandBuffer = NULL;
+    if (commandBuffer == NULL)
+    {
+        result |= beginSingleTimeCommands(allInOne.graphicCommandPool, &singleCommandBuffer);
+    }
+
+    VkAccessFlags srcAccessMask = 0;
+    VkAccessFlags dstAccessMask = 0;
+    VkImageAspectFlags aspectMask = 0;
+    VkPipelineStageFlags sourceStage = 0;
+    VkPipelineStageFlags destinationStage = 0;
+    if (getImageFlags(oldLayout, newLayout, format, &aspectMask, &srcAccessMask, &dstAccessMask, &sourceStage, &destinationStage) == false)
+    {
         if (commandBuffer == NULL)
         {
             endSingleTimeCommands(allInOne.graphicCommandPool, getGraphic2dQueue(), &singleCommandBuffer);

@@ -186,6 +186,7 @@ struct _VK_ALL
 
     VkFence pGraphicInFlightFence[MAX_FRAMES_IN_FLIGHT];
     VkFence pComputeInFlightFence[MAX_FRAMES_IN_FLIGHT];
+    VkFence pTransferInFlightFence[MAX_FRAMES_IN_FLIGHT];
 
     Uint32 currentFrame;
 

@@ -18,8 +18,7 @@ layout(location = 0) in vec3 fragColor;
 layout(location = 1) in vec2 fragTexCoord;
 layout(location = 2) in vec3 inWorldPos;
 layout(location = 3) in vec3 inWorldNormal;
-layout(location = 4) flat in uint ID;
-layout(location = 5) flat in int instanceIndex;
+layout(location = 4) flat in int instanceIndex;
 
 layout(location = 0) out vec4 outColor;
 layout(location = 1) out vec4 outNormalBuffer;
@@ -84,6 +83,8 @@ void main()
 
     vec4 textureColor;
     float val = float(instanceIndex) / 48.0;
+
+    int ID = int(fragColor.r);
 
     textureColor = texture(texSampler, fragTexCoord) * abs(ID - 1) + vec4(vec2(val), 1.0 - val, 1.0) * ID;
     // textureColor = texture(texSampler, fragTexCoord) * abs(ID - 1) + texture(offscreenSamplers, vec3(fragTexCoord, float(instanceIndex))) * ID;

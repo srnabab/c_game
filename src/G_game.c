@@ -959,6 +959,7 @@ int render(void * arg)
     print("render init\n");
     Uint32 render_frame = 0;
     Uint32 currentFrame = allInOne.currentFrame;
+    bool bottomMoved = false;
     while (game_is_running)
     {
         SDL_WaitSemaphore(allSync.renderSemaphore);
@@ -969,7 +970,9 @@ int render(void * arg)
             resolutionChanged = false;
         }
 
-        drawFrame(scene, currentFrame, allInOne.extent2D.width, allInOne.extent2D.height);
+        bottomMoved = moveBottomImage(currentFrame);
+
+        drawFrame(scene, currentFrame, allInOne.extent2D.width, allInOne.extent2D.height, bottomMoved);
 
         allInOne.currentFrame = (allInOne.currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
         currentFrame = allInOne.currentFrame;

@@ -40,7 +40,6 @@ typedef struct _Vertex4
     vec3 color;
     vec2 texCoord;
     vec3 normal;
-    Uint32 groupId;
 } Vertex4;
 
 typedef struct _UniformBufferObject 

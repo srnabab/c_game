@@ -16,6 +16,7 @@ extern VkResult SDLCALL createImageViewArray(VkImage image, Uint32 layerCount, V
 extern void SDLCALL destroyImageViews(VkImageView * pImageView, uint32_t imageCount);
 extern VkResult SDLCALL _transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, Uint32 baseArrayLayer, Uint32 layerCount);
 extern VkResult SDLCALL transitionImageLayout(VkCommandBuffer commandBuffer, G_Texture_P * pTexture, VkImageLayout newLayout, Uint32 baseArrayLayer, Uint32 layerCount);
+extern bool SDLCALL getImageFlags(VkImageLayout oldLayout, VkImageLayout newLayout, VkFormat format, VkImageAspectFlags * pAspectMask, VkAccessFlags * pSrcAccessMask, VkAccessFlags * pDstAccessMask, VkPipelineStageFlags * pSourceStage, VkPipelineStageFlags * pDestinationStage);
 extern bool SDLCALL hasStencilComponent(VkFormat format);
 
 #include "SDL3/SDL_close_code.h"
