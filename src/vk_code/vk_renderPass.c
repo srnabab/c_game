@@ -289,7 +289,7 @@ void createOffscreenRenderPass(VkFormat format, VkRenderPass * pRenderPass)
     setSubpassDescription(0, VK_PIPELINE_BIND_POINT_GRAPHICS, 0, NULL, 1, &colorAttachmentRef, NULL, NULL, 0, NULL, &subpass);
 
     VkSubpassDependency dependency = {};
-    setSubpassDependency(VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, VK_ACCESS_COLOR_ATTACHMENT_READ_BIT, 0, &dependency);
+    setSubpassDependency(VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_COLOR_ATTACHMENT_READ_BIT, 0, &dependency);
 
     VkRenderPassCreateInfo renderPassCreateInfo = {};
     renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;

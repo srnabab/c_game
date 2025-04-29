@@ -335,10 +335,7 @@ VkResult transitionImageLayout(VkCommandBuffer commandBuffer, G_Texture_P * pTex
     SDL_LockMutex(allSync.textureMutex);
     result |= _transitionImageLayout(commandBuffer, pTexture->image, pTexture->format, pTexture->layouts[baseArrayLayer], newLayout, baseArrayLayer, layerCount);
 
-    for (Uint32 i = baseArrayLayer;i < pTexture->layoutCount;i++)
-    {
-        pTexture->layouts[i] = newLayout;
-    }
+    setTextureImageLayout(pTexture, newLayout, baseArrayLayer, layerCount);
     SDL_UnlockMutex(allSync.textureMutex);
 
     return result;

@@ -1,4 +1,5 @@
 #include "G_TileMap/G_TileSet.h"
+#include "G_constants.h"
 #include "G_log.h"
 #include "G_struct.h"
 
@@ -19,6 +20,8 @@ bool initTileMapSystem(void)
     if (tileSets == NULL) return false;
 
     memset(tileSets, 0, sizeof(TILE_SET));
+
+    return true;
 }
 void getTileSetCount(Uint32 * pTileSetCount)
 {
@@ -134,8 +137,8 @@ static TILE_SET * loadTileSetData(PathType setDataPath, const char * innerName)
     for (i = 0;i < row;i++)
     for (k = 0;k < col;k++)
     {
-        float x = xOffset * k;
-        float y = yOffset * i;
+        float x = xOffset * i;
+        float y = yOffset * k;
         Uint32 index = i * col + k;
 
         // set ID
@@ -152,6 +155,8 @@ static TILE_SET * loadTileSetData(PathType setDataPath, const char * innerName)
         tileSet->tiles[index].tileUV[3][1] = y;
 
         print("index: %u, show: %u", index, tileSet->tiles[index].property.show);
+        print("tileUV: %f, %f, %f, %f", tileSet->tiles[index].tileUV[0][0], tileSet->tiles[index].tileUV[0][1], tileSet->tiles[index].tileUV[1][0], tileSet->tiles[index].tileUV[1][1]);
+        print("tileUV: %f, %f, %f, %f", tileSet->tiles[index].tileUV[2][0], tileSet->tiles[index].tileUV[2][1], tileSet->tiles[index].tileUV[3][0], tileSet->tiles[index].tileUV[3][1]);
     }
 
     SDL_strlcpy(tileSets[tileSetCount].innerName, innerName, SDL_strlen(innerName) + 1);
@@ -516,6 +521,43 @@ Map_Group * mapGroupToDown(Map_Group * mapGroup, int32_t moveCount)
 
     if (moveCount) return mapGroupToDown(mapGroup->down, moveCount - 1);
     else return mapGroup;
+}
+void setTilemapUVs(Map_Group * group, vec2 * pUVs, Uint32 index)
+{
+    Uint32 startIndex = MAX_TILES_IN_GROUP * VERTEX_COUNT_IN_UNIT_2D * index;
+    Uint32 i, j;
+
+    for (i = 0;i < tileSets[0].maps[0].rowCount;i++)
+    {
+        for (j = 0;j < tileSets[0].maps[0].colCount;j++)
+        {
+            Uint32 UVindex = (i * tileSets[0].maps[0].colCount + j) * 4;
+
+            pUVs[startIndex + UVindex][0] = tileSets[0].tiles[group->indices[i][j]].tileUV[0][0];
+            pUVs[startIndex + UVindex][1] = tileSets[0].tiles[group->indices[i][j]].tileUV[0][1];
+
+            // print("index: %u, UV: %f, %f", group->indices[i][j], pUVs[startIndex + UVindex][0], pUVs[startIndex + UVindex][1]);
+
+            UVindex++;
+            pUVs[startIndex + UVindex][0] = tileSets[0].tiles[group->indices[i][j]].tileUV[1][0];
+            pUVs[startIndex + UVindex][1] = tileSets[0].tiles[group->indices[i][j]].tileUV[1][1];
+
+            // print("index: %u, UV: %f, %f", group->indices[i][j], pUVs[startIndex + UVindex][0], pUVs[startIndex + UVindex][1]);
+
+            UVindex++;
+            pUVs[startIndex + UVindex][0] = tileSets[0].tiles[group->indices[i][j]].tileUV[2][0];
+            pUVs[startIndex + UVindex][1] = tileSets[0].tiles[group->indices[i][j]].tileUV[2][1];
+
+            // print("index: %u, UV: %f, %f", group->indices[i][j], pUVs[startIndex + UVindex][0], pUVs[startIndex + UVindex][1]);
+
+            UVindex++;
+            pUVs[startIndex + UVindex][0] = tileSets[0].tiles[group->indices[i][j]].tileUV[3][0];
+            pUVs[startIndex + UVindex][1] = tileSets[0].tiles[group->indices[i][j]].tileUV[3][1];
+
+            // print("index: %u, UV: %f, %f", group->indices[i][j], pUVs[startIndex + UVindex][0], pUVs[startIndex + UVindex][1]);
+        }
+
+    }
 }
 void deInitTileMapSystem(void)
 {

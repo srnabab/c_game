@@ -86,8 +86,9 @@ void main()
 
     int ID = int(fragColor.r);
 
-    textureColor = texture(texSampler, fragTexCoord) * abs(ID - 1) + vec4(vec2(val), 1.0 - val, 1.0) * ID;
+    // textureColor = texture(texSampler, fragTexCoord) * abs(ID - 1) + vec4(vec2(val), 1.0 - val, 1.0) * ID;
     // textureColor = texture(texSampler, fragTexCoord) * abs(ID - 1) + texture(offscreenSamplers, vec3(fragTexCoord, float(instanceIndex))) * ID;
+    textureColor = texture(offscreenSamplers, vec3(fragTexCoord, float(instanceIndex)));
 
 
     vec3 diffuse = textureColor.rgb * sun.lightColor * sun.lightIntensity * NdotL;

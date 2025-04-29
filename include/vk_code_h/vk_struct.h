@@ -27,12 +27,18 @@ typedef struct _QueueFamilyIndices{
 }QueueFamilyIndices;
 
 //same as layout in vertex shader code
-typedef struct _Vertex 
+typedef struct _Vertex2
+{
+    vec3 pos;
+    vec3 color;
+} Vertex2;
+
+typedef struct _Vertex3 
 {
     vec3 pos;
     vec3 color;
     vec2 texCoord;
-}Vertex;
+} Vertex3;
 
 typedef struct _Vertex4
 {

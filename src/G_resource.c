@@ -410,12 +410,36 @@ void setTextureImageLayout(G_Texture_P * pTexture, VkImageLayout layout, Uint32 
     SDL_LockMutex(allSync.textureMutex);
 
     if (pTexture->layouts == NULL) return;
-    for (Uint32 i = baseArrayLayer;i < layerCount;i++)
+    for (Uint32 i = baseArrayLayer;i < layerCount + baseArrayLayer;i++)
     {
         pTexture->layouts[i] = layout;
     }
 
     SDL_UnlockMutex(allSync.textureMutex);
+}
+void setTextureImageMemoryBarrier(void * imgPNext, VkAccessFlags imgSrcAccessMask, VkAccessFlags imgDstAccessMask, VkImageLayout newLayout, Uint32 imgSrcQueueFamilyIndex\
+    , Uint32 imgDstQueueFamilyIndex, VkImageAspectFlags aspectMask, Uint32 baseMipLevel, Uint32 levelCount, Uint32 baseArrayLayer, Uint32 layerCount, VkImageMemoryBarrier * pImageMemoryBarrier\
+    , G_Texture_P * pTexture)
+{
+    pImageMemoryBarrier->sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    pImageMemoryBarrier->pNext = imgPNext;
+    pImageMemoryBarrier->srcAccessMask = imgSrcAccessMask;
+    pImageMemoryBarrier->dstAccessMask = imgDstAccessMask;
+    pImageMemoryBarrier->oldLayout = pTexture->layouts[baseArrayLayer];
+
+    if (newLayout == VK_IMAGE_LAYOUT_UNDEFINED) pImageMemoryBarrier->newLayout = pImageMemoryBarrier->oldLayout;
+    else pImageMemoryBarrier->newLayout = newLayout;
+
+    pImageMemoryBarrier->srcQueueFamilyIndex = imgSrcQueueFamilyIndex;
+    pImageMemoryBarrier->dstQueueFamilyIndex = imgDstQueueFamilyIndex;
+    pImageMemoryBarrier->image = pTexture->image;
+    pImageMemoryBarrier->subresourceRange.aspectMask = aspectMask;
+    pImageMemoryBarrier->subresourceRange.baseMipLevel = baseMipLevel;
+    pImageMemoryBarrier->subresourceRange.levelCount = levelCount;
+    pImageMemoryBarrier->subresourceRange.baseArrayLayer = baseArrayLayer;
+    pImageMemoryBarrier->subresourceRange.layerCount = layerCount;
+
+    setTextureImageLayout(pTexture, pImageMemoryBarrier->newLayout, baseArrayLayer, layerCount);
 }
 bool unloadTexture(const char * innerName)
 {

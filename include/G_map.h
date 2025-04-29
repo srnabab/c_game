@@ -15,6 +15,7 @@ typedef struct _FromTo FromTo;
 struct _DrawHere
 {
     Uint32 BottomID;
+    char align1[4];
     Map_Group * group;
 };
 typedef struct _DrawHere DrawHere;
@@ -22,6 +23,7 @@ typedef struct _DrawHere DrawHere;
 #include "SDL3/SDL_begin_code.h"
 
 extern void SDLCALL setMapBottom(Uint32 width, Uint32 height, int centerX, int centerY, Uint32 * pRowCount, Uint32 * pColumnCount, int * pFirstBottom_X, int * pFirstBottom_Y, int * pBaseX, int * pBaseY, int32_t * pFirstBottomID);
+extern bool SDLCALL moveBottomImage(Uint32 currentFrame);
 
 #include "SDL3/SDL_close_code.h"
 

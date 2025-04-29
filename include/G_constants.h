@@ -62,4 +62,7 @@
 
 #define FONT_SIZE 24
 
+#define MAX_MAP_GROUP 48
+#define MAX_TILES_IN_GROUP 2500
+
 #endif

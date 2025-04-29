@@ -24,7 +24,7 @@ void main() {
 
     // finalColor = vec4(combinedLight, 1.0);
     // finalColor = vec4(uv, 0.0, 1.0); // For testing: just output the UV coordinates
-    finalColor = texture(sceneColorSampler, uv) * step(abs(scene2dColor.a), 0.0) + scene2dColor; // For testing: just output the scene color
+    finalColor = texture(sceneColorSampler, uv) * step(abs(scene2dColor.a), 0.0) + scene2dColor * sign(abs(scene2dColor.a)); // For testing: just output the scene color
     // finalColor = vec4(combinedLight, directLightAndEmissive.a) * step(abs(scene2dColor.a), 0.0) + scene2dColor;
     // finalColor = scene2dColor;
 }

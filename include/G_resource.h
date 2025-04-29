@@ -99,6 +99,9 @@ extern bool SDLCALL addDescriptorSetToTexture(const char * innerName, VkDescript
 extern bool SDLCALL addShadowDescriptorSetToTexture(const char * innerName, VkDescriptorSet * pDescriptorSet);
 extern bool SDLCALL textureOffsetsAdd(G_Texture_P * pTexture, Uint32 offset);
 extern void SDLCALL setTextureImageLayout(G_Texture_P * pTexture, VkImageLayout layout, Uint32 baseArrayLayer, Uint32 layerCount);
+extern void SDLCALL setTextureImageMemoryBarrier(void * imgPNext, VkAccessFlags imgSrcAccessMask, VkAccessFlags imgDstAccessMask, VkImageLayout newLayout, Uint32 imgSrcQueueFamilyIndex\
+    , Uint32 imgDstQueueFamilyIndex, VkImageAspectFlags aspectMask, Uint32 baseMipLevel, Uint32 levelCount, Uint32 baseArrayLayer, Uint32 layerCount, VkImageMemoryBarrier * pImageMemoryBarrier\
+    , G_Texture_P * pTexture);
 // extern void SDLCALL emptyTextureRefCount(void);
 extern bool SDLCALL unloadTexture(const char * innerName);
 extern void SDLCALL unloadAllTexture(void);

@@ -655,10 +655,18 @@ int update(void * arg)
     addModelMatrix(100, 100, 8, allInOne.pStaticModelPool, TEXTURE_MODEL);
 
     setMapBottom(allInOne.extent2D.width, allInOne.extent2D.height, 0, 0, &rowCount, &colCount, &firstBottom_X, &firstBottom_Y, &baseX, &baseY, &groupID);
+    memcpy(allInOne.pTimeMapTexCoordBufferMapped[0], allInOne.pTileMapUVs, sizeof(vec2) * VERTEX_COUNT_IN_UNIT_2D * MAX_TILES_IN_GROUP * (allInOne.bottomImageDrawStack.top + 1));
+    memcpy(allInOne.pTimeMapTexCoordBufferMapped[1], allInOne.pTileMapUVs, sizeof(vec2) * VERTEX_COUNT_IN_UNIT_2D * MAX_TILES_IN_GROUP * (allInOne.bottomImageDrawStack.top + 1));
     // addModelMatrix(0, 100 / HEIGHT_FACTOR, -1, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
     // addModelMatrix(-800, 100 / HEIGHT_FACTOR, -1, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
     // addModelMatrix(0, 900 / HEIGHT_FACTOR, -1, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
-        
+
+    glm_mat4_identity(allInOne.pTilemapUbo->model);
+    glm_lookat((vec3){0.0f, 0.0f, 100.0f}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, allInOne.pTilemapUbo->view);
+    glm_ortho_vulkan(-800.0f / 800.0f, 800.0f / 800.0f, -800.0f / 800.0f, 800.0f / 800.0f, -0.001f, -100.0f, allInOne.pTilemapUbo->proj);
+    memcpy(allInOne.ppTilemapUniformBufferMapped[0], allInOne.pTilemapUbo, sizeof(UniformBufferObject));
+    memcpy(allInOne.ppTilemapUniformBufferMapped[1], allInOne.pTilemapUbo, sizeof(UniformBufferObject));
+
     SDL_Delay(300);
     
     Uint64 last_frame_time = SDL_GetPerformanceCounter();
@@ -685,38 +693,25 @@ int update(void * arg)
         totalTime = totalTimeNs / ((float)S_TO_NS);
 
         currentFrame = allInOne.currentFrame;
+        
+        // particle 
+        allInOne.pComputeUbo->deltaTime = delta_time;
+
+        SDL_LockMutex(allSync.vertexMutex);
+
+        memcpy(allInOne.ppComputeUniformBufferMapped[currentFrame], allInOne.pComputeUbo, sizeof(ComputeUniformBufferObject));
+        
+        SDL_UnlockMutex(allSync.vertexMutex);
+        SDL_SignalSemaphore(allSync.vertexSemaphore);
 
         float aspect2 = 1.0f  * ((float)allInOne.extent2D.height / 600.0f);
         float aspect = ((float)allInOne.extent2D.width / allInOne.extent2D.height) * aspect2;
-
-        glm_mat4_identity(pGraphicUbo->model);
-        glm_lookat((vec3){*pCamera_X, *pCamera_Y, 100.0f}, (vec3){*pCamera_X, *pCamera_Y, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pGraphicUbo->view);
-        glm_ortho_vulkan(-aspect, aspect, -aspect2, aspect2, -0.001f, -100.0f, pGraphicUbo->proj);
-        // glm_ortho(-aspect, aspect, -1.0f, 1.0f, 0.001f, 100.0f, pGraphicUbo->proj);
-        // pGraphicUbo->proj[1][1] *= -1;
-
-        glm_mat4_identity(pGraphic3DUbo->model);
-        glm_lookat((vec3){*pCamera_X * aspect, 0.0f + *pCamera_Y * aspect2, 10.0f}, (vec3){*pCamera_X * aspect, *pCamera_Y * aspect2, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pGraphic3DUbo->view);
-        glm_ortho_vulkan(-aspect, aspect, -aspect2, aspect2, -0.001f, -100.0f, pGraphic3DUbo->proj);
-        // glm_perspective(glm_rad(45.0f), aspect, 0.1f, 100.0f, pGraphic3DUbo->proj);
-        // pGraphic3DUbo->proj[1][1] *= -1;
-
-        glm_mat4_identity(pUIUbo->model);
-        glm_lookat((vec3){0.0f, 0.0f, 100.0f}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pUIUbo->view);
-        glm_ortho_vulkan(-aspect, aspect, -aspect2, aspect2, -0.001f, -100.0f, pUIUbo->proj);
-
-        allInOne.pComputeUbo->deltaTime = delta_time;
-
-
-        glm_mat4_copy(allInOne.pGraphic3DUbo->proj, allInOne.pSSGIubo->projectionMatrix);
-        glm_mat4_copy(allInOne.pGraphic3DUbo->proj, allInOne.pSSGIubo->inverseProjectionMatrix);
-        glm_mat4_inv(allInOne.pSSGIubo->inverseProjectionMatrix, allInOne.pSSGIubo->inverseProjectionMatrix);
 
         float x, y, z;
         float factor_x = LIGHT_HEIGHT / (allInOne.extent2D.width / 2);
         float factor_y = LIGHT_HEIGHT / (allInOne.extent2D.height / 2);
         
-        // x = 400 * SDL_sinf_flip(totalTime / 3);
+        // shadow map
         SDL_LockMutex(allSync.inputMutex);
         x = mouse_x - (allInOne.extent2D.width / 2);
         y = -mouse_y + (allInOne.extent2D.height / 2);
@@ -731,14 +726,42 @@ int update(void * arg)
         mat4 lightProj;
         glm_ortho_vulkan(-(SHADOW_SIZE / 600.0f) / 2.0f, (SHADOW_SIZE / 600.0f) / 2.0f, -(SHADOW_SIZE / 800.0f) / 2.0f, (SHADOW_SIZE / 800.0f) / 2.0f, -0.001f, -100.0f, lightProj);
 
-        glm_lookat((vec3){x, y, z}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, allInOne.pSunubo->lightSpace);
-        glm_mul(lightProj, allInOne.pSunubo->lightSpace, allInOne.pSunubo->lightSpace);
+        glm_lookat((vec3){x, y, z}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, allInOne.pLightSpaceUbo->lightSpace);
+        glm_mul(lightProj, allInOne.pLightSpaceUbo->lightSpace, allInOne.pLightSpaceUbo->lightSpace);
+
+
+        SDL_LockMutex(allSync.vertexMutex);
+
+        memcpy(allInOne.ppLightSpaceUniformBufferMapped[currentFrame], allInOne.pLightSpaceUbo , sizeof(LightSpace));
+        
+        SDL_UnlockMutex(allSync.vertexMutex);
+        SDL_SignalSemaphore(allSync.vertexSemaphore);
+
+        // 3d object
+        glm_mat4_identity(pGraphic3DUbo->model);
+        glm_lookat((vec3){*pCamera_X * aspect, 0.0f + *pCamera_Y * aspect2, 10.0f}, (vec3){*pCamera_X * aspect, *pCamera_Y * aspect2, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pGraphic3DUbo->view);
+        glm_ortho_vulkan(-aspect, aspect, -aspect2, aspect2, -0.001f, -100.0f, pGraphic3DUbo->proj);
+        // glm_perspective(glm_rad(45.0f), aspect, 0.1f, 100.0f, pGraphic3DUbo->proj);
+        // pGraphic3DUbo->proj[1][1] *= -1;
 
         glm_vec3_copy((vec3){-x, -y, -z}, allInOne.pSunubo->lightDirection);
         glm_vec3_copy((vec3){1.0f, 1.0f, 1.0f}, allInOne.pSunubo->lightColor);
         allInOne.pSunubo->lightIntensity = 1.1f;
 
-        glm_mat4_copy(allInOne.pSunubo->lightSpace, allInOne.pLightSpaceUbo->lightSpace);
+        glm_mat4_copy(allInOne.pLightSpaceUbo->lightSpace, allInOne.pSunubo->lightSpace);
+
+        SDL_LockMutex(allSync.vertexMutex);
+
+        memcpy(allInOne.ppSunUniformBufferMapped[currentFrame], allInOne.pSunubo, sizeof(DirectionLight));
+        memcpy(allInOne.ppGraphic3DUniformBufferMapped[currentFrame], pGraphic3DUbo, sizeof(UniformBufferObject));
+        
+        SDL_UnlockMutex(allSync.vertexMutex);
+        SDL_SignalSemaphore(allSync.vertexSemaphore);
+
+        // SSGI
+        glm_mat4_copy(allInOne.pGraphic3DUbo->proj, allInOne.pSSGIubo->projectionMatrix);
+        glm_mat4_copy(allInOne.pGraphic3DUbo->proj, allInOne.pSSGIubo->inverseProjectionMatrix);
+        glm_mat4_inv(allInOne.pSSGIubo->inverseProjectionMatrix, allInOne.pSSGIubo->inverseProjectionMatrix);
 
         allInOne.pSSGIubo->cameraPosition[0] = *pCamera_X;
         allInOne.pSSGIubo->cameraPosition[1] = 0.0f + *pCamera_Y;
@@ -749,18 +772,30 @@ int update(void * arg)
         allInOne.pSSGIubo->ssgiStrength = 0.1f;
 
         SDL_LockMutex(allSync.vertexMutex);
+
+        memcpy(allInOne.ppSSGIUniformBufferMapped[currentFrame], allInOne.pSSGIubo, sizeof(SSGIUniformBufferObject));
+
+        SDL_UnlockMutex(allSync.vertexMutex);
+        SDL_SignalSemaphore(allSync.vertexSemaphore);
+
+        // UI object
+        glm_mat4_identity(pGraphicUbo->model);
+        glm_lookat((vec3){*pCamera_X, *pCamera_Y, 100.0f}, (vec3){*pCamera_X, *pCamera_Y, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pGraphicUbo->view);
+        glm_ortho_vulkan(-aspect, aspect, -aspect2, aspect2, -0.001f, -100.0f, pGraphicUbo->proj);
+        // glm_ortho(-aspect, aspect, -1.0f, 1.0f, 0.001f, 100.0f, pGraphicUbo->proj);
+        // pGraphicUbo->proj[1][1] *= -1;
+
+        glm_mat4_identity(pUIUbo->model);
+        glm_lookat((vec3){0.0f, 0.0f, 100.0f}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pUIUbo->view);
+        glm_ortho_vulkan(-aspect, aspect, -aspect2, aspect2, -0.001f, -100.0f, pUIUbo->proj);
+
+        SDL_LockMutex(allSync.vertexMutex);
+
         memcpy(allInOne.ppGraphicUniformBufferMapped[currentFrame], pGraphicUbo, sizeof(UniformBufferObject));
-        memcpy(allInOne.ppGraphic3DUniformBufferMapped[currentFrame], pGraphic3DUbo, sizeof(UniformBufferObject));
         memcpy(allInOne.ppUIUniformBufferMapped[currentFrame], pUIUbo, sizeof(UniformBufferObject));
 
-        memcpy(allInOne.ppComputeUniformBufferMapped[currentFrame], allInOne.pComputeUbo, sizeof(ComputeUniformBufferObject));
-        memcpy(allInOne.ppSSGIUniformBufferMapped[currentFrame], allInOne.pSSGIubo, sizeof(SSGIUniformBufferObject));
-        memcpy(allInOne.ppSunUniformBufferMapped[currentFrame], allInOne.pSunubo, sizeof(DirectionLight));
-        memcpy(allInOne.ppLightSpaceUniformBufferMapped[currentFrame], allInOne.pLightSpaceUbo , sizeof(LightSpace));
-        
-        SDL_SignalSemaphore(allSync.vertexSemaphore);
         SDL_UnlockMutex(allSync.vertexMutex);
-
+        SDL_SignalSemaphore(allSync.vertexSemaphore);
 
         if (scene == Pause_Scene)
         {
@@ -827,6 +862,9 @@ int update(void * arg)
             if (cameraMove[0] || cameraMove[1] || cameraMove[2] || cameraMove[3])
             {
                 setMapBottom(allInOne.extent2D.width, allInOne.extent2D.height, *pCamera_X * (allInOne.extent2D.width / 2), *pCamera_Y * (allInOne.extent2D.height / 2), &rowCount, &colCount, &firstBottom_X, &firstBottom_Y, &baseX, &baseY, &groupID);
+                SDL_LockMutex(allSync.updateMutex);
+                memcpy(allInOne.pTimeMapTexCoordBufferMapped[currentFrame], allInOne.pTileMapUVs, sizeof(vec2) * VERTEX_COUNT_IN_UNIT_2D * MAX_TILES_IN_GROUP * (allInOne.bottomImageDrawStack.top + 1));
+                SDL_UnlockMutex(allSync.updateMutex);
             }
 
             if (scene == First_Scene)
@@ -894,14 +932,14 @@ int update(void * arg)
                 // }
                 // SDL_UnlockMutex(sdl_mutex_2);
 
-                // size_t bufferSize = sizeof(Vertex) * count;
+                // size_t bufferSize = sizeof(Vertex3) * count;
 
                 // Uint32 indiceCount = *allInOne.pIndicesCount;
                 // size_t bufferSize2 = sizeof(uint16_t) * indiceCount;
 
                 // if (ballAdd)
                 // {
-                //     //allInOne.pVertices2D = (Vertex *)realloc(allInOne.pVertices2D, count * sizeof(Vertex));
+                //     //allInOne.pVertices2D = (Vertex3 *)realloc(allInOne.pVertices2D, count * sizeof(Vertex3));
                 //     int x = SDL_rand(250);
                 //     if (SDL_rand(2))
                 //     {
@@ -932,8 +970,8 @@ int update(void * arg)
             //print("time: %.2f\n", time);
             SDL_LockMutex(allSync.updateMutex);
 
-            memcpy(allInOne.pVertexBuffer2DMemMapped[currentFrame], allInOne.pVertices2D, vertexEnd * sizeof(Vertex));// update vertex buffer
-            memcpy(allInOne.pVertexBuffer3DMemMapped[currentFrame], allInOne.pVertices3D, 30000 * sizeof(Vertex));
+            memcpy(allInOne.pVertexBuffer2DMemMapped[currentFrame], allInOne.pVertices2D, vertexEnd * sizeof(Vertex3));// update vertex buffer
+            memcpy(allInOne.pVertexBuffer3DMemMapped[currentFrame], allInOne.pVertices3D, 30000 * sizeof(Vertex3));
             memcpy(allInOne.pIndexBuffer3DMemMapped[currentFrame], allInOne.pIndices3D, 45000 * sizeof(Uint32));
             // SDL_SignalSemaphore(allSync.vertexSemaphore);
 
@@ -972,7 +1010,7 @@ int render(void * arg)
 
         bottomMoved = moveBottomImage(currentFrame);
 
-        drawFrame(scene, currentFrame, allInOne.extent2D.width, allInOne.extent2D.height, bottomMoved);
+        drawFrame(scene, currentFrame, allInOne.extent2D.width, allInOne.extent2D.height, false);
 
         allInOne.currentFrame = (allInOne.currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
         currentFrame = allInOne.currentFrame;

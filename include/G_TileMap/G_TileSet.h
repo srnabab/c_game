@@ -89,6 +89,7 @@ extern Map_Group* SDLCALL getFirstMapGroup(const char * setInnerName, const char
 extern Map_Group* SDLCALL getMapGroup(const char * setInnerName, const char * mapInnerName, int32_t groupID);
 extern Map_Group* SDLCALL mapGroupToRight(Map_Group * mapGroup, int32_t moveCount);
 extern Map_Group* SDLCALL mapGroupToDown(Map_Group * mapGroup, int32_t moveCount);
+extern void SDLCALL setTilemapUVs(Map_Group * group, vec2 * pUVs, Uint32 index);
 extern void SDLCALL deInitTileMapSystem(void);
 
 #include "SDL3/SDL_close_code.h"

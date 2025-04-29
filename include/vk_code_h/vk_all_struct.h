@@ -45,6 +45,7 @@ struct _VK_ALL
 
 
     VkRenderPass renderPass;
+    VkRenderPass tilemapRenderPass;
     // VkRenderPass * pCombine2DRenderPass;
     VkRenderPass modelRenderPass;
     VkRenderPass offscreenRenderPass;
@@ -75,6 +76,9 @@ struct _VK_ALL
     VkPipelineLayout combinePipelineLayout;
     VkPipeline combinePipeline;
 
+    VkPipelineLayout tilemapPipelineLayout;
+    VkPipeline tilemapPipeline;
+
     // VkPipelineLayout * pCombine2DPipelineLayout;
     // VkPipeline * pCombine2DPipeline;
 
@@ -97,9 +101,17 @@ struct _VK_ALL
     VkFramebuffer * pCombineFramebuffer;
     VkFramebuffer * pBottomImageArrayFramebuffers;
 
+    VkBuffer tileMapVertexBuffer;
+    VkDeviceMemory tileMapVertexBufferMem;
+
+    vec2 * pTileMapUVs;
+    VkBuffer tileMapTexCoordBuffer[MAX_FRAMES_IN_FLIGHT];
+    VkDeviceMemory pTimeMapTexCoordBufferMem[MAX_FRAMES_IN_FLIGHT];
+    void* pTimeMapTexCoordBufferMapped[MAX_FRAMES_IN_FLIGHT];
+
     VkBuffer vertexBuffer2D[MAX_FRAMES_IN_FLIGHT];
     Uint32 maxVertices2DCount;
-    Vertex * pVertices2D;
+    Vertex3 * pVertices2D;
     Uint32 vertices2DCount;
     VkDeviceMemory pVertexBuffer2DMem[MAX_FRAMES_IN_FLIGHT];
     void* pVertexBuffer2DMemMapped[MAX_FRAMES_IN_FLIGHT];
@@ -108,7 +120,6 @@ struct _VK_ALL
     Uint16 * pIndices2D;
     Uint32 indices2DCount;
     VkDeviceMemory indexBuffer2DMem;
-    void* pIndexBuffer2DMemMapped;
 
     VkBuffer vertexBuffer3D[MAX_FRAMES_IN_FLIGHT];
     Uint32 maxVertices3DCount;
@@ -158,6 +169,10 @@ struct _VK_ALL
     void * ppSunUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
     DirectionLight * pSunubo;
 
+    VkBuffer pTilemapUniformBuffer[MAX_FRAMES_IN_FLIGHT];
+    void * ppTilemapUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
+    UniformBufferObject * pTilemapUbo;
+
     VkBuffer pShaderStorageBuffer[MAX_FRAMES_IN_FLIGHT];
 
     VkDescriptorSet * pGraphicDescriptorSets;
@@ -183,6 +198,7 @@ struct _VK_ALL
     VkSemaphore pRenderFinishedSemaphore[MAX_FRAMES_IN_FLIGHT];
     VkSemaphore pCopyFinishedSemaphore[MAX_FRAMES_IN_FLIGHT];
     VkSemaphore pComputeSemaphore[MAX_FRAMES_IN_FLIGHT];
+    VkSemaphore pTransferSemaphore[MAX_FRAMES_IN_FLIGHT];
 
     VkFence pGraphicInFlightFence[MAX_FRAMES_IN_FLIGHT];
     VkFence pComputeInFlightFence[MAX_FRAMES_IN_FLIGHT];

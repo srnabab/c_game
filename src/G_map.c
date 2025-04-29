@@ -21,6 +21,7 @@ void setMapBottom(Uint32 width, Uint32 height, int centerX, int centerY, Uint32 
     Uint32 rowCopyCount = rowCount;
     Uint32 columnCopyCount = columnCount;
 
+    Uint32 drawIndex = 0;
     // Uint32 bottomCount = 0;
 
     int firstBottom_X = 0;
@@ -103,6 +104,8 @@ void setMapBottom(Uint32 width, Uint32 height, int centerX, int centerY, Uint32 
                 tempInitDraw.BottomID = i * columnCount + j;
                 
                 allInOne.bottomImageDrawStack.pushFn(&allInOne.bottomImageDrawStack, &tempInitDraw);
+                setTilemapUVs(tempInitMapGroup, allInOne.pTileMapUVs, drawIndex);
+                drawIndex++;
 
                 tempInitMapGroup = tempInitMapGroup->right;
             }
@@ -301,162 +304,176 @@ void setMapBottom(Uint32 width, Uint32 height, int centerX, int centerY, Uint32 
         }
     }
 
-    // if (leftColAdd)
-    // {
-    //     FromTo temp;
-    //     Uint32 initColumnCount = columnCount - 1;
-    //     for (i = 0;i < rowCount;i++)
-    //     {
-    //         for (j = 0;j < initColumnCount;j++)
-    //         {
-    //             temp.from = i * initColumnCount + j; 
-    //             temp.to = temp.from + i + 1;
-    //             allInOne.bottomImageMoveStack.pushFn(&allInOne.bottomImageMoveStack, &temp);
-    //         }
-    //     }
+    if (leftColAdd)
+    {
+        FromTo temp;
+        Uint32 initColumnCount = columnCount - 1;
+        for (i = 0;i < rowCount;i++)
+        {
+            for (j = 0;j < initColumnCount;j++)
+            {
+                temp.from = i * initColumnCount + j; 
+                temp.to = temp.from + i + 1;
+                allInOne.bottomImageMoveStack.pushFn(&allInOne.bottomImageMoveStack, &temp);
+            }
+        }
 
-    //     DrawHere tempDraw;
-    //     Map_Group * tempMapGroup = firstMapGroup;
-    //     for (i = 0;i < rowCount;i++)
-    //     {
-    //         tempDraw.group = tempMapGroup;
-    //         tempDraw.BottomID = i * columnCount;
+        DrawHere tempDraw;
+        Map_Group * tempMapGroup = firstMapGroup;
+        for (i = 0;i < rowCount;i++)
+        {
+            tempDraw.group = tempMapGroup;
+            tempDraw.BottomID = i * columnCount;
 
-    //         allInOne.bottomImageDrawStack.pushFn(&allInOne.bottomImageDrawStack, &tempDraw);
+            allInOne.bottomImageDrawStack.pushFn(&allInOne.bottomImageDrawStack, &tempDraw);
+            setTilemapUVs(tempMapGroup, allInOne.pTileMapUVs, drawIndex);
+            drawIndex++;
+
             
-    //         tempMapGroup = firstMapGroup->down;
-    //     }
+            tempMapGroup = firstMapGroup->down;
+        }
 
-    //     leftColAdd = false;
-    // }
+        leftColAdd = false;
+    }
 
-    // if (rightColAdd)
-    // {
-    //     FromTo temp;
-    //     Uint32 initColumnCount = columnCount - 1;
-    //     for (i = 1;i < rowCount;i++)
-    //     {
-    //         for (j = 0;j < initColumnCount;j++)
-    //         {
-    //             temp.from = i * initColumnCount + j;
-    //             temp.to = temp.from + i;
-    //             allInOne.bottomImageMoveStack.pushFn(&allInOne.bottomImageMoveStack, &temp);
-    //         }
-    //     }
+    if (rightColAdd)
+    {
+        FromTo temp;
+        Uint32 initColumnCount = columnCount - 1;
+        for (i = 1;i < rowCount;i++)
+        {
+            for (j = 0;j < initColumnCount;j++)
+            {
+                temp.from = i * initColumnCount + j;
+                temp.to = temp.from + i;
+                allInOne.bottomImageMoveStack.pushFn(&allInOne.bottomImageMoveStack, &temp);
+            }
+        }
 
-    //     DrawHere tempDraw;
-    //     Map_Group * tempMapGroup = firstMapGroup;
-    //     for (i = 0;i < rowCount;i++)
-    //     {
-    //         tempDraw.group = tempMapGroup;
-    //         tempDraw.BottomID = i * columnCount + initColumnCount;
-    //         allInOne.bottomImageDrawStack.pushFn(&allInOne.bottomImageDrawStack, &tempDraw);
+        DrawHere tempDraw;
+        Map_Group * tempMapGroup = firstMapGroup;
+        for (i = 0;i < rowCount;i++)
+        {
+            tempDraw.group = tempMapGroup;
+            tempDraw.BottomID = i * columnCount + initColumnCount;
+            allInOne.bottomImageDrawStack.pushFn(&allInOne.bottomImageDrawStack, &tempDraw);
 
-    //         tempMapGroup = firstMapGroup->down;
-    //     }
+            setTilemapUVs(tempMapGroup, allInOne.pTileMapUVs, drawIndex);
+            drawIndex++;
 
-    //     rightColAdd = false;
-    // }
+            tempMapGroup = firstMapGroup->down;
+        }
 
-    // if (leftColDel)
-    // {
-    //     FromTo temp;
-    //     Uint32 initColumnCount = columnCount + 1;
-    //     for (i = rowCount - 1;i > -1;i--)
-    //     {
-    //         for (j = columnCount;j > 0;j--)
-    //         {
-    //             temp.from = i * initColumnCount + j; 
-    //             temp.to = temp.from - i - 1;
-    //             allInOne.bottomImageMoveStack.pushFn(&allInOne.bottomImageMoveStack, &temp);
-    //         }
-    //     }
+        rightColAdd = false;
+    }
 
-    //     leftColDel = false;
-    // }
+    if (leftColDel)
+    {
+        FromTo temp;
+        Uint32 initColumnCount = columnCount + 1;
+        for (i = rowCount - 1;i > -1;i--)
+        {
+            for (j = columnCount;j > 0;j--)
+            {
+                temp.from = i * initColumnCount + j; 
+                temp.to = temp.from - i - 1;
+                allInOne.bottomImageMoveStack.pushFn(&allInOne.bottomImageMoveStack, &temp);
+            }
+        }
 
-    // if (rightColDel)
-    // {
-    //     FromTo temp;
-    //     Uint32 initColumnCount = columnCount + 1;
-    //     for (i = rowCount - 1;i > 0;i--)
-    //     {
-    //         for (j = columnCount - 1;j > -1;j--)
-    //         {
-    //             temp.from = i * initColumnCount + j; 
-    //             temp.to = temp.from - i;
-    //             allInOne.bottomImageMoveStack.pushFn(&allInOne.bottomImageMoveStack, &temp);
-    //         }
-    //     }
+        leftColDel = false;
+    }
 
-    //     rightColDel = false;
-    // }
+    if (rightColDel)
+    {
+        FromTo temp;
+        Uint32 initColumnCount = columnCount + 1;
+        for (i = rowCount - 1;i > 0;i--)
+        {
+            for (j = columnCount - 1;j > -1;j--)
+            {
+                temp.from = i * initColumnCount + j; 
+                temp.to = temp.from - i;
+                allInOne.bottomImageMoveStack.pushFn(&allInOne.bottomImageMoveStack, &temp);
+            }
+        }
 
-    // if (upRowAdd)
-    // {
-    //     FromTo temp;
-    //     Uint32 initRowCount = rowCount - 1;
-    //     for (i = 0;i < initRowCount;i++)
-    //     {
-    //         for (j = 0;j < columnCount;j++)
-    //         {
-    //             temp.from = i * columnCount + j;
-    //             temp.to = temp.from + columnCount;
-    //             allInOne.bottomImageMoveStack.pushFn(&allInOne.bottomImageMoveStack, &temp);
-    //         }
-    //     }
+        rightColDel = false;
+    }
 
-    //     DrawHere tempDraw;
-    //     Map_Group * tempMapGroup = firstMapGroup;
-    //     for (i = 0;i < columnCount;i++)
-    //     {
-    //         tempDraw.group = tempMapGroup;
-    //         tempDraw.BottomID = i;
-    //         allInOne.bottomImageDrawStack.pushFn(&allInOne.bottomImageDrawStack, &tempDraw);
+    if (upRowAdd)
+    {
+        FromTo temp;
+        Uint32 initRowCount = rowCount - 1;
+        for (i = 0;i < initRowCount;i++)
+        {
+            for (j = 0;j < columnCount;j++)
+            {
+                temp.from = i * columnCount + j;
+                temp.to = temp.from + columnCount;
+                allInOne.bottomImageMoveStack.pushFn(&allInOne.bottomImageMoveStack, &temp);
+            }
+        }
 
-    //         tempMapGroup = tempMapGroup->right;
-    //     }
+        DrawHere tempDraw;
+        Map_Group * tempMapGroup = firstMapGroup;
+        for (i = 0;i < columnCount;i++)
+        {
+            tempDraw.group = tempMapGroup;
+            tempDraw.BottomID = i;
 
-    //     upRowAdd = false;
-    // }
+            allInOne.bottomImageDrawStack.pushFn(&allInOne.bottomImageDrawStack, &tempDraw);
 
-    // if (upRowDel)
-    // {
-    //     FromTo temp;
-    //     Uint32 initRowCount = rowCount + 1;
-    //     for (i = initRowCount;i > 0;i--)
-    //     {
-    //         for (j = columnCount;j > -1;j--)
-    //         {
-    //             temp.from = i * columnCount + j;
-    //             temp.to = temp.from - columnCount;
-    //             allInOne.bottomImageMoveStack.pushFn(&allInOne.bottomImageMoveStack, &temp);
-    //         }
-    //     }
+            setTilemapUVs(tempMapGroup, allInOne.pTileMapUVs, drawIndex);
+            drawIndex++;
 
-    //     upRowAdd = false;
-    // }
+            tempMapGroup = tempMapGroup->right;
+        }
 
-    // if (downRowAdd)
-    // {
-    //     Uint32 initRowCount = rowCount - 1;
+        upRowAdd = false;
+    }
 
-    //     DrawHere tempDraw;
-    //     Map_Group * tempMapGroup = firstMapGroup;
-    //     for (i = 0;i < columnCount;i++)
-    //     {
-    //         tempDraw.group = tempMapGroup;
-    //         tempDraw.BottomID = initRowCount * columnCount + i;
-    //         allInOne.bottomImageDrawStack.pushFn(&allInOne.bottomImageDrawStack, &tempDraw);
+    if (upRowDel)
+    {
+        FromTo temp;
+        Uint32 initRowCount = rowCount + 1;
+        for (i = initRowCount;i > 0;i--)
+        {
+            for (j = columnCount;j > -1;j--)
+            {
+                temp.from = i * columnCount + j;
+                temp.to = temp.from - columnCount;
+                allInOne.bottomImageMoveStack.pushFn(&allInOne.bottomImageMoveStack, &temp);
+            }
+        }
 
-    //         tempMapGroup = tempMapGroup->right;
-    //     }
-    // }
+        upRowAdd = false;
+    }
 
-    // if (downRowDel)
-    // {
-    //     ;
-    // }
+    if (downRowAdd)
+    {
+        Uint32 initRowCount = rowCount - 1;
+
+        DrawHere tempDraw;
+        Map_Group * tempMapGroup = firstMapGroup;
+        for (i = 0;i < columnCount;i++)
+        {
+            tempDraw.group = tempMapGroup;
+            tempDraw.BottomID = initRowCount * columnCount + i;
+
+            allInOne.bottomImageDrawStack.pushFn(&allInOne.bottomImageDrawStack, &tempDraw);
+
+            setTilemapUVs(tempMapGroup, allInOne.pTileMapUVs, drawIndex);
+            drawIndex++;
+
+            tempMapGroup = tempMapGroup->right;
+        }
+    }
+
+    if (downRowDel)
+    {
+        ;
+    }
 
     // print("Resolution %dx%d\n", width, height);
     // print("Row count: %d, Column count: %d\n", rowCount, columnCount);
@@ -484,104 +501,207 @@ static bool findInUint32Array(Uint32 * array, Uint32 arraySize, Uint32 num)
 
     return false;
 }
-void moveBottomImage(Uint32 currentFrame)
+bool moveBottomImage(Uint32 currentFrame)
 {
-    // if (StackIsEmpty(allInOne.bottomImageMoveStack) == true) return;
+    if (StackIsEmpty(allInOne.bottomImageMoveStack) == true) return false;
 
-    // FromTo tempFromTo = {};
-    // VkCommandBuffer commandBuffer = allInOne.pTransferCommandBuffer[currentFrame];
-    // G_Texture_P * imageArray = getTexture(TEXTURE_MAP_ARRAY);
+    FromTo tempFromTo = {};
+    VkCommandBuffer transferCommandBuffer = allInOne.pTransferCommandBuffer[0];
+    VkCommandBuffer graphicCommandBuffer = allInOne.pGraphicCommandBuffer[currentFrame];
 
-    // Uint32 arrayCap = (allInOne.bottomImageMoveStack.top + 1) * 2;
-    // Uint32 offset = 0;
-    // Uint32 imageMemoryBarrierCount = 0;
-    // Uint32 * notShaderReadOnly = (Uint32*)SDL_malloc(arrayCap * sizeof(Uint32));
-    // if (notShaderReadOnly == NULL)
-    // {
-    //     print("Error allocating memory for notShaderReadOnly\n");
-    //     return;
-    // }
-
-    // Uint32 graphicFamiltIndice = allInOne.queueFamilyIndices.graphicsFamily.familyIndice;
-    // Uint32 transferFamiltIndice = allInOne.queueFamilyIndices.transferFamily.familyIndice;
-    // Uint32 i;
-
-    // VkImageMemoryBarrier imageMemoryBarrierGet[48];
-    // VkImageMemoryBarrier imageMemoryBarrierRelease[48];
-
-    // for (i = 0;i < arrayCap / 2;i++)
-    // {
-    //     if (findInUint32Array(notShaderReadOnly, arrayCap, ((FromTo*)allInOne.bottomImageMoveStack.data)[i].from) == false)
-    //     {
-    //         _setImageMemoryBarrier(NULL, 0, VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, graphicFamiltIndice\
-                , transferFamiltIndice, imageArray->image, VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, ((FromTo*)allInOne.bottomImageMoveStack.data)[i].from, 1, imageMemoryBarrierGet + i);
-
-    //         _setImageMemoryBarrier(NULL, 0, VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT, )
-
-    //         notShaderReadOnly[imageMemoryBarrierCount] = ((FromTo*)allInOne.bottomImageMoveStack.data)[i].from;
-    //         imageMemoryBarrierCount++;
-    //     }
-
-    //     if (findInUint32Array(notShaderReadOnly, arrayCap, ((FromTo*)allInOne.bottomImageMoveStack.data)[i].to) == false)
-    //     {
-    //         _setImageMemoryBarrier(NULL, 0, VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, graphicFamiltIndice\
-                , transferFamiltIndice, imageArray->image, VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, ((FromTo*)allInOne.bottomImageMoveStack.data)[i].to, 1, imageMemoryBarrierGet + i);
-    //         notShaderReadOnly[imageMemoryBarrierCount] = ((FromTo*)allInOne.bottomImageMoveStack.data)[i].to;
-    //         imageMemoryBarrierCount++;
-    //     }
-    // }
-    // memset(notShaderReadOnly, 0, arrayCap * sizeof(Uint32));
-
-    // beginCommandBuffer(commandBuffer);
-    // vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, imageMemoryBarrierCount, imageMemoryBarrier);
-    // offset = 0;
-
-    // while (StackIsEmpty(allInOne.bottomImageMoveStack) == false)
-    // {
-    //     allInOne.bottomImageMoveStack.popFn(&allInOne.bottomImageMoveStack, &tempFromTo);
-    //     transitionImageLayout(commandBuffer, imageArray->image, imageArray->format, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, tempFromTo.from, 1);
-    //     notShaderReadOnly[offset] = tempFromTo.from;
-    //     offset++;
-
-    //     if (findInUint32Array(notShaderReadOnly, arrayCap, tempFromTo.to))
-    //     {
-    //         transitionImageLayout(commandBuffer, imageArray->image, imageArray->format, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, tempFromTo.to, 1);
-    //     }
-    //     else
-    //     {
-    //         transitionImageLayout(commandBuffer, imageArray->image, imageArray->format, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, tempFromTo.to, 1);
-    //         notShaderReadOnly[offset] = tempFromTo.from;
-    //         offset++;
-    //     }
-
-    //     VkImageCopy region = {};
-    //     region.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    //     region.srcSubresource.mipLevel = 0;
-    //     region.srcSubresource.baseArrayLayer = tempFromTo.from;
-    //     region.srcSubresource.layerCount = 1;
-    //     region.srcOffset.x = 0;
-    //     region.srcOffset.y = 0;
-    //     region.srcOffset.z = 0;
-    //     region.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    //     region.dstSubresource.mipLevel = 0;
-    //     region.dstSubresource.baseArrayLayer = tempFromTo.to;
-    //     region.dstSubresource.layerCount = 1;
-    //     region.dstOffset.x = 0;
-    //     region.dstOffset.y = 0;
-    //     region.dstOffset.z = 0;
-    //     region.extent.width = BOTTOM_WIDTH;
-    //     region.extent.width = BOTTOM_HEIGHT;
-    //     region.extent.depth = 1; 
-
-    //     vkCmdCopyImage(allInOne.pTransferCommandBuffer[currentFrame], imageArray->image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, imageArray->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL\
-            , 1, &region);
-
-    //     transitionImageLayout(commandBuffer, imageArray->image, imageArray->format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, tempFromTo.to, 1);
-    // }
-    // VkSubmitInfo submitInfo = {};
-
-    // setSubmitInfo(NULL, 0, NULL, NULL, 1, &commandBuffer, 0, NULL, &submitInfo);
-    // vkQueueSubmit(getTransferQueue(), 1, &submitInfo, NULL);
+    VkFence transferFence = allInOne.pTransferInFlightFence[0];
+    VkFence graphicFence = allInOne.pGraphicInFlightFence[currentFrame];
     
-    // vkEndCommandBuffer(commandBuffer);
+    VkSemaphore transferSemaphore = allInOne.pTransferSemaphore[0];
+
+    G_Texture_P * imageArray = getTexture(TEXTURE_MAP_ARRAY);
+
+    Uint32 arrayCap = (allInOne.bottomImageMoveStack.top + 1) * 2;
+    Uint32 imageMemoryBarrierCount = 0;
+    Uint32 * notShaderReadOnly = (Uint32*)SDL_malloc(arrayCap * sizeof(Uint32));
+    if (notShaderReadOnly == NULL)
+    {
+        return false;
+    }
+    memset(notShaderReadOnly, UINT32_MAX, arrayCap * sizeof(Uint32));
+
+    Uint32 graphicFamilyIndice = allInOne.queueFamilyIndices.graphicsFamily.familyIndice;
+    Uint32 transferFamilyIndice = allInOne.queueFamilyIndices.transferFamily.familyIndice;
+    int32_t i;
+
+    VkImageMemoryBarrier imageMemoryBarrierGraphicRelease[48];
+    VkImageMemoryBarrier imageMemoryBarrierGraphicGet[48];
+
+    VkImageMemoryBarrier imageMemoryBarrierTransferGet[48];
+    VkImageMemoryBarrier imageMemoryBarrierTransferRelease[48];
+
+    for (i = (arrayCap / 2) - 1;i > -1;i--)
+    {
+        tempFromTo = ((FromTo*)allInOne.bottomImageMoveStack.data)[i];
+
+        if (findInUint32Array(notShaderReadOnly, arrayCap, tempFromTo.from) == false)
+        {
+            // print("image %u layout: %u", tempFromTo.from, imageArray->layouts[tempFromTo.from]);
+
+            setTextureImageMemoryBarrier(NULL, VK_ACCESS_SHADER_READ_BIT, 0, VK_IMAGE_LAYOUT_UNDEFINED, graphicFamilyIndice, transferFamilyIndice, VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, tempFromTo.from\
+                , 1, imageMemoryBarrierGraphicRelease + imageMemoryBarrierCount, imageArray);
+
+            // print("image %u layout: %u", tempFromTo.from, imageArray->layouts[tempFromTo.from]);
+
+            setTextureImageMemoryBarrier(NULL, 0, VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, graphicFamilyIndice, transferFamilyIndice\
+                , VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, tempFromTo.from, 1, imageMemoryBarrierTransferGet + imageMemoryBarrierCount, imageArray);
+
+            // print("image %u layout: %u", tempFromTo.from, imageArray->layouts[tempFromTo.from]);
+
+            notShaderReadOnly[imageMemoryBarrierCount] = tempFromTo.from;
+            imageMemoryBarrierCount++;
+        }
+
+        if (findInUint32Array(notShaderReadOnly, arrayCap, tempFromTo.to) == false)
+        {
+            // print("image %u layout: %u", tempFromTo.to, imageArray->layouts[tempFromTo.to]);
+
+            setTextureImageMemoryBarrier(NULL, VK_ACCESS_SHADER_READ_BIT, 0, VK_IMAGE_LAYOUT_UNDEFINED, graphicFamilyIndice, transferFamilyIndice, VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, tempFromTo.to, 1\
+                , imageMemoryBarrierGraphicRelease + imageMemoryBarrierCount, imageArray);
+
+            // print("image %u layout: %u", tempFromTo.to, imageArray->layouts[tempFromTo.to]);
+
+            setTextureImageMemoryBarrier(NULL, 0, VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT, VK_IMAGE_LAYOUT_UNDEFINED, graphicFamilyIndice, transferFamilyIndice, VK_IMAGE_ASPECT_COLOR_BIT\
+                , 0, 1, tempFromTo.to, 1, imageMemoryBarrierTransferGet + imageMemoryBarrierCount, imageArray);
+
+            // print("image %u layout: %u", tempFromTo.to, imageArray->layouts[tempFromTo.to]);
+
+            notShaderReadOnly[imageMemoryBarrierCount] = tempFromTo.to;
+            imageMemoryBarrierCount++;
+        }
+    }
+
+    vkWaitForFences(allInOne.device, 1, &graphicFence, VK_TRUE, UINT64_MAX);
+    vkResetFences(allInOne.device, 1, &graphicFence);
+    vkWaitForFences(allInOne.device, 1, &transferFence, VK_TRUE, UINT64_MAX);
+    vkResetFences(allInOne.device, 1, &transferFence);
+
+    vkResetCommandBuffer(graphicCommandBuffer, 0);
+    beginCommandBuffer(graphicCommandBuffer);
+    vkCmdPipelineBarrier(graphicCommandBuffer, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, NULL, 0, NULL, imageMemoryBarrierCount, imageMemoryBarrierGraphicRelease);
+    vkEndCommandBuffer(graphicCommandBuffer);
+
+    VkSubmitInfo graphicSubmitInfo = {};
+    setSubmitInfo(NULL, 0, NULL, NULL, 1, &graphicCommandBuffer, 1, &transferSemaphore, &graphicSubmitInfo);
+    vkQueueSubmit(getGraphic2dQueue(), 1, &graphicSubmitInfo, transferFence);
+
+    vkWaitForFences(allInOne.device, 1, &transferFence, VK_TRUE, UINT64_MAX);
+    vkResetFences(allInOne.device, 1, &transferFence);
+
+    vkResetCommandBuffer(transferCommandBuffer, 0);
+    beginCommandBuffer(transferCommandBuffer);
+    vkCmdPipelineBarrier(transferCommandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, imageMemoryBarrierCount, imageMemoryBarrierTransferGet);
+    vkEndCommandBuffer(transferCommandBuffer);
+
+    VkSubmitInfo transferSubmitInfo1 = {};
+    VkPipelineStageFlags waitStage1[] = {VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT};
+    setSubmitInfo(NULL, 1, &transferSemaphore, waitStage1, 1, &transferCommandBuffer, 1, &transferSemaphore, &transferSubmitInfo1);
+    vkQueueSubmit(getTransferQueue(), 1, &transferSubmitInfo1, transferFence);
+
+    vkWaitForFences(allInOne.device, 1, &transferFence, VK_TRUE, UINT64_MAX);
+    vkResetFences(allInOne.device, 1, &transferFence);
+
+    vkResetCommandBuffer(transferCommandBuffer, 0);
+    beginCommandBuffer(transferCommandBuffer);
+    for (i = (arrayCap / 2) - 1;i > -1;i--)
+    {
+        tempFromTo = ((FromTo*)allInOne.bottomImageMoveStack.data)[i];
+
+        VkImageMemoryBarrier tempImageMemoryBarrier = {};
+        setTextureImageMemoryBarrier(NULL, VK_ACCESS_TRANSFER_READ_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, VK_IMAGE_ASPECT_COLOR_BIT\
+            , 0, 1, tempFromTo.to, 1, &tempImageMemoryBarrier, imageArray);
+        
+        vkCmdPipelineBarrier(transferCommandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, &tempImageMemoryBarrier);
+
+        VkImageCopy region = {};
+        region.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        region.srcSubresource.mipLevel = 0;
+        region.srcSubresource.baseArrayLayer = tempFromTo.from;
+        region.srcSubresource.layerCount = 1;
+        region.srcOffset.x = 0;
+        region.srcOffset.y = 0;
+        region.srcOffset.z = 0;
+        region.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        region.dstSubresource.mipLevel = 0;
+        region.dstSubresource.baseArrayLayer = tempFromTo.to;
+        region.dstSubresource.layerCount = 1;
+        region.dstOffset.x = 0;
+        region.dstOffset.y = 0;
+        region.dstOffset.z = 0;
+        region.extent.width = BOTTOM_WIDTH;
+        region.extent.height = BOTTOM_HEIGHT;
+        region.extent.depth = 1; 
+
+        vkCmdCopyImage(transferCommandBuffer, imageArray->image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, imageArray->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+
+    }
+
+    imageMemoryBarrierCount = 0;
+    memset(notShaderReadOnly, UINT32_MAX, arrayCap * sizeof(Uint32));
+    while (StackIsEmpty(allInOne.bottomImageMoveStack) == false)
+    {
+        allInOne.bottomImageMoveStack.popFn(&allInOne.bottomImageMoveStack, &tempFromTo);
+
+        if (findInUint32Array(notShaderReadOnly, arrayCap, tempFromTo.from) == false)
+        {
+            print("image %u layout: %u", tempFromTo.from, imageArray->layouts[tempFromTo.from]);
+
+            setTextureImageMemoryBarrier(NULL, VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT, 0, VK_IMAGE_LAYOUT_UNDEFINED, transferFamilyIndice, graphicFamilyIndice, VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, tempFromTo.from\
+                , 1, imageMemoryBarrierTransferRelease + imageMemoryBarrierCount, imageArray);
+
+            print("image %u layout: %u", tempFromTo.from, imageArray->layouts[tempFromTo.from]);
+
+            setTextureImageMemoryBarrier(NULL, 0, VK_ACCESS_SHADER_READ_BIT, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, transferFamilyIndice, graphicFamilyIndice\
+                , VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, tempFromTo.from, 1, imageMemoryBarrierGraphicGet + imageMemoryBarrierCount, imageArray);
+
+            print("image %u layout: %u", tempFromTo.from, imageArray->layouts[tempFromTo.from]);
+
+            notShaderReadOnly[imageMemoryBarrierCount] = tempFromTo.from;
+            imageMemoryBarrierCount++;
+        }
+
+        if (findInUint32Array(notShaderReadOnly, arrayCap, tempFromTo.to) == false)
+        {
+            print("image %u layout: %u", tempFromTo.to, imageArray->layouts[tempFromTo.to]);
+
+            setTextureImageMemoryBarrier(NULL, VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT, 0, VK_IMAGE_LAYOUT_UNDEFINED, transferFamilyIndice, graphicFamilyIndice, VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, tempFromTo.to\
+                , 1, imageMemoryBarrierTransferRelease + imageMemoryBarrierCount, imageArray);
+
+            print("image %u layout: %u", tempFromTo.to, imageArray->layouts[tempFromTo.to]);
+
+            setTextureImageMemoryBarrier(NULL, 0, VK_ACCESS_SHADER_READ_BIT, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, transferFamilyIndice, graphicFamilyIndice\
+                , VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, tempFromTo.to, 1, imageMemoryBarrierGraphicGet + imageMemoryBarrierCount, imageArray);
+
+            print("image %u layout: %u", tempFromTo.to, imageArray->layouts[tempFromTo.to]);
+
+            notShaderReadOnly[imageMemoryBarrierCount] = tempFromTo.to;
+            imageMemoryBarrierCount++;
+        }
+    }
+
+    vkCmdPipelineBarrier(transferCommandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, NULL, 0, NULL, imageMemoryBarrierCount, imageMemoryBarrierTransferRelease);
+   
+    vkEndCommandBuffer(transferCommandBuffer);
+
+    VkSubmitInfo transferSubmitInfo2 = {};
+    VkPipelineStageFlags waitStage[] = {VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT};
+
+    setSubmitInfo(NULL, 1, &transferSemaphore, waitStage, 1, &transferCommandBuffer, 1, &transferSemaphore, &transferSubmitInfo2);
+    vkQueueSubmit(getTransferQueue(), 1, &transferSubmitInfo2, transferFence);
+
+    vkResetCommandBuffer(graphicCommandBuffer, 0);
+    beginCommandBuffer(graphicCommandBuffer);
+    vkCmdPipelineBarrier(graphicCommandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, NULL, 0, NULL, imageMemoryBarrierCount, imageMemoryBarrierGraphicGet);
+    vkEndCommandBuffer(graphicCommandBuffer);
+
+    VkSubmitInfo graphicSubmitInfo2 = {};
+    setSubmitInfo(NULL, 1, &transferSemaphore, waitStage, 1, &graphicCommandBuffer, 0, NULL, &graphicSubmitInfo2);
+    vkQueueSubmit(getGraphic2dQueue(), 1, &graphicSubmitInfo2, graphicFence); 
+
+    return true;
 }
