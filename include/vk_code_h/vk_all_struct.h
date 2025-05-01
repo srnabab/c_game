@@ -1,6 +1,7 @@
 #include "G_constants.h"
 
 #include "vk_code_h/vk_struct.h"
+#include "G_threadPool.h"
 #include "G_staticModel.h"
 #include "G_stack.h"
 
@@ -221,7 +222,7 @@ struct _VK_ALL
     G_Stack bottomImageMoveStack;
     G_Stack bottomImageDrawStack;
 
-    Uint32 timelineSemaphoreSignalValue;
+    G_Thread_Pool * pThreadPool;
 };
 typedef struct _VK_ALL VK_ALL;
 

@@ -157,7 +157,7 @@ tiled.registerMapFormat("G tilemap format", {
                     {
                         for (let l = startX;l < startX + regionSize;l++)
                         {
-                            let aCell: cell = tileLayer.cellAt(k, l);
+                            let aCell: cell = tileLayer.cellAt(l, k);
                             if (aCell.tileId != -1)
                             {
                                 tempBufferU32View[tempU32Offset] = aCell.tileId; tempU32Offset++;

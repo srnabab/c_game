@@ -43,6 +43,8 @@ struct _G_SYNC
     SDL_Semaphore * logSemaphore;
     // for physical process sync
     SDL_Semaphore * worldSemaphore;
+    // for bottom update
+    SDL_Semaphore * bottomSemaphore;
 };
 typedef struct _G_SYNC G_SYNC;
 

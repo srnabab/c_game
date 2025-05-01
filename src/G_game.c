@@ -82,6 +82,8 @@ static bool initAllSync(void)
     if (allSync.logSemaphore == NULL) return false;
     allSync.worldSemaphore = SDL_CreateSemaphore(0);
     if (allSync.worldSemaphore == NULL) return false;
+    allSync.bottomSemaphore = SDL_CreateSemaphore(0);
+    if (allSync.bottomSemaphore == NULL) return false;
 
     return true;
 }
@@ -849,13 +851,13 @@ int update(void * arg)
             }
             if (cameraMove[2])
             {
-                *pCamera_X -= 0.6f * delta_time;
+                *pCamera_X -= 1.6f * delta_time;
                 // *pCamera_X += 50.0f / 800.0f;
                 // print("camera x: %f", *pCamera_X);
             }
             if (cameraMove[3])
             {
-                *pCamera_X += 0.6f * delta_time;
+                *pCamera_X += 1.6f * delta_time;
                 // *pCamera_X -= 50.0f / 800.0f;
                 // print("camera x: %f", *pCamera_X);
             }
@@ -1010,7 +1012,7 @@ int render(void * arg)
 
         bottomMoved = moveBottomImage(currentFrame);
 
-        drawFrame(scene, currentFrame, allInOne.extent2D.width, allInOne.extent2D.height, false);
+        drawFrame(scene, currentFrame, allInOne.extent2D.width, allInOne.extent2D.height, bottomMoved);
 
         allInOne.currentFrame = (allInOne.currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
         currentFrame = allInOne.currentFrame;

@@ -56,6 +56,8 @@ void getPresentModes(VkPresentModeKHR * pPresentMode)
         *pPresentMode = VK_PRESENT_MODE_FIFO_KHR;
     }
 
+    *pPresentMode = VK_PRESENT_MODE_FIFO_KHR;
+
     SDL_free(presentModes);
 }
 void getSurfaceCapabilities(VkSurfaceKHR surface, VkSurfaceCapabilitiesKHR * pSurfaceCapabilities)
@@ -93,20 +95,9 @@ void createSwapchain(VkSurfaceKHR surface, VkSurfaceCapabilitiesKHR surfaceCapab
     createInfo.presentMode = presentMode;
     createInfo.clipped = VK_TRUE;
     createInfo.oldSwapchain = oldSwapchain;
-
-    uint32_t queueFamilyIndices[3] = {allInOne.queueFamilyIndices.graphicsFamily.familyIndice, allInOne.queueFamilyIndices.presentFamily.familyIndice, allInOne.queueFamilyIndices.computeFamily.familyIndice};
-    if (allInOne.queueFamilyIndices.graphicsFamily.familyIndice != allInOne.queueFamilyIndices.presentFamily.familyIndice) 
-    {
-        createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
-        createInfo.queueFamilyIndexCount = 2;
-        createInfo.pQueueFamilyIndices = queueFamilyIndices;
-    } 
-    else 
-    {
-        createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        createInfo.queueFamilyIndexCount = 0; // Optional
-        createInfo.pQueueFamilyIndices = NULL; // Optional
-    }
+    createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    createInfo.queueFamilyIndexCount = 0; // Optional
+    createInfo.pQueueFamilyIndices = NULL; // Optional
 
     resultVulkan(vkCreateSwapchainKHR(allInOne.device, &createInfo, allInOne.pAllocationCallbacks, pSwapchain), 0);
 }

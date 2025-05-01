@@ -278,6 +278,7 @@ int * G_AddTask(G_Thread_Pool * pThreadPool, int itemCount, int minRange, G_Task
 }
 void G_WaitTask(G_Thread_Pool * pThreadPool, int * pDone)
 {
+    if (pDone == NULL) return;
     while (*pDone != TRACE_DONE)
     {
         SDL_Delay(1);

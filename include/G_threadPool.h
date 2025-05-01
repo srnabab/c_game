@@ -35,26 +35,43 @@ struct _G_Task
     TaskExecute executeFunc;
     void * func;
     void * arg;
+
+    // private
     bool canRun;
+
+    // private
     Range indexRange;
+
+    // private
     int threadIndex;
 };
 typedef struct _G_Task G_Task;
 
 struct _G_Thread_Pool
 {
+    // private
     SDL_Thread ** pThreads;
+    // private
     SDL_Semaphore ** pThreadSeamphore;
+    // private
     SDL_Semaphore ** pWaitTaskSemaphore;
+    // private
     bool * leisureThread;
 
+    // private
     SDL_Mutex * ThreadPoolMutex;
+    // private
     G_Task * tasks;
+    // private
     G_Queue traceQueue;
+    // private
     int * doneWatch;
 
+    // private
     bool expandable;
+    // private
     bool running;
+    // private
     int threadPoolSize;
 };
 typedef struct _G_Thread_Pool G_Thread_Pool;

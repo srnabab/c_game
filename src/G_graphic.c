@@ -68,7 +68,7 @@ SDL_Window * window_3D = NULL;
 SDL_DisplayID displayId = 0;
 
 // windows' width and height
-Uint32 width = 800;
+Uint32 width = 600;
 Uint32 height = 600;
 
 float physicalCoffectX = 1.0f;
@@ -200,6 +200,8 @@ static PushConstants picturePushConstants = {0.0f};
 
 static G_StaticModelPool staticModelPool = {};
 
+static G_Thread_Pool threadPool = {};
+
 //store all compoents for initialize vulkan in a struct
 VK_ALL allInOne = {};
 
@@ -229,6 +231,8 @@ static void initializeAllInOne(void)
     initStack(&allInOne.bottomImageDrawStack, sizeof(DrawHere), NULL, NULL);
     initStack(&allInOne.bottomImageMoveStack, sizeof(FromTo), NULL, NULL);
 
+    createThreadPool(&threadPool, 1, false);
+    allInOne.pThreadPool = &threadPool;
     // allInOne.timelineSemaphoreSignalValue = 0;
 }
 
@@ -667,6 +671,8 @@ void cleanVulkan(void)
     print("\nclean begin");
 
     vkDeviceWaitIdle(allInOne.device);
+
+    destroyThreadPool(allInOne.pThreadPool);
 
     destroyStaticModelPool(&staticModelPool);
     unloadAllTexture();

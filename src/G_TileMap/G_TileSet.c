@@ -532,32 +532,35 @@ void setTilemapUVs(Map_Group * group, vec2 * pUVs, Uint32 index)
         for (j = 0;j < tileSets[0].maps[0].colCount;j++)
         {
             Uint32 UVindex = (i * tileSets[0].maps[0].colCount + j) * 4;
+            Uint32 j2 = 49 - j;
 
-            pUVs[startIndex + UVindex][0] = tileSets[0].tiles[group->indices[i][j]].tileUV[0][0];
-            pUVs[startIndex + UVindex][1] = tileSets[0].tiles[group->indices[i][j]].tileUV[0][1];
+            pUVs[startIndex + UVindex][0] = tileSets[0].tiles[group->indices[i][j2]].tileUV[0][0];
+            pUVs[startIndex + UVindex][1] = tileSets[0].tiles[group->indices[i][j2]].tileUV[0][1];
 
-            // print("index: %u, UV: %f, %f", group->indices[i][j], pUVs[startIndex + UVindex][0], pUVs[startIndex + UVindex][1]);
-
-            UVindex++;
-            pUVs[startIndex + UVindex][0] = tileSets[0].tiles[group->indices[i][j]].tileUV[1][0];
-            pUVs[startIndex + UVindex][1] = tileSets[0].tiles[group->indices[i][j]].tileUV[1][1];
-
-            // print("index: %u, UV: %f, %f", group->indices[i][j], pUVs[startIndex + UVindex][0], pUVs[startIndex + UVindex][1]);
+            // print("UVindex: %u, index: %u, UV: %f, %f", UVindex, group->indices[i][j], pUVs[startIndex + UVindex][0], pUVs[startIndex + UVindex][1]);
 
             UVindex++;
-            pUVs[startIndex + UVindex][0] = tileSets[0].tiles[group->indices[i][j]].tileUV[2][0];
-            pUVs[startIndex + UVindex][1] = tileSets[0].tiles[group->indices[i][j]].tileUV[2][1];
+            pUVs[startIndex + UVindex][0] = tileSets[0].tiles[group->indices[i][j2]].tileUV[1][0];
+            pUVs[startIndex + UVindex][1] = tileSets[0].tiles[group->indices[i][j2]].tileUV[1][1];
 
-            // print("index: %u, UV: %f, %f", group->indices[i][j], pUVs[startIndex + UVindex][0], pUVs[startIndex + UVindex][1]);
+            // print("UVindex: %u, index: %u, UV: %f, %f", UVindex, group->indices[i][j], pUVs[startIndex + UVindex][0], pUVs[startIndex + UVindex][1]);
 
             UVindex++;
-            pUVs[startIndex + UVindex][0] = tileSets[0].tiles[group->indices[i][j]].tileUV[3][0];
-            pUVs[startIndex + UVindex][1] = tileSets[0].tiles[group->indices[i][j]].tileUV[3][1];
+            pUVs[startIndex + UVindex][0] = tileSets[0].tiles[group->indices[i][j2]].tileUV[2][0];
+            pUVs[startIndex + UVindex][1] = tileSets[0].tiles[group->indices[i][j2]].tileUV[2][1];
 
-            // print("index: %u, UV: %f, %f", group->indices[i][j], pUVs[startIndex + UVindex][0], pUVs[startIndex + UVindex][1]);
+            // print("UVindex: %u, index: %u, UV: %f, %f", UVindex, group->indices[i][j], pUVs[startIndex + UVindex][0], pUVs[startIndex + UVindex][1]);
+
+            UVindex++;
+            pUVs[startIndex + UVindex][0] = tileSets[0].tiles[group->indices[i][j2]].tileUV[3][0];
+            pUVs[startIndex + UVindex][1] = tileSets[0].tiles[group->indices[i][j2]].tileUV[3][1];
+
+            // print("tile index: %u, index: %u, UV: %f, %f", i * tileSets[0].maps[0].colCount + j, group->indices[i][j], pUVs[startIndex + UVindex][0], pUVs[startIndex + UVindex][1]);
         }
 
     }
+
+    // print("end");
 }
 void deInitTileMapSystem(void)
 {
