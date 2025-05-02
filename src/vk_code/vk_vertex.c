@@ -45,31 +45,32 @@ void initVertices2(Uint32 width, Uint32 height, Uint32 row, Uint32 column, float
     for (i = 0;i < row;i++)
     {
         x = -1.0f;
-        y = i * tileHeight - 1.0f;
+        y = 1.0f - i * tileHeight;
+        // y = i * tileHeight - 1.0f;
         for (j = 0;j < column;j++)
         {
             Uint32 index = (i * column + j) * 4;
 
             pVertices[index].pos[0] = x;
-            pVertices[index].pos[1] = y;
+            pVertices[index].pos[1] = y - tileHeight;
+            pVertices[index].pos[2] = depth;
+            pVertices[index].color[0] = pVertices[index].color[1] = pVertices[index].color[2] = 1.0f;
+
+            index++;
+            pVertices[index].pos[0] = x + tileWidth;
+            pVertices[index].pos[1] = y - tileHeight;
             pVertices[index].pos[2] = depth;
             pVertices[index].color[0] = pVertices[index].color[1] = pVertices[index].color[2] = 1.0f;
 
             index++;
             pVertices[index].pos[0] = x + tileWidth;
             pVertices[index].pos[1] = y;
-            pVertices[index].pos[2] = depth;
-            pVertices[index].color[0] = pVertices[index].color[1] = pVertices[index].color[2] = 1.0f;
-
-            index++;
-            pVertices[index].pos[0] = x + tileWidth;
-            pVertices[index].pos[1] = y + tileHeight;
             pVertices[index].pos[2] = depth;
             pVertices[index].color[0] = pVertices[index].color[1] = pVertices[index].color[2] = 1.0f;
 
             index++;
             pVertices[index].pos[0] = x;
-            pVertices[index].pos[1] = y + tileHeight;
+            pVertices[index].pos[1] = y;
             pVertices[index].pos[2] = depth;
             pVertices[index].color[0] = pVertices[index].color[1] = pVertices[index].color[2] = 1.0f;
 

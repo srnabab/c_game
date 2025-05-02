@@ -6,7 +6,7 @@
 
 #include "SDL3/SDL_begin_code.h"
 
-#define DEBUG_PRINT 1
+#define DEBUG_PRINT 0
 
 #define LOG_ENABLED 1
 #define LOG_TXT 2
@@ -15,7 +15,7 @@ extern bool SDLCALL initLog(Uint8 log);
 extern void SDLCALL logMessage(char * format, ...);
 extern void SDLCALL destroyLog(void);
 
-#if defined(DEBUG_PRINT)
+#if DEBUG_PRINT
 # define print SDL_Log
 #else 
 # define print logMessage

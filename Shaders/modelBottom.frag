@@ -106,4 +106,7 @@ void main()
     outShadowFactor = shadow * NdotL * sun.lightIntensity;
 
     outColor = vec4(finalColor, textureColor.a);
+    // outColor = textureColor;
+    // outColor = vec4(diffuse, textureColor.a);
+    // outColor = vec4(vec3(shadow), textureColor.a);
 }

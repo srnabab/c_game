@@ -22,6 +22,7 @@
 #include "G_struct.h"
 #include "G_TileMap/G_TileSet.h"
 #include "G_map.h"
+#include "G_entity.h"
 #include "G_test.h"
 
 // Global variables
@@ -197,7 +198,6 @@ clean:
 
 static bool cameraMove[4];
 //delete needed
-static bool pictureMove[4];
 static bool changeScene = false;
 
 // static bool pause = false;
@@ -237,6 +237,9 @@ static const Uint32 resolutions[][2] = {
 };
 static int resolutionIndex = 0;
 
+G_Entity mPoint = {};
+G_Entity camera = {};
+
 // Function to poll SDL events and process keyboard input
 bool process_input(void)
 {
@@ -260,7 +263,7 @@ bool process_input(void)
     const bool * keyState = SDL_GetKeyboardState(NULL);
     if (keyState[SDL_SCANCODE_A])
     {
-        pictureMove[2] = true;
+        mPoint.direction[2] = true;
     }
 
     SDL_Event event;
@@ -473,19 +476,19 @@ bool process_input(void)
                 }
                 if (key == SDLK_A)
                 {
-                    pictureMove[2] = false;
+                    mPoint.direction[2] = false;
                 }
                 if (key == SDLK_D)
                 {
-                    pictureMove[3] = false;
+                    mPoint.direction[3] = false;
                 }
                 if (key == SDLK_W)
                 {
-                    pictureMove[0] = false;
+                    mPoint.direction[0] = false;
                 }
                 if (key == SDLK_S)
                 {
-                    pictureMove[1] = false;
+                    mPoint.direction[1] = false;
                 }
                 if (key == SDLK_LCTRL)
                 {
@@ -516,22 +519,22 @@ bool process_input(void)
                 {
                     changeScene = true;
                 }
-                // if (key == SDLK_A)
-                // {
-                //     pictureMove[2] = true;
-                // }
-                // if (key == SDLK_D)
-                // {
-                //     pictureMove[3] = true;
-                // }
-                // if (key == SDLK_W)
-                // {
-                //     pictureMove[0] = true;
-                // }
-                // if (key == SDLK_S)
-                // {
-                //     pictureMove[1] = true;
-                // }
+                if (key == SDLK_A)
+                {
+                    mPoint.direction[2] = true;
+                }
+                if (key == SDLK_D)
+                {
+                    mPoint.direction[3] = true;
+                }
+                if (key == SDLK_W)
+                {
+                    mPoint.direction[0] = true;
+                }
+                if (key == SDLK_S)
+                {
+                    mPoint.direction[1] = true;
+                }
             }
         }
         else if (scene == Menu_Scene)
@@ -620,6 +623,8 @@ int update(void * arg)
     UniformBufferObject * pUIUbo = allInOne.pUIUbo;
     float * pCamera_X = allInOne.pCamera_X;
     float * pCamera_Y = allInOne.pCamera_Y;
+
+    initEntity(&mPoint, 0.0f, 0.0f, 87.0f);
     
     bool playedMusic = false;
 
@@ -903,8 +908,10 @@ int update(void * arg)
                 static int id_test = 0;
                 int test_a = -1;
                 addTimerFunc(u32_s_to_ns(1), &id_test, 10, test, &test_a);
-            
 
+                EntityMove(&mPoint, delta_time);
+
+                print("mPoint: (%d, %d)", (int32_t)mPoint.position.x, (int32_t)mPoint.position.y);
                 // SDL_LockMutex(sdl_mutex_2);
                 // if (pictureMove[0])
                 // {
