@@ -655,7 +655,7 @@ int update(void * arg)
 
     textureVertexInit(-32, -32, 64, 64, 0.2f, &allInOne.vertices2DCount, allInOne.pVertices2D, getTexture(TEXTURE_LOADING));
     
-    tileMapVertexInit(&allInOne.vertices2DCount, allInOne.pVertices2D);
+    // tileMapVertexInit(&allInOne.vertices2DCount, allInOne.pVertices2D);
     addModelMatrix(0, 0, 8, allInOne.pStaticModelPool, TEXTURE_MODEL);
     addModelMatrix(100, 0, 8, allInOne.pStaticModelPool, TEXTURE_MODEL);
     addModelMatrix(0, 100, 8, allInOne.pStaticModelPool, TEXTURE_MODEL);
@@ -910,8 +910,9 @@ int update(void * arg)
                 addTimerFunc(u32_s_to_ns(1), &id_test, 10, test, &test_a);
 
                 EntityMove(&mPoint, delta_time);
+                locatePoint(&mPoint, rowCount, colCount, firstBottom_X, firstBottom_Y, groupID);
 
-                print("mPoint: (%d, %d)", (int32_t)mPoint.position.x, (int32_t)mPoint.position.y);
+                // print("mPoint: (%d, %d)", (int32_t)mPoint.position.x, (int32_t)mPoint.position.y);
                 // SDL_LockMutex(sdl_mutex_2);
                 // if (pictureMove[0])
                 // {
@@ -941,14 +942,14 @@ int update(void * arg)
                 // }
                 // SDL_UnlockMutex(sdl_mutex_2);
 
-                // size_t bufferSize = sizeof(Vertex3) * count;
+                // size_t bufferSize = sizeof(Vertex332) * count;
 
                 // Uint32 indiceCount = *allInOne.pIndicesCount;
                 // size_t bufferSize2 = sizeof(uint16_t) * indiceCount;
 
                 // if (ballAdd)
                 // {
-                //     //allInOne.pVertices2D = (Vertex3 *)realloc(allInOne.pVertices2D, count * sizeof(Vertex3));
+                //     //allInOne.pVertices2D = (Vertex332 *)realloc(allInOne.pVertices2D, count * sizeof(Vertex332));
                 //     int x = SDL_rand(250);
                 //     if (SDL_rand(2))
                 //     {
@@ -979,8 +980,8 @@ int update(void * arg)
             //print("time: %.2f\n", time);
             SDL_LockMutex(allSync.updateMutex);
 
-            memcpy(allInOne.pVertexBuffer2DMemMapped[currentFrame], allInOne.pVertices2D, vertexEnd * sizeof(Vertex3));// update vertex buffer
-            memcpy(allInOne.pVertexBuffer3DMemMapped[currentFrame], allInOne.pVertices3D, 30000 * sizeof(Vertex3));
+            memcpy(allInOne.pVertexBuffer2DMemMapped[currentFrame], allInOne.pVertices2D, vertexEnd * sizeof(Vertex332));// update vertex buffer
+            memcpy(allInOne.pVertexBuffer3DMemMapped[currentFrame], allInOne.pVertices3D, 30000 * sizeof(Vertex332));
             memcpy(allInOne.pIndexBuffer3DMemMapped[currentFrame], allInOne.pIndices3D, 45000 * sizeof(Uint32));
             // SDL_SignalSemaphore(allSync.vertexSemaphore);
 

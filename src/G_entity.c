@@ -5,8 +5,8 @@
 
 void initEntity(G_Entity * entity, float x, float y, float speed)
 {
-    entity->position.x = x;
-    entity->position.y = y;
+    entity->position[0] = x;
+    entity->position[1] = y;
     entity->speed = speed;
     for (int i = 0; i < 4; i++)
     {
@@ -19,41 +19,41 @@ void EntityMove(G_Entity * entity, float deltaTime)
     if (entity->direction[UP] && entity->direction[RIGHT])
     {
         distance *= SQRT05;
-        entity->position.x += distance;
-        entity->position.y += distance;
+        entity->position[0] += distance;
+        entity->position[1] += distance;
     }
     else if (entity->direction[UP] && entity->direction[LEFT])
     {
         distance *= SQRT05;
-        entity->position.x -= distance;
-        entity->position.y += distance;
+        entity->position[0] -= distance;
+        entity->position[1] += distance;
     }
     else if (entity->direction[DOWN] && entity->direction[RIGHT])
     {
         distance *= SQRT05;
-        entity->position.x += distance;
-        entity->position.y -= distance;
+        entity->position[0] += distance;
+        entity->position[1] -= distance;
     }
     else if (entity->direction[DOWN] && entity->direction[LEFT])
     {
         distance *= SQRT05;
-        entity->position.x -= distance;
-        entity->position.y -= distance;
+        entity->position[0] -= distance;
+        entity->position[1] -= distance;
     }
     else if (entity->direction[RIGHT])
     {
-        entity->position.x += distance;
+        entity->position[0] += distance;
     }
     else if (entity->direction[LEFT])
     {
-        entity->position.x -= distance;
+        entity->position[0] -= distance;
     }
     else if (entity->direction[DOWN])
     {
-        entity->position.y -= distance;
+        entity->position[1] -= distance;
     }
     else if (entity->direction[UP])
     {
-        entity->position.y += distance;
+        entity->position[1] += distance;
     }
 }

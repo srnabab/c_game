@@ -127,6 +127,10 @@ static int getShaderStorageBufferIndex(VkBuffer * pBufferAddress)
 
     return 2;
 }
+static void outOfCount(void)
+{
+    print("out of limit");
+}
 void addDescriptorUpdate_Buffer(VkDescriptorType descriptorType, Uint32 binding, VkDescriptorSet * pSet, VkBuffer * pBuffer, VkDeviceSize offset, VkDeviceSize range)
 {
     G_Buffer tempBuffer;
@@ -136,7 +140,11 @@ void addDescriptorUpdate_Buffer(VkDescriptorType descriptorType, Uint32 binding,
 
     SDL_LockMutex(allSync.descriptorUpdateMutex);
 
-    if (updatesCount == MAX_UPDATE_COUNT) return;
+    if (updatesCount == MAX_UPDATE_COUNT) 
+    {
+        outOfCount();
+        return;
+    }
 
     updates[updatesCount].descriptorType = descriptorType;
     updates[updatesCount].binding = binding;
@@ -155,7 +163,11 @@ void addDescriptorUpdate_Texture(VkDescriptorType descriptorType, Uint32 binding
 
     SDL_LockMutex(allSync.descriptorUpdateMutex);
 
-    if (updatesCount == MAX_UPDATE_COUNT) return;
+    if (updatesCount == MAX_UPDATE_COUNT) 
+    {
+        outOfCount();
+        return;
+    }
 
     updates[updatesCount].descriptorType = descriptorType;
     updates[updatesCount].binding = binding;
@@ -172,7 +184,11 @@ void addDescriptorUpdate_TexelBuffer(VkDescriptorType descriptorType, Uint32 bin
 
     SDL_LockMutex(allSync.descriptorUpdateMutex);
 
-    if (updatesCount == MAX_UPDATE_COUNT) return;
+    if (updatesCount == MAX_UPDATE_COUNT) 
+    {
+        outOfCount();
+        return;
+    }
 
     updates[updatesCount].descriptorType = descriptorType;
     updates[updatesCount].binding = binding;

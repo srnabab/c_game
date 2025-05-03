@@ -82,6 +82,10 @@ PathType pathCompare(char * buffer)
     {
         return ShadowVertShader;
     }
+    else if ((SDL_strcmp(buffer, "[ShapeVertShader]") == 0))
+    {
+        return ShapeVertShader;
+    }
     else if ((SDL_strcmp(buffer, "[Cornell_boxObj]") == 0))
     {
         return Cornell_boxObj;
@@ -117,6 +121,10 @@ PathType pathCompare(char * buffer)
     else if ((SDL_strcmp(buffer, "[ModelBottomFragShader]") == 0))
     {
         return ModelBottomFragShader;
+    }
+    else if ((SDL_strcmp(buffer, "[ShapeFragShader]") == 0))
+    {
+        return ShapeFragShader;
     }
     else if ((SDL_strcmp(buffer, "[Viking_roomPng]") == 0))
     {

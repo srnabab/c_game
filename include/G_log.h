@@ -6,7 +6,7 @@
 
 #include "SDL3/SDL_begin_code.h"
 
-#define DEBUG_PRINT 0
+#define DEBUG_PRINT 1
 
 #define LOG_ENABLED 1
 #define LOG_TXT 2

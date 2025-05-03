@@ -49,7 +49,6 @@ void logAllTexture(void)
 }
 void initGlobalTexture(void)
 {
-    int i;
     globalTexture = (G_Texture_Head*)SDL_calloc(1, sizeof(G_Texture_Head));
     if (globalTexture == NULL) return;
 

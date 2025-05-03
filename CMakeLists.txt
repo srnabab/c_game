@@ -29,9 +29,9 @@ add_custom_target(
 #     COMMENT "Running move_lib.lnk before building target"
 # )
 
-add_subdirectory(src/G_TileMap)
+# add_subdirectory(src/G_TileMap)
 add_subdirectory(src/content_manager)
-add_subdirectory(src/texture_generate)
+# add_subdirectory(src/texture_generate)
 
 add_custom_command(
     OUTPUT ${RUN_ROOT}/Path

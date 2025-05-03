@@ -7,9 +7,9 @@
 #define offsetof(s, m) (size_t) & (((s *)0)->m)
 
 #define VERTEX_LAYOUT_IN {\
-    {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex3, pos)},\
-    {1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex3, color)},\
-    {2, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex3, texCoord)}\
+    {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex332, pos)},\
+    {1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex332, color)},\
+    {2, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex332, texCoord)}\
 }
 
 #warning "graphics pipeline create info count has limitation 10"
@@ -177,14 +177,14 @@ void configureDynamicsState(Uint32 dynamicCount, VkDynamicState * pDynamicStates
 void createTileMapPipeline(Uint32 shaderCount, VkPipelineShaderStageCreateInfo * pPipelineShaderStageCreateInfo, VkPipelineLayout pipelineLayout, VkRenderPass renderPass, VkPipeline * pGraphicsPipeline)
 {
     VkVertexInputBindingDescription pBindingDescription[2];
-    addVertexBinding(0, sizeof(Vertex2), VK_VERTEX_INPUT_RATE_VERTEX, 0, pBindingDescription);
+    addVertexBinding(0, sizeof(Vertex33), VK_VERTEX_INPUT_RATE_VERTEX, 0, pBindingDescription);
     addVertexBinding(1, sizeof(vec2), VK_VERTEX_INPUT_RATE_VERTEX, 1, pBindingDescription);
 
     VkVertexInputAttributeDescription pAttributeDescriptions[3];
     Uint32 attributeLocation = 0;
     Uint32 attributeIndex = 0;
-    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex2, pos), &attributeIndex, pAttributeDescriptions);
-    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex2, color), &attributeIndex, pAttributeDescriptions);
+    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex33, pos), &attributeIndex, pAttributeDescriptions);
+    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex33, color), &attributeIndex, pAttributeDescriptions);
     addVertexAttribute(&attributeLocation, 1, VK_FORMAT_R32G32_SFLOAT, 0, &attributeIndex, pAttributeDescriptions);
 
     VkPipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo = {};
@@ -235,17 +235,17 @@ void createTileMapPipeline(Uint32 shaderCount, VkPipelineShaderStageCreateInfo *
 void createModelPipeline(VkExtent2D extent2D, Uint32 shaderCount, VkPipelineShaderStageCreateInfo * pPipelineShaderStageCreateInfo, VkPipelineLayout pipelineLayout, VkRenderPass renderPass, VkPipeline * pGraphicsPipeline)
 {
     VkVertexInputBindingDescription pBindingDescription[3];
-    addVertexBinding(0, sizeof(Vertex4), VK_VERTEX_INPUT_RATE_VERTEX, 0, pBindingDescription);
+    addVertexBinding(0, sizeof(Vertex3323), VK_VERTEX_INPUT_RATE_VERTEX, 0, pBindingDescription);
     addVertexBinding(1, sizeof(mat4), VK_VERTEX_INPUT_RATE_INSTANCE, 1, pBindingDescription);
     addVertexBinding(2, sizeof(mat4), VK_VERTEX_INPUT_RATE_INSTANCE, 2, pBindingDescription);
 
     VkVertexInputAttributeDescription pAttributeDescriptions[12];
     Uint32 attributeLocation = 0;
     Uint32 attributeIndex = 0;
-    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex4, pos), &attributeIndex, pAttributeDescriptions);
-    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex4, color), &attributeIndex, pAttributeDescriptions);
-    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex4, texCoord), &attributeIndex, pAttributeDescriptions);
-    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex4, normal), &attributeIndex, pAttributeDescriptions);
+    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex3323, pos), &attributeIndex, pAttributeDescriptions);
+    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex3323, color), &attributeIndex, pAttributeDescriptions);
+    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex3323, texCoord), &attributeIndex, pAttributeDescriptions);
+    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex3323, normal), &attributeIndex, pAttributeDescriptions);
     addVertexAttribute(&attributeLocation, 1, VK_FORMAT_R32G32B32A32_SFLOAT, sizeof(vec4) * 0, &attributeIndex, pAttributeDescriptions);
     addVertexAttribute(&attributeLocation, 1, VK_FORMAT_R32G32B32A32_SFLOAT, sizeof(vec4) * 1, &attributeIndex, pAttributeDescriptions);
     addVertexAttribute(&attributeLocation, 1, VK_FORMAT_R32G32B32A32_SFLOAT, sizeof(vec4) * 2, &attributeIndex, pAttributeDescriptions);
@@ -306,14 +306,14 @@ void createModelPipeline(VkExtent2D extent2D, Uint32 shaderCount, VkPipelineShad
 void createGraphicsPipeline(VkExtent2D extent2D, Uint32 shaderCount, VkPipelineShaderStageCreateInfo * pPipelineShaderStageCreateInfo, VkPipelineLayout pipelineLayout, VkRenderPass renderPass, VkPipeline * pGraphicsPipeline)
 {
     VkVertexInputBindingDescription pBindingDescription[1];
-    addVertexBinding(0, sizeof(Vertex3), VK_VERTEX_INPUT_RATE_VERTEX, 0, pBindingDescription);
+    addVertexBinding(0, sizeof(Vertex332), VK_VERTEX_INPUT_RATE_VERTEX, 0, pBindingDescription);
 
     VkVertexInputAttributeDescription pAttributeDescriptions[3] = VERTEX_LAYOUT_IN;
     Uint32 attributeLocation = 0;
     Uint32 attributeIndex = 0;
-    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex3, pos), &attributeIndex, pAttributeDescriptions);
-    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex3, color), &attributeIndex, pAttributeDescriptions);
-    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex3, texCoord), &attributeIndex, pAttributeDescriptions);
+    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex332, pos), &attributeIndex, pAttributeDescriptions);
+    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex332, color), &attributeIndex, pAttributeDescriptions);
+    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex332, texCoord), &attributeIndex, pAttributeDescriptions);
 
     VkPipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo = {};
     configurePipelineVertexInputState(1, pBindingDescription, 3, pAttributeDescriptions, &pipelineVertexInputStateCreateInfo);
@@ -343,6 +343,61 @@ void createGraphicsPipeline(VkExtent2D extent2D, Uint32 shaderCount, VkPipelineS
     
     VkPipelineColorBlendAttachmentState colorBlendAttachmentState[1];
     addColorBlendAttachmentState(VK_TRUE, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD\
+        , VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT, 0, colorBlendAttachmentState);
+
+    VkPipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo = {};
+    configurePipelineColorBlendStateCreateInfo(VK_FALSE, VK_LOGIC_OP_COPY, 1, colorBlendAttachmentState, 0.0f, 0.0f, 0.0f, 0.0f, &pipelineColorBlendStateCreateInfo);
+    
+    VkDynamicState dynamicStates[2];
+    dynamicStates[0] = VK_DYNAMIC_STATE_VIEWPORT;
+    dynamicStates[1] = VK_DYNAMIC_STATE_SCISSOR;
+
+    VkPipelineDynamicStateCreateInfo pipelineDynamicStateCreateInfo = {};
+    configureDynamicsState(2, dynamicStates, &pipelineDynamicStateCreateInfo);
+
+    addGraphicPipelineCreateInfo(shaderCount, pPipelineShaderStageCreateInfo, &pipelineVertexInputStateCreateInfo, &pipelineInputAssemblyStateCreateInfo, NULL, &pipelineViewportStateCreateInfo\
+        , &pipelineRasterizationStateCreateInfo, &pipelineMultisampleStateCreateInfo, &pipelineDepthStencilStateCreateInfo, &pipelineColorBlendStateCreateInfo, &pipelineDynamicStateCreateInfo, pipelineLayout, renderPass\
+        , 0, NULL, -1, pGraphicsPipeline);
+}
+void createShapePipeline(VkExtent2D extent2D, Uint32 shaderCount, VkPipelineShaderStageCreateInfo * pPipelineShaderStageCreateInfo, VkPipelineLayout pipelineLayout, VkRenderPass renderPass, VkPipeline * pGraphicsPipeline)
+{
+    VkVertexInputBindingDescription pBindingDescription[1];
+    addVertexBinding(0, sizeof(Vertex23), VK_VERTEX_INPUT_RATE_VERTEX, 0, pBindingDescription);
+
+    VkVertexInputAttributeDescription pAttributeDescriptions[2];
+    Uint32 attributeLocation = 0;
+    Uint32 attributeIndex = 0;
+    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex23, pos), &attributeIndex, pAttributeDescriptions);
+    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(Vertex23, color), &attributeIndex, pAttributeDescriptions);
+
+    VkPipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo = {};
+    configurePipelineVertexInputState(1, pBindingDescription, 2, pAttributeDescriptions, &pipelineVertexInputStateCreateInfo);
+
+    VkPipelineInputAssemblyStateCreateInfo pipelineInputAssemblyStateCreateInfo = {};
+    configurePipelineInputAssemblyState(VK_PRIMITIVE_TOPOLOGY_LINE_STRIP, VK_FALSE, &pipelineInputAssemblyStateCreateInfo);
+
+    VkViewport pViewport[1];
+    addPipelineViewport(0.0f, 0.0f, extent2D.width, extent2D.height, 0.0f, 1.0f, 0, pViewport);
+
+    VkRect2D pScissor[1];
+    addPipelineScissor((VkOffset2D){0, 0}, extent2D, 0, pScissor);
+
+    VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo = {};
+    configurePipelineViewportsStateCreateInfo(1, pViewport, 1, pScissor, &pipelineViewportStateCreateInfo);
+
+    VkPipelineRasterizationStateCreateInfo pipelineRasterizationStateCreateInfo = {};
+    configurePipelineRasterizationStateCreateInfo(VK_FALSE, VK_FALSE, VK_POLYGON_MODE_FILL, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE, VK_FALSE, 0.0f, 0.0f, 0.0f, 1.0f, &pipelineRasterizationStateCreateInfo);
+
+    VkPipelineMultisampleStateCreateInfo pipelineMultisampleStateCreateInfo = {};
+    configurePipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT, VK_FALSE, 1.0f, NULL, VK_FALSE, VK_FALSE, &pipelineMultisampleStateCreateInfo);
+
+    VkPipelineDepthStencilStateCreateInfo pipelineDepthStencilStateCreateInfo = {};
+    VkStencilOpState empty = {};
+    configurePipelineDepthStencilStateCreateInfo(VK_FALSE, VK_FALSE, VK_COMPARE_OP_LESS, VK_FALSE, VK_FALSE, empty, empty, 0.0f, 1.0f, &pipelineDepthStencilStateCreateInfo);
+
+    
+    VkPipelineColorBlendAttachmentState colorBlendAttachmentState[1];
+    addColorBlendAttachmentState(VK_TRUE, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD\
         , VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT, 0, colorBlendAttachmentState);
 
     VkPipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo = {};
@@ -462,13 +517,13 @@ void createCombinePipeline(VkExtent2D extent2D, Uint32 shaderCount, VkPipelineSh
 void createShadowPipeline(VkExtent2D extent2D, Uint32 shaderCount, VkPipelineShaderStageCreateInfo * pPipelineShaderStageCreateInfo, VkPipelineLayout pipelineLayout, VkRenderPass renderPass, VkPipeline * pGraphicsPipeline)
 {
     VkVertexInputBindingDescription pBindingDescription[2];
-    addVertexBinding(0, sizeof(Vertex4), VK_VERTEX_INPUT_RATE_VERTEX, 0, pBindingDescription);
+    addVertexBinding(0, sizeof(Vertex3323), VK_VERTEX_INPUT_RATE_VERTEX, 0, pBindingDescription);
     addVertexBinding(1, sizeof(mat4), VK_VERTEX_INPUT_RATE_INSTANCE, 1, pBindingDescription);
 
     VkVertexInputAttributeDescription pAttributeDescriptions[5];
     Uint32 attributeLocation = 0;
     Uint32 attributeIndex = 0;
-    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex4, pos), &attributeIndex, pAttributeDescriptions);
+    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex3323, pos), &attributeIndex, pAttributeDescriptions);
     addVertexAttribute(&attributeLocation, 1, VK_FORMAT_R32G32B32A32_SFLOAT, 0, &attributeIndex, pAttributeDescriptions);
     addVertexAttribute(&attributeLocation, 1, VK_FORMAT_R32G32B32A32_SFLOAT, sizeof(vec4) * 1, &attributeIndex, pAttributeDescriptions);
     addVertexAttribute(&attributeLocation, 1, VK_FORMAT_R32G32B32A32_SFLOAT, sizeof(vec4) * 2, &attributeIndex, pAttributeDescriptions);

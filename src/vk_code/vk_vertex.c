@@ -35,7 +35,7 @@ void createVertexBuffer(VkBuffer * pVertexBuffer, VkDeviceMemory * pVertexBuffer
 
     }
 }
-void initVertices2(Uint32 width, Uint32 height, Uint32 row, Uint32 column, float depth, Vertex2 * pVertices)
+void initVertices2(Uint32 width, Uint32 height, Uint32 row, Uint32 column, float depth, Vertex33 * pVertices)
 {
     float tileWidth = (width / column) / (float)(height / 2);
     float tileHeight = (height / row) / (float)(height / 2);

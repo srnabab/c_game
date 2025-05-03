@@ -1,5 +1,7 @@
 #include "SDL3/SDL_stdinc.h"
-#include "SDL3/SDL_atomic.h"
+// #include "SDL3/SDL_atomic.h"
+
+#include "cglm/types.h"
 
 #ifndef G_ENETITY_H
 #define G_ENETITY_H 1
@@ -9,27 +11,30 @@
 #define LEFT 2
 #define RIGHT 3
 
-struct _G_Point_Uint
+struct _G_Point_Int
 {
-    Uint32 x;
-    Uint32 y;
+    int32_t x;
+    int32_t y;
 };
+typedef struct _G_Point_Int G_Point_Int;
+
 struct _G_Point_Float
 {
     float x;
     float y;
 };
+typedef struct _G_Point_Float G_Point_Float;
 
 union _G_Point
 {
-    struct _G_Point_Uint pointUint;
+    struct _G_Point_Int pointUint;
     struct _G_Point_Float pointFloat;
 };
 typedef union _G_Point G_Point;
 
 struct _G_Entity
 {
-    struct _G_Point_Float position;
+    vec2 position;
     float speed;
     bool direction[4];
 };

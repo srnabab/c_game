@@ -29,24 +29,30 @@ typedef struct _QueueFamilyIndices{
 //same as layout in vertex shader code
 typedef struct _Vertex2
 {
+    vec2 pos;
+    vec3 color;
+} Vertex23;
+
+typedef struct _Vertex33
+{
     vec3 pos;
     vec3 color;
-} Vertex2;
+} Vertex33;
 
-typedef struct _Vertex3 
+typedef struct _Vertex332
 {
     vec3 pos;
     vec3 color;
     vec2 texCoord;
-} Vertex3;
+} Vertex332;
 
-typedef struct _Vertex4
+typedef struct _Vertex3323
 {
     vec3 pos;
     vec3 color;
     vec2 texCoord;
     vec3 normal;
-} Vertex4;
+} Vertex3323;
 
 typedef struct _UniformBufferObject 
 {

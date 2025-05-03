@@ -32,7 +32,7 @@ bool createStaticModelPool(G_StaticModelPool * pModelPool, Uint32 totalInstancec
 
     return true;
 }
-G_StaticModel * loadStaticModel(G_StaticModelPool * pModelPool, Uint32 instanceCount, PathType modelPath, PathType texturePath, Vertex4 * vertices, Uint32 * pVertexIndex, Uint32 * indices, Uint32 * pIndexIndex\
+G_StaticModel * loadStaticModel(G_StaticModelPool * pModelPool, Uint32 instanceCount, PathType modelPath, PathType texturePath, Vertex3323 * vertices, Uint32 * pVertexIndex, Uint32 * indices, Uint32 * pIndexIndex\
 , VkFormat textureFormat, VkImageAspectFlags flags, const char * innerName, VkDescriptorSet * pDescriptorSet, bool ground)
 {
     SDL_LockMutex(pModelPool->mutex);

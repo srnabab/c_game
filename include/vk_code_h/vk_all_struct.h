@@ -59,6 +59,9 @@ struct _VK_ALL
     VkPipelineLayout particlePipelineLayout;
     VkPipeline particlePipeline;
 
+    VkPipelineLayout shapePipelinLayout;
+    VkPipeline shapePipeline;
+
     VkPipelineLayout computePipelineLayout;
     VkPipeline computePipeline;
 
@@ -112,7 +115,7 @@ struct _VK_ALL
 
     VkBuffer vertexBuffer2D[MAX_FRAMES_IN_FLIGHT];
     Uint32 maxVertices2DCount;
-    Vertex3 * pVertices2D;
+    Vertex332 * pVertices2D;
     Uint32 vertices2DCount;
     VkDeviceMemory pVertexBuffer2DMem[MAX_FRAMES_IN_FLIGHT];
     void* pVertexBuffer2DMemMapped[MAX_FRAMES_IN_FLIGHT];
@@ -124,7 +127,7 @@ struct _VK_ALL
 
     VkBuffer vertexBuffer3D[MAX_FRAMES_IN_FLIGHT];
     Uint32 maxVertices3DCount;
-    Vertex4 * pVertices3D;
+    Vertex3323 * pVertices3D;
     Uint32 vertices3DCount;
     VkDeviceMemory vertexBuffer3DMem[MAX_FRAMES_IN_FLIGHT];
     void* pVertexBuffer3DMemMapped[MAX_FRAMES_IN_FLIGHT];
@@ -179,6 +182,7 @@ struct _VK_ALL
     VkDescriptorSet * pGraphicDescriptorSets;
     VkDescriptorSet * pParticleDescriptorSets;
     VkDescriptorSet * pComputeDescriptorSets;
+    VkDescriptorSet * pShapeDescriptorSets;
     VkDescriptorSet * pModelDescriptorSets;
     VkDescriptorSet * pBottomDescriptorSets;
 

@@ -705,6 +705,166 @@ void setMapBottom(Uint32 width, Uint32 height, int centerX, int centerY, Uint32 
         }
         print("flag: %u", flag);
     }
+    else if (flag == (LEFT_COL_ADD | RIGHT_COL_DEL))
+    {
+        FromTo temp;
+        for (i = 0;i < rowCount;i++)
+        {
+            for (j = 0;j < columnCount - 1;j++)
+            {
+                temp.from = i * columnCount + j; 
+                temp.to = temp.from + 1;
+                allInOne.bottomImageMoveStack.pushFn(&allInOne.bottomImageMoveStack, &temp);
+            }
+        }
+        
+        DrawHere tempDraw;
+        Map_Group * tempMapGroup = firstMapGroup;
+        for (i = 0;i < rowCount;i++)
+        {
+            tempDraw.group = tempMapGroup;
+            tempDraw.BottomID = i * columnCount;
+
+            allInOne.bottomImageDrawStack.pushFn(&allInOne.bottomImageDrawStack, &tempDraw);
+
+            setTilemapUVs(tempMapGroup, allInOne.pTileMapUVs, drawIndex);
+            drawIndex++;
+
+            tempMapGroup = tempMapGroup->down;
+        }
+        print("flag: %u", flag);
+    }
+    else if (flag == (LEFT_COL_ADD | UP_ROW_DEL))
+    {
+        FromTo temp;
+        Uint32 initRowCount = rowCount + 1;
+        Uint32 initColCount = columnCount - 1;
+        for (i = initRowCount - 1;i > 0;i--)
+        {
+            for (j = initColCount - 1;j > -1;j--)
+            {
+                temp.from = i * initColCount + j; 
+                temp.to = temp.from - initRowCount + i;
+                allInOne.bottomImageMoveStack.pushFn(&allInOne.bottomImageMoveStack, &temp);
+            }
+        }
+        
+        DrawHere tempDraw;
+        Map_Group * tempMapGroup = firstMapGroup;
+        for (i = 0;i < rowCount;i++)
+        {
+            tempDraw.group = tempMapGroup;
+            tempDraw.BottomID = i * columnCount;
+
+            allInOne.bottomImageDrawStack.pushFn(&allInOne.bottomImageDrawStack, &tempDraw);
+
+            setTilemapUVs(tempMapGroup, allInOne.pTileMapUVs, drawIndex);
+            drawIndex++;
+
+            tempMapGroup = tempMapGroup->down;
+        }
+        print("flag: %u", flag);
+    }
+    else if (flag == (LEFT_COL_ADD | DOWN_ROW_DEL))
+    {
+        FromTo temp;
+        Uint32 initRowCount = rowCount + 1;
+        Uint32 initColCount = columnCount - 1;
+        for (i = 0;i < initRowCount - 1;i++)
+        {
+            for (j = 0;j < initColCount;j++)
+            {
+                temp.from = i * initColCount + j; 
+                temp.to = temp.from + 1 + i;
+                allInOne.bottomImageMoveStack.pushFn(&allInOne.bottomImageMoveStack, &temp);
+            }
+        }
+        
+        DrawHere tempDraw;
+        Map_Group * tempMapGroup = firstMapGroup;
+        for (i = 0;i < rowCount;i++)
+        {
+            tempDraw.group = tempMapGroup;
+            tempDraw.BottomID = i * columnCount;
+
+            allInOne.bottomImageDrawStack.pushFn(&allInOne.bottomImageDrawStack, &tempDraw);
+
+            setTilemapUVs(tempMapGroup, allInOne.pTileMapUVs, drawIndex);
+            drawIndex++;
+
+            tempMapGroup = tempMapGroup->down;
+        }
+        print("flag: %u", flag);
+    }
+    else if (flag == (LEFT_COL_DEL | RIGHT_COL_ADD))
+    {
+        FromTo temp;
+        for (i = 0;i < rowCount;i++)
+        {
+            for (j = columnCount - 1;j > -1;j--)
+            {
+                temp.from = i * columnCount + j;
+                temp.to = temp.from - 1;
+                allInOne.bottomImageMoveStack.pushFn(&allInOne.bottomImageMoveStack, &temp);
+            }
+        }
+        
+        DrawHere tempDraw;
+        Map_Group * tempMapGroup = mapGroupToRight(firstMapGroup, columnCount - 1);
+        for (i = 0;i < rowCount;i++)
+        {
+            tempDraw.group = tempMapGroup;
+            tempDraw.BottomID = i * columnCount + columnCount - 1;
+
+            allInOne.bottomImageDrawStack.pushFn(&allInOne.bottomImageDrawStack, &tempDraw);
+
+            setTilemapUVs(tempMapGroup, allInOne.pTileMapUVs, drawIndex);
+            drawIndex++;
+
+            tempMapGroup = tempMapGroup->down;
+        }
+        print("flag: %u", flag);
+    }
+    else if (flag == (UP_ROW_DEL | RIGHT_COL_ADD))
+    {
+
+        print("flag: %u", flag);
+    }
+    else if (flag == (DOWN_ROW_DEL | RIGHT_COL_ADD))
+    {
+
+        print("flag: %u", flag);
+    }
+    else if (flag == (UP_ROW_ADD | DOWN_ROW_DEL))
+    {
+
+        print("flag: %u", flag);
+    }
+    else if (flag == (UP_ROW_ADD | LEFT_COL_DEL))
+    {
+
+        print("flag: %u", flag);
+    }
+    else if (flag == (UP_ROW_ADD | RIGHT_COL_DEL))
+    {
+
+        print("flag: %u", flag);
+    }
+    else if (flag == (UP_ROW_DEL | DOWN_ROW_ADD))
+    {
+
+        print("flag: %u", flag);
+    }
+    else if (flag == (RIGHT_COL_DEL | DOWN_ROW_ADD))
+    {
+
+        print("flag: %u", flag);
+    }
+    else if (flag == (LEFT_COL_DEL | DOWN_ROW_ADD))
+    {
+
+        print("flag: %u", flag);
+    }
     else if (flag == (LEFT_COL_DEL | UP_ROW_DEL))
     {
 
@@ -1079,4 +1239,59 @@ bool moveBottomImage(Uint32 currentFrame)
     SDL_SignalSemaphore(allSync.bottomSemaphore);
 
     return true;
+}
+static G_Point_Int locatePointInGroup(int32_t x, int32_t y, Map_Group * group)
+{
+    const int32_t maxRow = 49;
+    const int32_t maxCol = 49;
+
+    int32_t row, col;
+    // row = SDL_min((BOTTOM_WIDTH - x) / TILE_WIDTH, maxRow);
+    row = SDL_min(x / TILE_WIDTH, maxRow);
+    col = SDL_min((BOTTOM_HEIGHT - y) / TILE_HEIGHT, maxCol);
+    // col = SDL_min(y / TILE_HEIGHT, maxCol);
+
+    int32_t tileCenterX = row * TILE_WIDTH + TILE_WIDTH / 2;
+    int32_t tileCenterY = BOTTOM_HEIGHT - (col * TILE_HEIGHT + TILE_HEIGHT / 2);
+
+    // print("index: %u(%d, %d)", group->indices[row][col], x, y);
+    return (G_Point_Int){tileCenterX, tileCenterY};
+}
+void locatePoint(G_Entity * entity, Uint32 groupRowCount, Uint32 groupColCount, int32_t firstBottom_X, int32_t firstBottom_Y, Uint32 groupID)
+{
+    int32_t topLine = firstBottom_Y + BOTTOM_HEIGHT / 2;
+    int32_t leftLine = firstBottom_X - BOTTOM_WIDTH / 2;
+    
+    // if (entity->position[0] < firstBottom_X) return;
+    // if (entity->position[1] > firstBottom_Y) return;
+    Uint32 row, col;
+
+    int32_t pointX = (Uint32)entity->position[0];
+    int32_t pointY = (Uint32)entity->position[1];
+
+    int32_t offsetLengthX = pointX - leftLine;
+    int32_t offsetLengthY = topLine - pointY;
+
+    if (offsetLengthX < 0 || offsetLengthY < 0) return;
+
+    row = offsetLengthX / BOTTOM_WIDTH;
+    col = offsetLengthY / BOTTOM_HEIGHT;
+
+    if (row > groupRowCount) return;
+    if (col > groupColCount) return;
+
+    Map_Group * firstMapGroup = getMapGroup(TEXTURE_TILE_SET, MAIN_TILE_MAP, groupID);
+
+    Map_Group * group = mapGroupToDown(firstMapGroup, row);
+    group = mapGroupToRight(group, col);
+
+    int32_t distanceX = -(leftLine + row * BOTTOM_WIDTH);
+    int32_t distanceY = 800 - (topLine - col * BOTTOM_HEIGHT);
+
+    int32_t clampPointX = pointX + distanceX;
+    int32_t clampPointY = pointY + distanceY;
+
+    G_Point_Int tileCenter = locatePointInGroup(clampPointX, clampPointY, group);
+
+    print("center (%d, %d)", tileCenter.x - distanceX, tileCenter.y - distanceY);
 }

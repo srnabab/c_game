@@ -68,7 +68,7 @@ static void tinyobj_SDL_readFile(void *ctx, const char *filename, int is_mtl, co
 
     SDL_CloseIO(stream);
 }
-bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex4 * vertices, Uint32 * pVertexIndex, Uint32 * indices, Uint32 * pIndexIndex, VkFormat textureFormat, VkImageAspectFlags flags\
+bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex3323 * vertices, Uint32 * pVertexIndex, Uint32 * indices, Uint32 * pIndexIndex, VkFormat textureFormat, VkImageAspectFlags flags\
 , const char * innerName, VkDescriptorSet * pDescriptorSet, bool ground)
 {
     tinyobj_attrib_t attrib;

@@ -137,6 +137,7 @@ static VkPipelineShaderStageCreateInfo * bottomShaderStageCreateInfo = NULL;
 static VkPipelineShaderStageCreateInfo * shadowShaderStageCreateInfo = NULL;
 
 static VkPipelineShaderStageCreateInfo * particleShaderStageCreateInfo = NULL;
+static VkPipelineShaderStageCreateInfo * shapeShaderStageCreateInfo = NULL;
 
 // static VkShaderModule compShaderCode = NULL;
 static VkPipelineShaderStageCreateInfo * computeShaderStageCreateInfo = NULL;
@@ -151,6 +152,7 @@ static VkDescriptorSetLayout * bottomDescriptorSetLayout = NULL;
 static VkDescriptorSetLayout * shadowDescriptorSetLayout = NULL;
 
 static VkDescriptorSetLayout * particleDescriptorSetLayout = NULL;
+static VkDescriptorSetLayout * shapeDescriptorSetLayout = NULL;
 
 static VkDescriptorSetLayout * computeDescriptorSetLayout = NULL;
 
@@ -347,9 +349,9 @@ void initVulkan(void)
     createShadowSampler(&allInOne.shadowSampler);
     CO_addSampler(allInOne.shadowSampler);// CO
 
-    Vertex2 tileMapVertex[VERTEX_COUNT_IN_UNIT_2D * MAX_TILES_IN_GROUP] = {};
+    Vertex33 tileMapVertex[VERTEX_COUNT_IN_UNIT_2D * MAX_TILES_IN_GROUP] = {};
     initVertices2(BOTTOM_WIDTH, BOTTOM_HEIGHT, 50, 50, 0.1f, tileMapVertex);
-    createVertexBuffer(&allInOne.tileMapVertexBuffer, &allInOne.tileMapVertexBufferMem, NULL, tileMapVertex, VERTEX_COUNT_IN_UNIT_2D * MAX_TILES_IN_GROUP * sizeof(Vertex2), false);
+    createVertexBuffer(&allInOne.tileMapVertexBuffer, &allInOne.tileMapVertexBufferMem, NULL, tileMapVertex, VERTEX_COUNT_IN_UNIT_2D * MAX_TILES_IN_GROUP * sizeof(Vertex33), false);
     CO_addBuffer(false, allInOne.tileMapVertexBuffer, allInOne.tileMapVertexBufferMem, NULL);// CO
 
     allInOne.pTileMapUVs = (vec2*)SDL_calloc(MAX_MAP_GROUP * MAX_TILES_IN_GROUP * VERTEX_COUNT_IN_UNIT_2D, sizeof(vec2));
@@ -358,11 +360,11 @@ void initVulkan(void)
     createVertexBuffer(allInOne.tileMapTexCoordBuffer + 1, allInOne.pTimeMapTexCoordBufferMem + 1, allInOne.pTimeMapTexCoordBufferMapped + 1, allInOne.pTileMapUVs, MAX_MAP_GROUP * MAX_TILES_IN_GROUP * VERTEX_COUNT_IN_UNIT_2D * sizeof(vec2), true);
     CO_addBuffer(true, allInOne.tileMapTexCoordBuffer[1], allInOne.pTimeMapTexCoordBufferMem[1], allInOne.pTileMapUVs);// CO
 
-    allInOne.pVertices2D = (Vertex3*)SDL_calloc(VERTEX_COUNT_IN_BUFFER_2D, sizeof(Vertex3));
+    allInOne.pVertices2D = (Vertex332*)SDL_calloc(VERTEX_COUNT_IN_BUFFER_2D, sizeof(Vertex332));
     allInOne.maxVertices2DCount = VERTEX_COUNT_IN_BUFFER_2D;
-    createVertexBuffer(allInOne.vertexBuffer2D + 0, allInOne.pVertexBuffer2DMem + 0, allInOne.pVertexBuffer2DMemMapped + 0, NULL, VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex3), true);
+    createVertexBuffer(allInOne.vertexBuffer2D + 0, allInOne.pVertexBuffer2DMem + 0, allInOne.pVertexBuffer2DMemMapped + 0, NULL, VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex332), true);
     CO_addBuffer(true, allInOne.vertexBuffer2D[0], allInOne.pVertexBuffer2DMem[0], NULL);// CO
-    createVertexBuffer(allInOne.vertexBuffer2D + 1, allInOne.pVertexBuffer2DMem + 1, allInOne.pVertexBuffer2DMemMapped + 1, NULL, VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex3), true);
+    createVertexBuffer(allInOne.vertexBuffer2D + 1, allInOne.pVertexBuffer2DMem + 1, allInOne.pVertexBuffer2DMemMapped + 1, NULL, VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex332), true);
     CO_addBuffer(true, allInOne.vertexBuffer2D[1], allInOne.pVertexBuffer2DMem[1], allInOne.pVertices2D);// CO
 
     allInOne.pIndices2D = (Uint16 *)SDL_calloc(INDEX_COUNT_IN_BUFFER_2D, sizeof(Uint16 ));
@@ -373,12 +375,12 @@ void initVulkan(void)
 
     SDL_free(allInOne.pIndices2D);
 
-    allInOne.pVertices3D = (Vertex4*)SDL_calloc(30000, sizeof(Vertex4));
+    allInOne.pVertices3D = (Vertex3323*)SDL_calloc(30000, sizeof(Vertex3323));
     allInOne.maxVertices3DCount = 30000;
     allInOne.pIndices3D = (Uint32*)SDL_calloc(45000, sizeof(Uint32));
-    createVertexBuffer(allInOne.vertexBuffer3D + 0, allInOne.vertexBuffer3DMem + 0, allInOne.pVertexBuffer3DMemMapped + 0, NULL, 30000 * sizeof(Vertex4), true);
+    createVertexBuffer(allInOne.vertexBuffer3D + 0, allInOne.vertexBuffer3DMem + 0, allInOne.pVertexBuffer3DMemMapped + 0, NULL, 30000 * sizeof(Vertex3323), true);
     CO_addBuffer(true, allInOne.vertexBuffer3D[0], allInOne.vertexBuffer3DMem[0], NULL);// CO
-    createVertexBuffer(allInOne.vertexBuffer3D + 1, allInOne.vertexBuffer3DMem + 1, allInOne.pVertexBuffer3DMemMapped + 1, NULL, 30000 * sizeof(Vertex4), true);
+    createVertexBuffer(allInOne.vertexBuffer3D + 1, allInOne.vertexBuffer3DMem + 1, allInOne.pVertexBuffer3DMemMapped + 1, NULL, 30000 * sizeof(Vertex3323), true);
     CO_addBuffer(true, allInOne.vertexBuffer3D[1], allInOne.vertexBuffer3DMem[1], NULL);// CO
 
     createIndexBuffer(allInOne.indexBuffer3D + 0, allInOne.indexBuffer3DMem + 0, allInOne.pIndexBuffer3DMemMapped + 0, allInOne.pIndices3D, 45000, sizeof(Uint32), true);
@@ -423,10 +425,10 @@ void initVulkan(void)
 
     VkDescriptorPoolSize graphicDescriptorPoolSize[2];
     graphicDescriptorPoolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    graphicDescriptorPoolSize[0].descriptorCount = 22;
+    graphicDescriptorPoolSize[0].descriptorCount = 24;
     graphicDescriptorPoolSize[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     graphicDescriptorPoolSize[1].descriptorCount = 26;
-    createDescriptorPool(&allInOne.device, 2, graphicDescriptorPoolSize, 24, &graphicDescriptorPool);
+    createDescriptorPool(&allInOne.device, 2, graphicDescriptorPoolSize, 26, &graphicDescriptorPool);
     CO_addDescriptorPool(graphicDescriptorPool);// CO
 
     //graphic shader
@@ -457,6 +459,13 @@ void initVulkan(void)
     Uint32 particleSetCount = CreateShaderModulesAndDescriptorSets(particleTypes, 2, &particleTempModule, &particleShaderStageCreateInfo, &particleDescriptorSetLayout, &allInOne.particlePipelineLayout);
     createDescriptorSets(&graphicDescriptorPool, particleDescriptorSetLayout, particleSetCount, 1, &allInOne.pParticleDescriptorSets);
     createParticlePipeline(allInOne.extent2D, 2, particleShaderStageCreateInfo, allInOne.particlePipelineLayout, allInOne.renderPass, &allInOne.particlePipeline);
+
+    // shape shader
+    // PathType shapeTypes[] = {ShapeVertShader, ShapeFragShader};
+    // VkShaderModule * shapeTempModule = NULL;
+    // Uint32 shapeSetCount =CreateShaderModulesAndDescriptorSets(shapeTypes, 2, &shapeTempModule, &shapeShaderStageCreateInfo, &shapeDescriptorSetLayout, &allInOne.shapePipelinLayout);
+    // createDescriptorSets(&graphicDescriptorPool, shapeDescriptorSetLayout, shapeSetCount, 1, &allInOne.pShapeDescriptorSets);
+    // createShapePipeline(allInOne.extent2D, 2, shapeShaderStageCreateInfo, allInOne.shapePipelinLayout, allInOne.renderPass, &allInOne.shapePipeline);
 
     // combine Shader
     PathType combineTypes[] = {CombineVertShader, CombineFragShader};
@@ -611,6 +620,9 @@ void initVulkan(void)
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3, bottomTexture->pDescriptorSet, allInOne.pSunUniformBuffer, 0, sizeof(DirectionLight));
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, allInOne.pShadowDescriptorSets, allInOne.pLightSpaceUniformBuffer, 0, sizeof(LightSpace));
 
+    // shape
+    // addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, allInOne.pShadowDescriptorSets, allInOne.pGraphic3DUniformBuffer, 0, sizeof(UniformBufferObject));
+
     // SSGI
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3, normalTexture->pDescriptorSet, allInOne.pSSGIUniformBuffer, 0, sizeof(SSGIUniformBufferObject));
 
@@ -678,7 +690,7 @@ void cleanVulkan(void)
     unloadAllTexture();
     CO_CleanAllVkResource();
 }
-    /*vertices2D[4] = (Vertex3){{-0.0f, -0.0f, 0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}};
-    vertices2D[5] = (Vertex3){{1.0f, -0.0f, 0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}};
-    vertices2D[6] = (Vertex3){{1.0f, 1.0f, 0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}};
-    vertices2D[7] = (Vertex3){{-0.0f, 1.0f, 0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}};*/
+    /*vertices2D[4] = (Vertex332){{-0.0f, -0.0f, 0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}};
+    vertices2D[5] = (Vertex332){{1.0f, -0.0f, 0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}};
+    vertices2D[6] = (Vertex332){{1.0f, 1.0f, 0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}};
+    vertices2D[7] = (Vertex332){{-0.0f, 1.0f, 0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}};*/
