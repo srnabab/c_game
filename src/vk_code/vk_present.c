@@ -70,40 +70,33 @@ static void recordCommandBuffer2D(Uint32 imageIndex, Uint32 currentFrame)
 
     VkDeviceSize offsets[] = {0};
 
+    vkCmdBindPipeline(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, allInOne.shapePipeline);
+    vkCmdBindDescriptorSets(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, allInOne.shapePipelineLayout, 0, 1, allInOne.pShapeDescriptorSets + currentFrame, 0, NULL);
+    vkCmdPushConstants(currentCommandBuffer, allInOne.shapePipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ShapeConstants), allInOne.pShapeConstants);
+    vkCmdBindVertexBuffers(currentCommandBuffer, 0, 1, &allInOne.tempBuffer, offsets);
+    vkCmdDraw(currentCommandBuffer, 5, 1, 0, 0);
+
     vkCmdBindPipeline(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, allInOne.graphicPipeline);
-
     vkCmdPushConstants(currentCommandBuffer, allInOne.graphicPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstants), allInOne.pPushConstants);
-
     VkBuffer vertexBuffer[] = {allInOne.vertexBuffer2D[currentFrame]};
     // VkDeviceSize vertexOffsets1[] = {0, allInOne.maxVerticesCount * sizeof(vec3), allInOne.maxVerticesCount * sizeof(vec3) + allInOne.maxVerticesCount * sizeof(vec3)};
     vkCmdBindVertexBuffers(currentCommandBuffer, 0, 1, vertexBuffer, offsets);
-
     vkCmdBindIndexBuffer(currentCommandBuffer, allInOne.indexBuffer2D, 0, VK_INDEX_TYPE_UINT16);
-
-    // tile map
-    // drawPic(TEXTURE_TILE_SET, currentFrame, currentCommandBuffer);
-
     //loading1 png
     drawPic(TEXTURE_LOADING, currentFrame, currentCommandBuffer, allInOne.graphicPipelineLayout);
-
     //circle
     // drawPic(TEXTURE_CIRCLE, currentFrame, currentCommandBuffer);
-
     // box
     // drawPic(TEXTURE_BOX, currentFrame, currentCommandBuffer);
-
     // main font png
     drawPic(TEXTURE_FONT, currentFrame, currentCommandBuffer, allInOne.graphicPipelineLayout);
 
     vkCmdBindPipeline(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, allInOne.particlePipeline);
-
     vkCmdBindVertexBuffers(currentCommandBuffer, 0, 1, allInOne.pShaderStorageBuffer + currentFrame, offsets);
-
     vkCmdBindDescriptorSets(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, allInOne.particlePipelineLayout, 0,\
     1, &allInOne.pParticleDescriptorSets[currentFrame], 0, NULL);
-
     vkCmdDraw(currentCommandBuffer, PARTICLE_COUNT, 1, 0, 0);
-    
+
     vkCmdEndRenderPass(currentCommandBuffer);
 
     VkBufferMemoryBarrier bufferBarrierRelease = {};

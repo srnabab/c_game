@@ -1257,7 +1257,7 @@ static G_Point_Int locatePointInGroup(int32_t x, int32_t y, Map_Group * group)
     // print("index: %u(%d, %d)", group->indices[row][col], x, y);
     return (G_Point_Int){tileCenterX, tileCenterY};
 }
-void locatePoint(G_Entity * entity, Uint32 groupRowCount, Uint32 groupColCount, int32_t firstBottom_X, int32_t firstBottom_Y, Uint32 groupID)
+G_Point_Int locatePoint(G_Entity * entity, Uint32 groupRowCount, Uint32 groupColCount, int32_t firstBottom_X, int32_t firstBottom_Y, Uint32 groupID)
 {
     int32_t topLine = firstBottom_Y + BOTTOM_HEIGHT / 2;
     int32_t leftLine = firstBottom_X - BOTTOM_WIDTH / 2;
@@ -1272,13 +1272,13 @@ void locatePoint(G_Entity * entity, Uint32 groupRowCount, Uint32 groupColCount, 
     int32_t offsetLengthX = pointX - leftLine;
     int32_t offsetLengthY = topLine - pointY;
 
-    if (offsetLengthX < 0 || offsetLengthY < 0) return;
+    if (offsetLengthX < 0 || offsetLengthY < 0) goto fail;
 
     row = offsetLengthX / BOTTOM_WIDTH;
     col = offsetLengthY / BOTTOM_HEIGHT;
 
-    if (row > groupRowCount) return;
-    if (col > groupColCount) return;
+    if (row > groupRowCount) goto fail;
+    if (col > groupColCount) goto fail;
 
     Map_Group * firstMapGroup = getMapGroup(TEXTURE_TILE_SET, MAIN_TILE_MAP, groupID);
 
@@ -1294,4 +1294,8 @@ void locatePoint(G_Entity * entity, Uint32 groupRowCount, Uint32 groupColCount, 
     G_Point_Int tileCenter = locatePointInGroup(clampPointX, clampPointY, group);
 
     print("center (%d, %d)", tileCenter.x - distanceX, tileCenter.y - distanceY);
+    return (G_Point_Int){tileCenter.x - distanceX, tileCenter.y - distanceY};
+
+fail:
+    return (G_Point_Int){0, 0};
 }

@@ -59,7 +59,7 @@ struct _VK_ALL
     VkPipelineLayout particlePipelineLayout;
     VkPipeline particlePipeline;
 
-    VkPipelineLayout shapePipelinLayout;
+    VkPipelineLayout shapePipelineLayout;
     VkPipeline shapePipeline;
 
     VkPipelineLayout computePipelineLayout;
@@ -112,6 +112,9 @@ struct _VK_ALL
     VkBuffer tileMapTexCoordBuffer[MAX_FRAMES_IN_FLIGHT];
     VkDeviceMemory pTimeMapTexCoordBufferMem[MAX_FRAMES_IN_FLIGHT];
     void* pTimeMapTexCoordBufferMapped[MAX_FRAMES_IN_FLIGHT];
+
+    VkBuffer tempBuffer;
+    VkDeviceMemory tempBufferMemory;
 
     VkBuffer vertexBuffer2D[MAX_FRAMES_IN_FLIGHT];
     Uint32 maxVertices2DCount;
@@ -218,6 +221,7 @@ struct _VK_ALL
     float * pPictureY;
 
     PushConstants * pPushConstants;
+    ShapeConstants * pShapeConstants;
 
     G_Texture_Head * pGlobalTexture;
 

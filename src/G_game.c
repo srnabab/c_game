@@ -637,6 +637,8 @@ int update(void * arg)
     bool recovreyPause = false;
     bool sceneCleaned = false;
 
+    G_Point_Int tileCenter = {0, 0};
+
     Uint32 currentFrame;
 
     Uint32 vertexStart = 0;
@@ -798,6 +800,8 @@ int update(void * arg)
 
         SDL_LockMutex(allSync.vertexMutex);
 
+        allInOne.pShapeConstants->pos[0] = (float)tileCenter.x / (allInOne.extent2D.width / 2);
+        allInOne.pShapeConstants->pos[1] = (float)tileCenter.y / (allInOne.extent2D.height / 2);
         memcpy(allInOne.ppGraphicUniformBufferMapped[currentFrame], pGraphicUbo, sizeof(UniformBufferObject));
         memcpy(allInOne.ppUIUniformBufferMapped[currentFrame], pUIUbo, sizeof(UniformBufferObject));
 
@@ -910,7 +914,7 @@ int update(void * arg)
                 addTimerFunc(u32_s_to_ns(1), &id_test, 10, test, &test_a);
 
                 EntityMove(&mPoint, delta_time);
-                locatePoint(&mPoint, rowCount, colCount, firstBottom_X, firstBottom_Y, groupID);
+                tileCenter = locatePoint(&mPoint, rowCount, colCount, firstBottom_X, firstBottom_Y, groupID);
 
                 // print("mPoint: (%d, %d)", (int32_t)mPoint.position.x, (int32_t)mPoint.position.y);
                 // SDL_LockMutex(sdl_mutex_2);

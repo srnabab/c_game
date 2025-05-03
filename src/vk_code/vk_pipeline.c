@@ -368,7 +368,7 @@ void createShapePipeline(VkExtent2D extent2D, Uint32 shaderCount, VkPipelineShad
     Uint32 attributeLocation = 0;
     Uint32 attributeIndex = 0;
     addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex23, pos), &attributeIndex, pAttributeDescriptions);
-    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(Vertex23, color), &attributeIndex, pAttributeDescriptions);
+    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex23, color), &attributeIndex, pAttributeDescriptions);
 
     VkPipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo = {};
     configurePipelineVertexInputState(1, pBindingDescription, 2, pAttributeDescriptions, &pipelineVertexInputStateCreateInfo);
@@ -397,7 +397,7 @@ void createShapePipeline(VkExtent2D extent2D, Uint32 shaderCount, VkPipelineShad
 
     
     VkPipelineColorBlendAttachmentState colorBlendAttachmentState[1];
-    addColorBlendAttachmentState(VK_TRUE, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD\
+    addColorBlendAttachmentState(VK_FALSE, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD\
         , VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT, 0, colorBlendAttachmentState);
 
     VkPipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo = {};

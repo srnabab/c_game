@@ -107,6 +107,13 @@ typedef struct _PushConstants
     // float height_to_fix_height_ratio;
 } PushConstants;
 
+struct _ShapeConstants
+{
+    vec2 pos;
+    vec2 scale;
+};
+typedef struct _ShapeConstants ShapeConstants;
+
 enum _FormatQualifier
 {
     UNORM = 0,

@@ -199,6 +199,7 @@ static float pictureY = 0;
 static VkDeviceMemory shaderStorageBuffersMem[MAX_FRAMES_IN_FLIGHT];
 
 static PushConstants picturePushConstants = {0.0f};
+static ShapeConstants shapePushConstants = {(vec2){0.0f, 0.0f}, (vec2){0.053333333f, 0.053333333f}};
 
 static G_StaticModelPool staticModelPool = {};
 
@@ -229,6 +230,7 @@ static void initializeAllInOne(void)
     allInOne.pPictureY = &pictureY;
 
     allInOne.pPushConstants = &picturePushConstants;
+    allInOne.pShapeConstants = &shapePushConstants;
 
     initStack(&allInOne.bottomImageDrawStack, sizeof(DrawHere), NULL, NULL);
     initStack(&allInOne.bottomImageMoveStack, sizeof(FromTo), NULL, NULL);
@@ -349,8 +351,19 @@ void initVulkan(void)
     createShadowSampler(&allInOne.shadowSampler);
     CO_addSampler(allInOne.shadowSampler);// CO
 
+    Vertex23 shapeVertex[5] =
+    {
+        {{-0.5f, -0.5f}, {1.0f, 1.0f, 0.0f}}, // 0: 左下
+        {{ 0.5f, -0.5f}, {1.0f, 0.0f, 1.0f}}, // 1: 右下
+        {{ 0.5f,  0.5f}, {0.0f, 1.0f, 1.0f}}, // 2: 右上
+        {{-0.5f,  0.5f}, {0.0f, 1.0f, 1.0f}}, // 3: 左上
+        {{-0.5f, -0.5f}, {0.0f, 0.0f, 0.0f}}  // 4: 回到左下 (闭合)
+    };
+    createVertexBuffer(&allInOne.tempBuffer, &allInOne.tempBufferMemory, NULL, shapeVertex, 5 * sizeof(Vertex23), false);
+    CO_addBuffer(false, allInOne.tempBuffer, allInOne.tempBufferMemory, NULL);
+
     Vertex33 tileMapVertex[VERTEX_COUNT_IN_UNIT_2D * MAX_TILES_IN_GROUP] = {};
-    initVertices2(BOTTOM_WIDTH, BOTTOM_HEIGHT, 50, 50, 0.1f, tileMapVertex);
+    initVertices33(BOTTOM_WIDTH, BOTTOM_HEIGHT, 50, 50, 0.1f, tileMapVertex);
     createVertexBuffer(&allInOne.tileMapVertexBuffer, &allInOne.tileMapVertexBufferMem, NULL, tileMapVertex, VERTEX_COUNT_IN_UNIT_2D * MAX_TILES_IN_GROUP * sizeof(Vertex33), false);
     CO_addBuffer(false, allInOne.tileMapVertexBuffer, allInOne.tileMapVertexBufferMem, NULL);// CO
 
@@ -461,11 +474,11 @@ void initVulkan(void)
     createParticlePipeline(allInOne.extent2D, 2, particleShaderStageCreateInfo, allInOne.particlePipelineLayout, allInOne.renderPass, &allInOne.particlePipeline);
 
     // shape shader
-    // PathType shapeTypes[] = {ShapeVertShader, ShapeFragShader};
-    // VkShaderModule * shapeTempModule = NULL;
-    // Uint32 shapeSetCount =CreateShaderModulesAndDescriptorSets(shapeTypes, 2, &shapeTempModule, &shapeShaderStageCreateInfo, &shapeDescriptorSetLayout, &allInOne.shapePipelinLayout);
-    // createDescriptorSets(&graphicDescriptorPool, shapeDescriptorSetLayout, shapeSetCount, 1, &allInOne.pShapeDescriptorSets);
-    // createShapePipeline(allInOne.extent2D, 2, shapeShaderStageCreateInfo, allInOne.shapePipelinLayout, allInOne.renderPass, &allInOne.shapePipeline);
+    PathType shapeTypes[] = {ShapeVertShader, ShapeFragShader};
+    VkShaderModule * shapeTempModule = NULL;
+    Uint32 shapeSetCount =CreateShaderModulesAndDescriptorSets(shapeTypes, 2, &shapeTempModule, &shapeShaderStageCreateInfo, &shapeDescriptorSetLayout, &allInOne.shapePipelineLayout);
+    createDescriptorSets(&graphicDescriptorPool, shapeDescriptorSetLayout, shapeSetCount, 1, &allInOne.pShapeDescriptorSets);
+    createShapePipeline(allInOne.extent2D, 2, shapeShaderStageCreateInfo, allInOne.shapePipelineLayout, allInOne.renderPass, &allInOne.shapePipeline);
 
     // combine Shader
     PathType combineTypes[] = {CombineVertShader, CombineFragShader};
@@ -621,7 +634,7 @@ void initVulkan(void)
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, allInOne.pShadowDescriptorSets, allInOne.pLightSpaceUniformBuffer, 0, sizeof(LightSpace));
 
     // shape
-    // addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, allInOne.pShadowDescriptorSets, allInOne.pGraphic3DUniformBuffer, 0, sizeof(UniformBufferObject));
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, allInOne.pShapeDescriptorSets, allInOne.pGraphic3DUniformBuffer, 0, sizeof(UniformBufferObject));
 
     // SSGI
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3, normalTexture->pDescriptorSet, allInOne.pSSGIUniformBuffer, 0, sizeof(SSGIUniformBufferObject));
