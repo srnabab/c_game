@@ -1293,7 +1293,7 @@ G_Point_Int locatePoint(G_Entity * entity, Uint32 groupRowCount, Uint32 groupCol
 
     G_Point_Int tileCenter = locatePointInGroup(clampPointX, clampPointY, group);
 
-    print("center (%d, %d)", tileCenter.x - distanceX, tileCenter.y - distanceY);
+    // print("center (%d, %d)", tileCenter.x - distanceX, tileCenter.y - distanceY);
     return (G_Point_Int){tileCenter.x - distanceX, tileCenter.y - distanceY};
 
 fail:
