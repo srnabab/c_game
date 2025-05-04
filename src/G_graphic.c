@@ -45,7 +45,7 @@ static bool initSDL(void)
 {
     /*initialize sdl
     timer, audio, video, event, joysitck, haptic, gamecontroller, sensor*/
-    if (!SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO)) 
+    if (!SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_GAMEPAD)) 
     {
         //todo
         //add result juadge for sdl

@@ -16,7 +16,7 @@ void createShaderModuleFromFile(PathType type, VkShaderModule * pShaderModule)
     if ((shaderFile = SDL_IOFromFile(getPath(type), "rb+")) == NULL)
     {
         print("open file %s failed", getPath(type));
-        cleanVulkan();
+        resultVulkan(VK_ERROR_INITIALIZATION_FAILED, 0);
     }
 
     SDL_SeekIO(shaderFile, 0, SDL_IO_SEEK_END);

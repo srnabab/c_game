@@ -277,7 +277,7 @@ void createLogicalDevice(void)
 
     if (!supportedFeatures.samplerAnisotropy)
     {
-        cleanVulkan();
+        resultVulkan(VK_ERROR_INITIALIZATION_FAILED, 0);
     }
     
     const Uint32 requiredDeviceExtensionCount = 1;
