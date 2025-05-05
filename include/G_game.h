@@ -18,6 +18,8 @@ extern int SDLCALL render(void *);
 // Function to destroy SDL window and renderer
 extern int SDLCALL signal_trans (void *);
 
+extern void SDLCALL pauseCode(void);
+
 // int flow_control(void *);
 
 extern void SDL_NORETURN destroy(void);

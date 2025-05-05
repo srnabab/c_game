@@ -1,6 +1,6 @@
 #include "G_threadPool.h"
+#include "G_log.h"
 #include "SDL3/SDL_timer.h"
-#include "SDL3/SDL_log.h"
 
 static int threadFunc(void * data)
 {
@@ -63,6 +63,7 @@ static int processTrace(void * data)
             }
 
             *innerTrace.taskAllDone = TRACE_DONE;
+            // print("trace inner indices: %p(free)", innerTrace.threadIndices);
             SDL_free(innerTrace.threadIndices);
             innerTrace.threadIndices = NULL;
         }
@@ -239,6 +240,7 @@ int * G_AddTask(G_Thread_Pool * pThreadPool, int itemCount, int minRange, G_Task
     tempTrace.threadUsedCount = threadsNeedCount;
 
     tempTrace.threadIndices = (int*)SDL_malloc(threadsNeedCount * sizeof(int));
+    // print("trace index address: %p(alloc)", tempTrace.threadIndices);
 
     SDL_LockMutex(pThreadPool->ThreadPoolMutex);
     for (int i = 0;i < 128;i++)

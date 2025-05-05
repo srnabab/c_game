@@ -15,6 +15,19 @@
 
 extern G_SYNC allSync;
 
+// static bool windowBackgroud(void * userdata, SDL_Event * event)
+// {
+//     switch (event->type)
+//     {
+//         case SDL_EVENT_WILL_ENTER_BACKGROUND:
+//             pauseCode();
+//             SDL_Delay(20);
+//             break;
+    
+//         default: return true;
+//     }
+
+// }
 static bool initAllSync(void)
 {
     allSync.inputMutex = SDL_CreateMutex();
@@ -104,6 +117,8 @@ void setup(int argc, char* argv[])
         res = -7;
         goto clean;
     }
+
+    // SDL_AddEventWatch(windowBackgroud, NULL);
 
     res = SDL_StopTextInput(window_3D);
     if (res == false)

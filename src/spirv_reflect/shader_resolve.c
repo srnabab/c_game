@@ -35,8 +35,8 @@ VkPipelineShaderStageCreateInfo ** ppShaderStageCreateInfo, VkDescriptorSetLayou
 
     SpvReflectResult spv_result;
     
-    char ** entryName = (char **)SDL_malloc(shaderCount * sizeof(char*));
-    for (i = 0;i < shaderCount;i++) entryName[i] = (char*)SDL_malloc(255 * sizeof(char));
+    // char ** entryName = (char **)SDL_malloc(shaderCount * sizeof(char*));
+    // for (i = 0;i < shaderCount;i++) entryName[i] = (char*)SDL_malloc(255 * sizeof(char));
 
     *ppShaderModule = (VkShaderModule*)SDL_malloc(shaderCount * sizeof(VkShaderModule));
     *ppShaderStageCreateInfo = (VkPipelineShaderStageCreateInfo*)SDL_malloc(shaderCount * sizeof(VkPipelineShaderStageCreateInfo));

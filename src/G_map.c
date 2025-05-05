@@ -1238,6 +1238,8 @@ bool moveBottomImage(Uint32 currentFrame)
     // print("signal bottom");
     SDL_SignalSemaphore(allSync.bottomSemaphore);
 
+    SDL_free(notShaderReadOnly);
+
     return true;
 }
 static G_Point_Int locatePointInGroup(int32_t x, int32_t y, Map_Group * group)

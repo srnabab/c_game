@@ -352,6 +352,11 @@ static void setKeysByScancode(void)
         if (keyState[i]) keys[i] = true;
     }
 }
+void pauseCode(void)
+{
+    keys[SDL_SCANCODE_PAUSE] = false;
+    preKeys[SDL_SCANCODE_PAUSE] = true;
+}
 // Function to poll SDL events and process keyboard input
 bool process_input(void)
 {
@@ -361,15 +366,11 @@ bool process_input(void)
 
     if (willPopWindow())
     {
-        preScene = scene;
-        scene = Pause_Scene;
+        pauseCode();
         
         popWindow();
 
-        scene = preScene;
-        preScene = Pause_Scene;
-        SDL_SignalSemaphore(allSync.updateSemaphore);
-        SDL_SignalSemaphore(allSync.renderSemaphore);
+        pauseCode();
     }
 
     setKeysByScancode();
@@ -381,21 +382,17 @@ bool process_input(void)
         SDL_Keycode key = event.key.key;
         // print("preKeyState: %u, keyState: %u, key: %s(%u)", preKeyState, event.type, SDL_GetKeyName(key), key);
         // print("pressed Key:%u", pressedKey);
+        // print("event type: %u", event.type);
         
         if (event.type == SDL_EVENT_WINDOW_MINIMIZED)
         {
-            preScene = scene;
-            scene = Pause_Scene;
-            SDL_Delay(50);
+            pauseCode();
         }
         else if (event.type == SDL_EVENT_WINDOW_RESTORED)
         {
             SDL_RaiseWindow(window_3D);
 
-            scene = preScene;
-            preScene = Pause_Scene;
-            SDL_SignalSemaphore(allSync.updateSemaphore);
-            SDL_SignalSemaphore(allSync.renderSemaphore);
+            pauseCode();
         }
         else if (event.type == SDL_EVENT_KEY_DOWN)
         {
@@ -489,66 +486,38 @@ bool process_input(void)
                 SDL_SignalSemaphore(allSync.updateSemaphore);
                 SDL_SignalSemaphore(allSync.renderSemaphore);
             }
-            else if (key == SDLK_PAUSE)
-            {
-                if (scene == Pause_Scene)
-                {
-                    scene = preScene;
-                    preScene = Pause_Scene;
-                    SDL_SignalSemaphore(allSync.updateSemaphore);
-                    SDL_SignalSemaphore(allSync.renderSemaphore);
-                }
-                else
-                {
-                    preScene = scene;
-                    scene = Pause_Scene;
-                }
-            }
         }
-
-        if (scene == First_Scene)
+        else if (event.type == SDL_EVENT_KEY_UP)
         {
+            Uint32 scancode = keyToScancode(key);
+            preKeys[scancode] = keys[scancode];
+            keys[scancode] = false;
+            repeatKeys[scancode] = event.key.repeat;
+        }
+        else if (event.type == SDL_EVENT_MOUSE_MOTION)
+        {
+            //print("mouse moving: %d", event.type);
+            // print("mouse: (%f, %f)", event.motion.x, event.motion.y);
 
-            if (event.type == SDL_EVENT_MOUSE_MOTION)
+            SDL_LockMutex(allSync.inputMutex);
+            mouse_x = event.motion.x;
+            mouse_y = event.motion.y;
+            SDL_UnlockMutex(allSync.inputMutex);
+        }
+        else if (event.type == SDL_EVENT_MOUSE_BUTTON_UP)
+        {
+            ;
+        }
+        else if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
+        {
+            if (leftButtonEnabled && (ballCount < 2000/*ball count*/))
             {
-                //print("mouse moving: %d", event.type);
-                // print("mouse: (%f, %f)", event.motion.x, event.motion.y);
-
-                SDL_LockMutex(allSync.inputMutex);
-                mouse_x = event.motion.x;
-                mouse_y = event.motion.y;
-                SDL_UnlockMutex(allSync.inputMutex);
-            }
-            else if (event.type == SDL_EVENT_MOUSE_BUTTON_UP)
-            {
-                ;
-            }
-            else if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
-            {
-                if (leftButtonEnabled && (ballCount < 2000/*ball count*/))
+                if (event.button.button == SDL_BUTTON_LEFT)
                 {
-                    if (event.button.button == SDL_BUTTON_LEFT)
-                    {
-                        leftButtonClickedTimes++;
-                        ballCount++;
-                        // ballAdd = true;
-                    }
+                    leftButtonClickedTimes++;
+                    ballCount++;
+                    // ballAdd = true;
                 }
-            }
-            else if (event.type == SDL_EVENT_KEY_UP)
-            {
-                Uint32 scancode = keyToScancode(key);
-                preKeys[scancode] = keys[scancode];
-                keys[scancode] = false;
-                repeatKeys[scancode] = event.key.repeat;
-            }
-            else if (event.type == SDL_EVENT_KEY_DOWN)
-            {
-                Uint32 scancode = keyToScancode(key);
-
-                preKeys[scancode] = keys[scancode];
-                keys[scancode] = true;
-                repeatKeys[scancode] = event.key.repeat;
             }
         }
 
@@ -556,25 +525,21 @@ bool process_input(void)
         {
             case SDL_EVENT_QUIT:
 
-            preScene = scene;
-            scene = Pause_Scene;
+            pauseCode();
 
             SDL_ShowMessageBox(boxData, &buttonId);
 
             if (buttonId == 2)
             {
-                SDL_SignalSemaphore(allSync.updateSemaphore);
-                SDL_SignalSemaphore(allSync.renderSemaphore);
+                pauseCode();
+
                 game_is_running = false;
 
                 return true;
             }
             else if (buttonId == 1)
             {
-                scene = preScene;
-                preScene = Pause_Scene;
-                SDL_SignalSemaphore(allSync.updateSemaphore);
-                SDL_SignalSemaphore(allSync.renderSemaphore);
+                pauseCode();
             }
             break;
 

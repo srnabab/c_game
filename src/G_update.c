@@ -10,6 +10,7 @@
 #include "G_scene.h"
 #include "G_music.h"
 #include "G_custom_math.h"
+#include "G_pop_window.h"
 #include "G_TileMap/G_TileSet.h"
 
 #include "vk_code_h/vk_all_struct.h"
@@ -52,6 +53,23 @@ static bool textDisplay = false;
 
 static void processKeys(void)
 {
+    if (!keys[SDL_SCANCODE_PAUSE] && preKeys[SDL_SCANCODE_PAUSE])
+    {
+        preKeys[SDL_SCANCODE_PAUSE] = false;
+
+        if (scene == Pause_Scene)
+        {
+            scene = preScene;
+            preScene = Pause_Scene;
+            SDL_SignalSemaphore(allSync.renderSemaphore);
+        }
+        else
+        {
+            preScene = scene;
+            scene = Pause_Scene;
+        }
+    }
+
     if (keys[SDL_SCANCODE_ESCAPE])
     {
         Mix_HaltMusic();
@@ -166,17 +184,12 @@ int update(void * arg)
     Uint64 totalTimeNs = 0;
     float totalTime = 0.0f;
     
-    bool recovreyPause = false;
-    bool sceneCleaned = false;
-
     G_Point_Int tileCenter = {0, 0};
     ShapeConstants shapePushConstants = {};
     shapePushConstants.pos[0] = 0.0f;
     shapePushConstants.pos[1] = 0.0f;
     shapePushConstants.scale[0] = 0.053333333f;
     shapePushConstants.scale[1] = 0.053333333f;
-
-
 
     Uint32 currentFrame;
 
@@ -225,13 +238,13 @@ int update(void * arg)
     while (game_is_running)
     {
         SDL_WaitSemaphore(allSync.updateSemaphore);
-        if (preScene == Pause_Scene && recovreyPause)
-        {
-            while(SDL_TryWaitSemaphore(allSync.vertexSemaphore));
+        // if (preScene == Pause_Scene && recovreyPause)
+        // {
+        //     while(SDL_TryWaitSemaphore(allSync.vertexSemaphore));
 
-            last_frame_time = SDL_GetPerformanceCounter();
-            recovreyPause = false;
-        }
+        //     last_frame_time = SDL_GetPerformanceCounter();
+        //     recovreyPause = false;
+        // }
 
         Uint64 tempTime = SDL_GetPerformanceCounter();
         delta_time_ns = ((tempTime - last_frame_time) * 1000000000ULL) / frequency;
@@ -240,10 +253,21 @@ int update(void * arg)
         delta_time = delta_time_ns / ((float)S_TO_NS);
         totalTime = totalTimeNs / ((float)S_TO_NS);
 
-        currentFrame = allInOne.currentFrame;
-
         processKeys();
+
+        if (scene == Pause_Scene)
+        {
+            SDL_SignalSemaphore(allSync.updateSemaphore);
+            SDL_SignalSemaphore(allSync.vertexSemaphore);
+            update_done = false;
+            continue;
+        }
+        else
+        {
+            SDL_TryWaitSemaphore(allSync.vertexSemaphore);
+        }
         
+        currentFrame = allInOne.currentFrame;
         // particle 
         allInOne.pComputeUbo->deltaTime = delta_time;
 
@@ -256,7 +280,7 @@ int update(void * arg)
         float x, y, z;
         float factor_x = LIGHT_HEIGHT / (allInOne.extent2D.width / 2);
         float factor_y = LIGHT_HEIGHT / (allInOne.extent2D.height / 2);
-        
+
         // shadow map
         SDL_LockMutex(allSync.inputMutex);
         x = mouse_x - (allInOne.extent2D.width / 2);
@@ -328,146 +352,141 @@ int update(void * arg)
         memcpy(allInOne.ppUIUniformBufferMapped[currentFrame], pUIUbo, sizeof(UniformBufferObject));
         SDL_SignalSemaphore(allSync.vertexSemaphore);
 
-        if (scene == Pause_Scene)
+        static int id_click = 0;
+        if (leftButtonClickedTimes)
         {
-            recovreyPause = true;
-        }
-        else
-        {
-            static int id_click = 0;
-            if (leftButtonClickedTimes)
+            leftButtonEnabled = false;
+            if (intervalIsDone(f32_ms_to_ns(58.8), &id_click, 1))
             {
-                leftButtonEnabled = false;
-                if (intervalIsDone(f32_ms_to_ns(58.8), &id_click, 1))
-                {
-                    SDL_LockMutex(allSync.updateMutex);
-
-                    leftButtonClickedTimes = 0;
-                    leftButtonEnabled = true;
-                    id_click = 0;
-
-                    SDL_UnlockMutex(allSync.updateMutex);
-                }
-            }
-
-            if (resolutionChanged2)
-            {
-                rowCount = colCount = 0;
-                setMapBottom(allInOne.extent2D.width, allInOne.extent2D.height, *pCamera_X * (allInOne.extent2D.width / 2), *pCamera_Y * (allInOne.extent2D.height / 2), &rowCount, &colCount, &firstBottom_X, &firstBottom_Y, &baseX, &baseY, &groupID);
-                resolutionChanged2 = false;
-            }
-
-            EntityMove(&camera, delta_time);
-            if (camera.direction[0] || camera.direction[1] || camera.direction[2] || camera.direction[3])
-            {
-                *pCamera_X = camera.position[0];
-                *pCamera_Y = camera.position[1];
-
-                setMapBottom(allInOne.extent2D.width, allInOne.extent2D.height, *pCamera_X * (allInOne.extent2D.width / 2), *pCamera_Y * (allInOne.extent2D.height / 2), &rowCount, &colCount, &firstBottom_X, &firstBottom_Y, &baseX, &baseY, &groupID);
                 SDL_LockMutex(allSync.updateMutex);
-                memcpy(allInOne.pTimeMapTexCoordBufferMapped[currentFrame], allInOne.pTileMapUVs, sizeof(vec2) * VERTEX_COUNT_IN_UNIT_2D * MAX_TILES_IN_GROUP * (allInOne.bottomImageDrawStack.top + 1));
+
+                leftButtonClickedTimes = 0;
+                leftButtonEnabled = true;
+                id_click = 0;
+
                 SDL_UnlockMutex(allSync.updateMutex);
             }
+        }
 
-            if (scene == First_Scene)
+        if (resolutionChanged2)
+        {
+            rowCount = colCount = 0;
+            setMapBottom(allInOne.extent2D.width, allInOne.extent2D.height, *pCamera_X * (allInOne.extent2D.width / 2), *pCamera_Y * (allInOne.extent2D.height / 2), &rowCount, &colCount, &firstBottom_X, &firstBottom_Y, &baseX, &baseY, &groupID);
+            resolutionChanged2 = false;
+        }
+
+        EntityMove(&camera, delta_time);
+        if (camera.direction[0] || camera.direction[1] || camera.direction[2] || camera.direction[3])
+        {
+            *pCamera_X = camera.position[0];
+            *pCamera_Y = camera.position[1];
+
+            setMapBottom(allInOne.extent2D.width, allInOne.extent2D.height, *pCamera_X * (allInOne.extent2D.width / 2), *pCamera_Y * (allInOne.extent2D.height / 2), &rowCount, &colCount, &firstBottom_X, &firstBottom_Y, &baseX, &baseY, &groupID);
+            SDL_LockMutex(allSync.updateMutex);
+            memcpy(allInOne.pTimeMapTexCoordBufferMapped[currentFrame], allInOne.pTileMapUVs, sizeof(vec2) * VERTEX_COUNT_IN_UNIT_2D * MAX_TILES_IN_GROUP * (allInOne.bottomImageDrawStack.top + 1));
+            SDL_UnlockMutex(allSync.updateMutex);
+        }
+
+        if (scene == First_Scene)
+        {
+            if (!Mix_PlayingMusic() && !playedMusic)
             {
-                if (!Mix_PlayingMusic() && !playedMusic)
+                playMusic("test");
+                Mix_VolumeMusic(0);
+                playedMusic = true;
+            }
+
+            accumlateTime(delta_time_ns);
+            // print("TotalTime: %fms", totalTime);
+
+            if (textDisplay)
+            {
+                Uint32 textLen = 0;
+                if (textLine == 2) getTextUV("一二三", &textLen);
+                else if (textLine == 1) getTextUV("哈哈哈哈哈哈哈哈哈", &textLen);
+
+                // pushMessage(SDL_MESSAGEBOX_INFORMATION, "textline", "textLine: %u", textLine);
+
+                if (textLine < 3)
                 {
-                    playMusic("test");
-                    Mix_VolumeMusic(0);
-                    playedMusic = true;
-                }
-
-                accumlateTime(delta_time_ns);
-                // print("TotalTime: %fms", totalTime);
-
-                if (textDisplay)
-                {
-                    Uint32 textLen = 0;
-                    if (textLine == 2) getTextUV("一二三", &textLen);
-                    else if (textLine == 1) getTextUV("哈哈哈哈哈哈哈哈哈", &textLen);
-
-                    if (textLine < 3)
+                    getTexture(TEXTURE_FONT)->refCount = 0;
+                    for (Uint32 i = 0;i < textLen;i++)
                     {
-                        getTexture(TEXTURE_FONT)->refCount = 0;
-                        for (Uint32 i = 0;i < textLen;i++)
-                        {
-                            textureVertexInit_SetUV(-300.0 + (float)i * FONT_SIZE, -100.0, FONT_SIZE, FONT_SIZE, 0.1f, &allInOne.vertices2DCount, allInOne.pVertices2D, UVs[i], getTexture(TEXTURE_FONT));
-                        }
+                        textureVertexInit_SetUV(-300.0 + (float)i * FONT_SIZE, -100.0, FONT_SIZE, FONT_SIZE, 0.1f, &allInOne.vertices2DCount, allInOne.pVertices2D, UVs[i], getTexture(TEXTURE_FONT));
                     }
-                    textDisplay = false;
                 }
+                textDisplay = false;
+            }
 
-                // static int id_test = 0;
-                // int test_a = -1;
-                // addTimerFunc(u32_s_to_ns(1), &id_test, 10, test, &test_a);
+            // static int id_test = 0;
+            // int test_a = -1;
+            // addTimerFunc(u32_s_to_ns(1), &id_test, 10, test, &test_a);
 
-                EntityMove(&mPoint, delta_time);
-                tileCenter = locatePoint(&mPoint, rowCount, colCount, firstBottom_X, firstBottom_Y, groupID);
-                shapePushConstants.pos[0] = (float)tileCenter.x / (allInOne.extent2D.width / 2);
-                shapePushConstants.pos[1] = (float)tileCenter.y / (allInOne.extent2D.height / 2);
-                shapePushConstants.scale[0] = (float)18 / (allInOne.extent2D.width / 2);
-                shapePushConstants.scale[1] = (float)18 / (allInOne.extent2D.height / 2);
+            EntityMove(&mPoint, delta_time);
+            tileCenter = locatePoint(&mPoint, rowCount, colCount, firstBottom_X, firstBottom_Y, groupID);
+            shapePushConstants.pos[0] = (float)tileCenter.x / (allInOne.extent2D.width / 2);
+            shapePushConstants.pos[1] = (float)tileCenter.y / (allInOne.extent2D.height / 2);
+            shapePushConstants.scale[0] = (float)18 / (allInOne.extent2D.width / 2);
+            shapePushConstants.scale[1] = (float)18 / (allInOne.extent2D.height / 2);
 
-                // print("mPoint: (%d, %d)", (int32_t)mPoint.position.x, (int32_t)mPoint.position.y);
-                // SDL_LockMutex(sdl_mutex_2);
-                // if (pictureMove[0])
-                // {
-                //     *allInOne.pPictureY += 200 * delta_time;
-                //     //print("y: %f, enabled: %d, delta time: %lf, last_frame_time: %lu ----%s", *allInOne.pPictureY, pictureMove[0], delta_time, last_frame_time, timeNow);
-                // }
-                // if (pictureMove[1])
-                // {
-                //     *allInOne.pPictureY -= 200 * delta_time;
-                // }
-                // if (pictureMove[2])
-                // {
-                //     *allInOne.pPictureX -= 200 * delta_time;
-                // }
-                // if (pictureMove[3])
-                // {
-                //     *allInOne.pPictureX += 200 * delta_time;
-                // }
-                // if (scale)
-                // {
-                //     glm_scale_self(allInOne.ppVertices2D, 2.0f, 1);
-                // }
-                // if (pictureMove[0] | pictureMove[1] | pictureMove[2] | pictureMove[3] | scale)
-                // {
-                //     updatePosition(*allInOne.pPictureX, *allInOne.pPictureY, allInOne.pExtent2D, allInOne.ppVertices2D, 1);
-                //     scale = false;
-                // }
-                // SDL_UnlockMutex(sdl_mutex_2);
+            // print("mPoint: (%d, %d)", (int32_t)mPoint.position.x, (int32_t)mPoint.position.y);
+            // SDL_LockMutex(sdl_mutex_2);
+            // if (pictureMove[0])
+            // {
+            //     *allInOne.pPictureY += 200 * delta_time;
+            //     //print("y: %f, enabled: %d, delta time: %lf, last_frame_time: %lu ----%s", *allInOne.pPictureY, pictureMove[0], delta_time, last_frame_time, timeNow);
+            // }
+            // if (pictureMove[1])
+            // {
+            //     *allInOne.pPictureY -= 200 * delta_time;
+            // }
+            // if (pictureMove[2])
+            // {
+            //     *allInOne.pPictureX -= 200 * delta_time;
+            // }
+            // if (pictureMove[3])
+            // {
+            //     *allInOne.pPictureX += 200 * delta_time;
+            // }
+            // if (scale)
+            // {
+            //     glm_scale_self(allInOne.ppVertices2D, 2.0f, 1);
+            // }
+            // if (pictureMove[0] | pictureMove[1] | pictureMove[2] | pictureMove[3] | scale)
+            // {
+            //     updatePosition(*allInOne.pPictureX, *allInOne.pPictureY, allInOne.pExtent2D, allInOne.ppVertices2D, 1);
+            //     scale = false;
+            // }
+            // SDL_UnlockMutex(sdl_mutex_2);
 
-                // size_t bufferSize = sizeof(Vertex332) * count;
+            // size_t bufferSize = sizeof(Vertex332) * count;
 
-                // Uint32 indiceCount = *allInOne.pIndicesCount;
-                // size_t bufferSize2 = sizeof(uint16_t) * indiceCount;
+            // Uint32 indiceCount = *allInOne.pIndicesCount;
+            // size_t bufferSize2 = sizeof(uint16_t) * indiceCount;
 
-                // if (ballAdd)
-                // {
-                //     //allInOne.pVertices2D = (Vertex332 *)realloc(allInOne.pVertices2D, count * sizeof(Vertex332));
-                //     int x = SDL_rand(250);
-                //     if (SDL_rand(2))
-                //     {
-                //         x *= -1;
-                //     }
-                //     // float averagePhysicalCoffect = (physicalCoffectX + physicalCoffectY) / 2.0f;
-                //     textureVertexInit(x * physicalCoffectX, 280 * physicalCoffectY, 16 * physicalCoffectY, 16 * physicalCoffectY, 0.9, allInOne.vertices2DCount, allInOne.pVertices2D, getTexture(TEXTURE_CIRCLE));
+            // if (ballAdd)
+            // {
+            //     //allInOne.pVertices2D = (Vertex332 *)realloc(allInOne.pVertices2D, count * sizeof(Vertex332));
+            //     int x = SDL_rand(250);
+            //     if (SDL_rand(2))
+            //     {
+            //         x *= -1;
+            //     }
+            //     // float averagePhysicalCoffect = (physicalCoffectX + physicalCoffectY) / 2.0f;
+            //     textureVertexInit(x * physicalCoffectX, 280 * physicalCoffectY, 16 * physicalCoffectY, 16 * physicalCoffectY, 0.9, allInOne.vertices2DCount, allInOne.pVertices2D, getTexture(TEXTURE_CIRCLE));
 
-                //     ballStack.pushFn(&ballStack, &x);
-                //     //print("indices count: %u\n", indiceCount);
-                //     //*allInOne.ppIndices = (uint16_t *)realloc(*allInOne.ppIndices, indiceCount * sizeof(uint16_t));
+            //     ballStack.pushFn(&ballStack, &x);
+            //     //print("indices count: %u\n", indiceCount);
+            //     //*allInOne.ppIndices = (uint16_t *)realloc(*allInOne.ppIndices, indiceCount * sizeof(uint16_t));
 
-                //     ballAdd = false;
-                // }
-            
-                static int id_timeStep = 0;
-                while (intervalIsDone(f32_s_to_ns(TIME_STEP), &id_timeStep, -1))
-                {
-                    updateCircle(); 
-                    // accumulator -= timeStep;
-                }
+            //     ballAdd = false;
+            // }
+        
+            static int id_timeStep = 0;
+            while (intervalIsDone(f32_s_to_ns(TIME_STEP), &id_timeStep, -1))
+            {
+                updateCircle(); 
+                // accumulator -= timeStep;
             }
 
             vertexEnd = allInOne.vertices2DCount;
@@ -479,7 +498,7 @@ int update(void * arg)
             memcpy(allInOne.pIndexBuffer3DMemMapped[currentFrame], allInOne.pIndices3D, 45000 * sizeof(Uint32));
             // SDL_SignalSemaphore(allSync.vertexSemaphore);
 
-            allInOne.pPushConstants->rotation = totalTime * glm_rad(580.0f);
+            allInOne.pPushConstants->rotation += delta_time * glm_rad(580.0f);
             
             SDL_UnlockMutex(allSync.updateMutex);
 

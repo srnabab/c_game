@@ -3,12 +3,14 @@
 #include "G_log.h"
 #include "G_struct.h"
 #include "vk_code_h/vk_present.h"
+#include "vk_code_h/vk_recreate.h"
 #include "vk_code_h/vk_all_struct.h"
 
 extern VK_ALL allInOne;
 extern G_SYNC allSync;
 extern bool game_is_running;
 extern bool draw_done;
+extern bool resolutionChanged;
 
 // Render function to draw game objects in the SDL window_2D
 int render(void * arg) 
@@ -21,11 +23,11 @@ int render(void * arg)
     {
         SDL_WaitSemaphore(allSync.renderSemaphore);
 
-        // if (resolutionChanged)
-        // {
-        //     recreateSwapchain(currentFrame);
-        //     resolutionChanged = false;
-        // }
+        if (resolutionChanged)
+        {
+            recreateSwapchain(currentFrame);
+            resolutionChanged = false;
+        }
 
         bottomMoved = moveBottomImage(currentFrame);
 

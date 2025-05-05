@@ -64,6 +64,8 @@ void createFrameBuffer(uint32_t imageCount, Uint32 width, Uint32 height, Uint32 
             resultVulkan(vkCreateFramebuffer(allInOne.device, &framebufferInfo, allInOne.pAllocationCallbacks, &((*pSwapchainFramebuffer)[i])), 2, pImageViewAttachments, *pSwapchainFramebuffer);
         }
     }
+
+    SDL_free(pImageViewAttachments);
     //printf("swapchain framebuffer created\n");
 }
 void createFrameBufferByImageArray(Uint32 imageCount, Uint32 width, Uint32 height, VkImageView * pImageViews, VkRenderPass renderPass, VkFramebuffer ** pFrameBuffer)
