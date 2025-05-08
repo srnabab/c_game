@@ -20,7 +20,7 @@ void initializeMovingBuffer(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevi
 }
 void vertexInitialize(float x, float y, float width, float height, float depth, Uint32 vertexCount, Vertex332 * pVertices)
 {
-    float WindowHeight = (float)allInOne.extent2D.height;
+    float WindowHeight = (float)LOGICAL_HEIGHT;
     float xOffset = width / (WindowHeight / 2);
     float yOffset = height / (WindowHeight / 2);
 

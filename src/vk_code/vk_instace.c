@@ -131,6 +131,7 @@ void createInstance(void)
         layersCount = 0;
         print("validation layers not found");
     }
+    // layersCount = 0;
 
     uint32_t extensionCount = 0;
     resultVulkan(vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, NULL), 0);

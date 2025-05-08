@@ -45,7 +45,7 @@ static bool initSDL(void)
 {
     /*initialize sdl
     timer, audio, video, event, joysitck, haptic, gamecontroller, sensor*/
-    if (!SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_GAMEPAD)) 
+    if (!SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD)) 
     {
         //todo
         //add result juadge for sdl
@@ -68,8 +68,10 @@ SDL_Window * window_3D = NULL;
 SDL_DisplayID displayId = 0;
 
 // windows' width and height
-Uint32 width = 600;
-Uint32 height = 600;
+// Uint32 width = 800;
+// Uint32 height = 600;
+Uint32 width = 1920;
+Uint32 height = 1080;
 
 float physicalCoffectX = 1.0f;
 float physicalCoffectY = 1.0f;

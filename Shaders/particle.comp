@@ -53,6 +53,7 @@ bool in_circle(vec2 position, float radius)
 }
 void main() 
 {
+    return;
     uint index = gl_GlobalInvocationID.x;  
 
     Particle particleIn = particlesIn[index];

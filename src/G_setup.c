@@ -177,6 +177,14 @@ void setup(int argc, char* argv[])
 
     loadMusic((char*)getPath(MainBackgroundMusic1Wav), "test");
 
+    res = SDL_HasGamepad();
+    if (res)
+    {
+        int32_t gamepadCount = 0;
+        SDL_JoystickID * gamepadIDs = SDL_GetGamepads(&gamepadCount);
+        SDL_OpenGamepad(gamepadIDs[0]);
+    }
+
     sdl_pid_update = SDL_CreateThread(&update, "update", NULL);
     sdl_pid_draw = SDL_CreateThread(&render, "render", NULL);
     sdl_pid_signal = SDL_CreateThread(&signal_trans, "signal", NULL);

@@ -44,6 +44,7 @@ typedef struct _G_Entity G_Entity;
 
 extern void SDLCALL EntityMove(G_Entity * entity, float deltaTime);
 extern void SDLCALL initEntity(G_Entity * entity, float x, float y, float speed);
+extern void SDLCALL setEntityPosition(G_Entity * entity, float x, float y);
 
 #include "SDL3/SDL_close_code.h"
 

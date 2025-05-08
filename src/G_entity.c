@@ -57,3 +57,8 @@ void EntityMove(G_Entity * entity, float deltaTime)
         entity->position[1] += distance;
     }
 }
+void setEntityPosition(G_Entity * entity, float x, float y)
+{
+    entity->position[0] = x;
+    entity->position[1] = y;
+}

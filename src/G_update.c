@@ -22,21 +22,18 @@
 
 extern VK_ALL allInOne;
 extern G_SYNC allSync;
-extern bool update_done;
+extern bool update_done, draw_done;
 extern bool game_is_running;
 
-extern bool keys[SDL_SCANCODE_COUNT];
-extern bool preKeys[SDL_SCANCODE_COUNT];
-extern bool repeatKeys[SDL_SCANCODE_COUNT];
+extern bool keys[SDL_SCANCODE_COUNT + UINT8_MAX];
+extern bool preKeys[SDL_SCANCODE_COUNT + UINT8_MAX];
+extern bool repeatKeys[SDL_SCANCODE_COUNT + UINT8_MAX];
 
 extern G_Stack ballStack;
 extern vec2 UVs[MAX_CHARACTERS][FOUR_POINT];
 
-static G_Entity mPoint = {};
-static G_Entity camera = {};
-
-extern Scene preScene;
-extern Scene scene;
+static Scene preScene = First_Scene;
+static Scene scene = First_Scene;
 
 extern float mouse_x;
 extern float mouse_y;
@@ -51,10 +48,15 @@ extern Uint32 ballCount;
 static Uint32 textLine = 0;
 static bool textDisplay = false;
 
+static G_Entity mPoint = {};
+static G_Entity camera = {};
+static G_Entity mouse = {};
+
 static void processKeys(void)
 {
-    if (!keys[SDL_SCANCODE_PAUSE] && preKeys[SDL_SCANCODE_PAUSE])
+    if (!keys[SDL_SCANCODE_PAUSE] && preKeys[SDL_SCANCODE_PAUSE] && !repeatKeys[SDL_SCANCODE_PAUSE])
     {
+        print("%u, %u, %u", keys[SDL_SCANCODE_PAUSE], preKeys[SDL_SCANCODE_PAUSE], repeatKeys[SDL_SCANCODE_PAUSE]);
         preKeys[SDL_SCANCODE_PAUSE] = false;
 
         if (scene == Pause_Scene)
@@ -174,7 +176,8 @@ int update(void * arg)
     float * pCamera_Y = allInOne.pCamera_Y;
 
     initEntity(&mPoint, 0.0f, 0.0f, 87.0f);
-    initEntity(&camera, 0.0f, 0.0f, 1.6f);
+    initEntity(&camera, 0.0f, 0.0f, 0.4f);
+    initEntity(&mouse, 0.0f, 0.0f, 0.0f);
     
     bool playedMusic = false;
 
@@ -238,13 +241,6 @@ int update(void * arg)
     while (game_is_running)
     {
         SDL_WaitSemaphore(allSync.updateSemaphore);
-        // if (preScene == Pause_Scene && recovreyPause)
-        // {
-        //     while(SDL_TryWaitSemaphore(allSync.vertexSemaphore));
-
-        //     last_frame_time = SDL_GetPerformanceCounter();
-        //     recovreyPause = false;
-        // }
 
         Uint64 tempTime = SDL_GetPerformanceCounter();
         delta_time_ns = ((tempTime - last_frame_time) * 1000000000ULL) / frequency;
@@ -258,19 +254,26 @@ int update(void * arg)
         if (scene == Pause_Scene)
         {
             SDL_SignalSemaphore(allSync.updateSemaphore);
-            SDL_SignalSemaphore(allSync.vertexSemaphore);
+
+            while (!draw_done) SDL_SignalSemaphore(allSync.vertexSemaphore);
+
+            while (SDL_TryWaitSemaphore(allSync.signalSemaphore));
+
             update_done = false;
             continue;
         }
         else
         {
-            SDL_TryWaitSemaphore(allSync.vertexSemaphore);
+            while(SDL_TryWaitSemaphore(allSync.vertexSemaphore));
         }
-        
+ 
+        SDL_LockMutex(allSync.inputMutex);
+        setEntityPosition(&mouse, mouse_x, mouse_y);
+        SDL_UnlockMutex(allSync.inputMutex);
+       
         currentFrame = allInOne.currentFrame;
         // particle 
         allInOne.pComputeUbo->deltaTime = delta_time;
-
         memcpy(allInOne.ppComputeUniformBufferMapped[currentFrame], allInOne.pComputeUbo, sizeof(ComputeUniformBufferObject));
         SDL_SignalSemaphore(allSync.vertexSemaphore);
 
@@ -282,11 +285,9 @@ int update(void * arg)
         float factor_y = LIGHT_HEIGHT / (allInOne.extent2D.height / 2);
 
         // shadow map
-        SDL_LockMutex(allSync.inputMutex);
-        x = mouse_x - (allInOne.extent2D.width / 2);
-        y = -mouse_y + (allInOne.extent2D.height / 2);
-        // y = 0;
-        SDL_UnlockMutex(allSync.inputMutex);
+        x = mouse.position[0] - (allInOne.extent2D.width / 2);
+        y = -mouse.position[1] + (allInOne.extent2D.height / 2);
+
         x *= factor_x;
         y *= factor_y;
         z = SDL_sqrtf(SDL_powf(LIGHT_HEIGHT, 2) - SDL_powf(x, 2) - SDL_powf(y, 2));
@@ -338,7 +339,7 @@ int update(void * arg)
 
         // UI object
         glm_mat4_identity(pGraphicUbo->model);
-        glm_lookat((vec3){*pCamera_X, *pCamera_Y, 100.0f}, (vec3){*pCamera_X, *pCamera_Y, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pGraphicUbo->view);
+        glm_lookat((vec3){*pCamera_X * aspect, 0.0f + *pCamera_Y * aspect2, 10.0f}, (vec3){*pCamera_X * aspect, *pCamera_Y * aspect2, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pGraphicUbo->view);
         glm_ortho_vulkan(-aspect, aspect, -aspect2, aspect2, -0.001f, -100.0f, pGraphicUbo->proj);
         // glm_ortho(-aspect, aspect, -1.0f, 1.0f, 0.001f, 100.0f, pGraphicUbo->proj);
         // pGraphicUbo->proj[1][1] *= -1;
@@ -382,6 +383,7 @@ int update(void * arg)
             *pCamera_Y = camera.position[1];
 
             setMapBottom(allInOne.extent2D.width, allInOne.extent2D.height, *pCamera_X * (allInOne.extent2D.width / 2), *pCamera_Y * (allInOne.extent2D.height / 2), &rowCount, &colCount, &firstBottom_X, &firstBottom_Y, &baseX, &baseY, &groupID);
+            // print("update_frame: %u", update_frame);
             SDL_LockMutex(allSync.updateMutex);
             memcpy(allInOne.pTimeMapTexCoordBufferMapped[currentFrame], allInOne.pTileMapUVs, sizeof(vec2) * VERTEX_COUNT_IN_UNIT_2D * MAX_TILES_IN_GROUP * (allInOne.bottomImageDrawStack.top + 1));
             SDL_UnlockMutex(allSync.updateMutex);
@@ -424,10 +426,12 @@ int update(void * arg)
 
             EntityMove(&mPoint, delta_time);
             tileCenter = locatePoint(&mPoint, rowCount, colCount, firstBottom_X, firstBottom_Y, groupID);
-            shapePushConstants.pos[0] = (float)tileCenter.x / (allInOne.extent2D.width / 2);
-            shapePushConstants.pos[1] = (float)tileCenter.y / (allInOne.extent2D.height / 2);
-            shapePushConstants.scale[0] = (float)18 / (allInOne.extent2D.width / 2);
-            shapePushConstants.scale[1] = (float)18 / (allInOne.extent2D.height / 2);
+            shapePushConstants.pos[0] = (float)tileCenter.x / (600 / 2);
+            shapePushConstants.pos[1] = (float)tileCenter.y / (600 / 2);
+            shapePushConstants.scale[0] = (float)18 / (600 / 2);
+            // shapePushConstants.scale[0] = 0.1f;
+            shapePushConstants.scale[1] = (float)18 / (600 / 2);
+            // shapePushConstants.scale[1] = 0.1f;
 
             // print("mPoint: (%d, %d)", (int32_t)mPoint.position.x, (int32_t)mPoint.position.y);
             // SDL_LockMutex(sdl_mutex_2);

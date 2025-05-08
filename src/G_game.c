@@ -1,5 +1,6 @@
 #include "G_game.h"
 
+#include "vk_code_h/vk_recreate.h"
 #include "vk_code_h/vk_all_struct.h"
 
 #include "G_music.h"
@@ -34,9 +35,6 @@ Uint32 ballCount = 2;
 extern float physicalCoffectX;
 extern float physicalCoffectY;
 
-Scene scene = First_Scene;
-Scene preScene = Pause_Scene;
-
 bool resolutionChanged = false; 
 bool resolutionChanged2 = false; 
 
@@ -52,9 +50,9 @@ static const Uint32 resolutions[][2] = {
 };
 static int resolutionIndex = 0;
 
-volatile bool keys[SDL_SCANCODE_COUNT];
-volatile bool preKeys[SDL_SCANCODE_COUNT];
-volatile bool repeatKeys[SDL_SCANCODE_COUNT];
+volatile bool keys[SDL_SCANCODE_COUNT + UINT8_MAX];
+volatile bool preKeys[SDL_SCANCODE_COUNT + UINT8_MAX];
+volatile bool repeatKeys[SDL_SCANCODE_COUNT + UINT8_MAX];
 
 static Uint32 keyToScancode(Uint32 key)
 {
@@ -373,7 +371,6 @@ bool process_input(void)
         pauseCode();
     }
 
-    setKeysByScancode();
 
     SDL_Event event;
 
@@ -383,143 +380,8 @@ bool process_input(void)
         // print("preKeyState: %u, keyState: %u, key: %s(%u)", preKeyState, event.type, SDL_GetKeyName(key), key);
         // print("pressed Key:%u", pressedKey);
         // print("event type: %u", event.type);
-        
-        if (event.type == SDL_EVENT_WINDOW_MINIMIZED)
-        {
-            pauseCode();
-        }
-        else if (event.type == SDL_EVENT_WINDOW_RESTORED)
-        {
-            SDL_RaiseWindow(window_3D);
 
-            pauseCode();
-        }
-        else if (event.type == SDL_EVENT_KEY_DOWN)
-        {
-            if (event.key.down && !event.key.repeat)
-            {
-                pressedKey++;
-            }
-            Uint32 scancode = keyToScancode(key);
-
-            preKeys[scancode] = keys[scancode];
-            keys[scancode] = true;
-            repeatKeys[scancode] = event.key.repeat;
-
-            if (key == SDLK_ESCAPE)
-            {
-                return true;
-            }
-            else if (key == SDLK_F6)
-            {
-                preScene = scene;
-                scene = Pause_Scene;
-                SDL_Delay(250);
-
-                resolutionIndex = (resolutionIndex + 1) % (sizeof(resolutions) / sizeof(resolutions[0]));
-
-                allInOne.oldExtent2D.width = allInOne.extent2D.width;
-                allInOne.oldExtent2D.height = allInOne.extent2D.height;
-                allInOne.extent2D.width = resolutions[resolutionIndex][0];
-                allInOne.extent2D.height = resolutions[resolutionIndex][1];
-                
-                SDL_SetWindowSize(window_3D, allInOne.extent2D.width, allInOne.extent2D.height);
-
-                resolutionChanged = true;
-                resolutionChanged2 = true;
-
-                physicalCoffectX = (float)allInOne.extent2D.width / LOGICAL_WIDTH;
-                physicalCoffectY = (float)allInOne.extent2D.height / LOGICAL_HEIGHT;
-                
-                print("sdl width: %u, height: %u", allInOne.extent2D.width, allInOne.extent2D.height);
-
-                scene = preScene;
-                preScene = Pause_Scene;
-                SDL_SignalSemaphore(allSync.updateSemaphore);
-                SDL_SignalSemaphore(allSync.renderSemaphore);
-            }
-            else if (key == SDLK_F10)
-            {
-                print("F10");
-
-                preScene = scene;
-                scene = Pause_Scene;
-                SDL_Delay(50);
-
-                SDL_DisplayMode displayMode = {0};
-
-                SDL_GetClosestFullscreenDisplayMode(displayId, allInOne.extent2D.width, allInOne.extent2D.height, 0, false, &displayMode);
-                SDL_SetWindowFullscreen(window_3D, 1);
-                SDL_SetWindowFullscreenMode(window_3D, &displayMode);
-                SDL_RaiseWindow(window_3D);
-
-                resolutionChanged = true;
-
-                print("fullscreen");
-
-                scene = preScene;
-                preScene = Pause_Scene;
-                SDL_SignalSemaphore(allSync.updateSemaphore);
-                SDL_SignalSemaphore(allSync.renderSemaphore);
-            }
-            else if (key == SDLK_F9)
-            {
-                print("F9");
-
-                preScene = scene;
-                scene = Pause_Scene;
-                SDL_Delay(50);
-
-                SDL_SetWindowFullscreen(window_3D, 0);
-                allInOne.oldExtent2D.width = allInOne.extent2D.width;
-                allInOne.oldExtent2D.height = allInOne.extent2D.height;
-
-                SDL_SetWindowSize(window_3D, allInOne.extent2D.width, allInOne.extent2D.height);
-                SDL_RaiseWindow(window_3D);
-
-                resolutionChanged = true;
-
-                print("windowed");
-
-                scene = preScene;
-                preScene = Pause_Scene;
-                SDL_SignalSemaphore(allSync.updateSemaphore);
-                SDL_SignalSemaphore(allSync.renderSemaphore);
-            }
-        }
-        else if (event.type == SDL_EVENT_KEY_UP)
-        {
-            Uint32 scancode = keyToScancode(key);
-            preKeys[scancode] = keys[scancode];
-            keys[scancode] = false;
-            repeatKeys[scancode] = event.key.repeat;
-        }
-        else if (event.type == SDL_EVENT_MOUSE_MOTION)
-        {
-            //print("mouse moving: %d", event.type);
-            // print("mouse: (%f, %f)", event.motion.x, event.motion.y);
-
-            SDL_LockMutex(allSync.inputMutex);
-            mouse_x = event.motion.x;
-            mouse_y = event.motion.y;
-            SDL_UnlockMutex(allSync.inputMutex);
-        }
-        else if (event.type == SDL_EVENT_MOUSE_BUTTON_UP)
-        {
-            ;
-        }
-        else if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
-        {
-            if (leftButtonEnabled && (ballCount < 2000/*ball count*/))
-            {
-                if (event.button.button == SDL_BUTTON_LEFT)
-                {
-                    leftButtonClickedTimes++;
-                    ballCount++;
-                    // ballAdd = true;
-                }
-            }
-        }
+        Uint32 scancode = 0;
 
         switch (event.type)
         {
@@ -543,12 +405,243 @@ bool process_input(void)
             }
             break;
 
-            case SDL_EVENT_KEY_UP:
+            case SDL_EVENT_WINDOW_MINIMIZED:
+            pauseCode();
+            break;
+
+            case SDL_EVENT_WINDOW_RESTORED:
+            SDL_RaiseWindow(window_3D);
+            resolutionChanged = true;
+            pauseCode();
+            break;
+
+            case SDL_EVENT_MOUSE_MOTION:
+            SDL_LockMutex(allSync.inputMutex);
+            mouse_x = event.motion.x;
+            mouse_y = event.motion.y;
+            SDL_UnlockMutex(allSync.inputMutex);
+            break;
+
+            case SDL_EVENT_MOUSE_BUTTON_UP:
+            break;
+
+            case SDL_EVENT_MOUSE_BUTTON_DOWN:
+            if (leftButtonEnabled && (ballCount < 2000/*ball count*/))
+            {
+                if (event.button.button == SDL_BUTTON_LEFT)
+                {
+                    leftButtonClickedTimes++;
+                    ballCount++;
+                    // ballAdd = true;
+                }
+            }
+            break;
+
+            case SDL_EVENT_KEY_DOWN:
+            if (event.key.down && !event.key.repeat)
+            {
+                pressedKey++;
+            }
+            scancode = keyToScancode(key);
+
+            preKeys[scancode] = keys[scancode];
+            keys[scancode] = true;
+            repeatKeys[scancode] = event.key.repeat;
+
+            switch (key)
+            {
+                case SDLK_ESCAPE:
+                    return true;
+
+                case SDLK_F6:
+                    pauseCode();
+
+                    resolutionIndex = (resolutionIndex + 1) % (sizeof(resolutions) / sizeof(resolutions[0]));
+
+                    allInOne.oldExtent2D.width = allInOne.extent2D.width;
+                    allInOne.oldExtent2D.height = allInOne.extent2D.height;
+                    allInOne.extent2D.width = resolutions[resolutionIndex][0];
+                    allInOne.extent2D.height = resolutions[resolutionIndex][1];
+                    
+                    SDL_SetWindowSize(window_3D, allInOne.extent2D.width, allInOne.extent2D.height);
+
+                    resolutionChanged = true;
+                    resolutionChanged2 = true;
+
+                    physicalCoffectX = (float)allInOne.extent2D.width / LOGICAL_WIDTH;
+                    physicalCoffectY = (float)allInOne.extent2D.height / LOGICAL_HEIGHT;
+                    
+                    print("sdl width: %u, height: %u", allInOne.extent2D.width, allInOne.extent2D.height);
+                    pauseCode();
+                    break;
+
+                case SDLK_F10:
+                    print("F10");
+
+                    pauseCode();
+
+                    SDL_DisplayMode displayMode = {0};
+
+                    SDL_GetClosestFullscreenDisplayMode(displayId, allInOne.extent2D.width, allInOne.extent2D.height, 0, false, &displayMode);
+                    SDL_SetWindowFullscreen(window_3D, 1);
+                    SDL_SetWindowFullscreenMode(window_3D, &displayMode);
+                    SDL_RaiseWindow(window_3D);
+
+                    resolutionChanged = true;
+
+                    print("fullscreen");
+
+                    pauseCode();
+                    break;
+
+                case SDLK_F9:
+                    print("F9");
+
+                    pauseCode();
+
+                    SDL_SetWindowFullscreen(window_3D, 0);
+                    allInOne.oldExtent2D.width = allInOne.extent2D.width;
+                    allInOne.oldExtent2D.height = allInOne.extent2D.height;
+
+                    SDL_SetWindowSize(window_3D, allInOne.extent2D.width, allInOne.extent2D.height);
+                    SDL_RaiseWindow(window_3D);
+
+                    resolutionChanged = true;
+
+                    print("windowed");
+                    pauseCode();
+                    break;
+
+                default:
+                    break;
+            }
+            break;
+
+            case SDL_EVENT_KEY_UP:            
+            scancode = keyToScancode(key);
+            preKeys[scancode] = keys[scancode];
+            keys[scancode] = false;
+            repeatKeys[scancode] = event.key.repeat;
             pressedKey--;
+            break;
+            
+            case SDL_EVENT_GAMEPAD_AXIS_MOTION:
+            
+            switch (event.gaxis.axis)
+            {
+                case SDL_GAMEPAD_AXIS_LEFT_TRIGGER:
+                print("left trigger: %d", event.gaxis.value);
+                break;
+
+                case SDL_GAMEPAD_AXIS_LEFTX:
+                print("left axis x: %d", event.gaxis.value);
+                break;
+
+                case SDL_GAMEPAD_AXIS_LEFTY:
+                print("left axis y: %d", event.gaxis.value);
+                break;
+
+                case SDL_GAMEPAD_AXIS_RIGHTX:
+                print("right axis x: %d", event.gaxis.value);
+                break;
+
+                case SDL_GAMEPAD_AXIS_RIGHTY:
+                print("right axis y: %d", event.gaxis.value);
+                break;
+
+                case SDL_GAMEPAD_AXIS_RIGHT_TRIGGER:
+                print("right trigger: %d", event.gaxis.value);
+                break;
+            }
+            break;
+
+            case SDL_EVENT_GAMEPAD_BUTTON_UP:
+            scancode = event.gbutton.button + SDL_SCANCODE_COUNT;
+            preKeys[scancode] = keys[scancode];
+            keys[scancode] = false;
+            repeatKeys[scancode] =  event.gbutton.down;
+            break;
+
+            case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
+            scancode = event.gbutton.button + SDL_SCANCODE_COUNT;
+            preKeys[scancode] = keys[scancode];
+            keys[scancode] = true;
+            repeatKeys[scancode] =  event.gbutton.down;
+
+            switch (event.gbutton.button)
+            {
+                case SDL_GAMEPAD_BUTTON_WEST:
+                print("X");
+                break;
+
+                case SDL_GAMEPAD_BUTTON_SOUTH:
+                print("A");
+                break;
+
+                case SDL_GAMEPAD_BUTTON_NORTH:
+                print("Y");
+                break;
+
+                case SDL_GAMEPAD_BUTTON_EAST:
+                print("B");
+                break;
+
+                case SDL_GAMEPAD_BUTTON_DPAD_UP:
+                print("up");
+                break;
+
+                case SDL_GAMEPAD_BUTTON_DPAD_DOWN:
+                print("down");
+                break;
+
+                case SDL_GAMEPAD_BUTTON_DPAD_LEFT:
+                print("left");
+                break;
+
+                case SDL_GAMEPAD_BUTTON_DPAD_RIGHT:
+                print("right");
+                break;
+
+                case SDL_GAMEPAD_BUTTON_LEFT_STICK:
+                print("LS");
+                break;
+
+                case SDL_GAMEPAD_BUTTON_RIGHT_STICK:
+                print("RS");
+                break;
+
+                case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER:
+                print("LB");
+                break;
+
+                case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER:
+                print("RB");
+                break;
+
+                case SDL_GAMEPAD_BUTTON_MISC1:
+                print("screenshoot");
+                break;
+
+                case SDL_GAMEPAD_BUTTON_GUIDE:
+                print("big xbox");
+                break;
+
+                case SDL_GAMEPAD_BUTTON_START:
+                print("right small");
+                break;
+
+                case SDL_GAMEPAD_BUTTON_BACK:
+                print("left small");
+                break;
+            }
+
+            default:
             break;
         }
         preKeyState = event.type;
     }
+
+    setKeysByScancode();
 
     // SDL_PumpEvents();
     // if (preKeys[SDL_SCANCODE_T])
@@ -556,10 +649,4 @@ bool process_input(void)
 
     if (game_is_running) return false;
     else return true;
-}
-
-static int test(void * arg)
-{
-    print("test test: %d\n", *((int *)arg));
-    return 0;
 }

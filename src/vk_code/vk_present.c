@@ -299,9 +299,6 @@ static void recordSSGICommandBuffer(Uint32 currentFrame, Uint32 width, Uint32 he
     G_Texture_P * ssgiTexture = getTexture(TEXTURE_SSGI_STORAGE_IMAGE);
     transitionImageLayout(currentCommandBuffer, ssgiTexture, VK_IMAGE_LAYOUT_GENERAL, 0, 1);
 
-    setViewport(allInOne.extent2D, currentCommandBuffer);
-    setScissor(allInOne.extent2D, currentCommandBuffer);
-
     vkCmdBindPipeline(currentCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, allInOne.SSGIPipeline);
 
     VkDescriptorSet descriptorSets[] = {allInOne.pSSGIDescriptorSets[currentFrame], (allInOne.pSSGIDescriptorSets + 2)[currentFrame]};

@@ -801,7 +801,7 @@ void setMapBottom(Uint32 width, Uint32 height, int centerX, int centerY, Uint32 
         FromTo temp;
         for (i = 0;i < rowCount;i++)
         {
-            for (j = columnCount - 1;j > -1;j--)
+            for (j = columnCount - 1;j > 0;j--)
             {
                 temp.from = i * columnCount + j;
                 temp.to = temp.from - 1;
@@ -1058,6 +1058,7 @@ bool moveBottomImage(Uint32 currentFrame)
 
     Uint32 imageMemoryBarrierCount = 0;
     Uint32 * notShaderReadOnly = (Uint32*)SDL_malloc(arrayCap * sizeof(Uint32));
+    // print("address: %p(alloc)", notShaderReadOnly);
     if (notShaderReadOnly == NULL)
     {
         return false;
@@ -1238,6 +1239,7 @@ bool moveBottomImage(Uint32 currentFrame)
     // print("signal bottom");
     SDL_SignalSemaphore(allSync.bottomSemaphore);
 
+    // print("address: %p(free)", notShaderReadOnly);
     SDL_free(notShaderReadOnly);
 
     return true;

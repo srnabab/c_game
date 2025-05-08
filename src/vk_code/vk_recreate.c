@@ -13,8 +13,10 @@
 #include "vk_code_h/vk_descriptorPool.h"
 
 #include "G_log.h"
+#include "G_struct.h"
 
 extern VK_ALL allInOne;
+extern G_SYNC allSync;
 
 void recreateSwapchain(Uint32 currentFrame)
 {
@@ -82,17 +84,21 @@ void recreateSwapchain(Uint32 currentFrame)
 
 
     VkImageView modelImageViews[] = {modelColorTexture->imageView, modelNormalTexture->imageView, seprateShadowTexture->imageView, modelDepthTexutre->imageView};
+
+    SDL_LockMutex(allSync.renderMutex);
     CO_cleanFramebuffer(2, allInOne.pDirectColorFramebuffer);
+    CO_cleanFramebuffer(oldImageCount3D, allInOne.pCombineFramebuffer);
+    CO_cleanFramebuffer(2, allInOne.pGraphic2dFramebuffer);
+
     createFrameBuffer(2, allInOne.extent2D.width, allInOne.extent2D.height, 4, modelImageViews, NULL, allInOne.modelRenderPass, &allInOne.pDirectColorFramebuffer);
     CO_addFrameBuffer(2, allInOne.pDirectColorFramebuffer);// CO
 
-    CO_cleanFramebuffer(oldImageCount3D, allInOne.pCombineFramebuffer);
     createFrameBuffer(allInOne.imageCount3D, allInOne.extent2D.width, allInOne.extent2D.height, 1, NULL, allInOne.pSwapchain3DImageViews, allInOne.combineRenderPass, &allInOne.pCombineFramebuffer);
     CO_addFrameBuffer(allInOne.imageCount3D, allInOne.pCombineFramebuffer);// CO
 
-    CO_cleanFramebuffer(oldImageCount3D, allInOne.pGraphic2dFramebuffer);
     createFrameBuffer(2, allInOne.extent2D.width, allInOne.extent2D.height, 1, &color2dTexture->imageView, NULL, allInOne.renderPass, &allInOne.pGraphic2dFramebuffer);
     CO_addFrameBuffer(2, allInOne.pGraphic2dFramebuffer);// CO
+    SDL_UnlockMutex(allSync.renderMutex);
 
     releaseBufferFromQueue(allInOne.graphicCommandPool, VK_ACCESS_SHADER_READ_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, allInOne.queueFamilyIndices.graphicsFamily.familyIndice, allInOne.queueFamilyIndices.computeFamily.familyIndice\
         , allInOne.pShaderStorageBuffer[(currentFrame + 1) % MAX_FRAMES_IN_FLIGHT], sizeof(Particle) * PARTICLE_COUNT);
