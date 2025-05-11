@@ -313,6 +313,7 @@ void destroyThreadPool(G_Thread_Pool * pThreadPool)
 
     SDL_LockMutex(pThreadPool->ThreadPoolMutex);
 
+    G_free(pThreadPool->pWaitTaskSemaphore);
     G_free(pThreadPool->pThreads);
     G_free(pThreadPool->pThreadSeamphore);
     G_free(pThreadPool->leisureThread);

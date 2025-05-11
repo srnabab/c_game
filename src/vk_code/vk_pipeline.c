@@ -675,6 +675,7 @@ VkResult executeCreateGraphicsPipelines(VkPipelineCache pipelinesCache)
         *graphicPipelinePtr[i] = tempGraphicsPipeline[i];
         G_free((void*)graphicsPipelineCreateInfos[i].pVertexInputState->pVertexBindingDescriptions);
         G_free((void*)graphicsPipelineCreateInfos[i].pVertexInputState->pVertexAttributeDescriptions);
+        G_free((void*)graphicsPipelineCreateInfos[i].pVertexInputState);
         G_free((void*)graphicsPipelineCreateInfos[i].pInputAssemblyState);
         G_free((void*)graphicsPipelineCreateInfos[i].pViewportState->pViewports);
         G_free((void*)graphicsPipelineCreateInfos[i].pViewportState->pScissors);
@@ -684,6 +685,7 @@ VkResult executeCreateGraphicsPipelines(VkPipelineCache pipelinesCache)
         G_free((void*)graphicsPipelineCreateInfos[i].pDepthStencilState);
         G_free((void*)graphicsPipelineCreateInfos[i].pColorBlendState->pAttachments);
         G_free((void*)graphicsPipelineCreateInfos[i].pColorBlendState);
+        G_free((void*)graphicsPipelineCreateInfos[i].pDynamicState->pDynamicStates);
         G_free((void*)graphicsPipelineCreateInfos[i].pDynamicState);
 
         CO_addPiepline(tempGraphicsPipeline[i]);

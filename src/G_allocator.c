@@ -1,4 +1,3 @@
-// #define TRACE_PTR
 #include "G_allocator.h"
 
 #include "SDL3/SDL_atomic.h"
@@ -9,8 +8,84 @@ static Uint64 totalAllocSize = 0;
 static Uint32 allocations = 0;
 static SDL_SpinLock sizeLock[1];
 
+#ifdef TRACE_PTR
+
+#include "SDL3/SDL_mutex.h"
+static SDL_Mutex * recordMutex;
+static G_memptr_record * record = NULL;
+void initMemoryRecord(void)
+{
+    recordMutex = SDL_CreateMutex();
+}
+static void addMemory(void * ptr, void * returnAddress0, void * returnAddress1)
+{
+    SDL_LockMutex(recordMutex);
+    G_memptr_record * s;
+
+    HASH_FIND_PTR(record, &ptr, s);
+    if (s == NULL)
+    {
+        s = malloc(sizeof(*s));
+        s->rawptr = ptr;
+        s->returnAddress0 = returnAddress0;
+        s->returnAddress1 = returnAddress1;
+        HASH_ADD_PTR(record, rawptr, s);
+    }
+    SDL_UnlockMutex(recordMutex);
+}
+// static G_memptr_record * findMemory(void * ptr)
+// {
+//     G_memptr_record * s;
+
+//     HASH_FIND_PTR(record, ptr, s);
+//     return s;
+// }
+static void deleteMemory(void * ptr)
+{
+    SDL_LockMutex(recordMutex);
+    G_memptr_record * s;
+    HASH_FIND_PTR(record, &ptr, s);
+    if (s != NULL)
+    {
+        HASH_DEL(record, s);
+        free(s);
+    }
+    SDL_UnlockMutex(recordMutex);
+}
+void deleteRecord(void)
+{
+    SDL_LockMutex(recordMutex);
+    G_memptr_record * current = NULL;
+    G_memptr_record * tmp = NULL;
+
+    HASH_ITER(hh, record, current, tmp)
+    {
+        HASH_DEL(record, current);
+        free(current);
+    }
+    SDL_UnlockMutex(recordMutex);
+    SDL_DestroyMutex(recordMutex);
+}
+void printResidueMemory(void)
+{
+    SDL_LockMutex(recordMutex);
+    G_memptr_record *s, *tmp;
+
+    HASH_ITER(hh, record, s, tmp)
+    {
+        print("residue memory: %p, return address0: %p, return address1: %p, allocations: %u", s->rawptr, s->returnAddress0, s->returnAddress1, allocations);
+        allocations--;
+    }
+    SDL_UnlockMutex(recordMutex);
+}
+#endif
+
 // alloc size is multiple of 8
-void * G_malloc(size_t size)
+#ifdef TRACE_PTR
+void * _G_malloc(size_t size, void * returnAddress)
+#else
+void * _G_malloc(size_t size)
+#endif
 {
     if (size == 0) return NULL;
 
@@ -19,6 +94,10 @@ void * G_malloc(size_t size)
 
     if (ptr == NULL) return NULL;
 
+#ifdef TRACE_PTR
+    addMemory(ptr, returnAddress, __builtin_return_address(0));
+#endif
+ 
     ptr[0] = allocateSize;
     ptr++;
 
@@ -27,12 +106,16 @@ void * G_malloc(size_t size)
     allocations++;
     SDL_UnlockSpinlock(&sizeLock[0]);
 
-    // print("size: %llu", totalAllocSize);
+   // print("size: %llu", totalAllocSize);
 
     return ptr;
 }
 
-void * G_calloc(size_t n_elements, size_t elem_size)
+#ifdef TRACE_PTR
+void * _G_calloc(size_t n_elements, size_t elem_size, void * returnAddress)
+#else
+void * _G_calloc(size_t n_elements, size_t elem_size)
+#endif
 {
     if (!n_elements | !elem_size) return NULL;
 
@@ -41,6 +124,10 @@ void * G_calloc(size_t n_elements, size_t elem_size)
 
     if (ptr == NULL) return NULL;
 
+#ifdef TRACE_PTR
+    addMemory(ptr, returnAddress, __builtin_return_address(0));
+#endif
+ 
     ptr[0] = req;
     ptr++;
 
@@ -54,7 +141,11 @@ void * G_calloc(size_t n_elements, size_t elem_size)
     return ptr;
 }
 
-void * G_realloc(void * pOriginal, size_t size)
+#ifdef TRACE_PTR
+void * _G_realloc(void * pOriginal, size_t size, void * returnAddress)
+#else
+void * _G_realloc(void * pOriginal, size_t size)
+#endif
 {
     if (pOriginal == NULL)
     {
@@ -68,12 +159,21 @@ void * G_realloc(void * pOriginal, size_t size)
     }
 
     uint64_t * oldMem = (uint64_t*)BYTE_OFFSET(pOriginal, -sizeof(uint64_t));
+
+#ifdef TRACE_PTR
+    deleteMemory(oldMem);
+#endif
+
     uint64_t originalSize = oldMem[0];
     uint64_t allocateSize = ROUND8(size);
     uint64_t * ptr = SDL_realloc(oldMem, allocateSize + sizeof(uint64_t));
 
     if (ptr == NULL) return NULL;
 
+#ifdef TRACE_PTR
+    addMemory(ptr, returnAddress, __builtin_return_address(0));
+#endif
+ 
     ptr[0] = allocateSize;
     ptr++;
 
@@ -98,6 +198,10 @@ void G_free(void * pMemory)
     allocations--;
     SDL_UnlockSpinlock(&sizeLock[0]);
 
+#ifdef TRACE_PTR
+    deleteMemory(ptr);
+#endif
+ 
     SDL_free(ptr);
     // print("size: %llu", totalAllocSize);
 }
@@ -110,7 +214,11 @@ void G_free(void * pMemory)
  #define SDL_ALIGNED_FREE
 #endif
 
-void * G_aligned_alloc(size_t alignment, size_t size)
+#ifdef TRACE_PTR
+void * _G_aligned_alloc(size_t alignment, size_t size, void * returnAddress)
+#else
+void * _G_aligned_alloc(size_t alignment, size_t size)
+#endif
 {
     if (size == 0) return NULL;
     if (alignment < 8) alignment = 8;
@@ -124,6 +232,10 @@ void * G_aligned_alloc(size_t alignment, size_t size)
 #endif
 
     if (ptr == NULL) return NULL;
+
+#ifdef TRACE_PTR
+    addMemory(ptr, returnAddress, __builtin_return_address(0));
+#endif
 
     uint64_t * mem = (uint64_t*)BYTE_OFFSET(ptr, 3 * alignment);
     uint64_t * sizeptr = (uint64_t*)BYTE_OFFSET(mem, -sizeof(uint64_t));
@@ -143,7 +255,11 @@ void * G_aligned_alloc(size_t alignment, size_t size)
     return mem;
 }
 
-void * G_aligned_realloc(void * pOriginal, size_t size, size_t alignment)
+#ifdef TRACE_PTR
+void * _G_aligned_realloc(void * pOriginal, size_t size, size_t alignment, void * returnAddress)
+#else
+void * _G_aligned_realloc(void * pOriginal, size_t size, size_t alignment)
+#endif
 {
     uint64_t * sizeptr = (uint64_t*)BYTE_OFFSET(pOriginal, -sizeof(uint64_t));
     uint64_t * alignptr = (uint64_t*)BYTE_OFFSET(sizeptr, -sizeof(uint64_t));
@@ -158,6 +274,10 @@ void * G_aligned_realloc(void * pOriginal, size_t size, size_t alignment)
     }
     if (alignment < 8) alignment = 8;
 
+#ifdef TRACE_PTR
+    deleteMemory(rawptr);
+#endif
+
 #ifdef SLOW_ALIGNED_REALLOC
     size_t copySize = oldSize < size ? oldSize : size;
 
@@ -169,6 +289,10 @@ void * G_aligned_realloc(void * pOriginal, size_t size, size_t alignment)
 #endif
 
     if (newMem == NULL) return NULL;
+
+#ifdef TRACE_PTR
+    addMemory(newMem, returnAddress, __builtin_return_address(0));
+#endif
 
     uint64_t * mem = (uint64_t*)BYTE_OFFSET(newMem, alignment * 3);
     sizeptr = (uint64_t*)BYTE_OFFSET(mem, -sizeof(uint64_t));
@@ -186,7 +310,7 @@ void * G_aligned_realloc(void * pOriginal, size_t size, size_t alignment)
 
 #ifdef SLOW_ALIGNED_REALLOC
     memcpy(mem, pOriginal, copySize);
-    SDL_aligned_free(rawptr);
+    G_aligned_free(rawptr);
 #endif
 
     // print("size: %llu", totalAllocSize);
@@ -206,6 +330,10 @@ void G_aligned_free(void * pMemory)
     totalAllocSize -= sizeptr[0] + 3 * alignptr[0];
     allocations--;
     SDL_UnlockSpinlock(&sizeLock[0]);
+
+#ifdef TRACE_PTR
+    deleteMemory(rawptr[0]);
+#endif
 
 #ifdef SDL_ALIGNED_FREE
     SDL_aligned_free(rawptr[0]);

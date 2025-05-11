@@ -89,6 +89,7 @@ static void cleanList(void)
         next = next->next;
         G_free(temp);
     }
+    G_free(root);
     root = (PopList*)G_malloc(sizeof(PopList));
     root->next = NULL;
     root->node = NULL;

@@ -461,4 +461,5 @@ void unloadAllTexture(void)
         deleteTexture(pTexture);
         pTexture = pTextureNext;
     }
+    G_free(globalTexture);
 }

@@ -30,7 +30,7 @@ static const vec2 positions[6] = {
 
 static void tinyobj_SDL_readFile(void *ctx, const char *filename, int is_mtl, const char *obj_filename, char **buf, size_t *len)
 {
-    (void)ctx;
+    void ** ctxx = (void**)ctx;
 
     if (filename == NULL)
     {
@@ -65,6 +65,7 @@ static void tinyobj_SDL_readFile(void *ctx, const char *filename, int is_mtl, co
     SDL_SeekIO(stream, 0, SDL_IO_SEEK_SET);
     SDL_ReadIO(stream, buffer, size);
 
+    *ctxx = buffer;
     *buf = buffer;
     *len = size;
 
@@ -95,7 +96,8 @@ bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex3323 * v
 
     SDL_UnlockMutex(allSync.textureMutex);
  
-    int res = tinyobj_parse_obj(&attrib, &shapes, &num_shapes, &materials, &num_materials, getPath(modelPath), tinyobj_SDL_readFile, NULL, TINYOBJ_FLAG_TRIANGULATE);
+    void * bufMem;
+    int res = tinyobj_parse_obj(&attrib, &shapes, &num_shapes, &materials, &num_materials, getPath(modelPath), tinyobj_SDL_readFile, &bufMem, TINYOBJ_FLAG_TRIANGULATE);
 
     if (res == TINYOBJ_SUCCESS) 
     {
@@ -207,6 +209,8 @@ bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex3323 * v
     tinyobj_attrib_free(&attrib);
     tinyobj_shapes_free(shapes, num_shapes);
     tinyobj_materials_free(materials, num_materials);
+
+    G_free(bufMem);
 
     return true;
 }

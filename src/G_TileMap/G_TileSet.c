@@ -164,6 +164,8 @@ static TILE_SET * loadTileSetData(PathType setDataPath, const char * innerName)
 
     tileSetCount++;
 
+    G_free(data);
+
     SDL_UnlockMutex(allSync.tileSetMutex);
 
     return tileSets + tileSetCount - 1;

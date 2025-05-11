@@ -12,6 +12,7 @@ include/freetype/
 include/cglm/
 include/box2d/
 include/tinyobj_loader/
+include/uthash/
 lib/
 out/
 run/

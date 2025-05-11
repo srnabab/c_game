@@ -48,6 +48,9 @@ void initCollection(void)
     CO.shaderStageCreateInfos = NULL;
     CO.shaderStageCreateInfoCount = 0;
 
+    CO.descriptorSetsMem = NULL;
+    CO.descriptorSetsMemCount = 0;
+
     CO.descriptorSetLayouts = NULL;
     CO.descriptorSetLayoutCount = 0;
     CO.descriptorSetLayoutMem = NULL;
@@ -230,6 +233,19 @@ bool CO_addShaderStageCreateInfo(VkPipelineShaderStageCreateInfo * pShaderStageC
 
     CO.shaderStageCreateInfos[CO.shaderStageCreateInfoCount] = pShaderStageCreateInfo;
     CO.shaderStageCreateInfoCount++;
+
+    return true;
+}
+bool CO_addDescriptorSetsMem(void * descriptorSetsMem)
+{
+    void * ptr;
+    ptr = G_realloc(CO.descriptorSetsMem, (CO.descriptorSetsMemCount + 1) * sizeof(void*));
+    if (ptr == NULL) return false;
+
+    CO.descriptorSetsMem = ptr;
+
+    CO.descriptorSetsMem[CO.descriptorSetsMemCount] = descriptorSetsMem;
+    CO.descriptorSetsMemCount++;
 
     return true;
 }
@@ -499,6 +515,14 @@ void CO_CleanAllVkResource(void)
                 CO.swapchainImageViewMemCount = 0;
             }   
 
+            if (CO.swapchainImageMemCount)
+            {
+                for (i = 0;i < CO.swapchainImageMemCount;i++)
+                {
+                    G_free(CO.swapchainImageMem[i]);
+                }
+            }
+
             for (i = 0;i < CO.swapchainCount;i++)
             {
                 vkDestroySwapchainKHR(CO.device, CO.swapchains[i], allInOne.pAllocationCallbacks);
@@ -546,6 +570,17 @@ void CO_CleanAllVkResource(void)
                 G_free(CO.shaderStageCreateInfos);
                 CO.shaderStageCreateInfos = NULL;
                 CO.shaderStageCreateInfoCount = 0;
+            }
+
+            if (CO.descriptorSetsMemCount)
+            {
+                for (i = 0;i < CO.descriptorSetsMemCount;i++)
+                {
+                    G_free(CO.descriptorSetsMem[i]);
+                }
+                G_free(CO.descriptorSetsMem);
+                CO.descriptorSetsMem = NULL;
+                CO.descriptorSetsMemCount = 0;
             }
 
             if (CO.descriptorSetLayoutCount)

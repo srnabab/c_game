@@ -458,6 +458,7 @@ void initVulkan(void)
     VkShaderModule * graphicTempModule = NULL;
     Uint32 graphicSetCount = CreateShaderModulesAndDescriptorSets(graphicTypes, 2, &graphicTempModule, &graphciShaderStageCreateInfo, &graphicDescriptorSetLayout, &allInOne.graphicPipelineLayout);
     createDescriptorSets(&graphicDescriptorPool, graphicDescriptorSetLayout, graphicSetCount, 5, &allInOne.pGraphicDescriptorSets);
+    CO_addDescriptorSetsMem(allInOne.pGraphicDescriptorSets); // CO
     createGraphicsPipeline(allInOne.extent2D, 2, graphciShaderStageCreateInfo, allInOne.graphicPipelineLayout, allInOne.renderPass, &allInOne.graphicPipeline);
     // createTileMapPipeline(2, graphciShaderStageCreateInfo, allInOne.graphicPipelineLayout, allInOne.renderPass, &allInOne.tilemapPipeline);
 
@@ -466,6 +467,7 @@ void initVulkan(void)
     VkShaderModule * modelTempModule = NULL;
     Uint32 modelSetCount = CreateShaderModulesAndDescriptorSets(modelTypes, 2, &modelTempModule, &modelShaderStageCreateInfo, &modelDescriptorSetLayout, &allInOne.modelPipelineLayout);
     createDescriptorSets(&graphicDescriptorPool, modelDescriptorSetLayout, modelSetCount, 2, &allInOne.pModelDescriptorSets);
+    CO_addDescriptorSetsMem(allInOne.pModelDescriptorSets); // CO
     createModelPipeline(allInOne.extent2D, 2, modelShaderStageCreateInfo, allInOne.modelPipelineLayout, allInOne.modelRenderPass, &allInOne.modelPipeline);
 
     // 3d bottom shader
@@ -480,6 +482,7 @@ void initVulkan(void)
     VkShaderModule * particleTempModule = NULL;
     Uint32 particleSetCount = CreateShaderModulesAndDescriptorSets(particleTypes, 2, &particleTempModule, &particleShaderStageCreateInfo, &particleDescriptorSetLayout, &allInOne.particlePipelineLayout);
     createDescriptorSets(&graphicDescriptorPool, particleDescriptorSetLayout, particleSetCount, 1, &allInOne.pParticleDescriptorSets);
+    CO_addDescriptorSetsMem(allInOne.pParticleDescriptorSets); // CO
     createParticlePipeline(allInOne.extent2D, 2, particleShaderStageCreateInfo, allInOne.particlePipelineLayout, allInOne.renderPass, &allInOne.particlePipeline);
 
     // shape shader
@@ -487,6 +490,7 @@ void initVulkan(void)
     VkShaderModule * shapeTempModule = NULL;
     Uint32 shapeSetCount =CreateShaderModulesAndDescriptorSets(shapeTypes, 2, &shapeTempModule, &shapeShaderStageCreateInfo, &shapeDescriptorSetLayout, &allInOne.shapePipelineLayout);
     createDescriptorSets(&graphicDescriptorPool, shapeDescriptorSetLayout, shapeSetCount, 1, &allInOne.pShapeDescriptorSets);
+    CO_addDescriptorSetsMem(allInOne.pShapeDescriptorSets); // CO
     createShapePipeline(allInOne.extent2D, 2, shapeShaderStageCreateInfo, allInOne.shapePipelineLayout, allInOne.renderPass, &allInOne.shapePipeline);
 
     // combine Shader
@@ -494,6 +498,7 @@ void initVulkan(void)
     VkShaderModule * combineTempModule = NULL;
     Uint32 combineSetCount = CreateShaderModulesAndDescriptorSets(combineTypes, 2, &combineTempModule, &combineShaderStageCreateInfo, &combineDescriptorSetLayout, &allInOne.combinePipelineLayout);
     createDescriptorSets(&graphicDescriptorPool, combineDescriptorSetLayout, combineSetCount, 1, &allInOne.pCombineDescriptorSets);
+    CO_addDescriptorSetsMem(allInOne.pCombineDescriptorSets); // CO
     createCombinePipeline(allInOne.extent2D, 2, combineShaderStageCreateInfo, allInOne.combinePipelineLayout, allInOne.combineRenderPass, &allInOne.combinePipeline);
 
     //shadow shader
@@ -501,6 +506,7 @@ void initVulkan(void)
     VkShaderModule * shadowTempModule = NULL;
     Uint32 shadowSetCount = CreateShaderModulesAndDescriptorSets(shadowTypes, 2, &shadowTempModule, &shadowShaderStageCreateInfo, &shadowDescriptorSetLayout, &allInOne.shadowPipelineLayout);
     createDescriptorSets(&graphicDescriptorPool, shadowDescriptorSetLayout, shadowSetCount, 1, &allInOne.pShadowDescriptorSets);
+    CO_addDescriptorSetsMem(allInOne.pShadowDescriptorSets); // CO
     createShadowPipeline((VkExtent2D){SHADOW_MAPPING_WIDTH, SHADOW_MAPPING_HEIGHT}, 2, shadowShaderStageCreateInfo, allInOne.shadowPipelineLayout, allInOne.shadowRenderPass, &allInOne.shadowPipeline);
 
     executeCreateGraphicsPipelines(NULL);
@@ -523,6 +529,7 @@ void initVulkan(void)
     VkShaderModule * computeTempModule = NULL;
     Uint32 computeSetCount = CreateShaderModulesAndDescriptorSets(computeTypes, 1, &computeTempModule, &computeShaderStageCreateInfo, &computeDescriptorSetLayout, &allInOne.computePipelineLayout);
     createDescriptorSets(&computeDescriptorPool, computeDescriptorSetLayout, computeSetCount, 1, &allInOne.pComputeDescriptorSets);
+    CO_addDescriptorSetsMem(allInOne.pComputeDescriptorSets); // CO
     addComputePipeline(computeShaderStageCreateInfo, allInOne.computePipelineLayout, NULL, 0, &allInOne.computePipeline);
 
     // SSGI shader
@@ -530,6 +537,7 @@ void initVulkan(void)
     VkShaderModule * SSGITempModule = NULL;
     Uint32 SSGISetCount = CreateShaderModulesAndDescriptorSets(SSGITypes, 1, &SSGITempModule, &SSGIShaderStageCreateInfo, &SSGIDescriptorSetLayout, &allInOne.SSGIPipelineLayout);
     createDescriptorSets(&computeDescriptorPool, SSGIDescriptorSetLayout, SSGISetCount, 1, &allInOne.pSSGIDescriptorSets);
+    CO_addDescriptorSetsMem(allInOne.pSSGIDescriptorSets); // CO
     addComputePipeline(SSGIShaderStageCreateInfo, allInOne.SSGIPipelineLayout, NULL, 0, &allInOne.SSGIPipeline);
 
     executeCreateComputePipelines(NULL);

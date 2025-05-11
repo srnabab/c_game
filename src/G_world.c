@@ -224,11 +224,11 @@ void cleanWorld(void)
     if (worldThread != NULL)
     {
         SDL_SignalSemaphore(allSync.worldSemaphore);
-        deInitStack(&ballStack);
         SDL_WaitThread(worldThread, NULL);
-        destroyThreadPool(&worldThreadPool);
-        b2DestroyWorld(worldId);
     }
+    deInitStack(&ballStack);
+    destroyThreadPool(&worldThreadPool);
+    b2DestroyWorld(worldId);
 }
 void destroyFloor(void)
 {

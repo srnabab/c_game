@@ -93,6 +93,10 @@ void setup(int argc, char* argv[])
     }
 #endif
 
+#ifdef TRACE_PTR
+    initMemoryRecord();
+#endif
+
     int arg = initFileSystem(argc, argv);
     res = arg;
     if (res < 0) goto clean;
@@ -262,5 +266,7 @@ void destroy(void)
 
     SDL_Delay(1000);
     SDL_Log("residue memory:%llu, allocation: %u", G_totalAllocSize(), G_allocations());
+    printResidueMemory();
+    deleteRecord();
     exit(_Code);
 }

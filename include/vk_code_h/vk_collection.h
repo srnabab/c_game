@@ -56,6 +56,9 @@ struct _VK_COLLECTION
     VkPipelineShaderStageCreateInfo ** shaderStageCreateInfos;
     Uint32 shaderStageCreateInfoCount;
 
+    void ** descriptorSetsMem;
+    Uint32 descriptorSetsMemCount;
+
     VkDescriptorSetLayout * descriptorSetLayouts;
     Uint32 descriptorSetLayoutCount;
     void ** descriptorSetLayoutMem;
@@ -100,6 +103,7 @@ extern bool SDLCALL CO_addCommandPool(VkCommandPool commandPool);
 extern bool SDLCALL CO_addSampler(VkSampler sampler);
 extern bool SDLCALL CO_addShaderModule(VkShaderModule shaderModule);
 extern bool SDLCALL CO_addShaderStageCreateInfo(VkPipelineShaderStageCreateInfo * pShaderStageCreateInfo);
+extern bool SDLCALL CO_addDescriptorSetsMem(void * descriptorSetsMem);
 extern bool SDLCALL CO_addDescriptorSetLayout(Uint32 count, VkDescriptorSetLayout * pDescriptorSetLayout);
 extern bool SDLCALL CO_addPieplineLayout(VkPipelineLayout pipelineLayout);
 extern bool SDLCALL CO_addPiepline(VkPipeline pipeline);
