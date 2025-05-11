@@ -4,15 +4,16 @@
 #include "vk_code_h/vk_collection.h"
 
 #include "G_log.h"
+#include "G_allocator.h"
 
 extern VK_ALL allInOne;
 
 void createFrameBuffer(uint32_t imageCount, Uint32 width, Uint32 height, Uint32 attachmentCount, VkImageView * pImageViews, VkImageView * pSwapchainImageView, VkRenderPass renderPass, VkFramebuffer ** pSwapchainFramebuffer)
 {
     Uint32 i;
-    VkImageView * pImageViewAttachments = (VkImageView *)SDL_malloc(attachmentCount * sizeof(VkImageView));
+    VkImageView * pImageViewAttachments = (VkImageView *)G_malloc(attachmentCount * sizeof(VkImageView));
 
-    *pSwapchainFramebuffer = (VkFramebuffer *)SDL_calloc(imageCount, sizeof(VkFramebuffer));
+    *pSwapchainFramebuffer = (VkFramebuffer *)G_calloc(imageCount, sizeof(VkFramebuffer));
     print("framebuffer width: %u, height: %u\n", allInOne.extent2D.width, allInOne.extent2D.height);
 
     if (pSwapchainImageView == NULL)
@@ -65,13 +66,13 @@ void createFrameBuffer(uint32_t imageCount, Uint32 width, Uint32 height, Uint32 
         }
     }
 
-    SDL_free(pImageViewAttachments);
+    G_free(pImageViewAttachments);
     //printf("swapchain framebuffer created\n");
 }
 void createFrameBufferByImageArray(Uint32 imageCount, Uint32 width, Uint32 height, VkImageView * pImageViews, VkRenderPass renderPass, VkFramebuffer ** pFrameBuffer)
 {
     Uint32 i;
-    *pFrameBuffer = (VkFramebuffer *)SDL_calloc(imageCount, sizeof(VkFramebuffer));
+    *pFrameBuffer = (VkFramebuffer *)G_calloc(imageCount, sizeof(VkFramebuffer));
 
     for (i = 0;i < imageCount;i++)
     {

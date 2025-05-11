@@ -68,8 +68,8 @@ struct _VK_ALL
     VkPipelineLayout modelPipelineLayout;
     VkPipeline modelPipeline;
 
-    VkPipelineLayout bottomPipelineLayout;
-    VkPipeline bottomPipeline;
+    // VkPipelineLayout bottomPipelineLayout;
+    // VkPipeline bottomPipeline;
 
     VkPipelineLayout shadowPipelineLayout;
     VkPipeline shadowPipeline;
@@ -103,22 +103,26 @@ struct _VK_ALL
     VkFramebuffer * pShadowFramebuffer;
     VkFramebuffer * pDirectColorFramebuffer;
     VkFramebuffer * pCombineFramebuffer;
-    VkFramebuffer * pBottomImageArrayFramebuffers;
+    // VkFramebuffer * pBottomImageArrayFramebuffers;
 
-    VkBuffer tileMapVertexBuffer;
-    VkDeviceMemory tileMapVertexBufferMem;
+    // VkBuffer tileMapVertexBuffer;
+    // VkDeviceMemory tileMapVertexBufferMem;
 
-    vec2 * pTileMapUVs;
-    VkBuffer tileMapTexCoordBuffer[MAX_FRAMES_IN_FLIGHT];
-    VkDeviceMemory pTimeMapTexCoordBufferMem[MAX_FRAMES_IN_FLIGHT];
-    void* pTimeMapTexCoordBufferMapped[MAX_FRAMES_IN_FLIGHT];
+    // vec2 * pTileMapUVs;
+    // VkBuffer tileMapTexCoordBuffer[MAX_FRAMES_IN_FLIGHT];
+    // VkDeviceMemory pTimeMapTexCoordBufferMem[MAX_FRAMES_IN_FLIGHT];
+    // void* pTimeMapTexCoordBufferMapped[MAX_FRAMES_IN_FLIGHT];
+
+    VkBuffer tilemapVertexBuffer[MAX_FRAMES_IN_FLIGHT];
+    Vertex332_ * pTilemapVertices;
+    VkDeviceMemory pTilemapVertexBufferMem[MAX_FRAMES_IN_FLIGHT];
 
     VkBuffer tempBuffer;
     VkDeviceMemory tempBufferMemory;
 
     VkBuffer vertexBuffer2D[MAX_FRAMES_IN_FLIGHT];
     Uint32 maxVertices2DCount;
-    Vertex332 * pVertices2D;
+    Vertex332_ * pVertices2D;
     Uint32 vertices2DCount;
     VkDeviceMemory pVertexBuffer2DMem[MAX_FRAMES_IN_FLIGHT];
     void* pVertexBuffer2DMemMapped[MAX_FRAMES_IN_FLIGHT];
@@ -176,9 +180,9 @@ struct _VK_ALL
     void * ppSunUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
     DirectionLight * pSunubo;
 
-    VkBuffer pTilemapUniformBuffer[MAX_FRAMES_IN_FLIGHT];
-    void * ppTilemapUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
-    UniformBufferObject * pTilemapUbo;
+    // VkBuffer pTilemapUniformBuffer[MAX_FRAMES_IN_FLIGHT];
+    // void * ppTilemapUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
+    // UniformBufferObject * pTilemapUbo;
 
     VkBuffer pShaderStorageBuffer[MAX_FRAMES_IN_FLIGHT];
 
@@ -187,7 +191,7 @@ struct _VK_ALL
     VkDescriptorSet * pComputeDescriptorSets;
     VkDescriptorSet * pShapeDescriptorSets;
     VkDescriptorSet * pModelDescriptorSets;
-    VkDescriptorSet * pBottomDescriptorSets;
+    // VkDescriptorSet * pBottomDescriptorSets;
 
     VkDescriptorSet * pShadowDescriptorSets;
     VkDescriptorSet * pSSGIDescriptorSets;
@@ -225,12 +229,12 @@ struct _VK_ALL
 
     G_Texture_Head * pGlobalTexture;
 
-    G_Stack shaderModuleStack;
+    // G_Stack shaderModuleStack;
 
-    G_Stack bottomImageMoveStack;
-    G_Stack bottomImageDrawStack;
+    // G_Stack bottomImageMoveStack;
+    // G_Stack bottomImageDrawStack;
 
-    G_Thread_Pool * pThreadPool;
+    // G_Thread_Pool * pThreadPool;
 };
 typedef struct _VK_ALL VK_ALL;
 

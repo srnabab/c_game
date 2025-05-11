@@ -1,4 +1,5 @@
 #include "G_queue.h"
+#include "G_allocator.h"
 
 static bool defaultAddTailFunc(G_Queue * queue, void * data)
 {
@@ -98,7 +99,7 @@ static bool defaultGetTailFunc(G_Queue * queue, void * data)
 }
 bool initQueue(G_Queue * queue, size_t dataSize, int32_t capacity, QueueOp addTail, QueueOp getHead, QueueOp addHead, QueueOp getTail)
 {
-    queue->data = SDL_malloc(dataSize * capacity);
+    queue->data = G_malloc(dataSize * capacity);
     if (queue->data == NULL) return false;
 
     queue->capacity = capacity;
@@ -169,7 +170,7 @@ bool G_QueueResize(G_Queue * queue, int newCapacity)
             void * temp;
             if (length0 >= length1)
             {
-                temp = SDL_malloc((length1 + 1) * queue->dataSize);
+                temp = G_malloc((length1 + 1) * queue->dataSize);
                 if (temp == NULL)
                 {
                     SDL_UnlockMutex(queue->mutex);
@@ -181,14 +182,14 @@ bool G_QueueResize(G_Queue * queue, int newCapacity)
                 memmove((char*)queue->data + ((length1 + 1) * queue->dataSize), queue->data, (length0 + 1) * queue->dataSize);
                 memcpy(queue->data, temp, (length1 + 1) * queue->dataSize);
 
-                SDL_free(temp);
+                G_free(temp);
 
                 queue->head = 0;
                 queue->tail = length0 + length1 + 1;
             }
             else
             {
-                temp = SDL_malloc((length0 + 1) * queue->dataSize);
+                temp = G_malloc((length0 + 1) * queue->dataSize);
                 if (temp == NULL) 
                 {
                     SDL_UnlockMutex(queue->mutex);
@@ -200,7 +201,7 @@ bool G_QueueResize(G_Queue * queue, int newCapacity)
                 memcpy(queue->data, (char*)queue->data + (queue->head * queue->dataSize), (length1 + 1) * queue->dataSize);
                 memcpy((char*)queue->data + ((length1 + 1)* queue->dataSize), temp, (length0 + 1) * queue->dataSize);
 
-                SDL_free(temp);
+                G_free(temp);
 
                 queue->head = 0;
                 queue->tail = length0 + length1 + 1;
@@ -215,7 +216,7 @@ bool G_QueueResize(G_Queue * queue, int newCapacity)
     }
 
     void * tempPtr = queue->data;
-    queue->data = SDL_realloc(queue->data, newCapacity * queue->dataSize);
+    queue->data = G_realloc(queue->data, newCapacity * queue->dataSize);
     if (queue->data == NULL) 
     {
         queue->data = tempPtr;
@@ -232,7 +233,7 @@ bool G_QueueResize(G_Queue * queue, int newCapacity)
 }
 void G_deInitQueue(G_Queue * queue)
 {
-    SDL_free(queue->data);
+    G_free(queue->data);
     queue->capacity = 0;
     queue->head = 0;
     queue->tail = 0;

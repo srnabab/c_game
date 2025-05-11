@@ -7,6 +7,7 @@
 #include "vk_code_h/vk_judge.h"
 
 #include "G_file/G_file.h"
+#include "G_allocator.h"
 
 extern VK_ALL allInOne;
 
@@ -90,7 +91,7 @@ unsigned char * readPNG(PathType type, Uint32 * pWidth, Uint32 * pHeight, Uint8 
     else if ((png->format == SDL_PIXELFORMAT_RGB24)) *pChannel = 3;
     else if ((png->format == SDL_PIXELFORMAT_RGBA32) || (png->format == SDL_PIXELFORMAT_ARGB32)) *pChannel = 4;
 
-    unsigned char * pixels = (unsigned char*)SDL_malloc((*pWidth) * (*pHeight) * (*pChannel) * sizeof(unsigned char));
+    unsigned char * pixels = (unsigned char*)G_malloc((*pWidth) * (*pHeight) * (*pChannel) * sizeof(unsigned char));
     memcpy(pixels, png->pixels, (*pWidth) * (*pHeight) * (*pChannel) * sizeof(unsigned char));
     SDL_DestroySurface(png);
 
@@ -217,7 +218,7 @@ void createTextureImageView(VkImage * pTextureImage, VkFormat format, VkImageAsp
 //     // Allocate memory for the image data
 //     png_size_t rowbytes = png_get_rowbytes(png, info);
 
-//     png_bytep image_data = (png_bytep)SDL_malloc(rowbytes * *pHeight);
+//     png_bytep image_data = (png_bytep)G_malloc(rowbytes * *pHeight);
 //     // 检查内存是否分配成功
 //     if (!image_data) {
 //         png_destroy_read_struct(&png, &info, NULL);
@@ -226,7 +227,7 @@ void createTextureImageView(VkImage * pTextureImage, VkFormat format, VkImageAsp
 //     }
 
 //     // 创建行指针数组，指向image_data中的各行
-//     png_bytep *row_pointers = (png_bytep *)SDL_malloc(sizeof(png_bytep) * *pHeight);
+//     png_bytep *row_pointers = (png_bytep *)G_malloc(sizeof(png_bytep) * *pHeight);
 //     for (png_uint_32 i = 0; i < *pHeight; i++) {
 //         row_pointers[i] = image_data + i * rowbytes;
 //     }
@@ -256,7 +257,7 @@ void createTextureImageView(VkImage * pTextureImage, VkFormat format, VkImageAsp
 //     }*/
 
 //     // Process image data here (e.g., display it or modify it)
-//     SDL_free(row_pointers);
+//     G_free(row_pointers);
 //     png_destroy_read_struct(&png, &info, NULL);
 //     SDL_CloseIO(fp);
 

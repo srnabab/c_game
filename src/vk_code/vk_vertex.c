@@ -16,26 +16,28 @@ void createVertexBuffer(VkBuffer * pVertexBuffer, VkDeviceMemory * pVertexBuffer
     }
     else
     {
-        VkBuffer stagingBuffer;
-        VkDeviceMemory stagingBufferMemory;
-
-        resultVulkan(createBuffer(&stagingBuffer, &stagingBufferMemory, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, NULL, 0, 0), 0);
-
-        void * tempData;
-        vkMapMemory(allInOne.device, stagingBufferMemory, 0, bufferSize, 0, &tempData);
-        memcpy(tempData, data, bufferSize);
-        vkUnmapMemory(allInOne.device, stagingBufferMemory);
-
         resultVulkan(createBuffer(pVertexBuffer, pVertexBufferMemory, bufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, NULL, 0, 0), 0);
 
-        copyBuffer(NULL, allInOne.graphicCommandPool, &stagingBuffer, pVertexBuffer, bufferSize);
-        
-        vkDestroyBuffer(allInOne.device, stagingBuffer, allInOne.pAllocationCallbacks);
-        vkFreeMemory(allInOne.device, stagingBufferMemory, allInOne.pAllocationCallbacks);
+        if (data)
+        {
+            VkBuffer stagingBuffer;
+            VkDeviceMemory stagingBufferMemory;
 
+            resultVulkan(createBuffer(&stagingBuffer, &stagingBufferMemory, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, NULL, 0, 0), 0);
+
+            void * tempData;
+            vkMapMemory(allInOne.device, stagingBufferMemory, 0, bufferSize, 0, &tempData);
+            memcpy(tempData, data, bufferSize);
+            vkUnmapMemory(allInOne.device, stagingBufferMemory);
+
+            copyBuffer(NULL, allInOne.graphicCommandPool, &stagingBuffer, pVertexBuffer, bufferSize);
+
+            vkDestroyBuffer(allInOne.device, stagingBuffer, allInOne.pAllocationCallbacks);
+            vkFreeMemory(allInOne.device, stagingBufferMemory, allInOne.pAllocationCallbacks);
+        }
     }
 }
-void initVertices33(Uint32 width, Uint32 height, Uint32 row, Uint32 column, float depth, Vertex33 * pVertices)
+void initVertices33(Uint32 width, Uint32 height, Uint32 row, Uint32 column, float depth, Vertex33_ * pVertices)
 {
     float tileWidth = (width / column) / (float)(height / 2);
     float tileHeight = (height / row) / (float)(height / 2);

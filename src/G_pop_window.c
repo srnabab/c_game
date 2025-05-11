@@ -1,5 +1,6 @@
 #include "G_pop_window.h"
 #include "G_struct.h"
+#include "G_allocator.h"
 
 extern SDL_Window * window_3D;
 extern G_SYNC allSync;
@@ -21,7 +22,7 @@ static PopList * root = NULL;
 
 bool initPopWindow(void)
 {
-    root = (PopList*)SDL_malloc(sizeof(PopList));
+    root = (PopList*)G_malloc(sizeof(PopList));
     if (root == NULL) return false;
 
     root->next = NULL;
@@ -43,7 +44,7 @@ static PopList * toNull(PopList * next)
 static bool insertMessage(SDL_MessageBoxFlags flags, const char * title, const char * message)
 {
     SDL_LockMutex(allSync.popWindowMutex);
-    PopWindow * node = (PopWindow*)SDL_malloc(sizeof(PopWindow));
+    PopWindow * node = (PopWindow*)G_malloc(sizeof(PopWindow));
     if (node == NULL)
         return false;
         
@@ -53,10 +54,10 @@ static bool insertMessage(SDL_MessageBoxFlags flags, const char * title, const c
 
     PopList * listNode = toNull(root);
     listNode->node = node;
-    listNode->next = (PopList*)SDL_malloc(sizeof(PopList));
+    listNode->next = (PopList*)G_malloc(sizeof(PopList));
     if (listNode->next == NULL)
     {
-        SDL_free(node);
+        G_free(node);
         return false;
     }
 
@@ -83,12 +84,12 @@ static void cleanList(void)
     PopList * next = root;
     while (next->next != NULL)
     {
-        SDL_free(next->node);
+        G_free(next->node);
         PopList * temp = next;
         next = next->next;
-        SDL_free(temp);
+        G_free(temp);
     }
-    root = (PopList*)SDL_malloc(sizeof(PopList));
+    root = (PopList*)G_malloc(sizeof(PopList));
     root->next = NULL;
     root->node = NULL;
 }
@@ -115,6 +116,6 @@ void popWindow(void)
 bool deInitPopWindow(void)
 {
     cleanList();
-    SDL_free(root);
+    G_free(root);
     return true;
 }

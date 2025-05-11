@@ -3,6 +3,7 @@
 
 #include "G_game.h"
 #include "G_log.h"
+#include "G_allocator.h"
 
 extern bool game_is_running;
 
@@ -36,7 +37,7 @@ void resultVulkan(VkResult result, Uint32 num, ...)
             va_start(ap, num);
             for (Uint32 i = 0;i < num;i++)
             {
-                SDL_free(va_arg(ap, void *));
+                G_free(va_arg(ap, void *));
                 print("freed(%u)", i);
             }
             va_end(ap);

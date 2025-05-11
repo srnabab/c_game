@@ -1,4 +1,5 @@
 #include "G_staticModel.h"
+#include "G_allocator.h"
 
 #include "vk_code_h/vk_load_model.h"
 #include "vk_code_h/vk_uniform.h"
@@ -13,7 +14,7 @@ bool createStaticModelPool(G_StaticModelPool * pModelPool, Uint32 totalInstancec
 {
     VkDeviceSize bufferSize = sizeof(mat4) * totalInstancecount * 2;
 
-    // *pModelPool = (G_StaticModelPool)SDL_malloc(sizeof(G_StaticModelPool_T));
+    // *pModelPool = (G_StaticModelPool)G_malloc(sizeof(G_StaticModelPool_T));
 
     // model matrix buffer and inverse transpose matrix buffer
     createBuffer(pModelPool->instanceBuffer + 0, pModelPool->instanceBufferMem + 0, bufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, NULL, 0, 0);
@@ -24,7 +25,7 @@ bool createStaticModelPool(G_StaticModelPool * pModelPool, Uint32 totalInstancec
     pModelPool->usedInstanceCount = 0;
     pModelPool->models = NULL;
     pModelPool->modelCount = 0;
-    pModelPool->offsets = (Uint32*)SDL_malloc(sizeof(Uint32));
+    pModelPool->offsets = (Uint32*)G_malloc(sizeof(Uint32));
     pModelPool->offsets[0] = 0;
     pModelPool->offsetCount = 1;
 
@@ -49,7 +50,7 @@ G_StaticModel * loadStaticModel(G_StaticModelPool * pModelPool, Uint32 instanceC
         return NULL;
     }
 
-    ptr = (G_StaticModel*)SDL_realloc(pModelPool->models, (pModelPool->modelCount + 1) * sizeof(G_StaticModel));
+    ptr = (G_StaticModel*)G_realloc(pModelPool->models, (pModelPool->modelCount + 1) * sizeof(G_StaticModel));
     if (ptr == NULL)
     {
         SDL_UnlockMutex(pModelPool->mutex);
@@ -59,7 +60,7 @@ G_StaticModel * loadStaticModel(G_StaticModelPool * pModelPool, Uint32 instanceC
     pModelPool->models = ptr;
     pModelPool->modelCount++;
 
-    ptr = (Uint32*)SDL_realloc(pModelPool->offsets, (pModelPool->offsetCount + 1) * sizeof(Uint32));
+    ptr = (Uint32*)G_realloc(pModelPool->offsets, (pModelPool->offsetCount + 1) * sizeof(Uint32));
     if (ptr == NULL)
     {
         pModelPool->modelCount--;
@@ -88,7 +89,7 @@ G_StaticModel * loadStaticModel(G_StaticModelPool * pModelPool, Uint32 instanceC
     }
 
     pModelPool->models[modelCount].firstInstance = pModelPool->offsets[offsetCount - 1];
-    pModelPool->models[modelCount].matrix = (mat4*)SDL_malloc(sizeof(mat4) * instanceCount * 2);
+    pModelPool->models[modelCount].matrix = (mat4*)G_malloc(sizeof(mat4) * instanceCount * 2);
     pModelPool->models[modelCount].matrixCount = 0;
     SDL_strlcpy(pModelPool->models[modelCount].innerName, innerName, 16);
 
@@ -107,7 +108,7 @@ static G_StaticModel * findStaticModel(G_StaticModelPool * pModelPool, const cha
 
     return NULL;
 }
-bool addModelMatrix(int32_t x, int32_t y, int32_t z, G_StaticModelPool * pModelPool, const char * innerName)
+bool addModelMatrix(int32_t x, int32_t y, int32_t z, float scale_x, float scale_y, float scale_z, G_StaticModelPool * pModelPool, const char * innerName)
 {
     SDL_LockMutex(pModelPool->mutex);
 
@@ -115,6 +116,12 @@ bool addModelMatrix(int32_t x, int32_t y, int32_t z, G_StaticModelPool * pModelP
     Uint32 modelCount = pModelPool->modelCount;
     Uint32 totalMatrixCount;
     G_StaticModel * pModel;
+    // mat4 translateMatrix;
+    // mat4 rotateMatrix = {{-1.0f, 0.0f, 0.0f, 0.0f},
+    //                      {0.0f, 0.0f, M_SQRT2, 0.0f},
+    //                      {0.0f, M_SQRT2, 0.0f, 0.0f},
+    //                      {0.0f, 0.0f, 0.0f, 1.0f}};
+    // mat4 scaleMatrix;
     vec3 tempVec3;
     tempVec3[0] = x * METER_PER_PIXEL;
     tempVec3[1] = y * METER_PER_PIXEL;
@@ -145,10 +152,16 @@ bool addModelMatrix(int32_t x, int32_t y, int32_t z, G_StaticModelPool * pModelP
     }
 
     glm_mat4_identity(pModel->matrix[pModel->matrixCount]);
+
+    // translate
     glm_translate(pModel->matrix[pModel->matrixCount], tempVec3);
-    // glm_rotate(pModel->matrix[pModel->matrixCount], glm_rad(-180.0f), (vec3){0.0f, 0.0f, 1.0f});
+
+    // rotate
     glm_rotate(pModel->matrix[pModel->matrixCount], glm_rad(180.0f), (vec3){0.0f, 1.0f, 0.0f});
     glm_rotate(pModel->matrix[pModel->matrixCount], glm_rad(-90.0f), (vec3){1.0f, 0.0f, 0.0f});
+
+    // scale
+    glm_scale(pModel->matrix[pModel->matrixCount], (vec3){scale_x, scale_z, scale_y});
 
     glm_mat4_copy(pModel->matrix[pModel->matrixCount], pModel->matrix[pModel->matrixCount + totalMatrixCount]);
     glm_inv_tr(pModel->matrix[pModel->matrixCount + totalMatrixCount]);
@@ -250,12 +263,6 @@ bool getStaticModelDrawInfo(G_StaticModelPool * pModelPool, Uint32 * pFirstInsta
         return false;
     }
 
-    if (pModel->matrixCount == pModelPool->offsets[i + 1])
-    {
-        SDL_UnlockMutex(pModelPool->mutex);
-        return false;
-    }
-
     *pFirstInstance = pModel->firstInstance;
     *pInstanceCount = pModel->matrixCount;
 
@@ -279,10 +286,10 @@ void destroyStaticModelPool(G_StaticModelPool * pModelPool)
 
     for (Uint32 i = 0;i < pModelPool->modelCount;i++)
     {
-        SDL_free(pModelPool->models[i].matrix);
+        G_free(pModelPool->models[i].matrix);
     }
-    SDL_free(pModelPool->models);
-    SDL_free(pModelPool->offsets);
+    G_free(pModelPool->models);
+    G_free(pModelPool->offsets);
 
     SDL_DestroyMutex(pModelPool->mutex);
 

@@ -7,6 +7,7 @@
 
 #include "G_struct.h"
 #include "G_log.h"
+#include "G_allocator.h"
 
 extern VK_ALL allInOne;
 extern G_SYNC allSync;
@@ -96,7 +97,7 @@ VkResult createImageViews(VkImage * pImages, Uint32 imageCount, VkFormat format,
 {
     VkResult result = VK_SUCCESS;
 
-    *ppImageView = (VkImageView *)SDL_calloc(imageCount, sizeof(VkImageView));
+    *ppImageView = (VkImageView *)G_calloc(imageCount, sizeof(VkImageView));
 
     for (Uint32 i = 0;i < imageCount;i++)
     {
@@ -109,7 +110,7 @@ VkResult createImageViewsForImageArray(VkImage image, VkFormat format, VkImageAs
 {
     VkResult result = VK_SUCCESS;
 
-    *ppImageView = (VkImageView *)SDL_calloc(imageViewCount, sizeof(VkImageView));
+    *ppImageView = (VkImageView *)G_calloc(imageViewCount, sizeof(VkImageView));
 
     for (Uint32 i = 0;i < imageViewCount;i++)
     {

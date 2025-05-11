@@ -1,7 +1,6 @@
 #version 460
 
 layout(set = 0, binding = 0) uniform UniformBufferObject {
-    mat4 model;
     mat4 view;
     mat4 proj;
 } ubo;
@@ -19,7 +18,7 @@ layout(location = 0) out vec3 fragColor;
 layout(location = 1) out vec2 fragTexCoord;
 layout(location = 2) out vec3 outWorldPos;
 layout(location = 3) out vec3 outWorldNormal;
-layout(location = 4) out int instanceIndex;
+// layout(location = 4) out int instanceIndex;
 
 void main() 
 {
@@ -29,7 +28,7 @@ void main()
 
     fragColor = inColor;
     fragTexCoord = inTexCoord;
-    instanceIndex = gl_InstanceIndex;
+    // instanceIndex = gl_InstanceIndex;
 
     gl_Position = ubo.proj * ubo.view * inModelMatrix * vec4(inPosition, 1.0);
 }

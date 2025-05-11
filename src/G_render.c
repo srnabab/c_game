@@ -29,7 +29,7 @@ int render(void * arg)
             resolutionChanged = false;
         }
 
-        bottomMoved = moveBottomImage(currentFrame);
+        // bottomMoved = moveBottomImage(currentFrame);
 
         drawFrame(First_Scene, currentFrame, allInOne.extent2D.width, allInOne.extent2D.height, bottomMoved);
 

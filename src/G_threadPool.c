@@ -1,5 +1,6 @@
 #include "G_threadPool.h"
 #include "G_log.h"
+#include "G_allocator.h"
 #include "SDL3/SDL_timer.h"
 
 static int threadFunc(void * data)
@@ -64,7 +65,7 @@ static int processTrace(void * data)
 
             *innerTrace.taskAllDone = TRACE_DONE;
             // print("trace inner indices: %p(free)", innerTrace.threadIndices);
-            SDL_free(innerTrace.threadIndices);
+            G_free(innerTrace.threadIndices);
             innerTrace.threadIndices = NULL;
         }
         else 
@@ -83,49 +84,49 @@ static int processTrace(void * data)
 }
 bool createThreadPool(G_Thread_Pool * pThreadPool, Uint32 threadCount, bool expandable)
 {
-    pThreadPool->pThreads = (SDL_Thread**)SDL_malloc((threadCount + 1) * sizeof(SDL_Thread*));
+    pThreadPool->pThreads = (SDL_Thread**)G_malloc((threadCount + 1) * sizeof(SDL_Thread*));
     if (pThreadPool->pThreads == NULL)
     {
         return false;
     }
-    pThreadPool->pThreadSeamphore = (SDL_Semaphore**)SDL_malloc(threadCount * sizeof(SDL_Semaphore*));
+    pThreadPool->pThreadSeamphore = (SDL_Semaphore**)G_malloc(threadCount * sizeof(SDL_Semaphore*));
     if (pThreadPool->pThreadSeamphore == NULL)
     {
-        SDL_free(pThreadPool->pThreads);
+        G_free(pThreadPool->pThreads);
         return false;
     }
-    pThreadPool->pWaitTaskSemaphore = (SDL_Semaphore**)SDL_malloc(threadCount * sizeof(SDL_Semaphore*));
+    pThreadPool->pWaitTaskSemaphore = (SDL_Semaphore**)G_malloc(threadCount * sizeof(SDL_Semaphore*));
     if (pThreadPool->pWaitTaskSemaphore  == NULL)
     {
-        SDL_free(pThreadPool->pThreads);
-        SDL_free(pThreadPool->pThreadSeamphore);
+        G_free(pThreadPool->pThreads);
+        G_free(pThreadPool->pThreadSeamphore);
         return false;
     }
-    pThreadPool->tasks = (G_Task*)SDL_malloc(threadCount * sizeof(G_Task));
+    pThreadPool->tasks = (G_Task*)G_malloc(threadCount * sizeof(G_Task));
     if (pThreadPool->tasks == NULL)
     {
-        SDL_free(pThreadPool->pThreads);
-        SDL_free(pThreadPool->pThreadSeamphore);
-        SDL_free(pThreadPool->pWaitTaskSemaphore);
+        G_free(pThreadPool->pThreads);
+        G_free(pThreadPool->pThreadSeamphore);
+        G_free(pThreadPool->pWaitTaskSemaphore);
         return false;
     }
-    pThreadPool->leisureThread = (bool*)SDL_malloc(threadCount * sizeof(bool));
+    pThreadPool->leisureThread = (bool*)G_malloc(threadCount * sizeof(bool));
     if (pThreadPool->leisureThread == NULL)
     {
-        SDL_free(pThreadPool->tasks);
-        SDL_free(pThreadPool->pThreads);
-        SDL_free(pThreadPool->pThreadSeamphore);
-        SDL_free(pThreadPool->pWaitTaskSemaphore);
+        G_free(pThreadPool->tasks);
+        G_free(pThreadPool->pThreads);
+        G_free(pThreadPool->pThreadSeamphore);
+        G_free(pThreadPool->pWaitTaskSemaphore);
         return false;
     }
-    pThreadPool->doneWatch = (int*)SDL_calloc(128, sizeof(int));
+    pThreadPool->doneWatch = (int*)G_calloc(128, sizeof(int));
     if (pThreadPool->doneWatch == NULL)
     {
-        SDL_free(pThreadPool->tasks);
-        SDL_free(pThreadPool->pThreads);
-        SDL_free(pThreadPool->pThreadSeamphore);
-        SDL_free(pThreadPool->pWaitTaskSemaphore);
-        SDL_free(pThreadPool->leisureThread);
+        G_free(pThreadPool->tasks);
+        G_free(pThreadPool->pThreads);
+        G_free(pThreadPool->pThreadSeamphore);
+        G_free(pThreadPool->pWaitTaskSemaphore);
+        G_free(pThreadPool->leisureThread);
         return false;
     }
 
@@ -233,13 +234,13 @@ static void splitTask(int maxThreadCount, int itemCount, int minRange, int * pTh
 int * G_AddTask(G_Thread_Pool * pThreadPool, int itemCount, int minRange, G_Task * pTask)
 {
     int threadsNeedCount = 0;
-    Range * pRange = (Range*)SDL_malloc(pThreadPool->threadPoolSize * sizeof(Range));
+    Range * pRange = (Range*)G_malloc(pThreadPool->threadPoolSize * sizeof(Range));
     splitTask(pThreadPool->threadPoolSize, itemCount, minRange, &threadsNeedCount, pRange);
 
     Trace tempTrace = {};
     tempTrace.threadUsedCount = threadsNeedCount;
 
-    tempTrace.threadIndices = (int*)SDL_malloc(threadsNeedCount * sizeof(int));
+    tempTrace.threadIndices = (int*)G_malloc(threadsNeedCount * sizeof(int));
     // print("trace index address: %p(alloc)", tempTrace.threadIndices);
 
     SDL_LockMutex(pThreadPool->ThreadPoolMutex);
@@ -274,7 +275,7 @@ int * G_AddTask(G_Thread_Pool * pThreadPool, int itemCount, int minRange, G_Task
     }
     pThreadPool->traceQueue.addTail(&pThreadPool->traceQueue, &tempTrace);
 
-    SDL_free(pRange);
+    G_free(pRange);
 
     return tempTrace.taskAllDone;
 }
@@ -312,11 +313,11 @@ void destroyThreadPool(G_Thread_Pool * pThreadPool)
 
     SDL_LockMutex(pThreadPool->ThreadPoolMutex);
 
-    SDL_free(pThreadPool->pThreads);
-    SDL_free(pThreadPool->pThreadSeamphore);
-    SDL_free(pThreadPool->leisureThread);
-    SDL_free(pThreadPool->tasks);
-    SDL_free(pThreadPool->doneWatch);
+    G_free(pThreadPool->pThreads);
+    G_free(pThreadPool->pThreadSeamphore);
+    G_free(pThreadPool->leisureThread);
+    G_free(pThreadPool->tasks);
+    G_free(pThreadPool->doneWatch);
 
     G_deInitQueue(&pThreadPool->traceQueue);
 

@@ -1,11 +1,13 @@
 #include "vk_code_h/vk_load_model.h"
 
+#include "G_allocator.h"
+
 #define TINYOBJ_LOADER_C_IMPLEMENTATION
 
-#define TINYOBJ_MALLOC SDL_malloc
-#define TINYOBJ_REALLOC SDL_realloc
-#define TINYOBJ_CALLOC SDL_calloc
-#define TINYOBJ_FREE SDL_free
+#define TINYOBJ_MALLOC G_malloc
+#define TINYOBJ_REALLOC G_realloc
+#define TINYOBJ_CALLOC G_calloc
+#define TINYOBJ_FREE G_free
 
 #include "tinyobj_loader/tinyobj_loader_c.h"
 
@@ -52,7 +54,7 @@ static void tinyobj_SDL_readFile(void *ctx, const char *filename, int is_mtl, co
     SDL_SeekIO(stream, 0, SDL_IO_SEEK_END);
     size = SDL_TellIO(stream);
 
-    buffer = (char*)SDL_malloc(size * sizeof(char));
+    buffer = (char*)G_malloc(size * sizeof(char));
     if (buffer == NULL)
     {   
         *buf = NULL;
@@ -145,8 +147,8 @@ bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex3323 * v
         else
         {
             int i;
-            Uint32 * v_vt_index = (Uint32*)SDL_malloc(attrib.num_vertices * sizeof(Uint32));
-            Uint32 * v_vn_index = (Uint32*)SDL_malloc(attrib.num_vertices * sizeof(Uint32));
+            Uint32 * v_vt_index = (Uint32*)G_malloc(attrib.num_vertices * sizeof(Uint32));
+            Uint32 * v_vn_index = (Uint32*)G_malloc(attrib.num_vertices * sizeof(Uint32));
             for (i = 0;i < attrib.num_faces;i++)
             {
                 indices[indexIndex] = attrib.faces[i].v_idx;
@@ -183,8 +185,8 @@ bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex3323 * v
             }
             *pVertexIndex = vertexIndex;
 
-            SDL_free(v_vt_index);
-            SDL_free(v_vn_index);
+            G_free(v_vt_index);
+            G_free(v_vn_index);
         }
         print("load model success");
     }
@@ -211,12 +213,12 @@ bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex3323 * v
 // static void * cgltf_SDL_alloc(void * user_data, size_t size)
 // {
 //     (void)user_data;
-//     return SDL_malloc(size);
+//     return G_malloc(size);
 // }
-// static void cgltf_SDL_free(void * user_data, void * ptr)
+// static void cgltf_G_free(void * user_data, void * ptr)
 // {
 //     (void)user_data;
-//     SDL_free(ptr);
+//     G_free(ptr);
 // }
 // static cgltf_result cgltf_SDL_file_read(const struct cgltf_memory_options* memory_options, const struct cgltf_file_options* file_options, const char* path, cgltf_size* size, void** data)
 // {
@@ -285,7 +287,7 @@ bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex3323 * v
 //     cgltf_memory_options memory_options = {};
 //     memory_options.user_data = NULL;
 //     memory_options.alloc_func = cgltf_SDL_alloc;
-//     memory_options.free_func = cgltf_SDL_free;
+//     memory_options.free_func = cgltf_G_free;
 
 //     options.memory = memory_options;
 

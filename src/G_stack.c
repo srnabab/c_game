@@ -1,4 +1,5 @@
 #include "G_stack.h"
+#include "G_allocator.h"
 
 static bool defaultPushFn(G_Stack * pStack, void * data)
 {
@@ -26,7 +27,7 @@ bool initStack(G_Stack * stack, size_t dataSize, Push pushFn, Pop popFn)
 {
     stack->top = -1;
 
-    stack->data = SDL_malloc(MAX_STACKS * dataSize);
+    stack->data = G_malloc(MAX_STACKS * dataSize);
     if (stack->data == NULL)
     {
         return false;
@@ -76,7 +77,7 @@ void getTop(G_Stack * stack, void * data)
 }
 void deInitStack(G_Stack * stack)
 {
-    SDL_free(stack->data);
+    G_free(stack->data);
     stack->top = -1;
     stack->dataSize = 0;
     stack->popFn = NULL;

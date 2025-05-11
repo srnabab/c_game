@@ -1,4 +1,5 @@
 #include "G_list.h"
+#include "G_allocator.h"
 
 void initList(List list, bool (*compareFn)(void *, void *))
 {
@@ -7,7 +8,7 @@ void initList(List list, bool (*compareFn)(void *, void *))
 }
 bool insertNodeEnd(List list, void * data)
 {
-    Node * node = (Node *)SDL_malloc(sizeof(Node));
+    Node * node = (Node *)G_malloc(sizeof(Node));
     if (node == NULL) return false;
     node->data = data;
     node->next = NULL;
@@ -38,7 +39,7 @@ bool deleteNode(List list, void * data)
     {
         Node * node = preNode->next;
         preNode->next = node->next;
-        SDL_free(node);
+        G_free(node);
         return true;
     }
 

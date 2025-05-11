@@ -27,24 +27,37 @@ typedef struct _QueueFamilyIndices{
 }QueueFamilyIndices;
 
 //same as layout in vertex shader code
-typedef struct _Vertex2
+typedef struct _Vertex23_
 {
     vec2 pos;
     vec3 color;
-} Vertex23;
+} Vertex23_;
 
 typedef struct _Vertex33
 {
     vec3 pos;
     vec3 color;
-} Vertex33;
+} Vertex33_;
+
+typedef struct _Vertex3_2
+{
+    vec3 pos;
+    vec2 texCoord;
+} Vertex3_2_;
 
 typedef struct _Vertex332
 {
     vec3 pos;
     vec3 color;
     vec2 texCoord;
-} Vertex332;
+} Vertex332_;
+
+typedef struct _Vertex3_23
+{
+    vec3 pos;
+    vec2 texCoord;
+    vec3 normal;
+} Vertex3_23;
 
 typedef struct _Vertex3323
 {
@@ -56,7 +69,7 @@ typedef struct _Vertex3323
 
 typedef struct _UniformBufferObject 
 {
-    mat4 model;
+    // mat4 model;
     mat4 view;
     mat4 proj;
 }UniformBufferObject;

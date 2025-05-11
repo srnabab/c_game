@@ -1,6 +1,8 @@
 #include <ft2build.h>
 #include <freetype/freetype.h>
 
+#include "G_allocator.h"
+
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #define STBI_WRITE_NO_STDIO
 #define STB_IMAGE_WRITE_STATIC
@@ -102,7 +104,7 @@ int textureGenerate(const char* fontPath, const char* hashTablePath, const char*
         return -1;
     }
 
-    TextHash * hash = (TextHash*)SDL_calloc(2 * HASH_SIZE, sizeof(TextHash));
+    TextHash * hash = (TextHash*)G_calloc(2 * HASH_SIZE, sizeof(TextHash));
 
     FT_Library ft;
     if (FT_Init_FreeType(&ft)) 
@@ -123,14 +125,14 @@ int textureGenerate(const char* fontPath, const char* hashTablePath, const char*
     FT_UInt indexCount = 0;
     FT_ULong charCode = FT_Get_First_Char(face, &indexCount);
     int maxCode = 1;
-    FT_ULong * codeSets = (FT_ULong*)SDL_malloc(maxCode * sizeof(FT_ULong));
+    FT_ULong * codeSets = (FT_ULong*)G_malloc(maxCode * sizeof(FT_ULong));
     int count = 0;
     while (indexCount)
     {
         if (count == maxCode)
         {
             maxCode <<= 1;
-            codeSets = (FT_ULong*)SDL_realloc(codeSets, maxCode * sizeof(FT_ULong));
+            codeSets = (FT_ULong*)G_realloc(codeSets, maxCode * sizeof(FT_ULong));
         }
         if (!look_up(hash, charCode))
         {
@@ -151,7 +153,7 @@ int textureGenerate(const char* fontPath, const char* hashTablePath, const char*
     const int pixelsPerLine = imageWidth * channels;
     const int imageHeight = fontSize;
 
-    unsigned char * buffer = (unsigned char*)SDL_calloc(imageWidth * imageHeight * line * characterPerLine * channels, sizeof(unsigned char));
+    unsigned char * buffer = (unsigned char*)G_calloc(imageWidth * imageHeight * line * characterPerLine * channels, sizeof(unsigned char));
 
     float yOffset = 1 / (float)line;
     float xOffset = 1 / (float)characterPerLine;
@@ -231,9 +233,9 @@ int textureGenerate(const char* fontPath, const char* hashTablePath, const char*
         }
     }
 
-    SDL_free(codeSets);
+    G_free(codeSets);
     
-    unsigned char * buffer2 = (unsigned char*)SDL_calloc(imageWidth * imageHeight * line * characterPerLine * channels, sizeof(unsigned char));
+    unsigned char * buffer2 = (unsigned char*)G_calloc(imageWidth * imageHeight * line * characterPerLine * channels, sizeof(unsigned char));
     for (int y = 0;y < line;y++)
     {
         for (int i = 0;i < characterPerLine;i++)
@@ -244,7 +246,7 @@ int textureGenerate(const char* fontPath, const char* hashTablePath, const char*
             }
         }
     }
-    SDL_free(buffer);
+    G_free(buffer);
 
     SDL_IOStream * fp = NULL;
     if ((fp = SDL_IOFromFile(hashTablePath, "wb")) == NULL)
@@ -256,7 +258,7 @@ int textureGenerate(const char* fontPath, const char* hashTablePath, const char*
     {
         SDL_WriteIO(fp, hash, sizeof(TextHash) * HASH_SIZE * 2);
         SDL_CloseIO(fp);
-        SDL_free(hash);
+        G_free(hash);
     }
 
     // int pngRes = stbi_write_png(pngSavePath, imageWidth * characterPerLine, imageHeight * line, channels, buffer2, imageWidth * characterPerLine * channels);
@@ -268,7 +270,7 @@ int textureGenerate(const char* fontPath, const char* hashTablePath, const char*
         return -9;
     }
 
-    SDL_free(buffer2);
+    G_free(buffer2);
     SDL_CloseIO(png);
 
     FT_Done_Face(face);

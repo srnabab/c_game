@@ -5,6 +5,7 @@
 #include "SDL3/SDL_iostream.h"
 
 #include "G_file/G_file.h"
+#include "G_allocator.h"
 #include "G_stack.h"
 #include "G_log.h"
 
@@ -24,14 +25,14 @@ void createShaderModuleFromFile(PathType type, VkShaderModule * pShaderModule)
     //printf("fileSize: %u\n", fileSize);
     SDL_SeekIO(shaderFile, 0, SDL_IO_SEEK_SET);
 
-    char * shaderCode = (char *)SDL_malloc(fileSize * sizeof(char));
+    char * shaderCode = (char *)G_malloc(fileSize * sizeof(char));
     SDL_ReadIO(shaderFile, shaderCode, sizeof(char) * fileSize);
     
     SDL_CloseIO(shaderFile);
 
     resultVulkan(createShaderModuleFromMem(fileSize, (const Uint32 *)shaderCode, pShaderModule), 1, shaderCode);
 
-    SDL_free(shaderCode);
+    G_free(shaderCode);
 
     //printf("shaderModule created\n");
 }
@@ -60,7 +61,7 @@ void addShaderStageCreateInfo(VkShaderModule * pShaderModule, VkShaderStageFlags
     (*pShaderCount)++;
     //printf("shader count: %u\n", *pShaderCount);
 
-    *pPipelineShaderStageCreateInfo = (VkPipelineShaderStageCreateInfo *)SDL_realloc(*pPipelineShaderStageCreateInfo, *pShaderCount * sizeof(VkPipelineShaderStageCreateInfo));
+    *pPipelineShaderStageCreateInfo = (VkPipelineShaderStageCreateInfo *)G_realloc(*pPipelineShaderStageCreateInfo, *pShaderCount * sizeof(VkPipelineShaderStageCreateInfo));
     (*pPipelineShaderStageCreateInfo)[*pShaderCount - 1] = shaderStageCreateInfo;
 }
 /*

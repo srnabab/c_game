@@ -4,6 +4,7 @@
 
 #include "G_pop_window.h"
 #include "G_log.h"
+#include "G_allocator.h"
 
 #define RTX_2060 0
 #define INTEL_GPU 1
@@ -54,8 +55,8 @@ static bool requiredExtensionSupportedCheck(Uint32 extensionCount, char ** exten
 }
 static int getBestPhysicalDeviceIndex(VkPhysicalDevice *pPhysicalDevices, Uint32 physicalDeviceNumber)
 {
-	VkPhysicalDeviceProperties *physicalDeviceProperties = (VkPhysicalDeviceProperties *)SDL_malloc(physicalDeviceNumber * sizeof(VkPhysicalDeviceProperties));
-	VkPhysicalDeviceMemoryProperties *physicalDeviceMemoryProperties = (VkPhysicalDeviceMemoryProperties *)SDL_malloc(physicalDeviceNumber * sizeof(VkPhysicalDeviceMemoryProperties));
+	VkPhysicalDeviceProperties *physicalDeviceProperties = (VkPhysicalDeviceProperties *)G_malloc(physicalDeviceNumber * sizeof(VkPhysicalDeviceProperties));
+	VkPhysicalDeviceMemoryProperties *physicalDeviceMemoryProperties = (VkPhysicalDeviceMemoryProperties *)G_malloc(physicalDeviceNumber * sizeof(VkPhysicalDeviceMemoryProperties));
 
 	int index = -1;
     Uint64 bestMemory = 0;
@@ -69,12 +70,12 @@ static int getBestPhysicalDeviceIndex(VkPhysicalDevice *pPhysicalDevices, Uint32
 	{
         Uint32 physicalDeviceExtensionCount = 0;
         vkEnumerateDeviceExtensionProperties(pPhysicalDevices[i], NULL, &physicalDeviceExtensionCount, NULL);
-        VkExtensionProperties * physicalDeviceExtension = (VkExtensionProperties*)SDL_malloc(physicalDeviceExtensionCount * sizeof(VkExtensionProperties));
+        VkExtensionProperties * physicalDeviceExtension = (VkExtensionProperties*)G_malloc(physicalDeviceExtensionCount * sizeof(VkExtensionProperties));
         vkEnumerateDeviceExtensionProperties(pPhysicalDevices[i], NULL, &physicalDeviceExtensionCount, physicalDeviceExtension);
 
         if (!requiredExtensionSupportedCheck(requiredDeviceExtensionCount, (char**)requiredDeviceExtensions, physicalDeviceExtensionCount, physicalDeviceExtension))
         {
-            SDL_free(physicalDeviceExtension);
+            G_free(physicalDeviceExtension);
             continue;
         }
 
@@ -153,11 +154,11 @@ static int getBestPhysicalDeviceIndex(VkPhysicalDevice *pPhysicalDevices, Uint32
 		}
 		print(pipelineCacheUUID);
 
-        SDL_free(physicalDeviceExtension);
+        G_free(physicalDeviceExtension);
 	}
 
-	SDL_free(physicalDeviceMemoryProperties);
-	SDL_free(physicalDeviceProperties);
+	G_free(physicalDeviceMemoryProperties);
+	G_free(physicalDeviceProperties);
 
 	return index;
 }
@@ -171,7 +172,7 @@ void pickPhysicalDevice(void)
         print("failed to find GPUs with Vulkan support");
     }
 
-    VkPhysicalDevice * devices = (VkPhysicalDevice *)SDL_malloc(deviceCount * sizeof(VkPhysicalDevice));
+    VkPhysicalDevice * devices = (VkPhysicalDevice *)G_malloc(deviceCount * sizeof(VkPhysicalDevice));
     resultVulkan(vkEnumeratePhysicalDevices(allInOne.instance, &deviceCount, devices), 1, devices);
 
 	VkPhysicalDevice device = devices[getBestPhysicalDeviceIndex(devices, deviceCount)];
@@ -181,13 +182,13 @@ void pickPhysicalDevice(void)
 
 	if (deviceFeatures.geometryShader == VK_TRUE && deviceFeatures.independentBlend == VK_TRUE && deviceFeatures.wideLines == VK_TRUE)
 	{
-		SDL_free(devices);
+		G_free(devices);
 		//printf("devive picked\n");
 		allInOne.physicalDevice = device;
 	}
     else
     {
-        SDL_free(devices);
+        G_free(devices);
     }
 
     if (GPU_CHOOSED) print("device picked: INTEL_GPU");
@@ -196,7 +197,7 @@ void pickPhysicalDevice(void)
 static bool * extensionSupportedCheck_Optional(Uint32 neededExtensionCount, char ** neededExtensions, Uint32 extensionCount, VkExtensionProperties * pExtensionProperties)
 {
     Uint32 count = -1;//u32 overflow
-    bool * group = (bool*)SDL_malloc(sizeof(bool) * neededExtensionCount);
+    bool * group = (bool*)G_malloc(sizeof(bool) * neededExtensionCount);
     for (Uint32 i = 0;i < neededExtensionCount;i++)
     {
         group[i] = false;
@@ -299,12 +300,12 @@ void createLogicalDevice(void)
 
     Uint32 physicalDeviceExtensionCount = 0;
     vkEnumerateDeviceExtensionProperties(allInOne.physicalDevice, NULL, &physicalDeviceExtensionCount, NULL);
-    VkExtensionProperties * physicalDeviceExtension = (VkExtensionProperties*)SDL_malloc(physicalDeviceExtensionCount * sizeof(VkExtensionProperties));
+    VkExtensionProperties * physicalDeviceExtension = (VkExtensionProperties*)G_malloc(physicalDeviceExtensionCount * sizeof(VkExtensionProperties));
     vkEnumerateDeviceExtensionProperties(allInOne.physicalDevice, NULL, &physicalDeviceExtensionCount, physicalDeviceExtension);
 
     bool * enabledGroup = extensionSupportedCheck_Optional(optionalDeviceExtensionCount, (char **)vmaExtension, physicalDeviceExtensionCount, physicalDeviceExtension);
-    SDL_free(physicalDeviceExtension);
-    char ** enabledExtension = (char**)SDL_malloc(sizeof(char**) * (optionalDeviceExtensionCount + requiredDeviceExtensionCount));
+    G_free(physicalDeviceExtension);
+    char ** enabledExtension = (char**)G_malloc(sizeof(char**) * (optionalDeviceExtensionCount + requiredDeviceExtensionCount));
 
     Uint32 enabledExtensionCount = 0;
     enabledExtension[0] = (char *)requiredDeviceExtensions[0];
@@ -323,7 +324,7 @@ void createLogicalDevice(void)
             print("device extension:%s not supported by device", vmaExtension[i]);
         }
     }
-    SDL_free(enabledGroup);
+    G_free(enabledGroup);
 
     VkDeviceQueueCreateInfo queueCreateInfo[4];
 
@@ -364,6 +365,6 @@ void createLogicalDevice(void)
 
     resultVulkan(vkCreateDevice(allInOne.physicalDevice, &createInfo, allInOne.pAllocationCallbacks, &allInOne.device), 0);
 
-    SDL_free(enabledExtension);
+    G_free(enabledExtension);
     //printf("logical device created\n");
 }

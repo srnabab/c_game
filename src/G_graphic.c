@@ -5,6 +5,7 @@
 #include "G_TileMap/G_TileSet.h"
 #include "G_staticModel.h"
 #include "G_map.h"
+#include "G_allocator.h"
 #include "G_custom_math.h"
 
 #include "SDL3/SDL_video.h"
@@ -115,7 +116,7 @@ bool initWindow_3D(void)
     SDL_Surface * iconSurface = SDL_CreateSurfaceFrom(iconWidth, iconHeight, SDL_PIXELFORMAT_RGBA32, iconPixels, iconWidth * iconChannel);
     if (iconSurface == NULL)
     {
-        SDL_free(iconPixels);
+        G_free(iconPixels);
         return false;
     }
 
@@ -123,7 +124,7 @@ bool initWindow_3D(void)
         return false;
 
     SDL_DestroySurface(iconSurface);
-    SDL_free(iconPixels);
+    G_free(iconPixels);
 
     return true;
 }
@@ -135,7 +136,7 @@ static VkFormat swapchainFormat = 0;
 static VkPipelineShaderStageCreateInfo * graphciShaderStageCreateInfo = NULL;
 
 static VkPipelineShaderStageCreateInfo * modelShaderStageCreateInfo = NULL;
-static VkPipelineShaderStageCreateInfo * bottomShaderStageCreateInfo = NULL;
+// static VkPipelineShaderStageCreateInfo * bottomShaderStageCreateInfo = NULL;
 static VkPipelineShaderStageCreateInfo * shadowShaderStageCreateInfo = NULL;
 
 static VkPipelineShaderStageCreateInfo * particleShaderStageCreateInfo = NULL;
@@ -150,7 +151,7 @@ static VkPipelineShaderStageCreateInfo * combineShaderStageCreateInfo = NULL;
 static VkDescriptorSetLayout * graphicDescriptorSetLayout = NULL;
 
 static VkDescriptorSetLayout * modelDescriptorSetLayout = NULL;
-static VkDescriptorSetLayout * bottomDescriptorSetLayout = NULL;
+// static VkDescriptorSetLayout * bottomDescriptorSetLayout = NULL;
 static VkDescriptorSetLayout * shadowDescriptorSetLayout = NULL;
 
 static VkDescriptorSetLayout * particleDescriptorSetLayout = NULL;
@@ -170,8 +171,8 @@ static UniformBufferObject ubo3D = {};
 static VkDeviceMemory UIUniformBuffersMemory[MAX_FRAMES_IN_FLIGHT];
 static UniformBufferObject uboUI = {};
 
-static VkDeviceMemory tilemapUniformBuffersMemory[MAX_FRAMES_IN_FLIGHT];
-static UniformBufferObject uboTilemap = {};
+// static VkDeviceMemory tilemapUniformBuffersMemory[MAX_FRAMES_IN_FLIGHT];
+// static UniformBufferObject uboTilemap = {};
 
 static VkDeviceMemory computeUniformBuffersmemory[MAX_FRAMES_IN_FLIGHT];
 static ComputeUniformBufferObject computeUbo = {};
@@ -205,7 +206,7 @@ static ShapeConstants shapePushConstants = {(vec2){0.0f, 0.0f}, (vec2){0.0533333
 
 static G_StaticModelPool staticModelPool = {};
 
-static G_Thread_Pool threadPool = {};
+// static G_Thread_Pool threadPool = {};
 
 //store all compoents for initialize vulkan in a struct
 VK_ALL allInOne = {};
@@ -221,7 +222,7 @@ static void initializeAllInOne(void)
     allInOne.pSSGIubo = &SSGIubo;
     allInOne.pLightSpaceUbo = &lightSpaceubo;
     allInOne.pSunubo = &Sunubo;
-    allInOne.pTilemapUbo = &uboTilemap;
+    // allInOne.pTilemapUbo = &uboTilemap;
 
     allInOne.pComputeUbo = &computeUbo;
 
@@ -234,11 +235,11 @@ static void initializeAllInOne(void)
     allInOne.pPushConstants = &picturePushConstants;
     allInOne.pShapeConstants = &shapePushConstants;
 
-    initStack(&allInOne.bottomImageDrawStack, sizeof(DrawHere), NULL, NULL);
-    initStack(&allInOne.bottomImageMoveStack, sizeof(FromTo), NULL, NULL);
+    // initStack(&allInOne.bottomImageDrawStack, sizeof(DrawHere), NULL, NULL);
+    // initStack(&allInOne.bottomImageMoveStack, sizeof(FromTo), NULL, NULL);
 
-    createThreadPool(&threadPool, 1, false);
-    allInOne.pThreadPool = &threadPool;
+    // createThreadPool(&threadPool, 1, false);
+    // allInOne.pThreadPool = &threadPool;
     // allInOne.timelineSemaphoreSignalValue = 0;
 }
 
@@ -254,9 +255,9 @@ void initVulkan(void)
     initCollection();
 
     SDL_allocationCallBacks.pUserData = NULL;
-    SDL_allocationCallBacks.pfnAllocation = SDL_VK_alloc;
-    SDL_allocationCallBacks.pfnReallocation = SDL_VK_realloc;
-    SDL_allocationCallBacks.pfnFree = SDL_VK_free;
+    SDL_allocationCallBacks.pfnAllocation = VK_alloc;
+    SDL_allocationCallBacks.pfnReallocation = VK_realloc;
+    SDL_allocationCallBacks.pfnFree = VK_free;
     SDL_allocationCallBacks.pfnInternalAllocation = NULL;
     SDL_allocationCallBacks.pfnInternalFree = NULL;    
 
@@ -353,7 +354,7 @@ void initVulkan(void)
     createShadowSampler(&allInOne.shadowSampler);
     CO_addSampler(allInOne.shadowSampler);// CO
 
-    Vertex23 shapeVertex[5] =
+    Vertex23_ shapeVertex[5] =
     {
         {{-0.5f, -0.5f}, {1.0f, 1.0f, 0.0f}}, // 0: 左下
         {{ 0.5f, -0.5f}, {1.0f, 0.0f, 1.0f}}, // 1: 右下
@@ -361,42 +362,48 @@ void initVulkan(void)
         {{-0.5f,  0.5f}, {0.0f, 1.0f, 1.0f}}, // 3: 左上
         {{-0.5f, -0.5f}, {0.0f, 0.0f, 0.0f}}  // 4: 回到左下 (闭合)
     };
-    createVertexBuffer(&allInOne.tempBuffer, &allInOne.tempBufferMemory, NULL, shapeVertex, 5 * sizeof(Vertex23), false);
+    createVertexBuffer(&allInOne.tempBuffer, &allInOne.tempBufferMemory, NULL, shapeVertex, 5 * sizeof(Vertex23_), false);
     CO_addBuffer(false, allInOne.tempBuffer, allInOne.tempBufferMemory, NULL);
 
-    Vertex33 tileMapVertex[VERTEX_COUNT_IN_UNIT_2D * MAX_TILES_IN_GROUP] = {};
-    initVertices33(BOTTOM_WIDTH, BOTTOM_HEIGHT, 50, 50, 0.1f, tileMapVertex);
-    createVertexBuffer(&allInOne.tileMapVertexBuffer, &allInOne.tileMapVertexBufferMem, NULL, tileMapVertex, VERTEX_COUNT_IN_UNIT_2D * MAX_TILES_IN_GROUP * sizeof(Vertex33), false);
-    CO_addBuffer(false, allInOne.tileMapVertexBuffer, allInOne.tileMapVertexBufferMem, NULL);// CO
+    // Vertex33_ tileMapVertex[VERTEX_COUNT_IN_UNIT_2D * MAX_TILES_IN_GROUP] = {};
+    // initVertices33(BOTTOM_WIDTH, BOTTOM_HEIGHT, 50, 50, 0.1f, tileMapVertex);
+    // createVertexBuffer(&allInOne.tileMapVertexBuffer, &allInOne.tileMapVertexBufferMem, NULL, tileMapVertex, VERTEX_COUNT_IN_UNIT_2D * MAX_TILES_IN_GROUP * sizeof(Vertex33_), false);
+    // CO_addBuffer(false, allInOne.tileMapVertexBuffer, allInOne.tileMapVertexBufferMem, NULL);// CO
 
-    allInOne.pTileMapUVs = (vec2*)SDL_calloc(MAX_MAP_GROUP * MAX_TILES_IN_GROUP * VERTEX_COUNT_IN_UNIT_2D, sizeof(vec2));
-    createVertexBuffer(allInOne.tileMapTexCoordBuffer + 0, allInOne.pTimeMapTexCoordBufferMem + 0, allInOne.pTimeMapTexCoordBufferMapped + 0, allInOne.pTileMapUVs, MAX_MAP_GROUP * MAX_TILES_IN_GROUP * VERTEX_COUNT_IN_UNIT_2D * sizeof(vec2), true);
-    CO_addBuffer(true, allInOne.tileMapTexCoordBuffer[0], allInOne.pTimeMapTexCoordBufferMem[0], NULL);// CO
-    createVertexBuffer(allInOne.tileMapTexCoordBuffer + 1, allInOne.pTimeMapTexCoordBufferMem + 1, allInOne.pTimeMapTexCoordBufferMapped + 1, allInOne.pTileMapUVs, MAX_MAP_GROUP * MAX_TILES_IN_GROUP * VERTEX_COUNT_IN_UNIT_2D * sizeof(vec2), true);
-    CO_addBuffer(true, allInOne.tileMapTexCoordBuffer[1], allInOne.pTimeMapTexCoordBufferMem[1], allInOne.pTileMapUVs);// CO
+    // allInOne.pTileMapUVs = (vec2*)G_calloc(MAX_MAP_GROUP * MAX_TILES_IN_GROUP * VERTEX_COUNT_IN_UNIT_2D, sizeof(vec2));
+    // createVertexBuffer(allInOne.tileMapTexCoordBuffer + 0, allInOne.pTimeMapTexCoordBufferMem + 0, allInOne.pTimeMapTexCoordBufferMapped + 0, allInOne.pTileMapUVs, MAX_MAP_GROUP * MAX_TILES_IN_GROUP * VERTEX_COUNT_IN_UNIT_2D * sizeof(vec2), true);
+    // CO_addBuffer(true, allInOne.tileMapTexCoordBuffer[0], allInOne.pTimeMapTexCoordBufferMem[0], NULL);// CO
+    // createVertexBuffer(allInOne.tileMapTexCoordBuffer + 1, allInOne.pTimeMapTexCoordBufferMem + 1, allInOne.pTimeMapTexCoordBufferMapped + 1, allInOne.pTileMapUVs, MAX_MAP_GROUP * MAX_TILES_IN_GROUP * VERTEX_COUNT_IN_UNIT_2D * sizeof(vec2), true);
+    // CO_addBuffer(true, allInOne.tileMapTexCoordBuffer[1], allInOne.pTimeMapTexCoordBufferMem[1], allInOne.pTileMapUVs);// CO
 
-    allInOne.pVertices2D = (Vertex332*)SDL_calloc(VERTEX_COUNT_IN_BUFFER_2D, sizeof(Vertex332));
+    // createVertexBuffer(allInOne.tilemapVertexBuffer + 0, allInOne.pTilemapVertexBufferMem + 0, NULL, NULL, (MAX_TILES_IN_GROUP * MAX_MAP_GROUP * VERTEX_COUNT_IN_UNIT_2D), false);
+    // CO_addBuffer(false, allInOne.tilemapVertexBuffer[0], allInOne.pTilemapVertexBufferMem[0], NULL);
+    // createVertexBuffer(allInOne.tilemapVertexBuffer + 1, allInOne.pTilemapVertexBufferMem + 1, NULL, NULL, (MAX_TILES_IN_GROUP * MAX_MAP_GROUP * VERTEX_COUNT_IN_UNIT_2D), false);
+    // CO_addBuffer(false, allInOne.tilemapVertexBuffer[1], allInOne.pTilemapVertexBufferMem[1], NULL);
+
+    allInOne.pVertices2D = (Vertex332_*)G_calloc(VERTEX_COUNT_IN_BUFFER_2D, sizeof(Vertex332_));
     allInOne.maxVertices2DCount = VERTEX_COUNT_IN_BUFFER_2D;
-    createVertexBuffer(allInOne.vertexBuffer2D + 0, allInOne.pVertexBuffer2DMem + 0, allInOne.pVertexBuffer2DMemMapped + 0, NULL, VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex332), true);
+    createVertexBuffer(allInOne.vertexBuffer2D + 0, allInOne.pVertexBuffer2DMem + 0, allInOne.pVertexBuffer2DMemMapped + 0, NULL, VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex332_), true);
     CO_addBuffer(true, allInOne.vertexBuffer2D[0], allInOne.pVertexBuffer2DMem[0], NULL);// CO
-    createVertexBuffer(allInOne.vertexBuffer2D + 1, allInOne.pVertexBuffer2DMem + 1, allInOne.pVertexBuffer2DMemMapped + 1, NULL, VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex332), true);
+    createVertexBuffer(allInOne.vertexBuffer2D + 1, allInOne.pVertexBuffer2DMem + 1, allInOne.pVertexBuffer2DMemMapped + 1, NULL, VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex332_), true);
     CO_addBuffer(true, allInOne.vertexBuffer2D[1], allInOne.pVertexBuffer2DMem[1], allInOne.pVertices2D);// CO
 
-    allInOne.pIndices2D = (Uint16 *)SDL_calloc(INDEX_COUNT_IN_BUFFER_2D, sizeof(Uint16 ));
+    allInOne.pIndices2D = (Uint16 *)G_calloc(INDEX_COUNT_IN_BUFFER_2D, sizeof(Uint16));
     indexInitialize(allInOne.pIndices2D, MAX_UNIT_COUNT_2D);
 
     createIndexBuffer(&allInOne.indexBuffer2D, &allInOne.indexBuffer2DMem, NULL, allInOne.pIndices2D, INDEX_COUNT_IN_BUFFER_2D, sizeof(Uint16), false);
     CO_addBuffer(false, allInOne.indexBuffer2D, allInOne.indexBuffer2DMem, NULL);// CO
 
-    SDL_free(allInOne.pIndices2D);
+    G_free(allInOne.pIndices2D);
 
-    allInOne.pVertices3D = (Vertex3323*)SDL_calloc(30000, sizeof(Vertex3323));
+    allInOne.pVertices3D = (Vertex3323*)G_calloc(30000, sizeof(Vertex3323));
+
     allInOne.maxVertices3DCount = 30000;
-    allInOne.pIndices3D = (Uint32*)SDL_calloc(45000, sizeof(Uint32));
+    allInOne.pIndices3D = (Uint32*)G_calloc(45000, sizeof(Uint32));
     createVertexBuffer(allInOne.vertexBuffer3D + 0, allInOne.vertexBuffer3DMem + 0, allInOne.pVertexBuffer3DMemMapped + 0, NULL, 30000 * sizeof(Vertex3323), true);
     CO_addBuffer(true, allInOne.vertexBuffer3D[0], allInOne.vertexBuffer3DMem[0], NULL);// CO
     createVertexBuffer(allInOne.vertexBuffer3D + 1, allInOne.vertexBuffer3DMem + 1, allInOne.pVertexBuffer3DMemMapped + 1, NULL, 30000 * sizeof(Vertex3323), true);
-    CO_addBuffer(true, allInOne.vertexBuffer3D[1], allInOne.vertexBuffer3DMem[1], NULL);// CO
+    CO_addBuffer(true, allInOne.vertexBuffer3D[1], allInOne.vertexBuffer3DMem[1], allInOne.pVertices3D);// CO
 
     createIndexBuffer(allInOne.indexBuffer3D + 0, allInOne.indexBuffer3DMem + 0, allInOne.pIndexBuffer3DMemMapped + 0, allInOne.pIndices3D, 45000, sizeof(Uint32), true);
     CO_addBuffer(true, allInOne.indexBuffer3D[0], allInOne.indexBuffer3DMem[0], NULL);// CO
@@ -412,9 +419,9 @@ void initVulkan(void)
     createUniformBufferByBuffering(&allInOne.pUIUniformBuffer, &UIUniformBuffersMemory, &allInOne.ppUIUniformBufferMapped, sizeof(UniformBufferObject));
     CO_addBuffer(true, allInOne.pUIUniformBuffer[0], UIUniformBuffersMemory[0], NULL);// CO
     CO_addBuffer(true, allInOne.pUIUniformBuffer[1], UIUniformBuffersMemory[1], NULL);// CO
-    createUniformBufferByBuffering(&allInOne.pTilemapUniformBuffer, &tilemapUniformBuffersMemory, &allInOne.ppTilemapUniformBufferMapped, sizeof(UniformBufferObject));
-    CO_addBuffer(true, allInOne.pTilemapUniformBuffer[0], tilemapUniformBuffersMemory[0], NULL);// CO
-    CO_addBuffer(true, allInOne.pTilemapUniformBuffer[1], tilemapUniformBuffersMemory[1], NULL);// CO
+    // createUniformBufferByBuffering(&allInOne.pTilemapUniformBuffer, &tilemapUniformBuffersMemory, &allInOne.ppTilemapUniformBufferMapped, sizeof(UniformBufferObject));
+    // CO_addBuffer(true, allInOne.pTilemapUniformBuffer[0], tilemapUniformBuffersMemory[0], NULL);// CO
+    // CO_addBuffer(true, allInOne.pTilemapUniformBuffer[1], tilemapUniformBuffersMemory[1], NULL);// CO
 
     createUniformBufferByBuffering(&allInOne.pComputeUniformBuffer, &computeUniformBuffersmemory, &allInOne.ppComputeUniformBufferMapped, sizeof(ComputeUniformBufferObject));
     CO_addBuffer(true, allInOne.pComputeUniformBuffer[0], computeUniformBuffersmemory[0], NULL);// CO
@@ -452,21 +459,21 @@ void initVulkan(void)
     Uint32 graphicSetCount = CreateShaderModulesAndDescriptorSets(graphicTypes, 2, &graphicTempModule, &graphciShaderStageCreateInfo, &graphicDescriptorSetLayout, &allInOne.graphicPipelineLayout);
     createDescriptorSets(&graphicDescriptorPool, graphicDescriptorSetLayout, graphicSetCount, 5, &allInOne.pGraphicDescriptorSets);
     createGraphicsPipeline(allInOne.extent2D, 2, graphciShaderStageCreateInfo, allInOne.graphicPipelineLayout, allInOne.renderPass, &allInOne.graphicPipeline);
-    createTileMapPipeline(2, graphciShaderStageCreateInfo, allInOne.graphicPipelineLayout, allInOne.renderPass, &allInOne.tilemapPipeline);
+    // createTileMapPipeline(2, graphciShaderStageCreateInfo, allInOne.graphicPipelineLayout, allInOne.renderPass, &allInOne.tilemapPipeline);
 
     //3d model shader
     PathType modelTypes[] = {Model3dVertShader, Model3dFragShader};
     VkShaderModule * modelTempModule = NULL;
     Uint32 modelSetCount = CreateShaderModulesAndDescriptorSets(modelTypes, 2, &modelTempModule, &modelShaderStageCreateInfo, &modelDescriptorSetLayout, &allInOne.modelPipelineLayout);
-    createDescriptorSets(&graphicDescriptorPool, modelDescriptorSetLayout, modelSetCount, 1, &allInOne.pModelDescriptorSets);
+    createDescriptorSets(&graphicDescriptorPool, modelDescriptorSetLayout, modelSetCount, 2, &allInOne.pModelDescriptorSets);
     createModelPipeline(allInOne.extent2D, 2, modelShaderStageCreateInfo, allInOne.modelPipelineLayout, allInOne.modelRenderPass, &allInOne.modelPipeline);
 
     // 3d bottom shader
-    PathType bottomTypes[] = {Model3dVertShader, ModelBottomFragShader};
-    VkShaderModule * bottomTempModule = NULL;
-    Uint32 bottomSetCount = CreateShaderModulesAndDescriptorSets(bottomTypes, 2, &bottomTempModule, &bottomShaderStageCreateInfo, &bottomDescriptorSetLayout, &allInOne.bottomPipelineLayout);
-    createDescriptorSets(&graphicDescriptorPool, bottomDescriptorSetLayout, bottomSetCount, 1, &allInOne.pBottomDescriptorSets);
-    createModelPipeline(allInOne.extent2D, 2, bottomShaderStageCreateInfo, allInOne.bottomPipelineLayout, allInOne.modelRenderPass, &allInOne.bottomPipeline);
+    // PathType bottomTypes[] = {Model3dVertShader, ModelBottomFragShader};
+    // VkShaderModule * bottomTempModule = NULL;
+    // Uint32 bottomSetCount = CreateShaderModulesAndDescriptorSets(bottomTypes, 2, &bottomTempModule, &bottomShaderStageCreateInfo, &bottomDescriptorSetLayout, &allInOne.bottomPipelineLayout);
+    // createDescriptorSets(&graphicDescriptorPool, bottomDescriptorSetLayout, bottomSetCount, 1, &allInOne.pBottomDescriptorSets);
+    // createModelPipeline(allInOne.extent2D, 2, bottomShaderStageCreateInfo, allInOne.bottomPipelineLayout, allInOne.modelRenderPass, &allInOne.bottomPipeline);
 
     // particle shader
     PathType particleTypes[] = {ParticleVertShader, ParticleFragShader};
@@ -579,23 +586,23 @@ void initVulkan(void)
     // loadTileMap(TileMap1TsdI, 400, -300, TEXTURE_TILE_SET);
     // loadTileMap(TileMap1TsdI, 400, -1100, TEXTURE_TILE_SET);
     // loadTileMap(TileMap1TsdI, -400, -1100, TEXTURE_TILE_SET);
-    createStaticModelPool(&staticModelPool, 58);
-    loadStaticModel(&staticModelPool, 48, BottomObj, BottomPng, allInOne.pVertices3D, &allInOne.vertices3DCount, allInOne.pIndices3D, &allInOne.indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_BOTTOM, allInOne.pBottomDescriptorSets, true);
-    loadStaticModel(&staticModelPool, 10, BoxObj, BoxPng, allInOne.pVertices3D, &allInOne.vertices3DCount, allInOne.pIndices3D, &allInOne.indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_MODEL, allInOne.pModelDescriptorSets, false);
+    createStaticModelPool(&staticModelPool, 60);
+    loadStaticModel(&staticModelPool, 1, BottomObj, BottomPng, allInOne.pVertices3D, &allInOne.vertices3DCount, allInOne.pIndices3D, &allInOne.indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_BOTTOM, allInOne.pModelDescriptorSets + 0, false);
+    loadStaticModel(&staticModelPool, 10, BoxObj, BoxPng, allInOne.pVertices3D, &allInOne.vertices3DCount, allInOne.pIndices3D, &allInOne.indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_MODEL, allInOne.pModelDescriptorSets + 2, false);
 
-    VkImage imageArray = NULL;
-    VkDeviceMemory imageArrayMemory = NULL;
-    VkImageView imageArrayView = NULL;
-    VkImageView * imageArrayViews = NULL;
-    createImageArray(800, 800, 48, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT\
-        , VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &imageArray, &imageArrayMemory);
-    createImageViewArray(imageArray, 48, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, &imageArrayView);
-    addTexture(800, 800, VK_FORMAT_R8G8B8A8_SRGB, imageArray, imageArrayMemory, imageArrayView, allInOne.pBottomDescriptorSets + 2, 48, VK_IMAGE_LAYOUT_UNDEFINED, TEXTURE_MAP_ARRAY);
-    transitionImageLayout(NULL, getTexture(TEXTURE_MAP_ARRAY), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 48);
+    // VkImage imageArray = NULL;
+    // VkDeviceMemory imageArrayMemory = NULL;
+    // VkImageView imageArrayView = NULL;
+    // VkImageView * imageArrayViews = NULL;
+    // createImageArray(800, 800, 48, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT\
+    //     , VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &imageArray, &imageArrayMemory);
+    // createImageViewArray(imageArray, 48, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, &imageArrayView);
+    // addTexture(800, 800, VK_FORMAT_R8G8B8A8_SRGB, imageArray, imageArrayMemory, imageArrayView, allInOne.pModelDescriptorSets+ 2, 48, VK_IMAGE_LAYOUT_UNDEFINED, TEXTURE_MAP_ARRAY);
+    // transitionImageLayout(NULL, getTexture(TEXTURE_MAP_ARRAY), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 48);
 
-    createImageViewsForImageArray(imageArray, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, 48, &imageArrayViews);
-    createFrameBufferByImageArray(48, 800, 800, imageArrayViews, allInOne.offscreenRenderPass, &allInOne.pBottomImageArrayFramebuffers);
-    CO_addFrameBuffer(48, allInOne.pBottomImageArrayFramebuffers);// CO
+    // createImageViewsForImageArray(imageArray, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, 48, &imageArrayViews);
+    // createFrameBufferByImageArray(48, 800, 800, imageArrayViews, allInOne.offscreenRenderPass, &allInOne.pBottomImageArrayFramebuffers);
+    // CO_addFrameBuffer(48, allInOne.pBottomImageArrayFramebuffers);// CO
 
     loadImageResource(VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_GENERAL, TEXTURE_SSGI_STORAGE_IMAGE, allInOne.pSSGIDescriptorSets + 2);
 
@@ -625,7 +632,7 @@ void initVulkan(void)
 
     // graphic
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, circleTexture->pDescriptorSet, allInOne.pGraphicUniformBuffer, 0, sizeof(UniformBufferObject));
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, tileSetTexture->pDescriptorSet, allInOne.pTilemapUniformBuffer, 0, sizeof(UniformBufferObject));
+    // addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, tileSetTexture->pDescriptorSet, allInOne.pTilemapUniformBuffer, 0, sizeof(UniformBufferObject));
     // addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, getTexture(TEXTURE_BOX)->pDescriptorSet, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
 
     // model
@@ -660,7 +667,7 @@ void initVulkan(void)
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2, TEXTURE_SHADOW, allInOne.shadowSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     addDescriptorSetToTexture(TEXTURE_SHADOW, bottomTexture->pDescriptorSet);
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2, TEXTURE_SHADOW, allInOne.shadowSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4, TEXTURE_MAP_ARRAY, allInOne.textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    // addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4, TEXTURE_MAP_ARRAY, allInOne.textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     // SSGI
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, TEXTURE_MODEL_DEPTH, allInOne.depthSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
@@ -697,15 +704,16 @@ void cleanVulkan(void)
 {
     print("\nclean begin");
 
-    vkDeviceWaitIdle(allInOne.device);
+    if (allInOne.device) vkDeviceWaitIdle(allInOne.device);
 
-    destroyThreadPool(allInOne.pThreadPool);
+    // destroyThreadPool(allInOne.pThreadPool);
 
     destroyStaticModelPool(&staticModelPool);
     unloadAllTexture();
     CO_CleanAllVkResource();
+    // destroyThreadPool(allInOne.pThreadPool);
 }
-    /*vertices2D[4] = (Vertex332){{-0.0f, -0.0f, 0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}};
-    vertices2D[5] = (Vertex332){{1.0f, -0.0f, 0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}};
-    vertices2D[6] = (Vertex332){{1.0f, 1.0f, 0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}};
-    vertices2D[7] = (Vertex332){{-0.0f, 1.0f, 0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}};*/
+    /*vertices2D[4] = (Vertex332_){{-0.0f, -0.0f, 0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}};
+    vertices2D[5] = (Vertex332_){{1.0f, -0.0f, 0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}};
+    vertices2D[6] = (Vertex332_){{1.0f, 1.0f, 0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}};
+    vertices2D[7] = (Vertex332_){{-0.0f, 1.0f, 0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}};*/

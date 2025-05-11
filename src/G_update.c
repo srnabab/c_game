@@ -176,7 +176,7 @@ int update(void * arg)
     float * pCamera_Y = allInOne.pCamera_Y;
 
     initEntity(&mPoint, 0.0f, 0.0f, 87.0f);
-    initEntity(&camera, 0.0f, 0.0f, 0.4f);
+    initEntity(&camera, 0.0f, 0.0f, 6.4f);
     initEntity(&mouse, 0.0f, 0.0f, 0.0f);
     
     bool playedMusic = false;
@@ -213,23 +213,24 @@ int update(void * arg)
     textureVertexInit(-32, -32, 64, 64, 0.2f, &allInOne.vertices2DCount, allInOne.pVertices2D, getTexture(TEXTURE_LOADING));
     
     // tileMapVertexInit(&allInOne.vertices2DCount, allInOne.pVertices2D);
-    addModelMatrix(0, 0, 8, allInOne.pStaticModelPool, TEXTURE_MODEL);
-    addModelMatrix(100, 0, 8, allInOne.pStaticModelPool, TEXTURE_MODEL);
-    addModelMatrix(0, 100, 8, allInOne.pStaticModelPool, TEXTURE_MODEL);
-    addModelMatrix(100, 100, 8, allInOne.pStaticModelPool, TEXTURE_MODEL);
+    addModelMatrix(0, 0, 8, 1.0f, 1.0f, 1.0f, allInOne.pStaticModelPool, TEXTURE_MODEL);
+    addModelMatrix(100, 0, 8, 1.0f, 1.0f, 1.0f, allInOne.pStaticModelPool, TEXTURE_MODEL);
+    addModelMatrix(0, 100, 8, 1.0f, 1.0f, 1.0f, allInOne.pStaticModelPool, TEXTURE_MODEL);
+    addModelMatrix(100, 100, 8, 1.0f, 1.0f, 1.0f, allInOne.pStaticModelPool, TEXTURE_MODEL);
+    addModelMatrix(0, 0, -1, 10.0f, 10.0f, 1.0f, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
 
-    setMapBottom(allInOne.extent2D.width, allInOne.extent2D.height, 0, 0, &rowCount, &colCount, &firstBottom_X, &firstBottom_Y, &baseX, &baseY, &groupID);
-    memcpy(allInOne.pTimeMapTexCoordBufferMapped[0], allInOne.pTileMapUVs, sizeof(vec2) * VERTEX_COUNT_IN_UNIT_2D * MAX_TILES_IN_GROUP * (allInOne.bottomImageDrawStack.top + 1));
-    memcpy(allInOne.pTimeMapTexCoordBufferMapped[1], allInOne.pTileMapUVs, sizeof(vec2) * VERTEX_COUNT_IN_UNIT_2D * MAX_TILES_IN_GROUP * (allInOne.bottomImageDrawStack.top + 1));
+    // setMapBottom(allInOne.extent2D.width, allInOne.extent2D.height, 0, 0, &rowCount, &colCount, &firstBottom_X, &firstBottom_Y, &baseX, &baseY, &groupID);
+    // memcpy(allInOne.pTimeMapTexCoordBufferMapped[0], allInOne.pTileMapUVs, sizeof(vec2) * VERTEX_COUNT_IN_UNIT_2D * MAX_TILES_IN_GROUP * (allInOne.bottomImageDrawStack.top + 1));
+    // memcpy(allInOne.pTimeMapTexCoordBufferMapped[1], allInOne.pTileMapUVs, sizeof(vec2) * VERTEX_COUNT_IN_UNIT_2D * MAX_TILES_IN_GROUP * (allInOne.bottomImageDrawStack.top + 1));
     // addModelMatrix(0, 100 / HEIGHT_FACTOR, -1, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
     // addModelMatrix(-800, 100 / HEIGHT_FACTOR, -1, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
     // addModelMatrix(0, 900 / HEIGHT_FACTOR, -1, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
 
-    glm_mat4_identity(allInOne.pTilemapUbo->model);
-    glm_lookat((vec3){0.0f, 0.0f, 100.0f}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, allInOne.pTilemapUbo->view);
-    glm_ortho_vulkan(-800.0f / 800.0f, 800.0f / 800.0f, -800.0f / 800.0f, 800.0f / 800.0f, -0.001f, -100.0f, allInOne.pTilemapUbo->proj);
-    memcpy(allInOne.ppTilemapUniformBufferMapped[0], allInOne.pTilemapUbo, sizeof(UniformBufferObject));
-    memcpy(allInOne.ppTilemapUniformBufferMapped[1], allInOne.pTilemapUbo, sizeof(UniformBufferObject));
+    // glm_mat4_identity(allInOne.pTilemapUbo->model);
+    // glm_lookat((vec3){0.0f, 0.0f, 100.0f}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, allInOne.pTilemapUbo->view);
+    // glm_ortho_vulkan(-800.0f / 800.0f, 800.0f / 800.0f, -800.0f / 800.0f, 800.0f / 800.0f, -0.001f, -100.0f, allInOne.pTilemapUbo->proj);
+    // memcpy(allInOne.ppTilemapUniformBufferMapped[0], allInOne.pTilemapUbo, sizeof(UniformBufferObject));
+    // memcpy(allInOne.ppTilemapUniformBufferMapped[1], allInOne.pTilemapUbo, sizeof(UniformBufferObject));
 
     SDL_Delay(300);
     
@@ -305,7 +306,7 @@ int update(void * arg)
         SDL_SignalSemaphore(allSync.vertexSemaphore);
 
         // 3d object
-        glm_mat4_identity(pGraphic3DUbo->model);
+        // glm_mat4_identity(pGraphic3DUbo->model);
         glm_lookat((vec3){*pCamera_X * aspect, 0.0f + *pCamera_Y * aspect2, 10.0f}, (vec3){*pCamera_X * aspect, *pCamera_Y * aspect2, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pGraphic3DUbo->view);
         glm_ortho_vulkan(-aspect, aspect, -aspect2, aspect2, -0.001f, -100.0f, pGraphic3DUbo->proj);
         // glm_perspective(glm_rad(45.0f), aspect, 0.1f, 100.0f, pGraphic3DUbo->proj);
@@ -338,13 +339,13 @@ int update(void * arg)
         SDL_SignalSemaphore(allSync.vertexSemaphore);
 
         // UI object
-        glm_mat4_identity(pGraphicUbo->model);
+        // glm_mat4_identity(pGraphicUbo->model);
         glm_lookat((vec3){*pCamera_X * aspect, 0.0f + *pCamera_Y * aspect2, 10.0f}, (vec3){*pCamera_X * aspect, *pCamera_Y * aspect2, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pGraphicUbo->view);
         glm_ortho_vulkan(-aspect, aspect, -aspect2, aspect2, -0.001f, -100.0f, pGraphicUbo->proj);
         // glm_ortho(-aspect, aspect, -1.0f, 1.0f, 0.001f, 100.0f, pGraphicUbo->proj);
         // pGraphicUbo->proj[1][1] *= -1;
 
-        glm_mat4_identity(pUIUbo->model);
+        // glm_mat4_identity(pUIUbo->model);
         glm_lookat((vec3){0.0f, 0.0f, 100.0f}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pUIUbo->view);
         glm_ortho_vulkan(-aspect, aspect, -aspect2, aspect2, -0.001f, -100.0f, pUIUbo->proj);
 
@@ -369,12 +370,12 @@ int update(void * arg)
             }
         }
 
-        if (resolutionChanged2)
-        {
-            rowCount = colCount = 0;
-            setMapBottom(allInOne.extent2D.width, allInOne.extent2D.height, *pCamera_X * (allInOne.extent2D.width / 2), *pCamera_Y * (allInOne.extent2D.height / 2), &rowCount, &colCount, &firstBottom_X, &firstBottom_Y, &baseX, &baseY, &groupID);
-            resolutionChanged2 = false;
-        }
+        // if (resolutionChanged2)
+        // {
+        //     rowCount = colCount = 0;
+        //     setMapBottom(allInOne.extent2D.width, allInOne.extent2D.height, *pCamera_X * (allInOne.extent2D.width / 2), *pCamera_Y * (allInOne.extent2D.height / 2), &rowCount, &colCount, &firstBottom_X, &firstBottom_Y, &baseX, &baseY, &groupID);
+        //     resolutionChanged2 = false;
+        // }
 
         EntityMove(&camera, delta_time);
         if (camera.direction[0] || camera.direction[1] || camera.direction[2] || camera.direction[3])
@@ -382,11 +383,11 @@ int update(void * arg)
             *pCamera_X = camera.position[0];
             *pCamera_Y = camera.position[1];
 
-            setMapBottom(allInOne.extent2D.width, allInOne.extent2D.height, *pCamera_X * (allInOne.extent2D.width / 2), *pCamera_Y * (allInOne.extent2D.height / 2), &rowCount, &colCount, &firstBottom_X, &firstBottom_Y, &baseX, &baseY, &groupID);
+            // setMapBottom(allInOne.extent2D.width, allInOne.extent2D.height, *pCamera_X * (allInOne.extent2D.width / 2), *pCamera_Y * (allInOne.extent2D.height / 2), &rowCount, &colCount, &firstBottom_X, &firstBottom_Y, &baseX, &baseY, &groupID);
             // print("update_frame: %u", update_frame);
-            SDL_LockMutex(allSync.updateMutex);
-            memcpy(allInOne.pTimeMapTexCoordBufferMapped[currentFrame], allInOne.pTileMapUVs, sizeof(vec2) * VERTEX_COUNT_IN_UNIT_2D * MAX_TILES_IN_GROUP * (allInOne.bottomImageDrawStack.top + 1));
-            SDL_UnlockMutex(allSync.updateMutex);
+            // SDL_LockMutex(allSync.updateMutex);
+            // memcpy(allInOne.pTimeMapTexCoordBufferMapped[currentFrame], allInOne.pTileMapUVs, sizeof(vec2) * VERTEX_COUNT_IN_UNIT_2D * MAX_TILES_IN_GROUP * (allInOne.bottomImageDrawStack.top + 1));
+            // SDL_UnlockMutex(allSync.updateMutex);
         }
 
         if (scene == First_Scene)
@@ -425,7 +426,7 @@ int update(void * arg)
             // addTimerFunc(u32_s_to_ns(1), &id_test, 10, test, &test_a);
 
             EntityMove(&mPoint, delta_time);
-            tileCenter = locatePoint(&mPoint, rowCount, colCount, firstBottom_X, firstBottom_Y, groupID);
+            // tileCenter = locatePoint(&mPoint, 3, 3, -400, 400, groupID);
             shapePushConstants.pos[0] = (float)tileCenter.x / (600 / 2);
             shapePushConstants.pos[1] = (float)tileCenter.y / (600 / 2);
             shapePushConstants.scale[0] = (float)18 / (600 / 2);
@@ -463,14 +464,14 @@ int update(void * arg)
             // }
             // SDL_UnlockMutex(sdl_mutex_2);
 
-            // size_t bufferSize = sizeof(Vertex332) * count;
+            // size_t bufferSize = sizeof(Vertex332_) * count;
 
             // Uint32 indiceCount = *allInOne.pIndicesCount;
             // size_t bufferSize2 = sizeof(uint16_t) * indiceCount;
 
             // if (ballAdd)
             // {
-            //     //allInOne.pVertices2D = (Vertex332 *)realloc(allInOne.pVertices2D, count * sizeof(Vertex332));
+            //     //allInOne.pVertices2D = (Vertex332_ *)realloc(allInOne.pVertices2D, count * sizeof(Vertex332_));
             //     int x = SDL_rand(250);
             //     if (SDL_rand(2))
             //     {
@@ -497,8 +498,8 @@ int update(void * arg)
             //print("time: %.2f\n", time);
             SDL_LockMutex(allSync.updateMutex);
 
-            memcpy(allInOne.pVertexBuffer2DMemMapped[currentFrame], allInOne.pVertices2D, vertexEnd * sizeof(Vertex332));// update vertex buffer
-            memcpy(allInOne.pVertexBuffer3DMemMapped[currentFrame], allInOne.pVertices3D, 30000 * sizeof(Vertex332));
+            memcpy(allInOne.pVertexBuffer2DMemMapped[currentFrame], allInOne.pVertices2D, vertexEnd * sizeof(Vertex332_));// update vertex buffer
+            memcpy(allInOne.pVertexBuffer3DMemMapped[currentFrame], allInOne.pVertices3D, 30000 * sizeof(Vertex332_));
             memcpy(allInOne.pIndexBuffer3DMemMapped[currentFrame], allInOne.pIndices3D, 45000 * sizeof(Uint32));
             // SDL_SignalSemaphore(allSync.vertexSemaphore);
 

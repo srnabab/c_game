@@ -9,6 +9,7 @@
 #include "G_music.h"
 #include "G_struct.h"
 #include "G_test.h"
+#include "G_allocator.h"
 #include "G_TileMap/G_TileSet.h"
 #include "SDL3/SDL_keyboard.h"
 #include "SDL3/SDL_messagebox.h"
@@ -258,5 +259,8 @@ void destroy(void)
     SDL_Delay(1000);
     destroyAllSync();
     SDL_Quit();
+
+    SDL_Delay(1000);
+    SDL_Log("residue memory:%llu, allocation: %u", G_totalAllocSize(), G_allocations());
     exit(_Code);
 }

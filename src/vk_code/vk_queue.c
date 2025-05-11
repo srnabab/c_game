@@ -5,6 +5,7 @@
 #include "SDL3/SDL_assert.h"
 
 #include "G_log.h"
+#include "G_allocator.h"
 
 extern VK_ALL allInOne;
 
@@ -14,7 +15,7 @@ bool findQueueFamilies(void)
     vkGetPhysicalDeviceQueueFamilyProperties(allInOne.physicalDevice, &queueFamilyCount, NULL);
     print("queueFamilyCount: %u", queueFamilyCount);
 
-    VkQueueFamilyProperties * queueFamily = (VkQueueFamilyProperties *)SDL_malloc(queueFamilyCount * sizeof(VkQueueFamilyProperties));
+    VkQueueFamilyProperties * queueFamily = (VkQueueFamilyProperties *)G_malloc(queueFamilyCount * sizeof(VkQueueFamilyProperties));
     vkGetPhysicalDeviceQueueFamilyProperties(allInOne.physicalDevice, &queueFamilyCount, queueFamily);
 
     for (uint32_t i = 0;i < queueFamilyCount;i++)
@@ -128,7 +129,7 @@ bool findQueueFamilies(void)
         }
     }
 
-    SDL_free(queueFamily);
+    G_free(queueFamily);
 
     if (allInOne.queueFamilyIndices.graphicsFamily.familyIndice == -1)
     {

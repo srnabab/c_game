@@ -2,14 +2,15 @@
 #include "vk_code_h/vk_judge.h"
 #include "vk_code_h/vk_all_struct.h"
 #include "vk_code_h/vk_collection.h"
+#include "G_allocator.h"
 
 #undef offsetof
 #define offsetof(s, m) (size_t) & (((s *)0)->m)
 
 #define VERTEX_LAYOUT_IN {\
-    {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex332, pos)},\
-    {1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex332, color)},\
-    {2, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex332, texCoord)}\
+    {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex332_, pos)},\
+    {1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex332_, color)},\
+    {2, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex332_, texCoord)}\
 }
 
 #warning "graphics pipeline create info count has limitation 10"
@@ -177,14 +178,14 @@ void configureDynamicsState(Uint32 dynamicCount, VkDynamicState * pDynamicStates
 void createTileMapPipeline(Uint32 shaderCount, VkPipelineShaderStageCreateInfo * pPipelineShaderStageCreateInfo, VkPipelineLayout pipelineLayout, VkRenderPass renderPass, VkPipeline * pGraphicsPipeline)
 {
     VkVertexInputBindingDescription pBindingDescription[2];
-    addVertexBinding(0, sizeof(Vertex33), VK_VERTEX_INPUT_RATE_VERTEX, 0, pBindingDescription);
+    addVertexBinding(0, sizeof(Vertex33_), VK_VERTEX_INPUT_RATE_VERTEX, 0, pBindingDescription);
     addVertexBinding(1, sizeof(vec2), VK_VERTEX_INPUT_RATE_VERTEX, 1, pBindingDescription);
 
     VkVertexInputAttributeDescription pAttributeDescriptions[3];
     Uint32 attributeLocation = 0;
     Uint32 attributeIndex = 0;
-    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex33, pos), &attributeIndex, pAttributeDescriptions);
-    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex33, color), &attributeIndex, pAttributeDescriptions);
+    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex33_, pos), &attributeIndex, pAttributeDescriptions);
+    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex33_, color), &attributeIndex, pAttributeDescriptions);
     addVertexAttribute(&attributeLocation, 1, VK_FORMAT_R32G32_SFLOAT, 0, &attributeIndex, pAttributeDescriptions);
 
     VkPipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo = {};
@@ -306,14 +307,14 @@ void createModelPipeline(VkExtent2D extent2D, Uint32 shaderCount, VkPipelineShad
 void createGraphicsPipeline(VkExtent2D extent2D, Uint32 shaderCount, VkPipelineShaderStageCreateInfo * pPipelineShaderStageCreateInfo, VkPipelineLayout pipelineLayout, VkRenderPass renderPass, VkPipeline * pGraphicsPipeline)
 {
     VkVertexInputBindingDescription pBindingDescription[1];
-    addVertexBinding(0, sizeof(Vertex332), VK_VERTEX_INPUT_RATE_VERTEX, 0, pBindingDescription);
+    addVertexBinding(0, sizeof(Vertex332_), VK_VERTEX_INPUT_RATE_VERTEX, 0, pBindingDescription);
 
     VkVertexInputAttributeDescription pAttributeDescriptions[3] = VERTEX_LAYOUT_IN;
     Uint32 attributeLocation = 0;
     Uint32 attributeIndex = 0;
-    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex332, pos), &attributeIndex, pAttributeDescriptions);
-    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex332, color), &attributeIndex, pAttributeDescriptions);
-    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex332, texCoord), &attributeIndex, pAttributeDescriptions);
+    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex332_, pos), &attributeIndex, pAttributeDescriptions);
+    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex332_, color), &attributeIndex, pAttributeDescriptions);
+    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex332_, texCoord), &attributeIndex, pAttributeDescriptions);
 
     VkPipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo = {};
     configurePipelineVertexInputState(1, pBindingDescription, 3, pAttributeDescriptions, &pipelineVertexInputStateCreateInfo);
@@ -362,13 +363,13 @@ void createGraphicsPipeline(VkExtent2D extent2D, Uint32 shaderCount, VkPipelineS
 void createShapePipeline(VkExtent2D extent2D, Uint32 shaderCount, VkPipelineShaderStageCreateInfo * pPipelineShaderStageCreateInfo, VkPipelineLayout pipelineLayout, VkRenderPass renderPass, VkPipeline * pGraphicsPipeline)
 {
     VkVertexInputBindingDescription pBindingDescription[1];
-    addVertexBinding(0, sizeof(Vertex23), VK_VERTEX_INPUT_RATE_VERTEX, 0, pBindingDescription);
+    addVertexBinding(0, sizeof(Vertex23_), VK_VERTEX_INPUT_RATE_VERTEX, 0, pBindingDescription);
 
     VkVertexInputAttributeDescription pAttributeDescriptions[2];
     Uint32 attributeLocation = 0;
     Uint32 attributeIndex = 0;
-    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex23, pos), &attributeIndex, pAttributeDescriptions);
-    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex23, color), &attributeIndex, pAttributeDescriptions);
+    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex23_, pos), &attributeIndex, pAttributeDescriptions);
+    addVertexAttribute(&attributeLocation, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex23_, color), &attributeIndex, pAttributeDescriptions);
 
     VkPipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo = {};
     configurePipelineVertexInputState(1, pBindingDescription, 2, pAttributeDescriptions, &pipelineVertexInputStateCreateInfo);
@@ -582,66 +583,66 @@ bool addGraphicPipelineCreateInfo(Uint32 stageCount, VkPipelineShaderStageCreate
     pipelineCreateInfo.stageCount = stageCount;
     pipelineCreateInfo.pStages = pStage;
 
-    VkVertexInputBindingDescription * pBindingDescription = SDL_malloc(pVertexInputState->vertexBindingDescriptionCount * sizeof(VkVertexInputBindingDescription));
+    VkVertexInputBindingDescription * pBindingDescription = G_malloc(pVertexInputState->vertexBindingDescriptionCount * sizeof(VkVertexInputBindingDescription));
     memcpy(pBindingDescription, pVertexInputState->pVertexBindingDescriptions, pVertexInputState->vertexBindingDescriptionCount * sizeof(VkVertexInputBindingDescription));
 
-    VkVertexInputAttributeDescription * pAttributeDescription = SDL_malloc(pVertexInputState->vertexAttributeDescriptionCount * sizeof(VkVertexInputAttributeDescription));
+    VkVertexInputAttributeDescription * pAttributeDescription = G_malloc(pVertexInputState->vertexAttributeDescriptionCount * sizeof(VkVertexInputAttributeDescription));
     memcpy(pAttributeDescription, pVertexInputState->pVertexAttributeDescriptions, pVertexInputState->vertexAttributeDescriptionCount * sizeof(VkVertexInputAttributeDescription));
 
-    VkPipelineVertexInputStateCreateInfo * vertexInputState = SDL_malloc(sizeof(VkPipelineVertexInputStateCreateInfo));
+    VkPipelineVertexInputStateCreateInfo * vertexInputState = G_malloc(sizeof(VkPipelineVertexInputStateCreateInfo));
     memcpy(vertexInputState, pVertexInputState, sizeof(VkPipelineVertexInputStateCreateInfo));
     vertexInputState->pVertexBindingDescriptions = pBindingDescription;
     vertexInputState->pVertexAttributeDescriptions = pAttributeDescription;
     pipelineCreateInfo.pVertexInputState = vertexInputState;
 
-    VkPipelineInputAssemblyStateCreateInfo * inputAssemblyState = SDL_malloc(sizeof(VkPipelineInputAssemblyStateCreateInfo));
+    VkPipelineInputAssemblyStateCreateInfo * inputAssemblyState = G_malloc(sizeof(VkPipelineInputAssemblyStateCreateInfo));
     memcpy(inputAssemblyState, pInputAssemblyState, sizeof(VkPipelineInputAssemblyStateCreateInfo));
     pipelineCreateInfo.pInputAssemblyState = inputAssemblyState;
 
     if (pTessellationState != NULL)
     {
-        VkPipelineTessellationStateCreateInfo * tessellationState = SDL_malloc(sizeof(VkPipelineTessellationStateCreateInfo));
+        VkPipelineTessellationStateCreateInfo * tessellationState = G_malloc(sizeof(VkPipelineTessellationStateCreateInfo));
         memcpy(tessellationState, pTessellationState, sizeof(VkPipelineTessellationStateCreateInfo));
         pipelineCreateInfo.pTessellationState = tessellationState;
     }
     else pipelineCreateInfo.pTessellationState = NULL;
 
-    VkViewport * pViewport = SDL_malloc(pViewportState->viewportCount * sizeof(VkViewport));
+    VkViewport * pViewport = G_malloc(pViewportState->viewportCount * sizeof(VkViewport));
     memcpy(pViewport, pViewportState->pViewports, pViewportState->viewportCount * sizeof(VkViewport));
 
-    VkRect2D * pScissor = SDL_malloc(pViewportState->scissorCount * sizeof(VkRect2D));
+    VkRect2D * pScissor = G_malloc(pViewportState->scissorCount * sizeof(VkRect2D));
     memcpy(pScissor, pViewportState->pScissors, pViewportState->scissorCount * sizeof(VkRect2D));
 
-    VkPipelineViewportStateCreateInfo * viewportState = SDL_malloc(sizeof(VkPipelineViewportStateCreateInfo));
+    VkPipelineViewportStateCreateInfo * viewportState = G_malloc(sizeof(VkPipelineViewportStateCreateInfo));
     memcpy(viewportState, pViewportState, sizeof(VkPipelineViewportStateCreateInfo));
     viewportState->pViewports = pViewport;
     viewportState->pScissors = pScissor;
     pipelineCreateInfo.pViewportState = viewportState;
 
-    VkPipelineRasterizationStateCreateInfo * rasterizationState = SDL_malloc(sizeof(VkPipelineRasterizationStateCreateInfo));
+    VkPipelineRasterizationStateCreateInfo * rasterizationState = G_malloc(sizeof(VkPipelineRasterizationStateCreateInfo));
     memcpy(rasterizationState, pRasterizationState, sizeof(VkPipelineRasterizationStateCreateInfo));
     pipelineCreateInfo.pRasterizationState = rasterizationState;
 
-    VkPipelineMultisampleStateCreateInfo * multisampleState = SDL_malloc(sizeof(VkPipelineMultisampleStateCreateInfo));
+    VkPipelineMultisampleStateCreateInfo * multisampleState = G_malloc(sizeof(VkPipelineMultisampleStateCreateInfo));
     memcpy(multisampleState, pMultisampleState, sizeof(VkPipelineMultisampleStateCreateInfo));
     pipelineCreateInfo.pMultisampleState = multisampleState;
 
-    VkPipelineDepthStencilStateCreateInfo * depthStencilState = SDL_malloc(sizeof(VkPipelineDepthStencilStateCreateInfo));
+    VkPipelineDepthStencilStateCreateInfo * depthStencilState = G_malloc(sizeof(VkPipelineDepthStencilStateCreateInfo));
     memcpy(depthStencilState, pDepthStencilState, sizeof(VkPipelineDepthStencilStateCreateInfo));
     pipelineCreateInfo.pDepthStencilState = depthStencilState;
 
-    VkPipelineColorBlendAttachmentState * colorBlendAttachmentState = SDL_malloc(pColorBlendState->attachmentCount * sizeof(VkPipelineColorBlendAttachmentState));
+    VkPipelineColorBlendAttachmentState * colorBlendAttachmentState = G_malloc(pColorBlendState->attachmentCount * sizeof(VkPipelineColorBlendAttachmentState));
     memcpy(colorBlendAttachmentState, pColorBlendState->pAttachments, pColorBlendState->attachmentCount * sizeof(VkPipelineColorBlendAttachmentState));
 
-    VkPipelineColorBlendStateCreateInfo * colorBlendState = SDL_malloc(sizeof(VkPipelineColorBlendStateCreateInfo));
+    VkPipelineColorBlendStateCreateInfo * colorBlendState = G_malloc(sizeof(VkPipelineColorBlendStateCreateInfo));
     memcpy(colorBlendState, pColorBlendState, sizeof(VkPipelineColorBlendStateCreateInfo));
     colorBlendState->pAttachments = colorBlendAttachmentState;
     pipelineCreateInfo.pColorBlendState = colorBlendState;
 
-    VkDynamicState * dynamicStates = SDL_malloc(pDynamicState->dynamicStateCount * sizeof(VkDynamicState));
+    VkDynamicState * dynamicStates = G_malloc(pDynamicState->dynamicStateCount * sizeof(VkDynamicState));
     memcpy(dynamicStates, pDynamicState->pDynamicStates, pDynamicState->dynamicStateCount * sizeof(VkDynamicState));
 
-    VkPipelineDynamicStateCreateInfo * dynamicState = SDL_malloc(sizeof(VkPipelineDynamicStateCreateInfo));
+    VkPipelineDynamicStateCreateInfo * dynamicState = G_malloc(sizeof(VkPipelineDynamicStateCreateInfo));
     memcpy(dynamicState, pDynamicState, sizeof(VkPipelineDynamicStateCreateInfo));
     dynamicState->pDynamicStates = dynamicStates;
     pipelineCreateInfo.pDynamicState = dynamicState;
@@ -672,18 +673,18 @@ VkResult executeCreateGraphicsPipelines(VkPipelineCache pipelinesCache)
     for  (Uint32 i = 0;i < graphicsPipelineCreateInfoCount;i++)
     {
         *graphicPipelinePtr[i] = tempGraphicsPipeline[i];
-        SDL_free((void*)graphicsPipelineCreateInfos[i].pVertexInputState->pVertexBindingDescriptions);
-        SDL_free((void*)graphicsPipelineCreateInfos[i].pVertexInputState->pVertexAttributeDescriptions);
-        SDL_free((void*)graphicsPipelineCreateInfos[i].pInputAssemblyState);
-        SDL_free((void*)graphicsPipelineCreateInfos[i].pViewportState->pViewports);
-        SDL_free((void*)graphicsPipelineCreateInfos[i].pViewportState->pScissors);
-        SDL_free((void*)graphicsPipelineCreateInfos[i].pViewportState);
-        SDL_free((void*)graphicsPipelineCreateInfos[i].pRasterizationState);
-        SDL_free((void*)graphicsPipelineCreateInfos[i].pMultisampleState);
-        SDL_free((void*)graphicsPipelineCreateInfos[i].pDepthStencilState);
-        SDL_free((void*)graphicsPipelineCreateInfos[i].pColorBlendState->pAttachments);
-        SDL_free((void*)graphicsPipelineCreateInfos[i].pColorBlendState);
-        SDL_free((void*)graphicsPipelineCreateInfos[i].pDynamicState);
+        G_free((void*)graphicsPipelineCreateInfos[i].pVertexInputState->pVertexBindingDescriptions);
+        G_free((void*)graphicsPipelineCreateInfos[i].pVertexInputState->pVertexAttributeDescriptions);
+        G_free((void*)graphicsPipelineCreateInfos[i].pInputAssemblyState);
+        G_free((void*)graphicsPipelineCreateInfos[i].pViewportState->pViewports);
+        G_free((void*)graphicsPipelineCreateInfos[i].pViewportState->pScissors);
+        G_free((void*)graphicsPipelineCreateInfos[i].pViewportState);
+        G_free((void*)graphicsPipelineCreateInfos[i].pRasterizationState);
+        G_free((void*)graphicsPipelineCreateInfos[i].pMultisampleState);
+        G_free((void*)graphicsPipelineCreateInfos[i].pDepthStencilState);
+        G_free((void*)graphicsPipelineCreateInfos[i].pColorBlendState->pAttachments);
+        G_free((void*)graphicsPipelineCreateInfos[i].pColorBlendState);
+        G_free((void*)graphicsPipelineCreateInfos[i].pDynamicState);
 
         CO_addPiepline(tempGraphicsPipeline[i]);
     }

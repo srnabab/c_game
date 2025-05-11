@@ -1,5 +1,6 @@
 #include "G_constants.h"
 #include "G_resource.h"
+#include "G_allocator.h"
 
 #include "vk_code_h/vk_descriptorPool.h"
 #include "vk_code_h/vk_judge.h"
@@ -32,7 +33,7 @@ void createDescriptorPool(VkDevice * pDevice, Uint32 poolSizeCount, VkDescriptor
 void createDescriptorSets(VkDescriptorPool * pDescriptorPool, VkDescriptorSetLayout * pDescriptorSetLayout, Uint32 setCount, Uint32 SetsCount, VkDescriptorSet ** ppDescriptorSets)
 {
     int i, j, k;
-    VkDescriptorSetLayout * layouts = (VkDescriptorSetLayout *)SDL_malloc(MAX_FRAMES_IN_FLIGHT * setCount * SetsCount * sizeof(VkDescriptorSetLayout));
+    VkDescriptorSetLayout * layouts = (VkDescriptorSetLayout *)G_malloc(MAX_FRAMES_IN_FLIGHT * setCount * SetsCount * sizeof(VkDescriptorSetLayout));
     for (k = 0;k < SetsCount;k++)
     for (i = 0;i < setCount;i++)
     for (j = 0;j < MAX_FRAMES_IN_FLIGHT;j++)
@@ -40,7 +41,7 @@ void createDescriptorSets(VkDescriptorPool * pDescriptorPool, VkDescriptorSetLay
         layouts[i * MAX_FRAMES_IN_FLIGHT + j + k * MAX_FRAMES_IN_FLIGHT * setCount] = pDescriptorSetLayout[i];
     }
 
-    *ppDescriptorSets = (VkDescriptorSet *)SDL_malloc(MAX_FRAMES_IN_FLIGHT * SetsCount * setCount * sizeof(VkDescriptorSet));
+    *ppDescriptorSets = (VkDescriptorSet *)G_malloc(MAX_FRAMES_IN_FLIGHT * SetsCount * setCount * sizeof(VkDescriptorSet));
 
     VkDescriptorSetAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -51,7 +52,7 @@ void createDescriptorSets(VkDescriptorPool * pDescriptorPool, VkDescriptorSetLay
 
     print("%d", vkAllocateDescriptorSets(allInOne.device, &allocInfo, *ppDescriptorSets));
 
-    SDL_free(layouts);
+    G_free(layouts);
 }
 static bool useImageInfo(VkDescriptorType type)
 {
@@ -94,8 +95,8 @@ static int getShaderStorageBufferIndex(VkBuffer * pBufferAddress)
         if (count)
         {
             count = 0;
-            SDL_free(ptrs);
-            SDL_free(enterCount);
+            G_free(ptrs);
+            G_free(enterCount);
             return 2;
         }
         else return 2;
@@ -115,8 +116,8 @@ static int getShaderStorageBufferIndex(VkBuffer * pBufferAddress)
     if (i == count)
     {
         count++;
-        ptrs = (void**)SDL_realloc(ptrs, count * sizeof(void*));
-        enterCount = (int8_t*)SDL_realloc(enterCount, count * sizeof(int8_t*));
+        ptrs = (void**)G_realloc(ptrs, count * sizeof(void*));
+        enterCount = (int8_t*)G_realloc(enterCount, count * sizeof(int8_t*));
 
         ptrs[i] = pBufferAddress;
         enterCount[i] = 0;
@@ -201,8 +202,8 @@ void addDescriptorUpdate_TexelBuffer(VkDescriptorType descriptorType, Uint32 bin
 static void updateDescriptorSets(G_DescriptorSet_Update * pUpdate, Uint32 updateCount)
 {
     int i, j;
-    VkWriteDescriptorSet * pWriteDescriptorSets = (VkWriteDescriptorSet*)SDL_malloc(updateCount * MAX_FRAMES_IN_FLIGHT * sizeof(VkWriteDescriptorSet));
-    void ** ppCreateInfo = (void*)SDL_malloc(updateCount * MAX_FRAMES_IN_FLIGHT * sizeof(void*));
+    VkWriteDescriptorSet * pWriteDescriptorSets = (VkWriteDescriptorSet*)G_malloc(updateCount * MAX_FRAMES_IN_FLIGHT * sizeof(VkWriteDescriptorSet));
+    void ** ppCreateInfo = (void*)G_malloc(updateCount * MAX_FRAMES_IN_FLIGHT * sizeof(void*));
     for (i = 0;i < updateCount;i++)
     {
         if (useBufferInfo(pUpdate[i].descriptorType))
@@ -210,7 +211,7 @@ static void updateDescriptorSets(G_DescriptorSet_Update * pUpdate, Uint32 update
             for (j = 0;j < MAX_FRAMES_IN_FLIGHT;j++)
             {
                 Uint32 offset = j * updateCount;
-                ppCreateInfo[i + offset] = SDL_malloc(sizeof(VkDescriptorBufferInfo));
+                ppCreateInfo[i + offset] = G_malloc(sizeof(VkDescriptorBufferInfo));
                 VkDescriptorBufferInfo * temp = (VkDescriptorBufferInfo *)(ppCreateInfo[i + offset]);
                 if (pUpdate[i].descriptorType == VK_DESCRIPTOR_TYPE_STORAGE_BUFFER)
                 {
@@ -241,7 +242,7 @@ static void updateDescriptorSets(G_DescriptorSet_Update * pUpdate, Uint32 update
             for (j = 0;j < MAX_FRAMES_IN_FLIGHT;j++)
             {
                 Uint32 offset = j * updateCount;
-                ppCreateInfo[i + offset] = SDL_malloc(sizeof(VkDescriptorImageInfo));
+                ppCreateInfo[i + offset] = G_malloc(sizeof(VkDescriptorImageInfo));
                 VkDescriptorImageInfo * temp = (VkDescriptorImageInfo *)(ppCreateInfo[i + offset]);
                 temp->sampler = pUpdate[i].bufferImage.Texture.sampler;
                 temp->imageView = pUpdate[i].bufferImage.Texture.pParent->imageView;
@@ -264,7 +265,7 @@ static void updateDescriptorSets(G_DescriptorSet_Update * pUpdate, Uint32 update
             for (j = 0;j < MAX_FRAMES_IN_FLIGHT;j++)
             {
                 Uint32 offset = j * updateCount;
-                ppCreateInfo[i + offset] = SDL_malloc(sizeof(VkBufferView));
+                ppCreateInfo[i + offset] = G_malloc(sizeof(VkBufferView));
                 ppCreateInfo[i + offset] = (void*)&pUpdate[i].bufferImage.TexelBuffer.pBufferView[j];
 
                 pWriteDescriptorSets[i + offset].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -284,10 +285,10 @@ static void updateDescriptorSets(G_DescriptorSet_Update * pUpdate, Uint32 update
 
     for (i = 0;i < updateCount * MAX_FRAMES_IN_FLIGHT;i++)
     {
-        SDL_free(ppCreateInfo[i]);
+        G_free(ppCreateInfo[i]);
     }
-    SDL_free(ppCreateInfo);
-    SDL_free(pWriteDescriptorSets);
+    G_free(ppCreateInfo);
+    G_free(pWriteDescriptorSets);
     getShaderStorageBufferIndex(NULL);
 }
 void executeUpdateDescriptorSets(void)

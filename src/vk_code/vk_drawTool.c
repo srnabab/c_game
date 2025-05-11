@@ -72,7 +72,7 @@ void drawPic(const char * innerName, Uint32 currentFrame, VkCommandBuffer comman
 
     SDL_UnlockMutex(allSync.renderMutex);
 }
-void drawModel(const char * innerName, Uint32 currentFrame, VkCommandBuffer commandBuffer, bool bottom)
+void drawModel(const char * innerName, Uint32 currentFrame, VkCommandBuffer commandBuffer)
 {
     Uint32 firstInstance, instanceCount;
     getStaticModelDrawInfo(allInOne.pStaticModelPool, &firstInstance, &instanceCount, innerName);
@@ -86,17 +86,17 @@ void drawModel(const char * innerName, Uint32 currentFrame, VkCommandBuffer comm
         return;
     }
 
-    if (bottom)
-    {
-        VkDescriptorSet descriptorSet[] = {tempTexture->pDescriptorSet[currentFrame], tempTexture->pDescriptorSet[currentFrame + 2]};
-        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, allInOne.bottomPipelineLayout, 0,
-        2, descriptorSet, 0, NULL);
-    }
-    else
-    {
+    // if (bottom)
+    // {
+    //     VkDescriptorSet descriptorSet[] = {tempTexture->pDescriptorSet[currentFrame], tempTexture->pDescriptorSet[currentFrame + 2]};
+    //     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, allInOne.bottomPipelineLayout, 0,
+    //     2, descriptorSet, 0, NULL);
+    // }
+    // else
+    // {
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, allInOne.modelPipelineLayout, 0,
         1, tempTexture->pDescriptorSet + currentFrame, 0, NULL);
-    }
+    // }
    
     for (int i = 0;i < tempTexture->refCount;i++)
     {

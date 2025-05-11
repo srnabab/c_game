@@ -1,4 +1,5 @@
 #include "G_constants.h"
+#include "G_allocator.h"
 
 #include "vk_code_h/vk_computeShader.h"
 #include "vk_code_h/vk_buffer.h"
@@ -39,7 +40,7 @@ static void initializeParticles(Particle ** ppParticles, VkExtent2D extent2D)
 void createShaderStorageBuffers(VkBuffer (*ppShaderStorageBuffers)[2], VkDeviceMemory (*ppShaderStorageBuffersMem)[2])
 {
     Particle * particles = NULL;
-    particles = (Particle *)SDL_malloc(PARTICLE_COUNT * sizeof(Particle));
+    particles = (Particle *)G_malloc(PARTICLE_COUNT * sizeof(Particle));
     initializeParticles(&particles, allInOne.extent2D);
 
     VkDeviceSize bufferSize = sizeof(Particle) * PARTICLE_COUNT;
@@ -63,5 +64,5 @@ void createShaderStorageBuffers(VkBuffer (*ppShaderStorageBuffers)[2], VkDeviceM
 
     vkDestroyBuffer(allInOne.device, stagingBuffer, allInOne.pAllocationCallbacks);
     vkFreeMemory(allInOne.device, stagingBufferMemory, allInOne.pAllocationCallbacks);
-    SDL_free(particles);
+    G_free(particles);
 }

@@ -9,7 +9,7 @@
 extern VK_ALL allInOne;
 extern G_SYNC allSync;
 
-void initializeMovingBuffer(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkBuffer * pMoveBuffer, VkDeviceMemory * pMoveBufferMemory, void ** ppMovingBufferMapped, Vertex332 * vertices, Uint32 verticesCount)
+void initializeMovingBuffer(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkBuffer * pMoveBuffer, VkDeviceMemory * pMoveBufferMemory, void ** ppMovingBufferMapped, Vertex332_ * vertices, Uint32 verticesCount)
 {
     VkDeviceSize bufferSize = sizeof(vertices[0]) * verticesCount;
 
@@ -18,7 +18,7 @@ void initializeMovingBuffer(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevi
     vkMapMemory(*pDevice, *pMoveBufferMemory, 0, bufferSize, 0, ppMovingBufferMapped);
     memcpy(*ppMovingBufferMapped, vertices, (size_t)bufferSize);
 }
-void vertexInitialize(float x, float y, float width, float height, float depth, Uint32 vertexCount, Vertex332 * pVertices)
+void vertexInitialize(float x, float y, float width, float height, float depth, Uint32 vertexCount, Vertex332_ * pVertices)
 {
     float WindowHeight = (float)LOGICAL_HEIGHT;
     float xOffset = width / (WindowHeight / 2);
@@ -80,7 +80,7 @@ void vertexInitialize(float x, float y, float width, float height, float depth, 
     pVertices[vertexCount].texCoord[0] = 0.0f;
     pVertices[vertexCount].texCoord[1] = 0.0f;
 }
-void textureVertexInit(float x, float y, float width, float height, float depth, Uint32 * pVertexCount, Vertex332 * pVertices, G_Texture_P * tempTexture)
+void textureVertexInit(float x, float y, float width, float height, float depth, Uint32 * pVertexCount, Vertex332_ * pVertices, G_Texture_P * tempTexture)
 {
     SDL_LockMutex(allSync.vertexMutex);
 
@@ -95,7 +95,7 @@ void textureVertexInit(float x, float y, float width, float height, float depth,
     vertexInitialize(x, y, width, height, depth, vertexCount, pVertices);
     SDL_UnlockMutex(allSync.vertexMutex);
 }
-void textureVertexInit_SetUV(float x, float y, float width, float height, float depth, Uint32 * pVertexCount, Vertex332 * pVertices, vec2 * UV, G_Texture_P * tempTexture)
+void textureVertexInit_SetUV(float x, float y, float width, float height, float depth, Uint32 * pVertexCount, Vertex332_ * pVertices, vec2 * UV, G_Texture_P * tempTexture)
 {
     SDL_LockMutex(allSync.vertexMutex);
 
@@ -159,11 +159,11 @@ void textureVertexInit_SetUV(float x, float y, float width, float height, float 
 //     print("deprecated function be called");
 //     SDL_UnlockMutex(allSync.vertexMutex);
 // }
-void texturePosUpdate(float x, float y, Vertex332 * pVertices, Uint32 offset)
+void texturePosUpdate(float x, float y, Vertex332_ * pVertices, Uint32 offset)
 {
     vertexPosUpdate(x, y, pVertices, offset);
 }
-void vertexPosUpdate(float x, float y, Vertex332 * pVertices, Uint32 vertexCount)
+void vertexPosUpdate(float x, float y, Vertex332_ * pVertices, Uint32 vertexCount)
 {
     float NDCx = x / (allInOne.extent2D.height / 2);
     float NDCy = y / (allInOne.extent2D.height / 2);

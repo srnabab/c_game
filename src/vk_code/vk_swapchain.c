@@ -5,6 +5,8 @@
 
 #include "SDL3/SDL_vulkan.h"
 
+#include "G_allocator.h"
+
 extern VK_ALL allInOne;
 
 void getSurfaceFormats(VkSurfaceKHR surface, VkSurfaceFormatKHR * pSurfaceFormat)
@@ -12,7 +14,7 @@ void getSurfaceFormats(VkSurfaceKHR surface, VkSurfaceFormatKHR * pSurfaceFormat
     uint32_t surfaceFormatCount = 0;
     resultVulkan(vkGetPhysicalDeviceSurfaceFormatsKHR(allInOne.physicalDevice, surface, &surfaceFormatCount, NULL), 0);
     
-    VkSurfaceFormatKHR * surfaceFormat = (VkSurfaceFormatKHR *)SDL_malloc(surfaceFormatCount * sizeof(VkSurfaceFormatKHR));
+    VkSurfaceFormatKHR * surfaceFormat = (VkSurfaceFormatKHR *)G_malloc(surfaceFormatCount * sizeof(VkSurfaceFormatKHR));
     if (surfaceFormatCount != 0)
     {
         resultVulkan(vkGetPhysicalDeviceSurfaceFormatsKHR(allInOne.physicalDevice, surface, &surfaceFormatCount, surfaceFormat), 1, surfaceFormat);
@@ -32,14 +34,14 @@ void getSurfaceFormats(VkSurfaceKHR surface, VkSurfaceFormatKHR * pSurfaceFormat
     if (!selected)
         *pSurfaceFormat = surfaceFormat[0];
 
-    SDL_free(surfaceFormat);
+    G_free(surfaceFormat);
 }
 void getPresentModes(VkPresentModeKHR * pPresentMode)
 {
     uint32_t presentModeCount;
     resultVulkan(vkGetPhysicalDeviceSurfacePresentModesKHR(allInOne.physicalDevice, allInOne.surface3D, &presentModeCount, NULL), 0);
 
-    VkPresentModeKHR * presentModes = (VkPresentModeKHR *)SDL_malloc(presentModeCount * sizeof(VkPresentModeKHR));
+    VkPresentModeKHR * presentModes = (VkPresentModeKHR *)G_malloc(presentModeCount * sizeof(VkPresentModeKHR));
     if (presentModeCount != 0) 
     {
         resultVulkan(vkGetPhysicalDeviceSurfacePresentModesKHR(allInOne.physicalDevice, allInOne.surface3D, &presentModeCount, presentModes), 1, presentModes);
@@ -58,7 +60,7 @@ void getPresentModes(VkPresentModeKHR * pPresentMode)
 
     *pPresentMode = VK_PRESENT_MODE_FIFO_KHR;
 
-    SDL_free(presentModes);
+    G_free(presentModes);
 }
 void getSurfaceCapabilities(VkSurfaceKHR surface, VkSurfaceCapabilitiesKHR * pSurfaceCapabilities)
 {
@@ -107,7 +109,7 @@ void getSwapchainNumber(VkSwapchainKHR swapchain, Uint32 * pImageCount)
 }
 void createSwapchainImage(VkSwapchainKHR swapchain, Uint32 * pImageCount, VkImage ** ppSwapchainImages)
 {
-    *ppSwapchainImages = (VkImage *)SDL_malloc(*pImageCount * sizeof(VkImage));
+    *ppSwapchainImages = (VkImage *)G_malloc(*pImageCount * sizeof(VkImage));
     resultVulkan(vkGetSwapchainImagesKHR(allInOne.device, swapchain, pImageCount, *ppSwapchainImages), 0);
 }
 void createSwapchainImageView(VkImage * pSwapchainImages, Uint32 imageCount, VkFormat swapchainFormat, VkImageAspectFlags aspectFlags, VkImageView ** ppSwapchainImageViews)

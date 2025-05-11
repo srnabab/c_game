@@ -1,6 +1,7 @@
 #include "G_TileMap/G_TileSet.h"
 #include "G_constants.h"
 #include "G_log.h"
+#include "G_allocator.h"
 #include "G_struct.h"
 
 #include "SDL3/SDL_iostream.h"
@@ -16,7 +17,7 @@ extern G_SYNC allSync;
 bool initTileMapSystem(void)
 {
     tileCap++;
-    tileSets = SDL_calloc(tileCap, sizeof(TILE_SET));
+    tileSets = G_calloc(tileCap, sizeof(TILE_SET));
     if (tileSets == NULL) return false;
 
     memset(tileSets, 0, sizeof(TILE_SET));
@@ -61,7 +62,7 @@ static unsigned char* readTileSetData(PathType path, Uint32 * pTileWidth, Uint32
         return NULL;
     }
 
-    unsigned char * data = SDL_malloc(head.dataLen);
+    unsigned char * data = G_malloc(head.dataLen);
     if (data == NULL)
     {
         SDL_CloseIO(tsd);
@@ -76,7 +77,7 @@ static unsigned char* readTileSetData(PathType path, Uint32 * pTileWidth, Uint32
     // if (crc32 != SDL_crc32(0, data, dataLen))
     // {
     //     *pTileWidth = *pTileHeight = *pTilePropertyCount = *pTileCount = *pImageWidth = *pImageHeight;
-    //     SDL_free(data);
+    //     G_free(data);
     //     SDL_CloseIO(tsd);
 
     //     return NULL;
@@ -101,7 +102,7 @@ static TILE_SET * loadTileSetData(PathType setDataPath, const char * innerName)
     if (tileCap == tileSetCount)
     {
         tileCap++;
-        tileSets = (TILE_SET*)SDL_realloc(tileSets, tileCap * sizeof(TILE_SET));
+        tileSets = (TILE_SET*)G_realloc(tileSets, tileCap * sizeof(TILE_SET));
         if (tileSets == NULL)
         {
             SDL_UnlockMutex(allSync.tileSetMutex);
@@ -124,10 +125,10 @@ static TILE_SET * loadTileSetData(PathType setDataPath, const char * innerName)
     Uint32 row = imageWidth / tileSet->tileWidth;
     Uint32 col = imageHeight / tileSet->tileHeight;
 
-    tileSet->tiles = (TILE*)SDL_malloc(tileSet->tileCount * sizeof(TILE));
+    tileSet->tiles = (TILE*)G_malloc(tileSet->tileCount * sizeof(TILE));
     if (tileSet->tiles == NULL)
     {
-        SDL_free(data);
+        G_free(data);
 
         SDL_UnlockMutex(allSync.tileSetMutex);
 
@@ -209,7 +210,7 @@ static Uint32 * loadTileMapData(PathType tileMapData, Uint32 * pRow, Uint32 * pC
         return NULL;
     }
 
-    Uint32 * data = (Uint32*)SDL_malloc(head.dataLen);
+    Uint32 * data = (Uint32*)G_malloc(head.dataLen);
     if (data == NULL)
     {
         SDL_CloseIO(tsdI);
@@ -223,7 +224,7 @@ static Uint32 * loadTileMapData(PathType tileMapData, Uint32 * pRow, Uint32 * pC
     // SDL_ReadIO(tsdI, &crc32_check, sizeof(Uint32));
     // if (crc32 != crc32_check) 
     // {
-    //     SDL_free(data);
+    //     G_free(data);
     //     SDL_CloseIO(tsdI);
 
     //     return NULL;
@@ -274,10 +275,10 @@ bool loadTileMap(PathType tileMapData, const char * setInnerName, const char * m
     }
 
     Uint32 groupSize = row * col + 5;
-    void * ptr = SDL_realloc(pSet->maps, (pSet->mapCount + 1) * sizeof(TILE_MAP));
+    void * ptr = G_realloc(pSet->maps, (pSet->mapCount + 1) * sizeof(TILE_MAP));
     if (ptr == NULL)
     {
-        SDL_free(temp);
+        G_free(temp);
 
         SDL_UnlockMutex(allSync.tileSetMutex);
 
@@ -288,21 +289,21 @@ bool loadTileMap(PathType tileMapData, const char * setInnerName, const char * m
     pSet->maps[pSet->mapCount].rowCount = row;
     pSet->maps[pSet->mapCount].colCount = col;
     pSet->maps[pSet->mapCount].groupCount = groupCount;
-    pSet->maps[pSet->mapCount].mapGroups = (Map_Group*)SDL_malloc(groupCount * sizeof(Map_Group));
+    pSet->maps[pSet->mapCount].mapGroups = (Map_Group*)G_malloc(groupCount * sizeof(Map_Group));
     if (pSet->maps[pSet->mapCount].mapGroups == NULL)
     {
-        SDL_free(temp);
+        G_free(temp);
 
         SDL_UnlockMutex(allSync.tileSetMutex);
 
         return false;
     }
 
-    int32_t ** tempIDs = SDL_malloc(groupCount * sizeof(int32_t**));
+    int32_t ** tempIDs = G_malloc(groupCount * sizeof(int32_t**));
     if (tempIDs == NULL)
     {
-        SDL_free(temp);
-        SDL_free(pSet->maps[pSet->mapCount].mapGroups);
+        G_free(temp);
+        G_free(pSet->maps[pSet->mapCount].mapGroups);
 
         SDL_UnlockMutex(allSync.tileSetMutex);
 
@@ -311,16 +312,16 @@ bool loadTileMap(PathType tileMapData, const char * setInnerName, const char * m
 
     for (i = 0;i < groupCount;i++)
     {
-        tempIDs[i] = SDL_malloc(4 * sizeof(int32_t));
+        tempIDs[i] = G_malloc(4 * sizeof(int32_t));
         if (tempIDs[i] == NULL)
         {
             for (;i > -1;i--)
             {
-                SDL_free(tempIDs[i]);
+                G_free(tempIDs[i]);
             }
-            SDL_free(temp);
-            SDL_free(tempIDs);
-            SDL_free(pSet->maps[pSet->mapCount].mapGroups);
+            G_free(temp);
+            G_free(tempIDs);
+            G_free(pSet->maps[pSet->mapCount].mapGroups);
 
             SDL_UnlockMutex(allSync.tileSetMutex);
 
@@ -340,7 +341,7 @@ bool loadTileMap(PathType tileMapData, const char * setInnerName, const char * m
 
         // minID = pSet->maps[pSet->mapCount].mapGroups[i].groupID > minID ? minID : pSet->maps[pSet->mapCount].mapGroups[i].groupID;
 
-        pSet->maps[pSet->mapCount].mapGroups[i].indices = (Uint32**)SDL_malloc(row * sizeof(Uint32*));
+        pSet->maps[pSet->mapCount].mapGroups[i].indices = (Uint32**)G_malloc(row * sizeof(Uint32*));
         if (pSet->maps[pSet->mapCount].mapGroups[i].indices == NULL)
         {
             i--;
@@ -348,18 +349,18 @@ bool loadTileMap(PathType tileMapData, const char * setInnerName, const char * m
             {
                 for (j = 0;j < row;j++)
                 {
-                    SDL_free(pSet->maps[pSet->mapCount].mapGroups[i].indices[j]);
+                    G_free(pSet->maps[pSet->mapCount].mapGroups[i].indices[j]);
                 }
-                SDL_free(pSet->maps[pSet->mapCount].mapGroups[i].indices);
+                G_free(pSet->maps[pSet->mapCount].mapGroups[i].indices);
             }
 
             for (i = 0;i < groupCount;i++)
             {
-                SDL_free(tempIDs[i]);
+                G_free(tempIDs[i]);
             }
-            SDL_free(tempIDs);
-            SDL_free(temp);
-            SDL_free(pSet->maps[pSet->mapCount].mapGroups);
+            G_free(tempIDs);
+            G_free(temp);
+            G_free(pSet->maps[pSet->mapCount].mapGroups);
 
             SDL_UnlockMutex(allSync.tileSetMutex);
 
@@ -367,32 +368,32 @@ bool loadTileMap(PathType tileMapData, const char * setInnerName, const char * m
         }
         for (j = 0;j < row;j++)
         {
-            pSet->maps[pSet->mapCount].mapGroups[i].indices[j] = (Uint32*)SDL_malloc(col * sizeof(Uint32));
+            pSet->maps[pSet->mapCount].mapGroups[i].indices[j] = (Uint32*)G_malloc(col * sizeof(Uint32));
             if (pSet->maps[pSet->mapCount].mapGroups[i].indices[j] == NULL)
             {
                 for (;j > -1;j--)
                 {
-                    SDL_free(pSet->maps[pSet->mapCount].mapGroups[i].indices[j]);
+                    G_free(pSet->maps[pSet->mapCount].mapGroups[i].indices[j]);
                 }
-                SDL_free(pSet->maps[pSet->mapCount].mapGroups[i].indices);
+                G_free(pSet->maps[pSet->mapCount].mapGroups[i].indices);
                 i--;
 
                 for (;i > -1;i--)
                 {
                     for (j = 0;j < row;j++)
                     {
-                        SDL_free(pSet->maps[pSet->mapCount].mapGroups[i].indices[j]);
+                        G_free(pSet->maps[pSet->mapCount].mapGroups[i].indices[j]);
                     }
-                    SDL_free(pSet->maps[pSet->mapCount].mapGroups[i].indices);
+                    G_free(pSet->maps[pSet->mapCount].mapGroups[i].indices);
                 }
 
                 for (i = 0;i < groupCount;i++)
                 {
-                    SDL_free(tempIDs[i]);
+                    G_free(tempIDs[i]);
                 }
-                SDL_free(tempIDs);
-                SDL_free(temp);
-                SDL_free(pSet->maps[pSet->mapCount].mapGroups);
+                G_free(tempIDs);
+                G_free(temp);
+                G_free(pSet->maps[pSet->mapCount].mapGroups);
 
                 SDL_UnlockMutex(allSync.tileSetMutex);
 
@@ -402,7 +403,7 @@ bool loadTileMap(PathType tileMapData, const char * setInnerName, const char * m
         }
     }
 
-    SDL_free(temp);
+    G_free(temp);
 
     for (i = 0;i < groupCount;i++)
     {
@@ -415,10 +416,10 @@ bool loadTileMap(PathType tileMapData, const char * setInnerName, const char * m
         (pSet->maps[pSet->mapCount].mapGroups[i].down == NULL) ? -1 : pSet->maps[pSet->mapCount].mapGroups[i].down->groupID, (pSet->maps[pSet->mapCount].mapGroups[i].left == NULL) ? -1 : pSet->maps[pSet->mapCount].mapGroups[i].left->groupID\
         , (pSet->maps[pSet->mapCount].mapGroups[i].right == NULL) ? -1 : pSet->maps[pSet->mapCount].mapGroups[i].right->groupID);
 
-        SDL_free(tempIDs[i]);
+        G_free(tempIDs[i]);
     }
 
-    SDL_free(tempIDs);
+    G_free(tempIDs);
 
     SDL_strlcpy(pSet->maps[pSet->mapCount].innerName, mapInnerName, SDL_strlen(mapInnerName) + 1);
 
@@ -567,20 +568,20 @@ void deInitTileMapSystem(void)
 {
     for (Uint32 i = 0;i < tileSetCount;i++)
     {
-        SDL_free(tileSets[i].tiles);
+        G_free(tileSets[i].tiles);
         for (Uint32 j = 0;j < tileSets[i].mapCount;j++)
         {
             for (Uint32 k = 0;k < tileSets[i].maps[j].groupCount;k++)
             {
                 for (Uint32 l = 0;l < tileSets[i].maps[j].rowCount;l++)
                 {
-                    SDL_free(tileSets[i].maps[j].mapGroups[k].indices[l]);
+                    G_free(tileSets[i].maps[j].mapGroups[k].indices[l]);
                 }
-                SDL_free(tileSets[i].maps[j].mapGroups[k].indices);
+                G_free(tileSets[i].maps[j].mapGroups[k].indices);
             }
-            SDL_free(tileSets[i].maps[j].mapGroups);
+            G_free(tileSets[i].maps[j].mapGroups);
         }
-        SDL_free(tileSets[i].maps);
+        G_free(tileSets[i].maps);
     }
-    SDL_free(tileSets);
+    G_free(tileSets);
 }

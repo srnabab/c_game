@@ -1,6 +1,7 @@
 #include "vk_code_h/vk_collection.h"
 
 #include "vk_code_h/vk_all_struct.h"
+#include "G_allocator.h"
 
 static VK_COLLECTION CO;
 
@@ -124,10 +125,10 @@ bool CO_addSwapchainImageView(Uint32 count, VkImageView * swapchainImageView)
 {
     void * ptr1, * ptr2;
     Uint32 i;
-    ptr1 = SDL_realloc(CO.swapchainImageViews, (CO.swapchainImageViewCount + count) * sizeof(VkImageView));
+    ptr1 = G_realloc(CO.swapchainImageViews, (CO.swapchainImageViewCount + count) * sizeof(VkImageView));
     if (ptr1 == NULL) return false;
 
-    ptr2 = SDL_realloc(CO.swapchainImageViewMem, (CO.swapchainImageViewMemCount + 1) * sizeof(void*));
+    ptr2 = G_realloc(CO.swapchainImageViewMem, (CO.swapchainImageViewMemCount + 1) * sizeof(void*));
     if (ptr2 == NULL) return false;
 
     CO.swapchainImageViews = ptr1;
@@ -147,7 +148,7 @@ bool CO_addSwapchainImageView(Uint32 count, VkImageView * swapchainImageView)
 bool CO_addRenderPass(VkRenderPass renderPass)
 {
     void * ptr;
-    ptr = SDL_realloc(CO.renderPasses, (CO.renderPassCount + 1) * sizeof(VkRenderPass));
+    ptr = G_realloc(CO.renderPasses, (CO.renderPassCount + 1) * sizeof(VkRenderPass));
     if (ptr == NULL) return false;
 
     CO.renderPasses = ptr;
@@ -161,10 +162,10 @@ bool CO_addFrameBuffer(Uint32 count, VkFramebuffer * pFrameBuffer)
 {
     void * ptr1, * ptr2;
     Uint32 i;
-    ptr1 = SDL_realloc(CO.frameBuffers, (CO.frameBufferCount + count) * sizeof(VkFramebuffer));
+    ptr1 = G_realloc(CO.frameBuffers, (CO.frameBufferCount + count) * sizeof(VkFramebuffer));
     if (ptr1 == NULL) return false;
 
-    ptr2 = SDL_realloc(CO.frameBufferMem, (CO.frameBufferMemCount + 1) * sizeof(void*));
+    ptr2 = G_realloc(CO.frameBufferMem, (CO.frameBufferMemCount + 1) * sizeof(void*));
     if (ptr2 == NULL) return false;
 
     CO.frameBuffers = ptr1;
@@ -183,7 +184,7 @@ bool CO_addFrameBuffer(Uint32 count, VkFramebuffer * pFrameBuffer)
 bool CO_addCommandPool(VkCommandPool commandPool)
 {
     void * ptr;
-    ptr = SDL_realloc(CO.commandPools, (CO.commandPoolCount + 1) * sizeof(VkCommandPool));
+    ptr = G_realloc(CO.commandPools, (CO.commandPoolCount + 1) * sizeof(VkCommandPool));
     if (ptr == NULL) return false;
 
     CO.commandPools = ptr;
@@ -196,7 +197,7 @@ bool CO_addCommandPool(VkCommandPool commandPool)
 bool CO_addSampler(VkSampler sampler)
 {
     void * ptr;
-    ptr = SDL_realloc(CO.samplers, (CO.samplerCount + 1) * sizeof(VkSampler));
+    ptr = G_realloc(CO.samplers, (CO.samplerCount + 1) * sizeof(VkSampler));
     if (ptr == NULL) return NULL;
 
     CO.samplers = ptr;
@@ -209,7 +210,7 @@ bool CO_addSampler(VkSampler sampler)
 bool CO_addShaderModule(VkShaderModule shaderModule)
 {
     void * ptr;
-    ptr = SDL_realloc(CO.shaderModules, (CO.shaderModuleCount + 1) * sizeof(VkShaderModule));
+    ptr = G_realloc(CO.shaderModules, (CO.shaderModuleCount + 1) * sizeof(VkShaderModule));
     if (ptr == NULL) return false;
 
     CO.shaderModules = ptr;
@@ -222,7 +223,7 @@ bool CO_addShaderModule(VkShaderModule shaderModule)
 bool CO_addShaderStageCreateInfo(VkPipelineShaderStageCreateInfo * pShaderStageCreateInfo)
 {
     void * ptr;
-    ptr = SDL_realloc(CO.shaderStageCreateInfos, (CO.shaderStageCreateInfoCount + 1) * sizeof(VkPipelineShaderStageCreateInfo*));
+    ptr = G_realloc(CO.shaderStageCreateInfos, (CO.shaderStageCreateInfoCount + 1) * sizeof(VkPipelineShaderStageCreateInfo*));
     if (ptr == NULL) return false;
 
     CO.shaderStageCreateInfos = ptr;
@@ -236,10 +237,10 @@ bool CO_addDescriptorSetLayout(Uint32 count, VkDescriptorSetLayout * pDescriptor
 {
     void * ptr1, * ptr2;
     Uint32 i;
-    ptr1 = SDL_realloc(CO.descriptorSetLayouts, (CO.descriptorSetLayoutCount + count) * sizeof(VkDescriptorSetLayout));
+    ptr1 = G_realloc(CO.descriptorSetLayouts, (CO.descriptorSetLayoutCount + count) * sizeof(VkDescriptorSetLayout));
     if (ptr1 == NULL) return false;
 
-    ptr2 = SDL_realloc(CO.descriptorSetLayoutMem, (CO.descriptorSetLayoutMemCount + 1) * sizeof(void*));
+    ptr2 = G_realloc(CO.descriptorSetLayoutMem, (CO.descriptorSetLayoutMemCount + 1) * sizeof(void*));
     if (ptr2 == NULL) return false;
 
     CO.descriptorSetLayouts = ptr1;
@@ -258,7 +259,7 @@ bool CO_addDescriptorSetLayout(Uint32 count, VkDescriptorSetLayout * pDescriptor
 bool CO_addPieplineLayout(VkPipelineLayout pipelineLayout)
 {
     void * ptr;
-    ptr = SDL_realloc(CO.pipelineLayouts, (CO.pipelineLayoutCount + 1) * sizeof(VkPipelineLayout));
+    ptr = G_realloc(CO.pipelineLayouts, (CO.pipelineLayoutCount + 1) * sizeof(VkPipelineLayout));
     if (ptr == NULL) return false;
 
     CO.pipelineLayouts = ptr;
@@ -271,7 +272,7 @@ bool CO_addPieplineLayout(VkPipelineLayout pipelineLayout)
 bool CO_addPiepline(VkPipeline pipeline)
 {
     void * ptr;
-    ptr = SDL_realloc(CO.pipelines, (CO.pipelineCount + 1) * sizeof(VkPipeline));
+    ptr = G_realloc(CO.pipelines, (CO.pipelineCount + 1) * sizeof(VkPipeline));
     if (ptr == NULL) return false;
 
     CO.pipelines = ptr;
@@ -284,7 +285,7 @@ bool CO_addPiepline(VkPipeline pipeline)
 bool CO_addDescriptorPool(VkDescriptorPool descriptorPool)
 {
     void * ptr;
-    ptr = SDL_realloc(CO.descriptorPool, (CO.descriptorPoolCount + 1) * sizeof(VkDescriptorPool));
+    ptr = G_realloc(CO.descriptorPool, (CO.descriptorPoolCount + 1) * sizeof(VkDescriptorPool));
     if (ptr == NULL) return false;
 
     CO.descriptorPool = ptr;
@@ -297,7 +298,7 @@ bool CO_addDescriptorPool(VkDescriptorPool descriptorPool)
 bool CO_addBuffer(bool mapped, VkBuffer buffer, VkDeviceMemory bufferMemory, void* cpuMem)
 {
     void * ptr;
-    ptr = SDL_realloc(CO.buffers, (CO.bufferCount + 1) * sizeof(BUFFER_PACK));
+    ptr = G_realloc(CO.buffers, (CO.bufferCount + 1) * sizeof(BUFFER_PACK));
     if (ptr == NULL) return false;
 
     CO.buffers = ptr;
@@ -312,7 +313,7 @@ bool CO_addBuffer(bool mapped, VkBuffer buffer, VkDeviceMemory bufferMemory, voi
 bool CO_addImageView(VkImageView imageView)
 {
     void * ptr;
-    ptr = SDL_realloc(CO.imageViews, (CO.imageViewCount + 1) * sizeof(VkImageView));
+    ptr = G_realloc(CO.imageViews, (CO.imageViewCount + 1) * sizeof(VkImageView));
     if (ptr == NULL) return false;
 
     CO.imageViews = ptr;
@@ -325,7 +326,7 @@ bool CO_addImageView(VkImageView imageView)
 bool CO_addSemaphore(VkSemaphore semaphore)
 {
     void * ptr;
-    ptr = SDL_realloc(CO.semaphores, (CO.semaphoreCount + 1) * sizeof(VkSemaphore));
+    ptr = G_realloc(CO.semaphores, (CO.semaphoreCount + 1) * sizeof(VkSemaphore));
     if (ptr == NULL) return false;
 
     CO.semaphores = ptr;
@@ -338,7 +339,7 @@ bool CO_addSemaphore(VkSemaphore semaphore)
 bool CO_addFence(VkFence fence)
 {
     void * ptr;
-    ptr = SDL_realloc(CO.fences, (CO.fenceCount + 1) * sizeof(VkFence));
+    ptr = G_realloc(CO.fences, (CO.fenceCount + 1) * sizeof(VkFence));
     if (ptr == NULL) return false;
 
     CO.fences = ptr;
@@ -371,7 +372,7 @@ bool CO_cleanFramebuffer(Uint32 count, VkFramebuffer * framebuffer)
     {
         if (CO.frameBufferMem[i] == framebuffer)
         {
-            SDL_free(CO.frameBufferMem[i]);
+            G_free(CO.frameBufferMem[i]);
             CO.frameBufferMem[i] = CO.frameBufferMem[CO.frameBufferMemCount - 1];
             CO.frameBufferMemCount--;
             return true;
@@ -402,7 +403,7 @@ bool CO_cleanSwapchainImageView(Uint32 count, VkImageView * swapchainImageView)
     {
         if (CO.swapchainImageViewMem[i] == swapchainImageView)
         {
-            SDL_free(CO.swapchainImageViewMem[i]);
+            G_free(CO.swapchainImageViewMem[i]);
             CO.swapchainImageViewMem[i] = CO.swapchainImageViewMem[CO.swapchainImageViewMemCount - 1];
             CO.swapchainImageViewMemCount--;
             return true;
@@ -417,7 +418,7 @@ bool CO_cleanSwapchainImage(void * imageMem)
     {
         if (CO.swapchainImageMem[i] == imageMem)
         {
-            SDL_free(CO.swapchainImageMem[i]);
+            G_free(CO.swapchainImageMem[i]);
             CO.swapchainImageMem[i] = CO.swapchainImageMem[CO.swapchainImageMemCount - 1];
             CO.swapchainImageMemCount--;
             return true;
@@ -456,8 +457,9 @@ void CO_CleanAllVkResource(void)
                 }
                 vkDestroyBuffer(CO.device, CO.buffers[i].buffer, allInOne.pAllocationCallbacks);
                 vkFreeMemory(CO.device, CO.buffers[i].bufferMemory, allInOne.pAllocationCallbacks);
+                G_free(CO.buffers[i].cpuMem);
             }
-            SDL_free(CO.buffers);
+            G_free(CO.buffers);
             CO.buffers = NULL;
             CO.bufferCount = 0;
         }
@@ -468,7 +470,7 @@ void CO_CleanAllVkResource(void)
             {
                 vkDestroyImageView(CO.device, CO.imageViews[i], allInOne.pAllocationCallbacks);
             }
-            SDL_free(CO.imageViews);
+            G_free(CO.imageViews);
             CO.imageViews = NULL;
             CO.imageViewCount = 0;
         }
@@ -481,7 +483,7 @@ void CO_CleanAllVkResource(void)
                 {
                     vkDestroyImageView(CO.device, CO.swapchainImageViews[i], allInOne.pAllocationCallbacks);
                 }
-                SDL_free(CO.swapchainImageViews);
+                G_free(CO.swapchainImageViews);
                 CO.swapchainImageViews = NULL;
                 CO.swapchainImageViewCount = 0;
             }
@@ -490,9 +492,9 @@ void CO_CleanAllVkResource(void)
             {
                 for (i = 0;i < CO.swapchainImageViewMemCount;i++)
                 {
-                    SDL_free(CO.swapchainImageViewMem[i]);
+                    G_free(CO.swapchainImageViewMem[i]);
                 }
-                SDL_free(CO.swapchainImageViewMem);
+                G_free(CO.swapchainImageViewMem);
                 CO.swapchainImageViewMem = NULL;
                 CO.swapchainImageViewMemCount = 0;
             }   
@@ -512,14 +514,14 @@ void CO_CleanAllVkResource(void)
                 {
                     vkDestroyFramebuffer(CO.device, CO.frameBuffers[i], allInOne.pAllocationCallbacks);
                 }
-                SDL_free(CO.frameBuffers);
+                G_free(CO.frameBuffers);
                 CO.frameBuffers = NULL;
                 CO.frameBufferCount = 0;
                 for (i = 0;i < CO.frameBufferMemCount;i++)
                 {
-                    SDL_free(CO.frameBufferMem[i]);
+                    G_free(CO.frameBufferMem[i]);
                 }
-                SDL_free(CO.frameBufferMem);
+                G_free(CO.frameBufferMem);
                 CO.frameBufferMem = NULL;
                 CO.frameBufferMemCount = 0;
             }
@@ -528,7 +530,7 @@ void CO_CleanAllVkResource(void)
             {
                 vkDestroyRenderPass(CO.device, CO.renderPasses[i], allInOne.pAllocationCallbacks);
             }
-            SDL_free(CO.renderPasses);
+            G_free(CO.renderPasses);
             CO.renderPasses = NULL;
             CO.renderPassCount = 0;
         }
@@ -539,9 +541,9 @@ void CO_CleanAllVkResource(void)
             {
                 for (i = 0;i < CO.shaderStageCreateInfoCount;i++)
                 {
-                    SDL_free(CO.shaderStageCreateInfos[i]);
+                    G_free(CO.shaderStageCreateInfos[i]);
                 }
-                SDL_free(CO.shaderStageCreateInfos);
+                G_free(CO.shaderStageCreateInfos);
                 CO.shaderStageCreateInfos = NULL;
                 CO.shaderStageCreateInfoCount = 0;
             }
@@ -556,7 +558,7 @@ void CO_CleanAllVkResource(void)
                         {
                             vkDestroyPipeline(CO.device, CO.pipelines[i], allInOne.pAllocationCallbacks);
                         }
-                        SDL_free(CO.pipelines);
+                        G_free(CO.pipelines);
                         CO.pipelines = NULL;
                         CO.pipelineCount = 0;
                     }
@@ -565,7 +567,7 @@ void CO_CleanAllVkResource(void)
                     {
                         vkDestroyPipelineLayout(CO.device, CO.pipelineLayouts[i], allInOne.pAllocationCallbacks);
                     }
-                    SDL_free(CO.pipelineLayouts);
+                    G_free(CO.pipelineLayouts);
                     CO.pipelineLayouts = NULL;
                     CO.pipelineLayoutCount = 0;
                 }
@@ -574,14 +576,14 @@ void CO_CleanAllVkResource(void)
                 {
                     vkDestroyDescriptorSetLayout(CO.device, CO.descriptorSetLayouts[i], allInOne.pAllocationCallbacks);
                 }
-                SDL_free(CO.descriptorSetLayouts);
+                G_free(CO.descriptorSetLayouts);
                 CO.descriptorSetLayouts = NULL;
                 CO.descriptorSetLayoutCount = 0;
                 for (i = 0;i < CO.descriptorSetLayoutMemCount;i++)
                 {
-                    SDL_free(CO.descriptorSetLayoutMem[i]);
+                    G_free(CO.descriptorSetLayoutMem[i]);
                 }
-                SDL_free(CO.descriptorSetLayoutMem);
+                G_free(CO.descriptorSetLayoutMem);
                 CO.descriptorSetLayoutMem = NULL;
                 CO.descriptorSetLayoutMemCount = 0;
             }
@@ -590,7 +592,7 @@ void CO_CleanAllVkResource(void)
             {
                 vkDestroyShaderModule(CO.device, CO.shaderModules[i], allInOne.pAllocationCallbacks);
             }
-            SDL_free(CO.shaderModules);
+            G_free(CO.shaderModules);
             CO.shaderModules = NULL;
             CO.shaderModuleCount = 0;
         }
@@ -601,7 +603,7 @@ void CO_CleanAllVkResource(void)
             {
                 vkDestroySampler(CO.device, CO.samplers[i], allInOne.pAllocationCallbacks);
             }
-            SDL_free(CO.samplers);
+            G_free(CO.samplers);
             CO.samplers = NULL;
             CO.samplerCount = 0;
         }
@@ -612,7 +614,7 @@ void CO_CleanAllVkResource(void)
             {
                 vkDestroyDescriptorPool(CO.device, CO.descriptorPool[i], allInOne.pAllocationCallbacks);
             }
-            SDL_free(CO.descriptorPool);
+            G_free(CO.descriptorPool);
             CO.descriptorPool = NULL;
             CO.descriptorPoolCount = 0;
         }
@@ -623,7 +625,7 @@ void CO_CleanAllVkResource(void)
             {
                 vkDestroySemaphore(CO.device, CO.semaphores[i], allInOne.pAllocationCallbacks);
             }
-            SDL_free(CO.semaphores);
+            G_free(CO.semaphores);
             CO.semaphores = NULL;
             CO.semaphoreCount = 0;
         }
@@ -634,7 +636,7 @@ void CO_CleanAllVkResource(void)
             {
                 vkDestroyFence(CO.device, CO.fences[i], allInOne.pAllocationCallbacks);
             }
-            SDL_free(CO.fences);
+            G_free(CO.fences);
             CO.fences = NULL;
             CO.fenceCount = 0;
         }
@@ -645,7 +647,7 @@ void CO_CleanAllVkResource(void)
             {
                 vkDestroyCommandPool(CO.device, CO.commandPools[i], allInOne.pAllocationCallbacks);
             }
-            SDL_free(CO.commandPools);
+            G_free(CO.commandPools);
             CO.commandPools = NULL;
             CO.commandPoolCount = 0;
         }
@@ -677,3 +679,8 @@ void CO_CleanAllVkResource(void)
         CO.windowCount = 0;
     }
 }
+
+// CO_CreateVertexBuffer(VkBuffer * pVertexBuffer, VkDeviceMemory * pVertexBufferMemory, void ** ppVertexBufferMemMapped, void * data, Uint32 bufferSize, bool staging, void * cpuMem)
+// {
+//     createVertexBuffer
+// }

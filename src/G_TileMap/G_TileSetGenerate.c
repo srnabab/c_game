@@ -279,7 +279,7 @@ int main(int argc, char *argv[])
         bool ** properties = (bool**)SDL_malloc(row * col * sizeof(bool*));
         for (i = 0;i < row * col;i++)
         {
-            properties[i] = (bool*)SDL_calloc(PROPERTY_COUNT, sizeof(bool));
+            properties[i] = (bool*)G_calloc(PROPERTY_COUNT, sizeof(bool));
         }
 
         SDL_IOStream * file = SDL_IOFromFile(path, "rb+");

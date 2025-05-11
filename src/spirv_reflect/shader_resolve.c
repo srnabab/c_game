@@ -14,6 +14,7 @@
 #include "G_log.h"
 #include "G_pop_window.h"
 #include "G_file/G_file.h"
+#include "G_allocator.h"
 
 extern VK_ALL allInOne;
 
@@ -29,17 +30,17 @@ VkPipelineShaderStageCreateInfo ** ppShaderStageCreateInfo, VkDescriptorSetLayou
     int32_t pushConstantCount = 0;
     Uint32 pushConstantOffset = 0;
     VkDescriptorSetLayoutBinding ppSetLayoutBinding[5][5];
-    VkPushConstantRange * pPushConstantRange = (VkPushConstantRange*)SDL_malloc(shaderCount * sizeof(VkPushConstantRange));
+    VkPushConstantRange * pPushConstantRange = (VkPushConstantRange*)G_malloc(shaderCount * sizeof(VkPushConstantRange));
 
     SDL_IOStream * shaderFile;
 
     SpvReflectResult spv_result;
     
-    // char ** entryName = (char **)SDL_malloc(shaderCount * sizeof(char*));
-    // for (i = 0;i < shaderCount;i++) entryName[i] = (char*)SDL_malloc(255 * sizeof(char));
+    // char ** entryName = (char **)G_malloc(shaderCount * sizeof(char*));
+    // for (i = 0;i < shaderCount;i++) entryName[i] = (char*)G_malloc(255 * sizeof(char));
 
-    *ppShaderModule = (VkShaderModule*)SDL_malloc(shaderCount * sizeof(VkShaderModule));
-    *ppShaderStageCreateInfo = (VkPipelineShaderStageCreateInfo*)SDL_malloc(shaderCount * sizeof(VkPipelineShaderStageCreateInfo));
+    *ppShaderModule = (VkShaderModule*)G_malloc(shaderCount * sizeof(VkShaderModule));
+    *ppShaderStageCreateInfo = (VkPipelineShaderStageCreateInfo*)G_malloc(shaderCount * sizeof(VkPipelineShaderStageCreateInfo));
     
     for (i = 0;i < shaderCount;i++)
     {
@@ -53,7 +54,7 @@ VkPipelineShaderStageCreateInfo ** ppShaderStageCreateInfo, VkDescriptorSetLayou
         //printf("\nfileSize: %u\n", fileSize);
         SDL_SeekIO(shaderFile, 0, SDL_IO_SEEK_SET);
 
-        char * shaderCode = (char *)SDL_malloc(fileSize * sizeof(char));
+        char * shaderCode = (char *)G_malloc(fileSize * sizeof(char));
         SDL_ReadIO(shaderFile, shaderCode, sizeof(char) * fileSize);
 
         createShaderModuleFromMem(fileSize, (const Uint32*)shaderCode, (*ppShaderModule) + i);
@@ -74,7 +75,7 @@ VkPipelineShaderStageCreateInfo ** ppShaderStageCreateInfo, VkDescriptorSetLayou
         Uint32 var_count = 0;
         spv_result = spvReflectEnumerateDescriptorBindings(&module, &var_count, NULL);
         SDL_assert(spv_result == SPV_REFLECT_RESULT_SUCCESS);
-        SpvReflectDescriptorBinding** bindings = (SpvReflectDescriptorBinding**)SDL_malloc(var_count * sizeof(SpvReflectDescriptorBinding*));
+        SpvReflectDescriptorBinding** bindings = (SpvReflectDescriptorBinding**)G_malloc(var_count * sizeof(SpvReflectDescriptorBinding*));
         spv_result = spvReflectEnumerateDescriptorBindings(&module, &var_count, bindings);
         SDL_assert(spv_result == SPV_REFLECT_RESULT_SUCCESS);
 
@@ -94,7 +95,7 @@ VkPipelineShaderStageCreateInfo ** ppShaderStageCreateInfo, VkDescriptorSetLayou
         var_count = 0;
         spv_result = spvReflectEnumeratePushConstantBlocks(&module, &var_count, NULL);
         SDL_assert(spv_result == SPV_REFLECT_RESULT_SUCCESS);
-        SpvReflectBlockVariable** pushconstants = (SpvReflectBlockVariable**)SDL_malloc(var_count * sizeof(SpvReflectBlockVariable*));
+        SpvReflectBlockVariable** pushconstants = (SpvReflectBlockVariable**)G_malloc(var_count * sizeof(SpvReflectBlockVariable*));
         spv_result = spvReflectEnumeratePushConstantBlocks(&module, &var_count, pushconstants);
         SDL_assert(spv_result == SPV_REFLECT_RESULT_SUCCESS);
 
@@ -109,15 +110,15 @@ VkPipelineShaderStageCreateInfo ** ppShaderStageCreateInfo, VkDescriptorSetLayou
 
         spvReflectDestroyShaderModule(&module);
 
-        SDL_free(pushconstants);
-        SDL_free(bindings);
-        SDL_free(shaderCode);
+        G_free(pushconstants);
+        G_free(bindings);
+        G_free(shaderCode);
         SDL_CloseIO(shaderFile);
     }
     CO_addShaderStageCreateInfo(*ppShaderStageCreateInfo);// CO
 
     setCount = biggestSet + 1;
-    *ppDescriptorSetLayout = (VkDescriptorSetLayout*)SDL_malloc(setCount * sizeof(VkDescriptorSetLayout));
+    *ppDescriptorSetLayout = (VkDescriptorSetLayout*)G_malloc(setCount * sizeof(VkDescriptorSetLayout));
 
     for (i = 0;i < setCount;i++)
     {
@@ -144,7 +145,7 @@ VkPipelineShaderStageCreateInfo ** ppShaderStageCreateInfo, VkDescriptorSetLayou
     vkCreatePipelineLayout(allInOne.device, &pipelineLayoutCreateInfo, allInOne.pAllocationCallbacks, pPipelineLayout);
     CO_addPieplineLayout(*pPipelineLayout);
 
-    // VkDescriptorSetLayout * layouts = (VkDescriptorSetLayout *)SDL_malloc(MAX_FRAMES_IN_FLIGHT * setCount * sizeof(VkDescriptorSetLayout));
+    // VkDescriptorSetLayout * layouts = (VkDescriptorSetLayout *)G_malloc(MAX_FRAMES_IN_FLIGHT * setCount * sizeof(VkDescriptorSetLayout));
     // for (i = 0;i < setCount;i++)
     // {
     //     for (j = 0;j < MAX_FRAMES_IN_FLIGHT;j++)
@@ -152,7 +153,7 @@ VkPipelineShaderStageCreateInfo ** ppShaderStageCreateInfo, VkDescriptorSetLayou
     //         layouts[i * MAX_FRAMES_IN_FLIGHT + j] = (*ppDescriptorSetLayout)[i];
     //     }
     // }
-    // *ppDescriptorSets = (VkDescriptorSet *)SDL_malloc(MAX_FRAMES_IN_FLIGHT * setCount * sizeof(VkDescriptorSet));
+    // *ppDescriptorSets = (VkDescriptorSet *)G_malloc(MAX_FRAMES_IN_FLIGHT * setCount * sizeof(VkDescriptorSet));
 
     // VkDescriptorSetAllocateInfo allocInfo = {};
     // allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -163,9 +164,9 @@ VkPipelineShaderStageCreateInfo ** ppShaderStageCreateInfo, VkDescriptorSetLayou
 
     // vkAllocateDescriptorSets(allInOne.device, &allocInfo, *ppDescriptorSets);
 
-    // SDL_free(layouts);
-    SDL_free(pPushConstantRange);
-    SDL_free(*ppShaderModule);
+    // G_free(layouts);
+    G_free(pPushConstantRange);
+    G_free(*ppShaderModule);
 
     return setCount;
 }

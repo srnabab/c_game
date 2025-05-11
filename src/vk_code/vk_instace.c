@@ -6,6 +6,7 @@
 
 #include "G_name.h"
 #include "G_pop_window.h"
+#include "G_allocator.h"
 #include "G_log.h"
 
 extern VK_ALL allInOne;
@@ -41,7 +42,7 @@ static bool extensionSupportedCheck_Must(uint32_t neededExtensionCount, char ** 
 static bool * extensionSupportedCheck_Optional(uint32_t neededExtensionCount, char ** neededExtensions, uint32_t extensionCount, VkExtensionProperties * pExtensionProperties)
 {
     uint32_t count = -1;//u32 overflow
-    bool * group = (bool*)SDL_malloc(sizeof(bool) * neededExtensionCount);
+    bool * group = (bool*)G_malloc(sizeof(bool) * neededExtensionCount);
     for (uint32_t i = 0;i < neededExtensionCount;i++)
     {
         group[i] = false;
@@ -64,7 +65,7 @@ static bool checkValidationLayerSupport(uint32_t pCount, const char ** pLayers)
     uint32_t layerCount = 0;
     vkEnumerateInstanceLayerProperties(&layerCount, NULL);
 
-    VkLayerProperties * avaliableLayers = (VkLayerProperties *)SDL_malloc(layerCount * sizeof(VkLayerProperties));
+    VkLayerProperties * avaliableLayers = (VkLayerProperties *)G_malloc(layerCount * sizeof(VkLayerProperties));
     vkEnumerateInstanceLayerProperties(&layerCount, avaliableLayers);
 
     for (uint32_t i = 0;i < pCount;i++)
@@ -81,12 +82,12 @@ static bool checkValidationLayerSupport(uint32_t pCount, const char ** pLayers)
 
         if (!layerFound)
         {
-            SDL_free(avaliableLayers);
+            G_free(avaliableLayers);
             return false;
         }
     }
     
-    SDL_free(avaliableLayers);
+    G_free(avaliableLayers);
     return true;
 }
 static void setRequiredExtensions(uint32_t extensionCount, const char ** extensions, char ** requireExtensions)
@@ -136,7 +137,7 @@ void createInstance(void)
     uint32_t extensionCount = 0;
     resultVulkan(vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, NULL), 0);
 
-    VkExtensionProperties * extensionsProperties = (VkExtensionProperties *)SDL_malloc(extensionCount * sizeof(VkExtensionProperties));
+    VkExtensionProperties * extensionsProperties = (VkExtensionProperties *)G_malloc(extensionCount * sizeof(VkExtensionProperties));
     if (extensionsProperties == NULL)
     {
         pushMessage(SDL_MESSAGEBOX_ERROR, "Error", "alloc memory failed (VkExtensionProperties)");
@@ -150,11 +151,11 @@ void createInstance(void)
     const char * const * sdlExtensions = SDL_Vulkan_GetInstanceExtensions(&sdlExtensionCount);
     requiredExtensionCount += sdlExtensionCount;
 
-    char ** requiredExtension = (char **)SDL_malloc(sizeof(char*) * requiredExtensionCount);
+    char ** requiredExtension = (char **)G_malloc(sizeof(char*) * requiredExtensionCount);
     if (requiredExtension == NULL)
     {
         pushMessage(SDL_MESSAGEBOX_ERROR, "Error", "alloc memory failed (requiredExtension)");
-        SDL_free(extensionsProperties);
+        G_free(extensionsProperties);
         resultVulkan(VK_ERROR_INITIALIZATION_FAILED, 0);
     }
     setRequiredExtensions(sdlExtensionCount, (const char**)sdlExtensions, requiredExtension);
@@ -164,20 +165,20 @@ void createInstance(void)
     
     uint32_t optionalExtensionCount = 0;
 
-    char ** optionalExtension = (char**)SDL_malloc(sizeof(char*) * optionalExtensionCount);
-    if (optionalExtension == NULL)
+    char ** optionalExtension = (char**)G_malloc(sizeof(char*) * optionalExtensionCount);
+    if (optionalExtension == NULL && optionalExtensionCount)
     {
         pushMessage(SDL_MESSAGEBOX_ERROR, "Error", "alloc memory failed (requiredExtension)");
-        SDL_free(requiredExtension);
-        SDL_free(extensionsProperties);
+        G_free(requiredExtension);
+        G_free(extensionsProperties);
         resultVulkan(VK_ERROR_INITIALIZATION_FAILED, 0);
     }
     setOptionalExtensions(0, NULL, NULL);
 
     bool * enabledOptionalExtensions = extensionSupportedCheck_Optional(optionalExtensionCount, optionalExtension, extensionCount, extensionsProperties);
 
-    SDL_free(extensionsProperties);
-    requiredExtension = (char**)SDL_realloc(requiredExtension, sizeof(char*) * (optionalExtensionCount + requiredExtensionCount));
+    G_free(extensionsProperties);
+    requiredExtension = (char**)G_realloc(requiredExtension, sizeof(char*) * (optionalExtensionCount + requiredExtensionCount));
     for (int i = 0, count = 0;i < optionalExtensionCount;i++)
     {
         if (enabledOptionalExtensions[i])
@@ -190,8 +191,8 @@ void createInstance(void)
             requiredExtensionCount += count;
         }
     }
-    SDL_free(optionalExtension);
-    SDL_free(enabledOptionalExtensions);
+    G_free(optionalExtension);
+    G_free(enabledOptionalExtensions);
 
     //printf("sdlExtensionNumber: %u\n", sdlExtensionCount);
 
@@ -207,7 +208,7 @@ void createInstance(void)
 
     resultVulkan(vkCreateInstance(&createInfo, allInOne.pAllocationCallbacks, &allInOne.instance), 1, requiredExtension);
 
-    SDL_free(requiredExtension);
+    G_free(requiredExtension);
 
     print("instance created");
 }

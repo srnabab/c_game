@@ -1,4 +1,5 @@
 #include "G_constants.h"
+#include "G_allocator.h"
 
 #include "vk_code_h/vk_commandPool.h"
 #include "vk_code_h/vk_judge.h"
@@ -33,7 +34,7 @@ void createCommandbufferByBuffering(VkCommandBufferLevel level, VkCommandPool co
 }
 void createCommandBuffer(VkCommandBufferLevel level, VkCommandPool commandPool, VkCommandBuffer ** ppCommandBuffer, Uint32 bufferCount)
 {
-    *ppCommandBuffer = (VkCommandBuffer*)SDL_malloc(bufferCount * sizeof(VkCommandBuffer));
+    *ppCommandBuffer = (VkCommandBuffer*)G_malloc(bufferCount * sizeof(VkCommandBuffer));
 
     VkCommandBufferAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;

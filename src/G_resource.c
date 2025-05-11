@@ -1,6 +1,7 @@
 #include "G_constants.h"
 #include "G_resource.h"
 #include "G_struct.h"
+#include "G_allocator.h"
 #include "G_log.h"
 
 #include "vk_code_h/vk_texture.h"
@@ -49,7 +50,7 @@ void logAllTexture(void)
 }
 void initGlobalTexture(void)
 {
-    globalTexture = (G_Texture_Head*)SDL_calloc(1, sizeof(G_Texture_Head));
+    globalTexture = (G_Texture_Head*)G_calloc(1, sizeof(G_Texture_Head));
     if (globalTexture == NULL) return;
 
     globalTexture->pTexture = NULL;
@@ -80,13 +81,13 @@ static G_Texture_P * getEmptyTexture(void)
     G_Texture_P * pTexture = toTail(globalTexture->pTexture);
     if (pTexture == NULL)
     {
-        globalTexture->pTexture = (G_Texture_P*)SDL_calloc(1, sizeof(G_Texture_P));
+        globalTexture->pTexture = (G_Texture_P*)G_calloc(1, sizeof(G_Texture_P));
         if (globalTexture->pTexture == NULL) return NULL;
         return globalTexture->pTexture;
     }
     else
     {
-        pTexture->next = (G_Texture_P*)SDL_calloc(1, sizeof(G_Texture_P));
+        pTexture->next = (G_Texture_P*)G_calloc(1, sizeof(G_Texture_P));
         if (pTexture->next == NULL) return NULL;
         pTexture->next->prev = pTexture;
         return pTexture->next;
@@ -95,8 +96,8 @@ static G_Texture_P * getEmptyTexture(void)
 static void deleteTexture(G_Texture_P * pTexture)
 {
     if (pTexture == NULL) return;
-    if (pTexture->offsets != NULL) SDL_free(pTexture->offsets);
-    if (pTexture->layouts != NULL) SDL_free(pTexture->layouts);
+    if (pTexture->offsets != NULL) G_free(pTexture->offsets);
+    if (pTexture->layouts != NULL) G_free(pTexture->layouts);
     if (pTexture->imageMem != NULL) vkFreeMemory(allInOne.device, pTexture->imageMem, allInOne.pAllocationCallbacks);
     if (pTexture->imageView != NULL) vkDestroyImageView(allInOne.device, pTexture->imageView, allInOne.pAllocationCallbacks);
     if (pTexture->image != NULL) vkDestroyImage(allInOne.device, pTexture->image, allInOne.pAllocationCallbacks);
@@ -120,7 +121,7 @@ static void deleteTexture(G_Texture_P * pTexture)
         globalTexture->pTexture = NULL;
     }
 
-    SDL_free(pTexture);
+    G_free(pTexture);
 }
 bool loadTexture(PathType path, VkFormat format, VkImageAspectFlags flags, const char * innerName, VkDescriptorSet * pDescriptorSet)
 {
@@ -141,9 +142,9 @@ bool loadTexture(PathType path, VkFormat format, VkImageAspectFlags flags, const
     createTextureImageFromMem(pixels, pTexture->source_width, pTexture->source_height, imageSize, format, &pTexture->image, &pTexture->imageMem);
     createTextureImageView(&pTexture->image, format, flags, &pTexture->imageView);
     
-    SDL_free(pixels);
+    G_free(pixels);
 
-    pTexture->offsets = SDL_calloc(1, sizeof(G_Texture_P) - offsetof(G_Texture_P, offsets));
+    pTexture->offsets = G_calloc(1, sizeof(G_Texture_P) - offsetof(G_Texture_P, offsets));
     if (pTexture->offsets == NULL)
     {
         vkFreeMemory(allInOne.device, pTexture->imageMem, allInOne.pAllocationCallbacks);
@@ -155,10 +156,10 @@ bool loadTexture(PathType path, VkFormat format, VkImageAspectFlags flags, const
     }
 
     pTexture->layoutCount = 1;
-    pTexture->layouts = SDL_calloc(pTexture->layoutCount, sizeof(VkImageLayout));
+    pTexture->layouts = G_calloc(pTexture->layoutCount, sizeof(VkImageLayout));
     if (pTexture->layouts == NULL)
     {
-        SDL_free(pTexture->offsets);
+        G_free(pTexture->offsets);
         vkFreeMemory(allInOne.device, pTexture->imageMem, allInOne.pAllocationCallbacks);
         vkDestroyImageView(allInOne.device, pTexture->imageView, allInOne.pAllocationCallbacks);
         vkDestroyImage(allInOne.device, pTexture->image, allInOne.pAllocationCallbacks);
@@ -194,7 +195,7 @@ bool addTexture(Uint32 width, Uint32 height, VkFormat format, VkImage image, VkD
 
     SDL_UnlockMutex(allSync.textureMutex);
 
-    pTexture->layouts = SDL_calloc(layerCount, sizeof(VkImageLayout));
+    pTexture->layouts = G_calloc(layerCount, sizeof(VkImageLayout));
     if (pTexture->layouts == NULL)
     {
         deleteTexture(pTexture);
@@ -276,7 +277,7 @@ bool loadImageResource(VkFormat format, VkImageTiling tiling, VkImageUsageFlags 
 
     Uint32 ID = HashID(innerName);
 
-    pTexture->layouts = SDL_calloc(1, sizeof(VkImageLayout));
+    pTexture->layouts = G_calloc(1, sizeof(VkImageLayout));
     if (pTexture->layouts == NULL)
     {
         deleteTexture(pTexture);
@@ -380,8 +381,8 @@ bool textureOffsetsAdd(G_Texture_P * pTexture, Uint32 offset)
         {
             void * tempPtr;
     
-            if (pTexture->offsetSize > 127) tempPtr = SDL_realloc(pTexture->offsets, offsetof(G_Texture_P, offsets) * (pTexture->offsetSize + 128));
-            else tempPtr = SDL_realloc(pTexture->offsets, offsetof(G_Texture_P, offsets) * pTexture->offsetSize * 2);
+            if (pTexture->offsetSize > 127) tempPtr = G_realloc(pTexture->offsets, offsetof(G_Texture_P, offsets) * (pTexture->offsetSize + 128));
+            else tempPtr = G_realloc(pTexture->offsets, offsetof(G_Texture_P, offsets) * pTexture->offsetSize * 2);
     
             if (tempPtr == NULL)
             {

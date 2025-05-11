@@ -6,9 +6,9 @@
 
 #include "SDL3/SDL_begin_code.h"
 
-extern void * SDL_MALLOC SDL_ALLOC_SIZE(2) VKAPI_PTR SDL_VK_alloc(void * pUserData, size_t size, size_t alignment, VkSystemAllocationScope allocationScope);
-extern void * SDL_MALLOC SDL_ALLOC_SIZE(3) VKAPI_PTR SDL_VK_realloc(void * pUserData, void * pOriginal, size_t size, size_t alignment, VkSystemAllocationScope allocationScope);
-extern void VKAPI_PTR SDL_VK_free(void * pUserData, void * pMemory);
+extern void * SDL_MALLOC VKAPI_PTR VK_alloc(void * pUserData, size_t size, size_t alignment, VkSystemAllocationScope allocationScope);
+extern void * SDL_MALLOC VKAPI_PTR VK_realloc(void * pUserData, void * pOriginal, size_t size, size_t alignment, VkSystemAllocationScope allocationScope);
+extern void VKAPI_PTR VK_free(void * pUserData, void * pMemory);
 
 #include "SDL3/SDL_close_code.h"
 
