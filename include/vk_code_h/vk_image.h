@@ -1,6 +1,6 @@
 #include "vulkan/vulkan.h"
 #include "SDL3/SDL_stdinc.h"
-#include "G_resource.h"
+#include "G_texture.h"
 
 #ifndef VK_IMAGE_H
 #define VK_IMAGE_H 1

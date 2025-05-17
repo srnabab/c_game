@@ -23,7 +23,7 @@ void createIndexBuffer(VkBuffer * pIndexBuffer, VkDeviceMemory * pIndexBufferMem
 
     if (staging)
     {
-        resultVulkan(createBuffer(pIndexBuffer, pIndexBufferMemory, bufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, NULL, 0, 0), 0);
+        resultVulkan(createBuffer(pIndexBuffer, pIndexBufferMemory, bufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), 0);
 
         vkMapMemory(allInOne.device, *pIndexBufferMemory, 0, bufferSize, 0, pIndexBufferMemMapped);
         memset(*pIndexBufferMemMapped, 0, (size_t)bufferSize);
@@ -33,14 +33,14 @@ void createIndexBuffer(VkBuffer * pIndexBuffer, VkDeviceMemory * pIndexBufferMem
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
 
-        resultVulkan(createBuffer(&stagingBuffer, &stagingBufferMemory, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, NULL, 0, 0), 0);
+        resultVulkan(createBuffer(&stagingBuffer, &stagingBufferMemory, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), 0);
         
         void * data;
         vkMapMemory(allInOne.device, stagingBufferMemory, 0, bufferSize, 0, &data);
         memcpy(data, indices, bufferSize);
         vkUnmapMemory(allInOne.device, stagingBufferMemory);
 
-        resultVulkan(createBuffer(pIndexBuffer, pIndexBufferMemory, bufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, NULL, 0, 0), 0);
+        resultVulkan(createBuffer(pIndexBuffer, pIndexBufferMemory, bufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT), 0);
 
         copyBuffer(NULL, allInOne.graphicCommandPool, &stagingBuffer, pIndexBuffer, bufferSize);
         

@@ -5,8 +5,9 @@
 
 extern VK_ALL allInOne;
 
-VkResult createBuffer(VkBuffer * pBuffer, VkDeviceMemory * pBufferMemory, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkCommandPool firstQueueCommandPool, Uint32 srcQueueFamiltIndice, Uint32 dstQueueFamilyIndice)
+VkResult createBuffer(VkBuffer * pBuffer, VkDeviceMemory * pBufferMemory, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties)
 {
+#warning error process needed
     VkResult result = VK_SUCCESS;
 
     VkBufferCreateInfo bufferCreateInfo = {};
@@ -33,10 +34,10 @@ VkResult createBuffer(VkBuffer * pBuffer, VkDeviceMemory * pBufferMemory, VkDevi
     result |= vkAllocateMemory(allInOne.device, &bufferMemAllocateInfo, allInOne.pAllocationCallbacks, pBufferMemory);
     result |= vkBindBufferMemory(allInOne.device, *pBuffer, *pBufferMemory, 0);
 
-    if (firstQueueCommandPool != NULL)
-    {
-        result |= initBufferQueueFamily(firstQueueCommandPool, srcQueueFamiltIndice, dstQueueFamilyIndice, *pBuffer, size);
-    }
+    // if (firstQueueCommandPool != NULL)
+    // {
+    //     result |= initBufferQueueFamily(firstQueueCommandPool, srcQueueFamiltIndice, dstQueueFamilyIndice, *pBuffer, size);
+    // }
 
     if (result)
         return 0x7FFFFFFF;

@@ -266,7 +266,11 @@ void destroy(void)
 
     SDL_Delay(1000);
     SDL_Log("residue memory:%llu, allocation: %u", G_totalAllocSize(), G_allocations());
+
+#ifdef TRACE_PTR
     printResidueMemory();
     deleteRecord();
+#endif
+
     exit(_Code);
 }

@@ -1,7 +1,7 @@
 #include "cglm/cglm.h"
 #include "SDL3/SDL_stdinc.h"
 #include "G_file/G_file.h"
-#include "G_resource.h"
+#include "G_texture.h"
 
 #ifndef G_TILE_SET_H
 #define G_TILE_SET_H 1

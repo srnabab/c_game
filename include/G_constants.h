@@ -3,6 +3,8 @@
 #ifndef G_CONSTANTS_H
 #define G_CONSTANTS_H 1
 
+#define TRACE_PTR
+
 #define TEST 0
 
 #define VERTEX_UNIT_SIZE_2D 32

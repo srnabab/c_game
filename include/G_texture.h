@@ -49,37 +49,37 @@ struct _G_Texture_Head
 };
 typedef struct _G_Texture_Head G_Texture_Head;
 
-struct _G_Texture
+struct _G_Descriptor_Update_Texture
 {
 	G_Texture_P const * pParent;
 
 	VkSampler sampler;
 	VkImageLayout layout;
 };
-typedef struct _G_Texture G_Texture;
+typedef struct _G_Descriptor_Update_Texture G_Descriptor_Update_Texture;
 
-struct _G_Buffer
+struct _G_Descriptor_Update_Buffer
 {
 	VkBuffer * pBuffer;
 	VkDeviceSize offset;
 	VkDeviceSize range;
 };
-typedef struct _G_Buffer G_Buffer;
+typedef struct _G_Descriptor_Update_Buffer G_Descriptor_Update_Buffer;
 
-struct _G_Buffer_View
+struct _G_Descriptor_Update_Buffer_View
 {
 	VkBufferView * pBufferView;
 };
-typedef struct _G_Buffer_View G_Buffer_View;
+typedef struct _G_Descriptor_Update_Buffer_View G_Descriptor_Update_Buffer_View;
 
 struct _G_DescriptorSet_Update
 {
 	VkDescriptorType descriptorType;
 	union Buffer_Image
 	{
-		G_Buffer Buffer;
-		G_Texture Texture;
-		G_Buffer_View TexelBuffer;
+		G_Descriptor_Update_Buffer Buffer;
+		G_Descriptor_Update_Texture Texture;
+		G_Descriptor_Update_Buffer_View TexelBuffer;
 	} bufferImage;
 	VkDescriptorSet * pSet;
 	Uint32 binding;

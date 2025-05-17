@@ -1,5 +1,5 @@
 #include "G_constants.h"
-#include "G_resource.h"
+#include "G_texture.h"
 #include "G_struct.h"
 #include "G_allocator.h"
 #include "G_log.h"

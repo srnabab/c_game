@@ -1,6 +1,7 @@
 #include "G_constants.h"
 
 #include "vk_code_h/vk_struct.h"
+#include "G_buffer.h"
 #include "G_threadPool.h"
 #include "G_staticModel.h"
 #include "G_stack.h"
@@ -112,6 +113,7 @@ struct _VK_ALL
     // VkBuffer tileMapTexCoordBuffer[MAX_FRAMES_IN_FLIGHT];
     // VkDeviceMemory pTimeMapTexCoordBufferMem[MAX_FRAMES_IN_FLIGHT];
     // void* pTimeMapTexCoordBufferMapped[MAX_FRAMES_IN_FLIGHT];
+    G_BufferPool vertexStagingBufferPool;
 
     VkBuffer tilemapVertexBuffer[MAX_FRAMES_IN_FLIGHT];
     Vertex332_ * pTilemapVertices;
@@ -120,12 +122,13 @@ struct _VK_ALL
     VkBuffer tempBuffer;
     VkDeviceMemory tempBufferMemory;
 
-    VkBuffer vertexBuffer2D[MAX_FRAMES_IN_FLIGHT];
+    // VkBuffer vertexBuffer2D[MAX_FRAMES_IN_FLIGHT];
+    G_Buffer * vertexBuffer2D[MAX_FRAMES_IN_FLIGHT];
     Uint32 maxVertices2DCount;
     Vertex332_ * pVertices2D;
     Uint32 vertices2DCount;
-    VkDeviceMemory pVertexBuffer2DMem[MAX_FRAMES_IN_FLIGHT];
-    void* pVertexBuffer2DMemMapped[MAX_FRAMES_IN_FLIGHT];
+    // VkDeviceMemory pVertexBuffer2DMem[MAX_FRAMES_IN_FLIGHT];
+    // void* pVertexBuffer2DMemMapped[MAX_FRAMES_IN_FLIGHT];
 
     VkBuffer indexBuffer2D;
     Uint16 * pIndices2D;

@@ -17,7 +17,7 @@
 #include "SDL3/SDL_iostream.h"
 
 #include "G_log.h"
-#include "G_resource.h"
+#include "G_texture.h"
 #include "G_struct.h"
 
 extern G_SYNC allSync;

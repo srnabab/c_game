@@ -1,5 +1,5 @@
 #include "G_constants.h"
-#include "G_resource.h"
+#include "G_texture.h"
 #include "G_allocator.h"
 
 #include "vk_code_h/vk_descriptorPool.h"
@@ -134,7 +134,7 @@ static void outOfCount(void)
 }
 void addDescriptorUpdate_Buffer(VkDescriptorType descriptorType, Uint32 binding, VkDescriptorSet * pSet, VkBuffer * pBuffer, VkDeviceSize offset, VkDeviceSize range)
 {
-    G_Buffer tempBuffer;
+    G_Descriptor_Update_Buffer tempBuffer;
     tempBuffer.pBuffer = pBuffer;
     tempBuffer.offset = offset;
     tempBuffer.range = range;
@@ -157,7 +157,7 @@ void addDescriptorUpdate_Buffer(VkDescriptorType descriptorType, Uint32 binding,
 }
 void addDescriptorUpdate_Texture(VkDescriptorType descriptorType, Uint32 binding, const char *innerName, VkSampler sampler, VkImageLayout layout)
 {
-    G_Texture tempTexture;
+    G_Descriptor_Update_Texture tempTexture;
     tempTexture.pParent = getTexture(innerName);
     tempTexture.sampler = sampler;
     tempTexture.layout = layout;
@@ -180,7 +180,7 @@ void addDescriptorUpdate_Texture(VkDescriptorType descriptorType, Uint32 binding
 }
 void addDescriptorUpdate_TexelBuffer(VkDescriptorType descriptorType, Uint32 binding, VkDescriptorSet * pSet, VkBufferView * pBufferView)
 {
-    G_Buffer_View tempBufferView;
+    G_Descriptor_Update_Buffer_View tempBufferView;
     tempBufferView.pBufferView = pBufferView;
 
     SDL_LockMutex(allSync.descriptorUpdateMutex);

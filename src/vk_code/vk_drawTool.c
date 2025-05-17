@@ -105,3 +105,17 @@ void drawModel(const char * innerName, Uint32 currentFrame, VkCommandBuffer comm
 
     SDL_UnlockMutex(allSync.renderMutex);
 }
+void G_vkCmdBindVertexBuffers(VkCommandBuffer commandBuffer, uint32_t firstBinding, uint32_t bindingCount, const G_Buffer ** pBuffers)
+{
+    Uint32 i;
+    VkBuffer buffers[10];
+    VkDeviceSize offsets[10];
+
+    for (i = 0;i < bindingCount;i++)
+    {
+        buffers[i] = pBuffers[i]->pBufferPool->buffer;
+        offsets[i] = pBuffers[i]->startOffset;
+    }
+
+    vkCmdBindVertexBuffers(commandBuffer, firstBinding, bindingCount, buffers, offsets);
+}

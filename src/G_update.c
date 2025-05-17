@@ -9,6 +9,7 @@
 #include "G_text.h"
 #include "G_scene.h"
 #include "G_music.h"
+#include "G_buffer.h"
 #include "G_custom_math.h"
 #include "G_pop_window.h"
 #include "G_TileMap/G_TileSet.h"
@@ -498,7 +499,8 @@ int update(void * arg)
             //print("time: %.2f\n", time);
             SDL_LockMutex(allSync.updateMutex);
 
-            memcpy(allInOne.pVertexBuffer2DMemMapped[currentFrame], allInOne.pVertices2D, vertexEnd * sizeof(Vertex332_));// update vertex buffer
+            bufferMemcpy(allInOne.vertexBuffer2D[currentFrame], allInOne.pVertices2D, vertexEnd * sizeof(Vertex332_));
+            // memcpy(allInOne.pVertexBuffer2DMemMapped[currentFrame], allInOne.pVertices2D, vertexEnd * sizeof(Vertex332_));// update vertex buffer
             memcpy(allInOne.pVertexBuffer3DMemMapped[currentFrame], allInOne.pVertices3D, 30000 * sizeof(Vertex332_));
             memcpy(allInOne.pIndexBuffer3DMemMapped[currentFrame], allInOne.pIndices3D, 45000 * sizeof(Uint32));
             // SDL_SignalSemaphore(allSync.vertexSemaphore);

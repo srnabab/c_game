@@ -11,40 +11,40 @@
 
 extern VK_ALL allInOne;
 
-SDL_PixelFormat getSDL_PixelFormat(Uint8 channel)
-{
-    switch (channel)
-    {
-        case 1:
-        return SDL_PIXELFORMAT_INDEX8;
+// SDL_PixelFormat getSDL_PixelFormat(Uint8 channel)
+// {
+//     switch (channel)
+//     {
+//         case 1:
+//         return SDL_PIXELFORMAT_INDEX8;
 
-        case 3:
-        return SDL_PIXELFORMAT_RGB24;
+//         case 3:
+//         return SDL_PIXELFORMAT_RGB24;
 
-        case 4:
-        return SDL_PIXELFORMAT_RGBA32;
+//         case 4:
+//         return SDL_PIXELFORMAT_RGBA32;
         
-        default:
-        return SDL_PIXELFORMAT_UNKNOWN;
-    }
-}
-VkFormat getVulkanFormat(Uint8 channel, FormatQualifier flags)
-{
-    switch (channel)
-    {
-        case 1:
-        return (VkFormat)((Uint32)VK_FORMAT_R8_UNORM + (Uint32)flags);
+//         default:
+//         return SDL_PIXELFORMAT_UNKNOWN;
+//     }
+// }
+// VkFormat getVulkanFormat(Uint8 channel, FormatQualifier flags)
+// {
+//     switch (channel)
+//     {
+//         case 1:
+//         return (VkFormat)((Uint32)VK_FORMAT_R8_UNORM + (Uint32)flags);
 
-        case 3:
-        return (VkFormat)((Uint32)VK_FORMAT_R8G8B8_UNORM + (Uint32)flags);
+//         case 3:
+//         return (VkFormat)((Uint32)VK_FORMAT_R8G8B8_UNORM + (Uint32)flags);
 
-        case 4:
-        return (VkFormat)((Uint32)VK_FORMAT_R8G8B8A8_UNORM + (Uint32)flags);
+//         case 4:
+//         return (VkFormat)((Uint32)VK_FORMAT_R8G8B8A8_UNORM + (Uint32)flags);
 
-        default:
-        return VK_FORMAT_UNDEFINED;
-    }
-}
+//         default:
+//         return VK_FORMAT_UNDEFINED;
+//     }
+// }
 void createTextureImageFromFile(PathType type, VkFormat format, VkImage * pTextureImage, VkDeviceMemory * pTextureImageMem)
 {
     Uint32 width, height;
@@ -60,7 +60,7 @@ void createTextureImageFromMem(void * pixels, Uint32 width, Uint32 height, VkDev
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
 
-    createBuffer(&stagingBuffer, &stagingBufferMemory, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, NULL, 0, 0);
+    createBuffer(&stagingBuffer, &stagingBufferMemory, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
     void * data;
     vkMapMemory(allInOne.device, stagingBufferMemory, 0, imageSize, 0, &data);

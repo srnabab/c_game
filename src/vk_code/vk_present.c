@@ -78,9 +78,10 @@ static void recordCommandBuffer2D(Uint32 imageIndex, Uint32 currentFrame)
 
     vkCmdBindPipeline(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, allInOne.graphicPipeline);
     vkCmdPushConstants(currentCommandBuffer, allInOne.graphicPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstants), allInOne.pPushConstants);
-    VkBuffer vertexBuffer[] = {allInOne.vertexBuffer2D[currentFrame]};
+    const G_Buffer* vertexBuffer[] = {allInOne.vertexBuffer2D[currentFrame]};
     // VkDeviceSize vertexOffsets1[] = {0, allInOne.maxVerticesCount * sizeof(vec3), allInOne.maxVerticesCount * sizeof(vec3) + allInOne.maxVerticesCount * sizeof(vec3)};
-    vkCmdBindVertexBuffers(currentCommandBuffer, 0, 1, vertexBuffer, offsets);
+    G_vkCmdBindVertexBuffers(currentCommandBuffer, 0, 1, vertexBuffer);
+    // vkCmdBindVertexBuffers(currentCommandBuffer, 0, 1, vertexBuffer, offsets);
     vkCmdBindIndexBuffer(currentCommandBuffer, allInOne.indexBuffer2D, 0, VK_INDEX_TYPE_UINT16);
     //loading1 png
     drawPic(TEXTURE_LOADING, currentFrame, currentCommandBuffer, allInOne.graphicPipelineLayout);

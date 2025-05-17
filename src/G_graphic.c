@@ -1,11 +1,12 @@
 #include "G_constants.h"
 #include "G_log.h"
 #include "G_graphic.h"
-#include "G_resource.h"
+#include "G_texture.h"
 #include "G_TileMap/G_TileSet.h"
 #include "G_staticModel.h"
 #include "G_map.h"
 #include "G_allocator.h"
+#include "G_buffer.h"
 #include "G_custom_math.h"
 
 #include "SDL3/SDL_video.h"
@@ -381,12 +382,16 @@ void initVulkan(void)
     // createVertexBuffer(allInOne.tilemapVertexBuffer + 1, allInOne.pTilemapVertexBufferMem + 1, NULL, NULL, (MAX_TILES_IN_GROUP * MAX_MAP_GROUP * VERTEX_COUNT_IN_UNIT_2D), false);
     // CO_addBuffer(false, allInOne.tilemapVertexBuffer[1], allInOne.pTilemapVertexBufferMem[1], NULL);
 
+    allInOne.vertexStagingBufferPool = createBufferPool(VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex332_) * 2, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
+
     allInOne.pVertices2D = (Vertex332_*)G_calloc(VERTEX_COUNT_IN_BUFFER_2D, sizeof(Vertex332_));
     allInOne.maxVertices2DCount = VERTEX_COUNT_IN_BUFFER_2D;
-    createVertexBuffer(allInOne.vertexBuffer2D + 0, allInOne.pVertexBuffer2DMem + 0, allInOne.pVertexBuffer2DMemMapped + 0, NULL, VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex332_), true);
-    CO_addBuffer(true, allInOne.vertexBuffer2D[0], allInOne.pVertexBuffer2DMem[0], NULL);// CO
-    createVertexBuffer(allInOne.vertexBuffer2D + 1, allInOne.pVertexBuffer2DMem + 1, allInOne.pVertexBuffer2DMemMapped + 1, NULL, VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex332_), true);
-    CO_addBuffer(true, allInOne.vertexBuffer2D[1], allInOne.pVertexBuffer2DMem[1], allInOne.pVertices2D);// CO
+    allInOne.vertexBuffer2D[0] = allocateBuffer(VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex332_), &allInOne.vertexStagingBufferPool);
+    allInOne.vertexBuffer2D[1] = allocateBuffer(VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex332_), &allInOne.vertexStagingBufferPool);
+    // createVertexBuffer(allInOne.vertexBuffer2D + 0, allInOne.pVertexBuffer2DMem + 0, allInOne.pVertexBuffer2DMemMapped + 0, NULL, VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex332_), true);
+    // CO_addBuffer(true, allInOne.vertexBuffer2D[0], allInOne.pVertexBuffer2DMem[0], NULL);// CO
+    // createVertexBuffer(allInOne.vertexBuffer2D + 1, allInOne.pVertexBuffer2DMem + 1, allInOne.pVertexBuffer2DMemMapped + 1, NULL, VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex332_), true);
+    // CO_addBuffer(true, allInOne.vertexBuffer2D[1], allInOne.pVertexBuffer2DMem[1], allInOne.pVertices2D);// CO
 
     allInOne.pIndices2D = (Uint16 *)G_calloc(INDEX_COUNT_IN_BUFFER_2D, sizeof(Uint16));
     indexInitialize(allInOne.pIndices2D, MAX_UNIT_COUNT_2D);
@@ -717,6 +722,8 @@ void cleanVulkan(void)
     // destroyThreadPool(allInOne.pThreadPool);
 
     destroyStaticModelPool(&staticModelPool);
+    destroyBufferPool(&allInOne.vertexStagingBufferPool);
+    G_free(allInOne.pVertices2D);
     unloadAllTexture();
     CO_CleanAllVkResource();
     // destroyThreadPool(allInOne.pThreadPool);

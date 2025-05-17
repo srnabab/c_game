@@ -4,7 +4,7 @@
 
 #include "vulkan/vulkan.h"
 
-#include "G_resource.h"
+#include "G_texture.h"
 
 #include "cglm/cglm.h"
 
@@ -31,6 +31,7 @@ typedef struct _Vertex23_
 {
     vec2 pos;
     vec3 color;
+    char align[4];
 } Vertex23_;
 
 typedef struct _Vertex33
@@ -42,6 +43,7 @@ typedef struct _Vertex33
 typedef struct _Vertex3_2
 {
     vec3 pos;
+    char align[4];
     vec2 texCoord;
 } Vertex3_2_;
 
@@ -65,6 +67,7 @@ typedef struct _Vertex3323
     vec3 color;
     vec2 texCoord;
     vec3 normal;
+    char align[4];
 } Vertex3323;
 
 typedef struct _UniformBufferObject 
@@ -126,18 +129,6 @@ struct _ShapeConstants
     vec2 scale;
 };
 typedef struct _ShapeConstants ShapeConstants;
-
-enum _FormatQualifier
-{
-    UNORM = 0,
-    SNORM = 1,
-    USCALED = 2,
-    SSCALED = 3,
-    UINT = 4,
-    SINT = 5,
-    SRGB = 6
-};
-typedef enum _FormatQualifier FormatQualifier;
 
 #include "SDL3/SDL_close_code.h"
 

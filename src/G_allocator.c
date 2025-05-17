@@ -17,7 +17,7 @@ void initMemoryRecord(void)
 {
     recordMutex = SDL_CreateMutex();
 }
-static void addMemory(void * ptr, void * returnAddress0, void * returnAddress1)
+static void addMemory(void * ptr, void * returnAddress0, void * returnAddress1, int line, char * file)
 {
     SDL_LockMutex(recordMutex);
     G_memptr_record * s;
@@ -29,6 +29,8 @@ static void addMemory(void * ptr, void * returnAddress0, void * returnAddress1)
         s->rawptr = ptr;
         s->returnAddress0 = returnAddress0;
         s->returnAddress1 = returnAddress1;
+        s->address1.line = line;
+        SDL_strlcpy(s->address1.file, file, 255);
         HASH_ADD_PTR(record, rawptr, s);
     }
     SDL_UnlockMutex(recordMutex);
@@ -73,7 +75,8 @@ void printResidueMemory(void)
 
     HASH_ITER(hh, record, s, tmp)
     {
-        print("residue memory: %p, return address0: %p, return address1: %p, allocations: %u", s->rawptr, s->returnAddress0, s->returnAddress1, allocations);
+        print("residue memory: %p, return address0: %p, return address1: %p, allocations: %u\n%d, %s", s->rawptr, s->returnAddress0, s->returnAddress1, allocations, s->address1.line, s->address1.file);
+        __asm__ volatile("int3");
         allocations--;
     }
     SDL_UnlockMutex(recordMutex);
@@ -82,7 +85,7 @@ void printResidueMemory(void)
 
 // alloc size is multiple of 8
 #ifdef TRACE_PTR
-void * _G_malloc(size_t size, void * returnAddress)
+void * _G_malloc(size_t size, void * returnAddress, int line, char * file)
 #else
 void * _G_malloc(size_t size)
 #endif
@@ -95,7 +98,7 @@ void * _G_malloc(size_t size)
     if (ptr == NULL) return NULL;
 
 #ifdef TRACE_PTR
-    addMemory(ptr, returnAddress, __builtin_return_address(0));
+    addMemory(ptr, returnAddress, __builtin_return_address(0), line, file);
 #endif
  
     ptr[0] = allocateSize;
@@ -112,7 +115,7 @@ void * _G_malloc(size_t size)
 }
 
 #ifdef TRACE_PTR
-void * _G_calloc(size_t n_elements, size_t elem_size, void * returnAddress)
+void * _G_calloc(size_t n_elements, size_t elem_size, void * returnAddress, int line, char * file)
 #else
 void * _G_calloc(size_t n_elements, size_t elem_size)
 #endif
@@ -125,7 +128,7 @@ void * _G_calloc(size_t n_elements, size_t elem_size)
     if (ptr == NULL) return NULL;
 
 #ifdef TRACE_PTR
-    addMemory(ptr, returnAddress, __builtin_return_address(0));
+    addMemory(ptr, returnAddress, __builtin_return_address(0), line, file);
 #endif
  
     ptr[0] = req;
@@ -142,7 +145,7 @@ void * _G_calloc(size_t n_elements, size_t elem_size)
 }
 
 #ifdef TRACE_PTR
-void * _G_realloc(void * pOriginal, size_t size, void * returnAddress)
+void * _G_realloc(void * pOriginal, size_t size, void * returnAddress, int line, char * file)
 #else
 void * _G_realloc(void * pOriginal, size_t size)
 #endif
@@ -171,7 +174,7 @@ void * _G_realloc(void * pOriginal, size_t size)
     if (ptr == NULL) return NULL;
 
 #ifdef TRACE_PTR
-    addMemory(ptr, returnAddress, __builtin_return_address(0));
+    addMemory(ptr, returnAddress, __builtin_return_address(0), line, file);
 #endif
  
     ptr[0] = allocateSize;
@@ -215,7 +218,7 @@ void G_free(void * pMemory)
 #endif
 
 #ifdef TRACE_PTR
-void * _G_aligned_alloc(size_t alignment, size_t size, void * returnAddress)
+void * _G_aligned_alloc(size_t alignment, size_t size, void * returnAddress, int line, char * file)
 #else
 void * _G_aligned_alloc(size_t alignment, size_t size)
 #endif
@@ -234,7 +237,7 @@ void * _G_aligned_alloc(size_t alignment, size_t size)
     if (ptr == NULL) return NULL;
 
 #ifdef TRACE_PTR
-    addMemory(ptr, returnAddress, __builtin_return_address(0));
+    addMemory(ptr, returnAddress, __builtin_return_address(0), line, file);
 #endif
 
     uint64_t * mem = (uint64_t*)BYTE_OFFSET(ptr, 3 * alignment);
@@ -256,7 +259,7 @@ void * _G_aligned_alloc(size_t alignment, size_t size)
 }
 
 #ifdef TRACE_PTR
-void * _G_aligned_realloc(void * pOriginal, size_t size, size_t alignment, void * returnAddress)
+void * _G_aligned_realloc(void * pOriginal, size_t size, size_t alignment, void * returnAddress, int line, char * file)
 #else
 void * _G_aligned_realloc(void * pOriginal, size_t size, size_t alignment)
 #endif
@@ -291,7 +294,7 @@ void * _G_aligned_realloc(void * pOriginal, size_t size, size_t alignment)
     if (newMem == NULL) return NULL;
 
 #ifdef TRACE_PTR
-    addMemory(newMem, returnAddress, __builtin_return_address(0));
+    addMemory(newMem, returnAddress, __builtin_return_address(0), line, file);
 #endif
 
     uint64_t * mem = (uint64_t*)BYTE_OFFSET(newMem, alignment * 3);

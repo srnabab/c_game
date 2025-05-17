@@ -1,5 +1,7 @@
 #include "SDL3/SDL_stdinc.h"
 
+#include "G_buffer.h"
+
 #include "vulkan/vulkan.h"
 
 #ifndef VK_DRAW_TOOL_H
@@ -14,6 +16,7 @@ extern void SDLCALL setSubmitInfo(void * pNext, Uint32 waitSeamphoreCount, const
 , VkCommandBuffer * pCommadnBuffers, Uint32 singnalSemaphoreCount, const VkSemaphore * pSignalSemaphores, VkSubmitInfo * pSubmitInfo);
 extern void SDLCALL drawPic(const char * innerName, Uint32 currentFrame, VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout);
 extern void SDLCALL drawModel(const char * innerName, Uint32 currentFrame, VkCommandBuffer commandBuffer);
+extern void SDLCALL G_vkCmdBindVertexBuffers(VkCommandBuffer commandBuffer, uint32_t firstBinding, uint32_t bindingCount, const G_Buffer ** pBuffers);
 
 #include "SDL3/SDL_close_code.h"
 
