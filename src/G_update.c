@@ -501,7 +501,8 @@ int update(void * arg)
 
             bufferMemcpy(allInOne.vertexBuffer2D[currentFrame], allInOne.pVertices2D, vertexEnd * sizeof(Vertex332_));
             // memcpy(allInOne.pVertexBuffer2DMemMapped[currentFrame], allInOne.pVertices2D, vertexEnd * sizeof(Vertex332_));// update vertex buffer
-            memcpy(allInOne.pVertexBuffer3DMemMapped[currentFrame], allInOne.pVertices3D, 30000 * sizeof(Vertex332_));
+            bufferMemcpy(allInOne.vertexBuffer3D[currentFrame], allInOne.pVertices3D, 30000 * sizeof(Vertex3323));
+            // memcpy(allInOne.pVertexBuffer3DMemMapped[currentFrame], allInOne.pVertices3D, 30000 * sizeof(Vertex3323));
             memcpy(allInOne.pIndexBuffer3DMemMapped[currentFrame], allInOne.pIndices3D, 45000 * sizeof(Uint32));
             // SDL_SignalSemaphore(allSync.vertexSemaphore);
 

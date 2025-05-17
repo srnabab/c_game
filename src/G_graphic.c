@@ -382,7 +382,7 @@ void initVulkan(void)
     // createVertexBuffer(allInOne.tilemapVertexBuffer + 1, allInOne.pTilemapVertexBufferMem + 1, NULL, NULL, (MAX_TILES_IN_GROUP * MAX_MAP_GROUP * VERTEX_COUNT_IN_UNIT_2D), false);
     // CO_addBuffer(false, allInOne.tilemapVertexBuffer[1], allInOne.pTilemapVertexBufferMem[1], NULL);
 
-    allInOne.vertexStagingBufferPool = createBufferPool(VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex332_) * 2, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
+    allInOne.vertexStagingBufferPool = createBufferPool(VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex332_) * 2 + 30000 * sizeof(Vertex3323) * 2, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
 
     allInOne.pVertices2D = (Vertex332_*)G_calloc(VERTEX_COUNT_IN_BUFFER_2D, sizeof(Vertex332_));
     allInOne.maxVertices2DCount = VERTEX_COUNT_IN_BUFFER_2D;
@@ -404,12 +404,14 @@ void initVulkan(void)
     allInOne.pVertices3D = (Vertex3323*)G_calloc(30000, sizeof(Vertex3323));
 
     allInOne.maxVertices3DCount = 30000;
-    allInOne.pIndices3D = (Uint32*)G_calloc(45000, sizeof(Uint32));
-    createVertexBuffer(allInOne.vertexBuffer3D + 0, allInOne.vertexBuffer3DMem + 0, allInOne.pVertexBuffer3DMemMapped + 0, NULL, 30000 * sizeof(Vertex3323), true);
-    CO_addBuffer(true, allInOne.vertexBuffer3D[0], allInOne.vertexBuffer3DMem[0], NULL);// CO
-    createVertexBuffer(allInOne.vertexBuffer3D + 1, allInOne.vertexBuffer3DMem + 1, allInOne.pVertexBuffer3DMemMapped + 1, NULL, 30000 * sizeof(Vertex3323), true);
-    CO_addBuffer(true, allInOne.vertexBuffer3D[1], allInOne.vertexBuffer3DMem[1], allInOne.pVertices3D);// CO
+    allInOne.vertexBuffer3D[0] = allocateBuffer(30000 * sizeof(Vertex3323), &allInOne.vertexStagingBufferPool);
+    allInOne.vertexBuffer3D[1] = allocateBuffer(30000 * sizeof(Vertex3323), &allInOne.vertexStagingBufferPool);
+    // createVertexBuffer(allInOne.vertexBuffer3D + 0, allInOne.vertexBuffer3DMem + 0, allInOne.pVertexBuffer3DMemMapped + 0, NULL, 30000 * sizeof(Vertex3323), true);
+    // CO_addBuffer(true, allInOne.vertexBuffer3D[0], allInOne.vertexBuffer3DMem[0], NULL);// CO
+    // createVertexBuffer(allInOne.vertexBuffer3D + 1, allInOne.vertexBuffer3DMem + 1, allInOne.pVertexBuffer3DMemMapped + 1, NULL, 30000 * sizeof(Vertex3323), true);
+    // CO_addBuffer(true, allInOne.vertexBuffer3D[1], allInOne.vertexBuffer3DMem[1], allInOne.pVertices3D);// CO
 
+    allInOne.pIndices3D = (Uint32*)G_calloc(45000, sizeof(Uint32));
     createIndexBuffer(allInOne.indexBuffer3D + 0, allInOne.indexBuffer3DMem + 0, allInOne.pIndexBuffer3DMemMapped + 0, allInOne.pIndices3D, 45000, sizeof(Uint32), true);
     CO_addBuffer(true, allInOne.indexBuffer3D[0], allInOne.indexBuffer3DMem[0], NULL);// CO
     createIndexBuffer(allInOne.indexBuffer3D + 1, allInOne.indexBuffer3DMem + 1, allInOne.pIndexBuffer3DMemMapped + 1, allInOne.pIndices3D, 45000, sizeof(Uint32), true);
@@ -724,6 +726,7 @@ void cleanVulkan(void)
     destroyStaticModelPool(&staticModelPool);
     destroyBufferPool(&allInOne.vertexStagingBufferPool);
     G_free(allInOne.pVertices2D);
+    G_free(allInOne.pVertices3D);
     unloadAllTexture();
     CO_CleanAllVkResource();
     // destroyThreadPool(allInOne.pThreadPool);
