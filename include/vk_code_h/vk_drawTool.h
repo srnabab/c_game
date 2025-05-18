@@ -17,6 +17,7 @@ extern void SDLCALL setSubmitInfo(void * pNext, Uint32 waitSeamphoreCount, const
 extern void SDLCALL drawPic(const char * innerName, Uint32 currentFrame, VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout);
 extern void SDLCALL drawModel(const char * innerName, Uint32 currentFrame, VkCommandBuffer commandBuffer);
 extern void SDLCALL G_vkCmdBindVertexBuffers(VkCommandBuffer commandBuffer, uint32_t firstBinding, uint32_t bindingCount, const G_Buffer ** pBuffers);
+extern void SDLCALL G_vkCmdBindIndexBuffer(VkCommandBuffer commandBuffer, const G_Buffer * pBuffers, VkIndexType indexType);
 
 #include "SDL3/SDL_close_code.h"
 

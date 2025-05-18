@@ -114,6 +114,7 @@ struct _VK_ALL
     // VkDeviceMemory pTimeMapTexCoordBufferMem[MAX_FRAMES_IN_FLIGHT];
     // void* pTimeMapTexCoordBufferMapped[MAX_FRAMES_IN_FLIGHT];
     G_BufferPool vertexStagingBufferPool;
+    G_BufferPool indexStagingBufferPool;
 
     VkBuffer tilemapVertexBuffer[MAX_FRAMES_IN_FLIGHT];
     Vertex332_ * pTilemapVertices;
@@ -142,11 +143,11 @@ struct _VK_ALL
     // VkDeviceMemory vertexBuffer3DMem[MAX_FRAMES_IN_FLIGHT];
     // void* pVertexBuffer3DMemMapped[MAX_FRAMES_IN_FLIGHT];
 
-    VkBuffer indexBuffer3D[MAX_FRAMES_IN_FLIGHT];
+    G_Buffer * indexBuffer3D[MAX_FRAMES_IN_FLIGHT];
     Uint32 * pIndices3D;
     Uint32 indices3DCount;
-    VkDeviceMemory indexBuffer3DMem[MAX_FRAMES_IN_FLIGHT];
-    void* pIndexBuffer3DMemMapped[MAX_FRAMES_IN_FLIGHT];
+    // VkDeviceMemory indexBuffer3DMem[MAX_FRAMES_IN_FLIGHT];
+    // void* pIndexBuffer3DMemMapped[MAX_FRAMES_IN_FLIGHT];
 
     G_StaticModelPool * pStaticModelPool;
 

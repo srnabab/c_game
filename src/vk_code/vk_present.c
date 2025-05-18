@@ -138,7 +138,8 @@ static void recordCommandBufferShadow(Uint32 currentFrame)
     VkDeviceSize offsets[] = {allInOne.vertexBuffer3D[currentFrame]->startOffset, 0, allInOne.pStaticModelPool->totalInstanceCount * sizeof(mat4)};
     vkCmdBindVertexBuffers(currentCommandBuffer, 0, 3, vertex3DBuffer, offsets);
 
-    vkCmdBindIndexBuffer(currentCommandBuffer, allInOne.indexBuffer3D[currentFrame], 0, VK_INDEX_TYPE_UINT32);
+    // vkCmdBindIndexBuffer(currentCommandBuffer, allInOne.indexBuffer3D[currentFrame], 0, VK_INDEX_TYPE_UINT32);
+    G_vkCmdBindIndexBuffer(currentCommandBuffer, allInOne.indexBuffer3D[currentFrame], VK_INDEX_TYPE_UINT32);
 
     vkCmdBindDescriptorSets(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, allInOne.shadowPipelineLayout, 0,
     1, allInOne.pShadowDescriptorSets + currentFrame, 0, NULL);
@@ -250,7 +251,8 @@ static void recordCommandBuffer_3D(Uint32 currentFrame)
     VkDeviceSize offsets[] = {allInOne.vertexBuffer3D[currentFrame]->startOffset, 0, allInOne.pStaticModelPool->totalInstanceCount * sizeof(mat4)};
     vkCmdBindVertexBuffers(currentCommandBuffer, 0, 3, vertex3DBuffer, offsets);
 
-    vkCmdBindIndexBuffer(currentCommandBuffer, allInOne.indexBuffer3D[currentFrame], 0, VK_INDEX_TYPE_UINT32);
+    // vkCmdBindIndexBuffer(currentCommandBuffer, allInOne.indexBuffer3D[currentFrame], 0, VK_INDEX_TYPE_UINT32);
+    G_vkCmdBindIndexBuffer(currentCommandBuffer, allInOne.indexBuffer3D[currentFrame], VK_INDEX_TYPE_UINT32);
 
     // model
     vkCmdBindPipeline(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, allInOne.modelPipeline);

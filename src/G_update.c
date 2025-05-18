@@ -500,10 +500,9 @@ int update(void * arg)
             SDL_LockMutex(allSync.updateMutex);
 
             bufferMemcpy(allInOne.vertexBuffer2D[currentFrame], allInOne.pVertices2D, vertexEnd * sizeof(Vertex332_));
-            // memcpy(allInOne.pVertexBuffer2DMemMapped[currentFrame], allInOne.pVertices2D, vertexEnd * sizeof(Vertex332_));// update vertex buffer
             bufferMemcpy(allInOne.vertexBuffer3D[currentFrame], allInOne.pVertices3D, 30000 * sizeof(Vertex3323));
-            // memcpy(allInOne.pVertexBuffer3DMemMapped[currentFrame], allInOne.pVertices3D, 30000 * sizeof(Vertex3323));
-            memcpy(allInOne.pIndexBuffer3DMemMapped[currentFrame], allInOne.pIndices3D, 45000 * sizeof(Uint32));
+            bufferMemcpy(allInOne.indexBuffer3D[currentFrame], allInOne.pIndices3D, 45000 * sizeof(Uint32));
+            // memcpy(allInOne.pIndexBuffer3DMemMapped[currentFrame], allInOne.pIndices3D, 45000 * sizeof(Uint32));
             // SDL_SignalSemaphore(allSync.vertexSemaphore);
 
             allInOne.pPushConstants->rotation += delta_time * glm_rad(580.0f);

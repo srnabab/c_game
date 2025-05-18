@@ -383,15 +383,12 @@ void initVulkan(void)
     // CO_addBuffer(false, allInOne.tilemapVertexBuffer[1], allInOne.pTilemapVertexBufferMem[1], NULL);
 
     allInOne.vertexStagingBufferPool = createBufferPool(VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex332_) * 2 + 30000 * sizeof(Vertex3323) * 2, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
+    allInOne.indexStagingBufferPool = createBufferPool(45000 * sizeof(Uint32) * 2, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
 
     allInOne.pVertices2D = (Vertex332_*)G_calloc(VERTEX_COUNT_IN_BUFFER_2D, sizeof(Vertex332_));
     allInOne.maxVertices2DCount = VERTEX_COUNT_IN_BUFFER_2D;
     allInOne.vertexBuffer2D[0] = allocateBuffer(VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex332_), &allInOne.vertexStagingBufferPool);
     allInOne.vertexBuffer2D[1] = allocateBuffer(VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex332_), &allInOne.vertexStagingBufferPool);
-    // createVertexBuffer(allInOne.vertexBuffer2D + 0, allInOne.pVertexBuffer2DMem + 0, allInOne.pVertexBuffer2DMemMapped + 0, NULL, VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex332_), true);
-    // CO_addBuffer(true, allInOne.vertexBuffer2D[0], allInOne.pVertexBuffer2DMem[0], NULL);// CO
-    // createVertexBuffer(allInOne.vertexBuffer2D + 1, allInOne.pVertexBuffer2DMem + 1, allInOne.pVertexBuffer2DMemMapped + 1, NULL, VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex332_), true);
-    // CO_addBuffer(true, allInOne.vertexBuffer2D[1], allInOne.pVertexBuffer2DMem[1], allInOne.pVertices2D);// CO
 
     allInOne.pIndices2D = (Uint16 *)G_calloc(INDEX_COUNT_IN_BUFFER_2D, sizeof(Uint16));
     indexInitialize(allInOne.pIndices2D, MAX_UNIT_COUNT_2D);
@@ -406,16 +403,10 @@ void initVulkan(void)
     allInOne.maxVertices3DCount = 30000;
     allInOne.vertexBuffer3D[0] = allocateBuffer(30000 * sizeof(Vertex3323), &allInOne.vertexStagingBufferPool);
     allInOne.vertexBuffer3D[1] = allocateBuffer(30000 * sizeof(Vertex3323), &allInOne.vertexStagingBufferPool);
-    // createVertexBuffer(allInOne.vertexBuffer3D + 0, allInOne.vertexBuffer3DMem + 0, allInOne.pVertexBuffer3DMemMapped + 0, NULL, 30000 * sizeof(Vertex3323), true);
-    // CO_addBuffer(true, allInOne.vertexBuffer3D[0], allInOne.vertexBuffer3DMem[0], NULL);// CO
-    // createVertexBuffer(allInOne.vertexBuffer3D + 1, allInOne.vertexBuffer3DMem + 1, allInOne.pVertexBuffer3DMemMapped + 1, NULL, 30000 * sizeof(Vertex3323), true);
-    // CO_addBuffer(true, allInOne.vertexBuffer3D[1], allInOne.vertexBuffer3DMem[1], allInOne.pVertices3D);// CO
 
     allInOne.pIndices3D = (Uint32*)G_calloc(45000, sizeof(Uint32));
-    createIndexBuffer(allInOne.indexBuffer3D + 0, allInOne.indexBuffer3DMem + 0, allInOne.pIndexBuffer3DMemMapped + 0, allInOne.pIndices3D, 45000, sizeof(Uint32), true);
-    CO_addBuffer(true, allInOne.indexBuffer3D[0], allInOne.indexBuffer3DMem[0], NULL);// CO
-    createIndexBuffer(allInOne.indexBuffer3D + 1, allInOne.indexBuffer3DMem + 1, allInOne.pIndexBuffer3DMemMapped + 1, allInOne.pIndices3D, 45000, sizeof(Uint32), true);
-    CO_addBuffer(true, allInOne.indexBuffer3D[1], allInOne.indexBuffer3DMem[1], allInOne.pIndices3D);// CO
+    allInOne.indexBuffer3D[0] = allocateBuffer(45000 * sizeof(Uint32), &allInOne.indexStagingBufferPool);
+    allInOne.indexBuffer3D[1] = allocateBuffer(45000 * sizeof(Uint32), &allInOne.indexStagingBufferPool);
 
     createUniformBufferByBuffering(&allInOne.pGraphicUniformBuffer, &graphicUniformBuffersMemory, &allInOne.ppGraphicUniformBufferMapped, sizeof(UniformBufferObject));
     CO_addBuffer(true, allInOne.pGraphicUniformBuffer[0], graphicUniformBuffersMemory[0], NULL);// CO
@@ -725,8 +716,10 @@ void cleanVulkan(void)
 
     destroyStaticModelPool(&staticModelPool);
     destroyBufferPool(&allInOne.vertexStagingBufferPool);
+    destroyBufferPool(&allInOne.indexStagingBufferPool);
     G_free(allInOne.pVertices2D);
     G_free(allInOne.pVertices3D);
+    G_free(allInOne.pIndices3D);
     unloadAllTexture();
     CO_CleanAllVkResource();
     // destroyThreadPool(allInOne.pThreadPool);

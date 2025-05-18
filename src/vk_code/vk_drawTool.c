@@ -119,3 +119,7 @@ void G_vkCmdBindVertexBuffers(VkCommandBuffer commandBuffer, uint32_t firstBindi
 
     vkCmdBindVertexBuffers(commandBuffer, firstBinding, bindingCount, buffers, offsets);
 }
+void G_vkCmdBindIndexBuffer(VkCommandBuffer commandBuffer, const G_Buffer * pBuffers, VkIndexType indexType)
+{
+    vkCmdBindIndexBuffer(commandBuffer, pBuffers->pBufferPool->buffer, pBuffers->startOffset, indexType);
+}
