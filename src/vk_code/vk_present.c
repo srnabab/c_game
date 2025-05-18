@@ -77,10 +77,9 @@ static void recordCommandBuffer2D(Uint32 imageIndex, Uint32 currentFrame)
     vkCmdBindPipeline(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, allInOne.graphicPipeline);
     vkCmdPushConstants(currentCommandBuffer, allInOne.graphicPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstants), allInOne.pPushConstants);
     G_Buffer* vertexBuffer[] = {allInOne.vertexBuffer2D[currentFrame]};
-    // VkDeviceSize vertexOffsets1[] = {0, allInOne.maxVerticesCount * sizeof(vec3), allInOne.maxVerticesCount * sizeof(vec3) + allInOne.maxVerticesCount * sizeof(vec3)};
     G_vkCmdBindVertexBuffers(currentCommandBuffer, 0, 1, vertexBuffer);
-    // vkCmdBindVertexBuffers(currentCommandBuffer, 0, 1, vertexBuffer, offsets);
     G_vkCmdBindIndexBuffer(currentCommandBuffer, allInOne.indexBuffer2D, VK_INDEX_TYPE_UINT16);
+
     //loading1 png
     drawPic(TEXTURE_LOADING, currentFrame, currentCommandBuffer, allInOne.graphicPipelineLayout);
     //circle
@@ -136,7 +135,6 @@ static void recordCommandBufferShadow(Uint32 currentFrame)
     VkDeviceSize offsets[] = {allInOne.vertexBuffer3D[currentFrame]->startOffset, 0, allInOne.pStaticModelPool->totalInstanceCount * sizeof(mat4)};
     vkCmdBindVertexBuffers(currentCommandBuffer, 0, 3, vertex3DBuffer, offsets);
 
-    // vkCmdBindIndexBuffer(currentCommandBuffer, allInOne.indexBuffer3D[currentFrame], 0, VK_INDEX_TYPE_UINT32);
     G_vkCmdBindIndexBuffer(currentCommandBuffer, allInOne.indexBuffer3D[currentFrame], VK_INDEX_TYPE_UINT32);
 
     vkCmdBindDescriptorSets(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, allInOne.shadowPipelineLayout, 0,
@@ -249,7 +247,6 @@ static void recordCommandBuffer_3D(Uint32 currentFrame)
     VkDeviceSize offsets[] = {allInOne.vertexBuffer3D[currentFrame]->startOffset, 0, allInOne.pStaticModelPool->totalInstanceCount * sizeof(mat4)};
     vkCmdBindVertexBuffers(currentCommandBuffer, 0, 3, vertex3DBuffer, offsets);
 
-    // vkCmdBindIndexBuffer(currentCommandBuffer, allInOne.indexBuffer3D[currentFrame], 0, VK_INDEX_TYPE_UINT32);
     G_vkCmdBindIndexBuffer(currentCommandBuffer, allInOne.indexBuffer3D[currentFrame], VK_INDEX_TYPE_UINT32);
 
     // model

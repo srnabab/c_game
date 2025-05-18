@@ -137,13 +137,11 @@ static VkFormat swapchainFormat = 0;
 static VkPipelineShaderStageCreateInfo * graphciShaderStageCreateInfo = NULL;
 
 static VkPipelineShaderStageCreateInfo * modelShaderStageCreateInfo = NULL;
-// static VkPipelineShaderStageCreateInfo * bottomShaderStageCreateInfo = NULL;
 static VkPipelineShaderStageCreateInfo * shadowShaderStageCreateInfo = NULL;
 
 static VkPipelineShaderStageCreateInfo * particleShaderStageCreateInfo = NULL;
 static VkPipelineShaderStageCreateInfo * shapeShaderStageCreateInfo = NULL;
 
-// static VkShaderModule compShaderCode = NULL;
 static VkPipelineShaderStageCreateInfo * computeShaderStageCreateInfo = NULL;
 
 static VkPipelineShaderStageCreateInfo * SSGIShaderStageCreateInfo = NULL;
@@ -152,7 +150,6 @@ static VkPipelineShaderStageCreateInfo * combineShaderStageCreateInfo = NULL;
 static VkDescriptorSetLayout * graphicDescriptorSetLayout = NULL;
 
 static VkDescriptorSetLayout * modelDescriptorSetLayout = NULL;
-// static VkDescriptorSetLayout * bottomDescriptorSetLayout = NULL;
 static VkDescriptorSetLayout * shadowDescriptorSetLayout = NULL;
 
 static VkDescriptorSetLayout * particleDescriptorSetLayout = NULL;
@@ -168,9 +165,6 @@ static UniformBufferObject ubo = {};
 static UniformBufferObject ubo3D = {};
 
 static UniformBufferObject uboUI = {};
-
-// static VkDeviceMemory tilemapUniformBuffersMemory[MAX_FRAMES_IN_FLIGHT];
-// static UniformBufferObject uboTilemap = {};
 
 static ComputeUniformBufferObject computeUbo = {};
 
@@ -190,8 +184,6 @@ static float camera_Y = 0.0f;
 
 static float pictureX = 0;
 static float pictureY = 0;
-
-// static bool moveEnabled = false;
 
 static VkDeviceMemory shaderStorageBuffersMem[MAX_FRAMES_IN_FLIGHT];
 
@@ -216,7 +208,6 @@ static void initializeAllInOne(void)
     allInOne.pSSGIubo = &SSGIubo;
     allInOne.pLightSpaceUbo = &lightSpaceubo;
     allInOne.pSunubo = &Sunubo;
-    // allInOne.pTilemapUbo = &uboTilemap;
 
     allInOne.pComputeUbo = &computeUbo;
 
@@ -366,8 +357,6 @@ void initVulkan(void)
     };
     allInOne.tempBuffer = allocateBuffer(5 * sizeof(Vertex23_), &allInOne.vertexBufferPool);
     initBufferData(allInOne.tempBuffer, shapeVertex, 5 * sizeof(Vertex23_));
-    // createVertexBuffer(&allInOne.tempBuffer, &allInOne.tempBufferMemory, NULL, shapeVertex, 5 * sizeof(Vertex23_), false);
-    // CO_addBuffer(false, allInOne.tempBuffer, allInOne.tempBufferMemory, NULL);
 
     // Vertex33_ tileMapVertex[VERTEX_COUNT_IN_UNIT_2D * MAX_TILES_IN_GROUP] = {};
     // initVertices33(BOTTOM_WIDTH, BOTTOM_HEIGHT, 50, 50, 0.1f, tileMapVertex);
@@ -394,8 +383,6 @@ void initVulkan(void)
 
     allInOne.indexBuffer2D = allocateBuffer(INDEX_COUNT_IN_BUFFER_2D * sizeof(Uint16), &allInOne.indexBufferPool);
     initBufferData(allInOne.indexBuffer2D, indices2D, INDEX_COUNT_IN_BUFFER_2D * sizeof(Uint16));
-    // createIndexBuffer(&allInOne.indexBuffer2D, &allInOne.indexBuffer2DMem, NULL, allInOne.pIndices2D, INDEX_COUNT_IN_BUFFER_2D, sizeof(Uint16), false);
-    // CO_addBuffer(false, allInOne.indexBuffer2D, allInOne.indexBuffer2DMem, NULL);// CO
 
     G_free(indices2D);
 
@@ -458,13 +445,6 @@ void initVulkan(void)
     createDescriptorSets(&graphicDescriptorPool, modelDescriptorSetLayout, modelSetCount, 2, &allInOne.pModelDescriptorSets);
     CO_addDescriptorSetsMem(allInOne.pModelDescriptorSets); // CO
     createModelPipeline(allInOne.extent2D, 2, modelShaderStageCreateInfo, allInOne.modelPipelineLayout, allInOne.modelRenderPass, &allInOne.modelPipeline);
-
-    // 3d bottom shader
-    // PathType bottomTypes[] = {Model3dVertShader, ModelBottomFragShader};
-    // VkShaderModule * bottomTempModule = NULL;
-    // Uint32 bottomSetCount = CreateShaderModulesAndDescriptorSets(bottomTypes, 2, &bottomTempModule, &bottomShaderStageCreateInfo, &bottomDescriptorSetLayout, &allInOne.bottomPipelineLayout);
-    // createDescriptorSets(&graphicDescriptorPool, bottomDescriptorSetLayout, bottomSetCount, 1, &allInOne.pBottomDescriptorSets);
-    // createModelPipeline(allInOne.extent2D, 2, bottomShaderStageCreateInfo, allInOne.bottomPipelineLayout, allInOne.modelRenderPass, &allInOne.bottomPipeline);
 
     // particle shader
     PathType particleTypes[] = {ParticleVertShader, ParticleFragShader};
@@ -586,20 +566,6 @@ void initVulkan(void)
     createStaticModelPool(&staticModelPool, 60);
     loadStaticModel(&staticModelPool, 1, BottomObj, BottomPng, allInOne.pVertices3D, &allInOne.vertices3DCount, allInOne.pIndices3D, &allInOne.indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_BOTTOM, allInOne.pModelDescriptorSets + 0, false);
     loadStaticModel(&staticModelPool, 10, BoxObj, BoxPng, allInOne.pVertices3D, &allInOne.vertices3DCount, allInOne.pIndices3D, &allInOne.indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_MODEL, allInOne.pModelDescriptorSets + 2, false);
-
-    // VkImage imageArray = NULL;
-    // VkDeviceMemory imageArrayMemory = NULL;
-    // VkImageView imageArrayView = NULL;
-    // VkImageView * imageArrayViews = NULL;
-    // createImageArray(800, 800, 48, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT\
-    //     , VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &imageArray, &imageArrayMemory);
-    // createImageViewArray(imageArray, 48, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, &imageArrayView);
-    // addTexture(800, 800, VK_FORMAT_R8G8B8A8_SRGB, imageArray, imageArrayMemory, imageArrayView, allInOne.pModelDescriptorSets+ 2, 48, VK_IMAGE_LAYOUT_UNDEFINED, TEXTURE_MAP_ARRAY);
-    // transitionImageLayout(NULL, getTexture(TEXTURE_MAP_ARRAY), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 48);
-
-    // createImageViewsForImageArray(imageArray, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, 48, &imageArrayViews);
-    // createFrameBufferByImageArray(48, 800, 800, imageArrayViews, allInOne.offscreenRenderPass, &allInOne.pBottomImageArrayFramebuffers);
-    // CO_addFrameBuffer(48, allInOne.pBottomImageArrayFramebuffers);// CO
 
     loadImageResource(VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_GENERAL, TEXTURE_SSGI_STORAGE_IMAGE, allInOne.pSSGIDescriptorSets + 2);
 
