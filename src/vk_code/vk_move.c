@@ -9,15 +9,6 @@
 extern VK_ALL allInOne;
 extern G_SYNC allSync;
 
-void initializeMovingBuffer(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkBuffer * pMoveBuffer, VkDeviceMemory * pMoveBufferMemory, void ** ppMovingBufferMapped, Vertex332_ * vertices, Uint32 verticesCount)
-{
-    VkDeviceSize bufferSize = sizeof(vertices[0]) * verticesCount;
-
-    createBuffer(pMoveBuffer, pMoveBufferMemory, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    
-    vkMapMemory(*pDevice, *pMoveBufferMemory, 0, bufferSize, 0, ppMovingBufferMapped);
-    memcpy(*ppMovingBufferMapped, vertices, (size_t)bufferSize);
-}
 void vertexInitialize(float x, float y, float width, float height, float depth, Uint32 vertexCount, Vertex332_ * pVertices)
 {
     float WindowHeight = (float)LOGICAL_HEIGHT;

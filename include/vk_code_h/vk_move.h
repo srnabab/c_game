@@ -5,7 +5,6 @@
 
 #include "SDL3/SDL_begin_code.h"
 
-extern void SDL_UNUSED SDLCALL initializeMovingBuffer(VkPhysicalDevice * pPhysicalDevice, VkDevice * pDevice, VkBuffer * pMoveBuffer, VkDeviceMemory * pMoveBufferMemory, void ** ppMovingBufferMapped, Vertex332_ * vertices, uint32_t verticesCount);
 // extern void SDLCALL vertexPosInit(float x, float y, float width, float height, float depth, Uint32 pictureSequence, vec3 ** ppVertices_Pos);
 // extern void SDLCALL vertexColorInit(Uint32 pictureSequence, vec3 ** ppVertices_Color);
 // extern void SDLCALL vertexTexCoordInit(bool setUVZero, Uint32 pictureSequence, vec2 ** ppVertices_TexCoord);
