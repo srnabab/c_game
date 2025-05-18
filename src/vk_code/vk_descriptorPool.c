@@ -83,7 +83,7 @@ static bool useTexelBuffer(VkDescriptorType type)
 
     return false;
 }
-static int getShaderStorageBufferIndex(VkBuffer * pBufferAddress)
+static int getShaderStorageBufferIndex(void * pBufferAddress)
 {
     static void ** ptrs = NULL;
     static int8_t count = 0;
@@ -132,12 +132,10 @@ static void outOfCount(void)
 {
     print("out of limit");
 }
-void addDescriptorUpdate_Buffer(VkDescriptorType descriptorType, Uint32 binding, VkDescriptorSet * pSet, VkBuffer * pBuffer, VkDeviceSize offset, VkDeviceSize range)
+void addDescriptorUpdate_Buffer(VkDescriptorType descriptorType, Uint32 binding, VkDescriptorSet * pSet, G_Buffer ** pBuffers)
 {
     G_Descriptor_Update_Buffer tempBuffer;
-    tempBuffer.pBuffer = pBuffer;
-    tempBuffer.offset = offset;
-    tempBuffer.range = range;
+    tempBuffer.pBuffer = pBuffers;
 
     SDL_LockMutex(allSync.descriptorUpdateMutex);
 
@@ -215,15 +213,17 @@ static void updateDescriptorSets(G_DescriptorSet_Update * pUpdate, Uint32 update
                 VkDescriptorBufferInfo * temp = (VkDescriptorBufferInfo *)(ppCreateInfo[i + offset]);
                 if (pUpdate[i].descriptorType == VK_DESCRIPTOR_TYPE_STORAGE_BUFFER)
                 {
-                    temp->buffer = pUpdate[i].bufferImage.Buffer.pBuffer[getShaderStorageBufferIndex(pUpdate[i].bufferImage.Buffer.pBuffer)];
+                    Uint32 tempIndex = getShaderStorageBufferIndex(pUpdate[i].bufferImage.Buffer.pBuffer);
+                    temp->buffer = pUpdate[i].bufferImage.Buffer.pBuffer[tempIndex]->pBufferPool->buffer;
+                    temp->offset = pUpdate[i].bufferImage.Buffer.pBuffer[tempIndex]->startOffset;
+                    temp->range = pUpdate[i].bufferImage.Buffer.pBuffer[tempIndex]->bufferSize;
                 }
                 else
                 {
-                    temp->buffer = pUpdate[i].bufferImage.Buffer.pBuffer[j];
+                    temp->buffer = pUpdate[i].bufferImage.Buffer.pBuffer[j]->pBufferPool->buffer;
+                    temp->offset = pUpdate[i].bufferImage.Buffer.pBuffer[j]->startOffset;
+                    temp->range = pUpdate[i].bufferImage.Buffer.pBuffer[j]->bufferSize;
                 }
-
-                temp->offset = pUpdate[i].bufferImage.Buffer.offset;
-                temp->range = pUpdate[i].bufferImage.Buffer.range;
 
                 pWriteDescriptorSets[i + offset].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                 pWriteDescriptorSets[i + offset].pNext = NULL;

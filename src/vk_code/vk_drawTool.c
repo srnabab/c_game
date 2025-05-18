@@ -105,7 +105,7 @@ void drawModel(const char * innerName, Uint32 currentFrame, VkCommandBuffer comm
 
     SDL_UnlockMutex(allSync.renderMutex);
 }
-void G_vkCmdBindVertexBuffers(VkCommandBuffer commandBuffer, uint32_t firstBinding, uint32_t bindingCount, const G_Buffer ** pBuffers)
+void G_vkCmdBindVertexBuffers(VkCommandBuffer commandBuffer, uint32_t firstBinding, uint32_t bindingCount, G_Buffer ** pBuffers)
 {
     Uint32 i;
     VkBuffer buffers[10];
@@ -119,7 +119,7 @@ void G_vkCmdBindVertexBuffers(VkCommandBuffer commandBuffer, uint32_t firstBindi
 
     vkCmdBindVertexBuffers(commandBuffer, firstBinding, bindingCount, buffers, offsets);
 }
-void G_vkCmdBindIndexBuffer(VkCommandBuffer commandBuffer, const G_Buffer * pBuffers, VkIndexType indexType)
+void G_vkCmdBindIndexBuffer(VkCommandBuffer commandBuffer, G_Buffer * pBuffers, VkIndexType indexType)
 {
     vkCmdBindIndexBuffer(commandBuffer, pBuffers->pBufferPool->buffer, pBuffers->startOffset, indexType);
 }

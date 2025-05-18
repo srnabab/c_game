@@ -1,5 +1,6 @@
 #include "SDL3/SDL_stdinc.h"
 #include "G_file/G_file.h"
+#include "G_buffer.h"
 #include "vulkan/vulkan.h"
 
 #ifndef G_RESOURCE_H
@@ -60,9 +61,7 @@ typedef struct _G_Descriptor_Update_Texture G_Descriptor_Update_Texture;
 
 struct _G_Descriptor_Update_Buffer
 {
-	VkBuffer * pBuffer;
-	VkDeviceSize offset;
-	VkDeviceSize range;
+	G_Buffer ** pBuffer;
 };
 typedef struct _G_Descriptor_Update_Buffer G_Descriptor_Update_Buffer;
 

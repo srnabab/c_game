@@ -5,7 +5,7 @@
 
 #include "SDL3/SDL_begin_code.h"
 
-extern void SDLCALL createShaderStorageBuffers(VkBuffer (*ppShaderStorageBuffers)[2], VkDeviceMemory (*ppShaderStorageBuffersMem)[2]);
+extern void SDLCALL createShaderStorageBuffers(G_Buffer ** pShaderStorageBuffers, G_BufferPool * pBufferPool);
 
 #include "SDL3/SDL_close_code.h"
 

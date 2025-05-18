@@ -80,7 +80,7 @@ typedef struct _UniformBufferObject
 typedef struct _ComputeUniformBufferObject
 {
     float deltaTime;//4 bytes
-    char align[50];
+    char align[60];
 }ComputeUniformBufferObject;
 
 struct _SSGIUniformBufferObject
@@ -91,6 +91,7 @@ struct _SSGIUniformBufferObject
     float rayStepSize;
     int32_t maxRaySteps;
     float ssgiStrength;
+    char align[32];
 };
 typedef struct _SSGIUniformBufferObject SSGIUniformBufferObject;
 
@@ -101,6 +102,7 @@ struct _DirectionLight
     char align[4];
     vec3 lightColor;
     float lightIntensity;
+    char align2[32];
 };
 typedef struct _DirectionLight DirectionLight;
 

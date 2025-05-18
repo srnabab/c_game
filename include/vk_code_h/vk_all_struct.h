@@ -115,6 +115,8 @@ struct _VK_ALL
     // void* pTimeMapTexCoordBufferMapped[MAX_FRAMES_IN_FLIGHT];
     G_BufferPool vertexStagingBufferPool;
     G_BufferPool indexStagingBufferPool;
+    G_BufferPool uniformStagingBufferPool;
+    G_BufferPool storageBufferPool;
 
     VkBuffer tilemapVertexBuffer[MAX_FRAMES_IN_FLIGHT];
     Vertex332_ * pTilemapVertices;
@@ -156,39 +158,39 @@ struct _VK_ALL
     VkSampler depthSampler;
     VkSampler shadowSampler;
 
-    VkBuffer pGraphicUniformBuffer[MAX_FRAMES_IN_FLIGHT];
-    void * ppGraphicUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
+    G_Buffer * pGraphicUniformBuffer[MAX_FRAMES_IN_FLIGHT];
+    // void * ppGraphicUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
     UniformBufferObject * pGraphicUbo;
 
-    VkBuffer pGraphic3DUniformBuffer[MAX_FRAMES_IN_FLIGHT];
-    void * ppGraphic3DUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
+    G_Buffer * pGraphic3DUniformBuffer[MAX_FRAMES_IN_FLIGHT];
+    // void * ppGraphic3DUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
     UniformBufferObject * pGraphic3DUbo;
 
-    VkBuffer pUIUniformBuffer[MAX_FRAMES_IN_FLIGHT];
-    void * ppUIUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
+    G_Buffer * pUIUniformBuffer[MAX_FRAMES_IN_FLIGHT];
+    // void * ppUIUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
     UniformBufferObject * pUIUbo;
 
-    VkBuffer pComputeUniformBuffer[MAX_FRAMES_IN_FLIGHT];
-    void* ppComputeUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
+    G_Buffer * pComputeUniformBuffer[MAX_FRAMES_IN_FLIGHT];
+    // void* ppComputeUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
     struct _ComputeUniformBufferObject * pComputeUbo;
 
-    VkBuffer pSSGIUniformBuffer[MAX_FRAMES_IN_FLIGHT];
-    void * ppSSGIUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
+    G_Buffer * pSSGIUniformBuffer[MAX_FRAMES_IN_FLIGHT];
+    // void * ppSSGIUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
     SSGIUniformBufferObject * pSSGIubo;
 
-    VkBuffer pLightSpaceUniformBuffer[MAX_FRAMES_IN_FLIGHT];
-    void * ppLightSpaceUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
+    G_Buffer * pLightSpaceUniformBuffer[MAX_FRAMES_IN_FLIGHT];
+    // void * ppLightSpaceUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
     LightSpace * pLightSpaceUbo;
 
-    VkBuffer pSunUniformBuffer[MAX_FRAMES_IN_FLIGHT];
-    void * ppSunUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
+    G_Buffer * pSunUniformBuffer[MAX_FRAMES_IN_FLIGHT];
+    // void * ppSunUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
     DirectionLight * pSunubo;
 
     // VkBuffer pTilemapUniformBuffer[MAX_FRAMES_IN_FLIGHT];
     // void * ppTilemapUniformBufferMapped[MAX_FRAMES_IN_FLIGHT];
     // UniformBufferObject * pTilemapUbo;
 
-    VkBuffer pShaderStorageBuffer[MAX_FRAMES_IN_FLIGHT];
+    G_Buffer * pShaderStorageBuffer[MAX_FRAMES_IN_FLIGHT];
 
     VkDescriptorSet * pGraphicDescriptorSets;
     VkDescriptorSet * pParticleDescriptorSets;

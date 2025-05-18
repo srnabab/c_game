@@ -384,6 +384,9 @@ void initVulkan(void)
 
     allInOne.vertexStagingBufferPool = createBufferPool(VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex332_) * 2 + 30000 * sizeof(Vertex3323) * 2, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
     allInOne.indexStagingBufferPool = createBufferPool(45000 * sizeof(Uint32) * 2, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
+    allInOne.uniformStagingBufferPool = createBufferPool(sizeof(UniformBufferObject) * 2 * 3 + sizeof(ComputeUniformBufferObject) * 2 + sizeof(SSGIUniformBufferObject) * 2 + sizeof(DirectionLight) * 2 + sizeof(LightSpace) * 2\
+    , VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
+    allInOne.storageBufferPool = createBufferPool(PARTICLE_COUNT * sizeof(Particle) * 2, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, false);
 
     allInOne.pVertices2D = (Vertex332_*)G_calloc(VERTEX_COUNT_IN_BUFFER_2D, sizeof(Vertex332_));
     allInOne.maxVertices2DCount = VERTEX_COUNT_IN_BUFFER_2D;
@@ -408,38 +411,60 @@ void initVulkan(void)
     allInOne.indexBuffer3D[0] = allocateBuffer(45000 * sizeof(Uint32), &allInOne.indexStagingBufferPool);
     allInOne.indexBuffer3D[1] = allocateBuffer(45000 * sizeof(Uint32), &allInOne.indexStagingBufferPool);
 
-    createUniformBufferByBuffering(&allInOne.pGraphicUniformBuffer, &graphicUniformBuffersMemory, &allInOne.ppGraphicUniformBufferMapped, sizeof(UniformBufferObject));
-    CO_addBuffer(true, allInOne.pGraphicUniformBuffer[0], graphicUniformBuffersMemory[0], NULL);// CO
-    CO_addBuffer(true, allInOne.pGraphicUniformBuffer[1], graphicUniformBuffersMemory[1], NULL);// CO
-    createUniformBufferByBuffering(&allInOne.pGraphic3DUniformBuffer, &graphic3DUniformBuffersMemory, &allInOne.ppGraphic3DUniformBufferMapped, sizeof(UniformBufferObject));
-    CO_addBuffer(true, allInOne.pGraphic3DUniformBuffer[0], graphic3DUniformBuffersMemory[0], NULL);// CO
-    CO_addBuffer(true, allInOne.pGraphic3DUniformBuffer[1], graphic3DUniformBuffersMemory[1], NULL);// CO
-    createUniformBufferByBuffering(&allInOne.pUIUniformBuffer, &UIUniformBuffersMemory, &allInOne.ppUIUniformBufferMapped, sizeof(UniformBufferObject));
-    CO_addBuffer(true, allInOne.pUIUniformBuffer[0], UIUniformBuffersMemory[0], NULL);// CO
-    CO_addBuffer(true, allInOne.pUIUniformBuffer[1], UIUniformBuffersMemory[1], NULL);// CO
+    allInOne.pGraphicUniformBuffer[0] = allocateBuffer(sizeof(UniformBufferObject), &allInOne.uniformStagingBufferPool);
+    allInOne.pGraphicUniformBuffer[1] = allocateBuffer(sizeof(UniformBufferObject), &allInOne.uniformStagingBufferPool);
+
+    // createUniformBufferByBuffering(&allInOne.pGraphicUniformBuffer, &graphicUniformBuffersMemory, &allInOne.ppGraphicUniformBufferMapped, sizeof(UniformBufferObject));
+    // CO_addBuffer(true, allInOne.pGraphicUniformBuffer[0], graphicUniformBuffersMemory[0], NULL);// CO
+    // CO_addBuffer(true, allInOne.pGraphicUniformBuffer[1], graphicUniformBuffersMemory[1], NULL);// CO
+
+    allInOne.pGraphic3DUniformBuffer[0] = allocateBuffer(sizeof(UniformBufferObject), &allInOne.uniformStagingBufferPool);
+    allInOne.pGraphic3DUniformBuffer[1] = allocateBuffer(sizeof(UniformBufferObject), &allInOne.uniformStagingBufferPool);
+    // createUniformBufferByBuffering(&allInOne.pGraphic3DUniformBuffer, &graphic3DUniformBuffersMemory, &allInOne.ppGraphic3DUniformBufferMapped, sizeof(UniformBufferObject));
+    // CO_addBuffer(true, allInOne.pGraphic3DUniformBuffer[0], graphic3DUniformBuffersMemory[0], NULL);// CO
+    // CO_addBuffer(true, allInOne.pGraphic3DUniformBuffer[1], graphic3DUniformBuffersMemory[1], NULL);// CO
+
+    allInOne.pUIUniformBuffer[0] = allocateBuffer(sizeof(UniformBufferObject), &allInOne.uniformStagingBufferPool);
+    allInOne.pUIUniformBuffer[1] = allocateBuffer(sizeof(UniformBufferObject), &allInOne.uniformStagingBufferPool);
+
+    // createUniformBufferByBuffering(&allInOne.pUIUniformBuffer, &UIUniformBuffersMemory, &allInOne.ppUIUniformBufferMapped, sizeof(UniformBufferObject));
+    // CO_addBuffer(true, allInOne.pUIUniformBuffer[0], UIUniformBuffersMemory[0], NULL);// CO
+    // CO_addBuffer(true, allInOne.pUIUniformBuffer[1], UIUniformBuffersMemory[1], NULL);// CO
     // createUniformBufferByBuffering(&allInOne.pTilemapUniformBuffer, &tilemapUniformBuffersMemory, &allInOne.ppTilemapUniformBufferMapped, sizeof(UniformBufferObject));
     // CO_addBuffer(true, allInOne.pTilemapUniformBuffer[0], tilemapUniformBuffersMemory[0], NULL);// CO
     // CO_addBuffer(true, allInOne.pTilemapUniformBuffer[1], tilemapUniformBuffersMemory[1], NULL);// CO
 
-    createUniformBufferByBuffering(&allInOne.pComputeUniformBuffer, &computeUniformBuffersmemory, &allInOne.ppComputeUniformBufferMapped, sizeof(ComputeUniformBufferObject));
-    CO_addBuffer(true, allInOne.pComputeUniformBuffer[0], computeUniformBuffersmemory[0], NULL);// CO
-    CO_addBuffer(true, allInOne.pComputeUniformBuffer[1], computeUniformBuffersmemory[1], NULL);// CO
+    allInOne.pComputeUniformBuffer[0] = allocateBuffer(sizeof(ComputeUniformBufferObject), &allInOne.uniformStagingBufferPool);
+    allInOne.pComputeUniformBuffer[1] = allocateBuffer(sizeof(ComputeUniformBufferObject), &allInOne.uniformStagingBufferPool);
 
-    createUniformBufferByBuffering(&allInOne.pSSGIUniformBuffer, &SSGIUniformBufferMem, &allInOne.ppSSGIUniformBufferMapped, sizeof(SSGIUniformBufferObject));
-    CO_addBuffer(true, allInOne.pSSGIUniformBuffer[0], SSGIUniformBufferMem[0], NULL);// CO
-    CO_addBuffer(true, allInOne.pSSGIUniformBuffer[1], SSGIUniformBufferMem[1], NULL);// CO
+    // createUniformBufferByBuffering(&allInOne.pComputeUniformBuffer, &computeUniformBuffersmemory, &allInOne.ppComputeUniformBufferMapped, sizeof(ComputeUniformBufferObject));
+    // CO_addBuffer(true, allInOne.pComputeUniformBuffer[0], computeUniformBuffersmemory[0], NULL);// CO
+    // CO_addBuffer(true, allInOne.pComputeUniformBuffer[1], computeUniformBuffersmemory[1], NULL);// CO
 
-    createUniformBufferByBuffering(&allInOne.pSunUniformBuffer, &SunUniformBufferMem, &allInOne.ppSunUniformBufferMapped, sizeof(DirectionLight));
-    CO_addBuffer(true, allInOne.pSunUniformBuffer[0], SunUniformBufferMem[0], NULL);// CO
-    CO_addBuffer(true, allInOne.pSunUniformBuffer[1], SunUniformBufferMem[1], NULL);// CO
+    allInOne.pSSGIUniformBuffer[0] = allocateBuffer(sizeof(SSGIUniformBufferObject), &allInOne.uniformStagingBufferPool);
+    allInOne.pSSGIUniformBuffer[1] = allocateBuffer(sizeof(SSGIUniformBufferObject), &allInOne.uniformStagingBufferPool);
 
-    createUniformBufferByBuffering(&allInOne.pLightSpaceUniformBuffer, &lightSpaceUniformBufferMem, &allInOne.ppLightSpaceUniformBufferMapped, sizeof(LightSpace));
-    CO_addBuffer(true, allInOne.pLightSpaceUniformBuffer[0], lightSpaceUniformBufferMem[0], NULL);// CO
-    CO_addBuffer(true, allInOne.pLightSpaceUniformBuffer[1], lightSpaceUniformBufferMem[1], NULL);// CO
+    // createUniformBufferByBuffering(&allInOne.pSSGIUniformBuffer, &SSGIUniformBufferMem, &allInOne.ppSSGIUniformBufferMapped, sizeof(SSGIUniformBufferObject));
+    // CO_addBuffer(true, allInOne.pSSGIUniformBuffer[0], SSGIUniformBufferMem[0], NULL);// CO
+    // CO_addBuffer(true, allInOne.pSSGIUniformBuffer[1], SSGIUniformBufferMem[1], NULL);// CO
 
-    createShaderStorageBuffers(&allInOne.pShaderStorageBuffer, &shaderStorageBuffersMem);
-    CO_addBuffer(false, allInOne.pShaderStorageBuffer[0], shaderStorageBuffersMem[0], NULL);// CO
-    CO_addBuffer(false, allInOne.pShaderStorageBuffer[1], shaderStorageBuffersMem[1], NULL);// CO
+    allInOne.pSunUniformBuffer[0] = allocateBuffer(sizeof(DirectionLight), &allInOne.uniformStagingBufferPool);
+    allInOne.pSunUniformBuffer[1] = allocateBuffer(sizeof(DirectionLight), &allInOne.uniformStagingBufferPool);
+
+    // createUniformBufferByBuffering(&allInOne.pSunUniformBuffer, &SunUniformBufferMem, &allInOne.ppSunUniformBufferMapped, sizeof(DirectionLight));
+    // CO_addBuffer(true, allInOne.pSunUniformBuffer[0], SunUniformBufferMem[0], NULL);// CO
+    // CO_addBuffer(true, allInOne.pSunUniformBuffer[1], SunUniformBufferMem[1], NULL);// CO
+
+    allInOne.pLightSpaceUniformBuffer[0] = allocateBuffer(sizeof(LightSpace), &allInOne.uniformStagingBufferPool);
+    allInOne.pLightSpaceUniformBuffer[1] = allocateBuffer(sizeof(LightSpace), &allInOne.uniformStagingBufferPool);
+
+    // createUniformBufferByBuffering(&allInOne.pLightSpaceUniformBuffer, &lightSpaceUniformBufferMem, &allInOne.ppLightSpaceUniformBufferMapped, sizeof(LightSpace));
+    // CO_addBuffer(true, allInOne.pLightSpaceUniformBuffer[0], lightSpaceUniformBufferMem[0], NULL);// CO
+    // CO_addBuffer(true, allInOne.pLightSpaceUniformBuffer[1], lightSpaceUniformBufferMem[1], NULL);// CO
+
+    createShaderStorageBuffers(allInOne.pShaderStorageBuffer, &allInOne.storageBufferPool);
+    // CO_addBuffer(false, allInOne.pShaderStorageBuffer[0], shaderStorageBuffersMem[0], NULL);// CO
+    // CO_addBuffer(false, allInOne.pShaderStorageBuffer[1], shaderStorageBuffersMem[1], NULL);// CO
 
     /*unfixed code*/
 
@@ -633,26 +658,26 @@ void initVulkan(void)
     // G_Texture_P * SSGIStorageTexture = getTexture(TEXTURE_SSGI_STORAGE_IMAGE);
 
     // UI
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, loadingTexture->pDescriptorSet, allInOne.pUIUniformBuffer, 0, sizeof(UniformBufferObject));//0
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, fontTexture->pDescriptorSet, allInOne.pUIUniformBuffer, 0, sizeof(UniformBufferObject));
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, loadingTexture->pDescriptorSet, allInOne.pUIUniformBuffer);//0
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, fontTexture->pDescriptorSet, allInOne.pUIUniformBuffer);
 
     // graphic
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, circleTexture->pDescriptorSet, allInOne.pGraphicUniformBuffer, 0, sizeof(UniformBufferObject));
-    // addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, tileSetTexture->pDescriptorSet, allInOne.pTilemapUniformBuffer, 0, sizeof(UniformBufferObject));
-    // addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, getTexture(TEXTURE_BOX)->pDescriptorSet, graphicUniformBuffers, 0, sizeof(UniformBufferObject));
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, circleTexture->pDescriptorSet, allInOne.pGraphicUniformBuffer);
+    // addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, tileSetTexture->pDescriptorSet, allInOne.pTilemapUniformBuffer);
+    // addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, getTexture(TEXTURE_BOX)->pDescriptorSet, graphicUniformBuffers);
 
     // model
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, modelTexture->pDescriptorSet, allInOne.pGraphic3DUniformBuffer, 0, sizeof(UniformBufferObject));//4
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, bottomTexture->pDescriptorSet, allInOne.pGraphic3DUniformBuffer, 0, sizeof(UniformBufferObject));
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3, modelTexture->pDescriptorSet, allInOne.pSunUniformBuffer, 0, sizeof(DirectionLight));
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3, bottomTexture->pDescriptorSet, allInOne.pSunUniformBuffer, 0, sizeof(DirectionLight));
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, allInOne.pShadowDescriptorSets, allInOne.pLightSpaceUniformBuffer, 0, sizeof(LightSpace));
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, modelTexture->pDescriptorSet, allInOne.pGraphic3DUniformBuffer);//4
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, bottomTexture->pDescriptorSet, allInOne.pGraphic3DUniformBuffer);
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3, modelTexture->pDescriptorSet, allInOne.pSunUniformBuffer);
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3, bottomTexture->pDescriptorSet, allInOne.pSunUniformBuffer);
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, allInOne.pShadowDescriptorSets, allInOne.pLightSpaceUniformBuffer);
 
     // shape
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, allInOne.pShapeDescriptorSets, allInOne.pGraphic3DUniformBuffer, 0, sizeof(UniformBufferObject));
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, allInOne.pShapeDescriptorSets, allInOne.pGraphic3DUniformBuffer);
 
     // SSGI
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3, normalTexture->pDescriptorSet, allInOne.pSSGIUniformBuffer, 0, sizeof(SSGIUniformBufferObject));
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3, normalTexture->pDescriptorSet, allInOne.pSSGIUniformBuffer);
 
     // graphics
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_LOADING, allInOne.textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
@@ -682,12 +707,12 @@ void initVulkan(void)
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 4, TEXTURE_SSGI_STORAGE_IMAGE, NULL, VK_IMAGE_LAYOUT_GENERAL);
 
     // graphic
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, allInOne.pParticleDescriptorSets, allInOne.pGraphicUniformBuffer, 0, sizeof(UniformBufferObject));//16
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, allInOne.pParticleDescriptorSets, allInOne.pGraphicUniformBuffer);//16
 
     // compute
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, allInOne.pComputeDescriptorSets, allInOne.pComputeUniformBuffer, 0, sizeof(ComputeUniformBufferObject));
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, allInOne.pComputeDescriptorSets, allInOne.pShaderStorageBuffer, 0, sizeof(Particle) * PARTICLE_COUNT);
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 2, allInOne.pComputeDescriptorSets, allInOne.pShaderStorageBuffer, 0, sizeof(Particle) * PARTICLE_COUNT);
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, allInOne.pComputeDescriptorSets, allInOne.pComputeUniformBuffer);
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, allInOne.pComputeDescriptorSets, allInOne.pShaderStorageBuffer);
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 2, allInOne.pComputeDescriptorSets, allInOne.pShaderStorageBuffer);
 
     executeUpdateDescriptorSets();
 
@@ -717,6 +742,8 @@ void cleanVulkan(void)
     destroyStaticModelPool(&staticModelPool);
     destroyBufferPool(&allInOne.vertexStagingBufferPool);
     destroyBufferPool(&allInOne.indexStagingBufferPool);
+    destroyBufferPool(&allInOne.uniformStagingBufferPool);
+    destroyBufferPool(&allInOne.storageBufferPool);
     G_free(allInOne.pVertices2D);
     G_free(allInOne.pVertices3D);
     G_free(allInOne.pIndices3D);

@@ -44,7 +44,7 @@ static void recordCommandBuffer2D(Uint32 imageIndex, Uint32 currentFrame)
 
     VkBufferMemoryBarrier bufferBarrierGet = {};
     _setBufferMemoryBarrier(NULL, 0, VK_ACCESS_SHADER_READ_BIT, allInOne.queueFamilyIndices.computeFamily.familyIndice, allInOne.queueFamilyIndices.graphicsFamily.familyIndice\
-    , allInOne.pShaderStorageBuffer[currentFrame], 0, sizeof(Particle) * PARTICLE_COUNT, &bufferBarrierGet);
+    , allInOne.pShaderStorageBuffer[currentFrame]->pBufferPool->buffer, allInOne.pShaderStorageBuffer[currentFrame]->startOffset, sizeof(Particle) * PARTICLE_COUNT, &bufferBarrierGet);
     vkCmdPipelineBarrier(currentCommandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, 0, 0, NULL, 1, &bufferBarrierGet, 0, NULL);
 
     setViewport(allInOne.extent2D, currentCommandBuffer);
@@ -78,7 +78,7 @@ static void recordCommandBuffer2D(Uint32 imageIndex, Uint32 currentFrame)
 
     vkCmdBindPipeline(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, allInOne.graphicPipeline);
     vkCmdPushConstants(currentCommandBuffer, allInOne.graphicPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstants), allInOne.pPushConstants);
-    const G_Buffer* vertexBuffer[] = {allInOne.vertexBuffer2D[currentFrame]};
+    G_Buffer* vertexBuffer[] = {allInOne.vertexBuffer2D[currentFrame]};
     // VkDeviceSize vertexOffsets1[] = {0, allInOne.maxVerticesCount * sizeof(vec3), allInOne.maxVerticesCount * sizeof(vec3) + allInOne.maxVerticesCount * sizeof(vec3)};
     G_vkCmdBindVertexBuffers(currentCommandBuffer, 0, 1, vertexBuffer);
     // vkCmdBindVertexBuffers(currentCommandBuffer, 0, 1, vertexBuffer, offsets);
@@ -93,7 +93,7 @@ static void recordCommandBuffer2D(Uint32 imageIndex, Uint32 currentFrame)
     drawPic(TEXTURE_FONT, currentFrame, currentCommandBuffer, allInOne.graphicPipelineLayout);
 
     vkCmdBindPipeline(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, allInOne.particlePipeline);
-    vkCmdBindVertexBuffers(currentCommandBuffer, 0, 1, allInOne.pShaderStorageBuffer + currentFrame, offsets);
+    G_vkCmdBindVertexBuffers(currentCommandBuffer, 0, 1, allInOne.pShaderStorageBuffer + currentFrame);
     vkCmdBindDescriptorSets(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, allInOne.particlePipelineLayout, 0,\
     1, &allInOne.pParticleDescriptorSets[currentFrame], 0, NULL);
     vkCmdDraw(currentCommandBuffer, PARTICLE_COUNT, 1, 0, 0);
@@ -102,7 +102,7 @@ static void recordCommandBuffer2D(Uint32 imageIndex, Uint32 currentFrame)
 
     VkBufferMemoryBarrier bufferBarrierRelease = {};
     _setBufferMemoryBarrier(NULL, VK_ACCESS_SHADER_READ_BIT, 0, allInOne.queueFamilyIndices.graphicsFamily.familyIndice, allInOne.queueFamilyIndices.computeFamily.familyIndice\
-    , allInOne.pShaderStorageBuffer[currentFrame], 0, sizeof(Particle) * PARTICLE_COUNT, &bufferBarrierRelease);
+    , allInOne.pShaderStorageBuffer[currentFrame]->pBufferPool->buffer, allInOne.pShaderStorageBuffer[currentFrame]->startOffset, sizeof(Particle) * PARTICLE_COUNT, &bufferBarrierRelease);
     vkCmdPipelineBarrier(currentCommandBuffer, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, NULL, 1, &bufferBarrierRelease, 0, NULL);
 }
 static void recordCommandBufferShadow(Uint32 currentFrame)
@@ -271,7 +271,7 @@ static void recordComputeCommandBuffer(Uint32 currentFrame)
 
     VkBufferMemoryBarrier bufferMemoryBarrierGet = {};
     _setBufferMemoryBarrier(NULL, 0, VK_ACCESS_SHADER_READ_BIT, allInOne.queueFamilyIndices.graphicsFamily.familyIndice, allInOne.queueFamilyIndices.computeFamily.familyIndice\
-    , allInOne.pShaderStorageBuffer[(currentFrame + 1) % 2], 0, sizeof(Particle) * PARTICLE_COUNT, &bufferMemoryBarrierGet);
+    , allInOne.pShaderStorageBuffer[(currentFrame + 1) % 2]->pBufferPool->buffer, allInOne.pShaderStorageBuffer[(currentFrame + 1) % 2]->startOffset, sizeof(Particle) * PARTICLE_COUNT, &bufferMemoryBarrierGet);
     vkCmdPipelineBarrier(currentCommandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, NULL, 1, &bufferMemoryBarrierGet, 0, NULL);
 
     vkCmdBindPipeline(currentCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, allInOne.computePipeline);
@@ -282,7 +282,7 @@ static void recordComputeCommandBuffer(Uint32 currentFrame)
 
     VkBufferMemoryBarrier bufferMemoryBarrierRelease = {};
     _setBufferMemoryBarrier(NULL, VK_ACCESS_SHADER_WRITE_BIT, 0, allInOne.queueFamilyIndices.computeFamily.familyIndice, allInOne.queueFamilyIndices.graphicsFamily.familyIndice\
-    , allInOne.pShaderStorageBuffer[currentFrame], 0, sizeof(Particle) * PARTICLE_COUNT, &bufferMemoryBarrierRelease);
+    , allInOne.pShaderStorageBuffer[currentFrame]->pBufferPool->buffer, allInOne.pShaderStorageBuffer[currentFrame]->startOffset, sizeof(Particle) * PARTICLE_COUNT, &bufferMemoryBarrierRelease);
     vkCmdPipelineBarrier(currentCommandBuffer, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, NULL, 1, &bufferMemoryBarrierRelease, 0, NULL);
 }
 static void recordSSGICommandBuffer(Uint32 currentFrame, Uint32 width, Uint32 height)

@@ -107,7 +107,13 @@ VkResult initBufferQueueFamily(VkCommandPool commandPool, Uint32 srcQueueFamilyI
     else 
         return result;
 }
-VkResult copyBuffer(VkCommandBuffer commandBuffer, VkCommandPool commandPool, VkBuffer * pSrcBuffer, VkBuffer * pDstBuffer, VkDeviceSize size)
+static VkResult _setBufferCopyRegion(VkDeviceSize srcOffset, VkDeviceSize dstOffset, VkDeviceSize size, VkBufferCopy * pRegion)
+{
+    pRegion->srcOffset = srcOffset;
+    pRegion->dstOffset = dstOffset;
+    pRegion->size = size;
+}
+VkResult copyBuffer(VkCommandBuffer commandBuffer, VkCommandPool commandPool, VkBuffer srcBuffer, VkDeviceSize srcOffset, VkBuffer dstBuffer, VkDeviceSize dstOffset, VkDeviceSize size)
 {
     VkResult result = VK_SUCCESS;
 
@@ -116,20 +122,19 @@ VkResult copyBuffer(VkCommandBuffer commandBuffer, VkCommandPool commandPool, Vk
     {
         result |= beginSingleTimeCommands(commandPool, &singleTimeCommandBuffer);
     }
+    else
+    {
+        singleTimeCommandBuffer = commandBuffer;
+    }
 
     VkBufferCopy copyRegion = {};
-    copyRegion.srcOffset = 0;
-    copyRegion.dstOffset = 0;
-    copyRegion.size = size;
+    _setBufferCopyRegion(srcOffset, dstOffset, size, &copyRegion);
+
+    vkCmdCopyBuffer(singleTimeCommandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
 
     if (commandBuffer == NULL)
     {
-        vkCmdCopyBuffer(singleTimeCommandBuffer, *pSrcBuffer, *pDstBuffer, 1, &copyRegion);
         result |= endSingleTimeCommands(commandPool, getFirstQueueByCommandPool(commandPool), &singleTimeCommandBuffer);
-    }
-    else
-    {
-        vkCmdCopyBuffer(commandBuffer, *pSrcBuffer, *pDstBuffer, 1, &copyRegion);
     }
 
 
@@ -200,13 +205,13 @@ void _setImageMemoryBarrier(void * imgPNext, VkAccessFlags imgSrcAccessMask, VkA
 
 //     endSingleTimeCommands(commandPool, getFirstQueueByCommandPool(commandPool), &singleTimeCommandBuffer);
 // }
-void releaseBufferFromQueue(VkCommandPool commandPool, VkAccessFlags srcAccessMask, VkPipelineStageFlags srcStageFlags, Uint32 srcQueueFamilyIndice, Uint32 dstQueueFamilyIndice, VkBuffer buffer, VkDeviceSize bufferSize)
+void releaseBufferFromQueue(VkCommandPool commandPool, VkAccessFlags srcAccessMask, VkPipelineStageFlags srcStageFlags, Uint32 srcQueueFamilyIndice, Uint32 dstQueueFamilyIndice, VkBuffer buffer, VkDeviceSize offset, VkDeviceSize bufferSize)
 {
     VkCommandBuffer singleTimeCommandBuffer = NULL;
     beginSingleTimeCommands(commandPool, &singleTimeCommandBuffer);
 
     VkBufferMemoryBarrier bufferMemoryBarrierRelease = {};
-    _setBufferMemoryBarrier(NULL, srcAccessMask, 0, srcQueueFamilyIndice, dstQueueFamilyIndice , buffer, 0, bufferSize, &bufferMemoryBarrierRelease);
+    _setBufferMemoryBarrier(NULL, srcAccessMask, 0, srcQueueFamilyIndice, dstQueueFamilyIndice , buffer, offset, bufferSize, &bufferMemoryBarrierRelease);
     vkCmdPipelineBarrier(singleTimeCommandBuffer, srcStageFlags, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, NULL, 1, &bufferMemoryBarrierRelease, 0, NULL);
 
     endSingleTimeCommands(commandPool, getFirstQueueByCommandPool(commandPool), &singleTimeCommandBuffer);
