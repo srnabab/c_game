@@ -348,6 +348,14 @@ void initVulkan(void)
     createShadowSampler(&allInOne.shadowSampler);
     CO_addSampler(allInOne.shadowSampler);// CO
 
+    allInOne.vertexStagingBufferPool = createBufferPool(VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex332_) * 2 + 30000 * sizeof(Vertex3323) * 2, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
+    allInOne.vertexBufferPool = createBufferPool(5 * sizeof(Vertex23_), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, false);
+    allInOne.indexStagingBufferPool = createBufferPool(45000 * sizeof(Uint32) * 2, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
+    allInOne.indexBufferPool = createBufferPool(INDEX_COUNT_IN_BUFFER_2D * sizeof(Uint16), VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, false);
+    allInOne.uniformStagingBufferPool = createBufferPool(sizeof(UniformBufferObject) * 2 * 3 + sizeof(ComputeUniformBufferObject) * 2 + sizeof(SSGIUniformBufferObject) * 2 + sizeof(DirectionLight) * 2 + sizeof(LightSpace) * 2\
+    , VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
+    allInOne.storageBufferPool = createBufferPool(PARTICLE_COUNT * sizeof(Particle) * 2, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, false);
+
     Vertex23_ shapeVertex[5] =
     {
         {{-0.5f, -0.5f}, {1.0f, 1.0f, 0.0f}}, // 0: 左下
@@ -356,8 +364,10 @@ void initVulkan(void)
         {{-0.5f,  0.5f}, {0.0f, 1.0f, 1.0f}}, // 3: 左上
         {{-0.5f, -0.5f}, {0.0f, 0.0f, 0.0f}}  // 4: 回到左下 (闭合)
     };
-    createVertexBuffer(&allInOne.tempBuffer, &allInOne.tempBufferMemory, NULL, shapeVertex, 5 * sizeof(Vertex23_), false);
-    CO_addBuffer(false, allInOne.tempBuffer, allInOne.tempBufferMemory, NULL);
+    allInOne.tempBuffer = allocateBuffer(5 * sizeof(Vertex23_), &allInOne.vertexBufferPool);
+    initVertexBuffer(allInOne.tempBuffer, shapeVertex, 5 * sizeof(Vertex23_));
+    // createVertexBuffer(&allInOne.tempBuffer, &allInOne.tempBufferMemory, NULL, shapeVertex, 5 * sizeof(Vertex23_), false);
+    // CO_addBuffer(false, allInOne.tempBuffer, allInOne.tempBufferMemory, NULL);
 
     // Vertex33_ tileMapVertex[VERTEX_COUNT_IN_UNIT_2D * MAX_TILES_IN_GROUP] = {};
     // initVertices33(BOTTOM_WIDTH, BOTTOM_HEIGHT, 50, 50, 0.1f, tileMapVertex);
@@ -374,13 +384,6 @@ void initVulkan(void)
     // CO_addBuffer(false, allInOne.tilemapVertexBuffer[0], allInOne.pTilemapVertexBufferMem[0], NULL);
     // createVertexBuffer(allInOne.tilemapVertexBuffer + 1, allInOne.pTilemapVertexBufferMem + 1, NULL, NULL, (MAX_TILES_IN_GROUP * MAX_MAP_GROUP * VERTEX_COUNT_IN_UNIT_2D), false);
     // CO_addBuffer(false, allInOne.tilemapVertexBuffer[1], allInOne.pTilemapVertexBufferMem[1], NULL);
-
-    allInOne.vertexStagingBufferPool = createBufferPool(VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex332_) * 2 + 30000 * sizeof(Vertex3323) * 2, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
-    allInOne.indexStagingBufferPool = createBufferPool(45000 * sizeof(Uint32) * 2, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
-    allInOne.uniformStagingBufferPool = createBufferPool(sizeof(UniformBufferObject) * 2 * 3 + sizeof(ComputeUniformBufferObject) * 2 + sizeof(SSGIUniformBufferObject) * 2 + sizeof(DirectionLight) * 2 + sizeof(LightSpace) * 2\
-    , VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
-    allInOne.storageBufferPool = createBufferPool(PARTICLE_COUNT * sizeof(Particle) * 2, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, false);
-
     allInOne.pVertices2D = (Vertex332_*)G_calloc(VERTEX_COUNT_IN_BUFFER_2D, sizeof(Vertex332_));
     allInOne.maxVertices2DCount = VERTEX_COUNT_IN_BUFFER_2D;
     allInOne.vertexBuffer2D[0] = allocateBuffer(VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex332_), &allInOne.vertexStagingBufferPool);
@@ -702,7 +705,9 @@ void cleanVulkan(void)
 
     destroyStaticModelPool(&staticModelPool);
     destroyBufferPool(&allInOne.vertexStagingBufferPool);
+    destroyBufferPool(&allInOne.vertexBufferPool);
     destroyBufferPool(&allInOne.indexStagingBufferPool);
+    destroyBufferPool(&allInOne.indexBufferPool);
     destroyBufferPool(&allInOne.uniformStagingBufferPool);
     destroyBufferPool(&allInOne.storageBufferPool);
     G_free(allInOne.pVertices2D);

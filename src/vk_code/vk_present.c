@@ -73,7 +73,7 @@ static void recordCommandBuffer2D(Uint32 imageIndex, Uint32 currentFrame)
     vkCmdBindPipeline(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, allInOne.shapePipeline);
     vkCmdBindDescriptorSets(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, allInOne.shapePipelineLayout, 0, 1, allInOne.pShapeDescriptorSets + currentFrame, 0, NULL);
     vkCmdPushConstants(currentCommandBuffer, allInOne.shapePipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ShapeConstants), allInOne.pShapeConstants);
-    vkCmdBindVertexBuffers(currentCommandBuffer, 0, 1, &allInOne.tempBuffer, offsets);
+    G_vkCmdBindVertexBuffers (currentCommandBuffer, 0, 1, &allInOne.tempBuffer);
     vkCmdDraw(currentCommandBuffer, 5, 1, 0, 0);
 
     vkCmdBindPipeline(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, allInOne.graphicPipeline);

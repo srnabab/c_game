@@ -114,7 +114,9 @@ struct _VK_ALL
     // VkDeviceMemory pTimeMapTexCoordBufferMem[MAX_FRAMES_IN_FLIGHT];
     // void* pTimeMapTexCoordBufferMapped[MAX_FRAMES_IN_FLIGHT];
     G_BufferPool vertexStagingBufferPool;
+    G_BufferPool vertexBufferPool;
     G_BufferPool indexStagingBufferPool;
+    G_BufferPool indexBufferPool;
     G_BufferPool uniformStagingBufferPool;
     G_BufferPool storageBufferPool;
 
@@ -122,8 +124,8 @@ struct _VK_ALL
     Vertex332_ * pTilemapVertices;
     VkDeviceMemory pTilemapVertexBufferMem[MAX_FRAMES_IN_FLIGHT];
 
-    VkBuffer tempBuffer;
-    VkDeviceMemory tempBufferMemory;
+    G_Buffer * tempBuffer;
+    // VkDeviceMemory tempBufferMemory;
 
     // VkBuffer vertexBuffer2D[MAX_FRAMES_IN_FLIGHT];
     G_Buffer * vertexBuffer2D[MAX_FRAMES_IN_FLIGHT];

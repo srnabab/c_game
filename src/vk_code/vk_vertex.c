@@ -5,37 +5,54 @@
 
 extern VK_ALL allInOne;
 
-void createVertexBuffer(VkBuffer * pVertexBuffer, VkDeviceMemory * pVertexBufferMemory, void ** ppVertexBufferMemMapped, void * data, Uint32 bufferSize, bool staging)
-{
-    if (staging)
-    {
-        resultVulkan(createBuffer(pVertexBuffer, pVertexBufferMemory, bufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), 0);
+// void createVertexBuffer(VkBuffer * pVertexBuffer, VkDeviceMemory * pVertexBufferMemory, void ** ppVertexBufferMemMapped, void * data, Uint32 bufferSize, bool staging)
+// {
+//     if (staging)
+//     {
+//         resultVulkan(createBuffer(pVertexBuffer, pVertexBufferMemory, bufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), 0);
         
-        vkMapMemory(allInOne.device, *pVertexBufferMemory, 0, bufferSize, 0, ppVertexBufferMemMapped);
-        memset(*ppVertexBufferMemMapped, 0, (size_t)bufferSize);
-    }
-    else
-    {
-        resultVulkan(createBuffer(pVertexBuffer, pVertexBufferMemory, bufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT), 0);
+//         vkMapMemory(allInOne.device, *pVertexBufferMemory, 0, bufferSize, 0, ppVertexBufferMemMapped);
+//         memset(*ppVertexBufferMemMapped, 0, (size_t)bufferSize);
+//     }
+//     else
+//     {
+//         resultVulkan(createBuffer(pVertexBuffer, pVertexBufferMemory, bufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT), 0);
 
-        if (data)
-        {
-            VkBuffer stagingBuffer;
-            VkDeviceMemory stagingBufferMemory;
+//         if (data)
+//         {
+//             VkBuffer stagingBuffer;
+//             VkDeviceMemory stagingBufferMemory;
 
-            resultVulkan(createBuffer(&stagingBuffer, &stagingBufferMemory, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), 0);
+//             resultVulkan(createBuffer(&stagingBuffer, &stagingBufferMemory, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), 0);
 
-            void * tempData;
-            vkMapMemory(allInOne.device, stagingBufferMemory, 0, bufferSize, 0, &tempData);
-            memcpy(tempData, data, bufferSize);
-            vkUnmapMemory(allInOne.device, stagingBufferMemory);
+//             void * tempData;
+//             vkMapMemory(allInOne.device, stagingBufferMemory, 0, bufferSize, 0, &tempData);
+//             memcpy(tempData, data, bufferSize);
+//             vkUnmapMemory(allInOne.device, stagingBufferMemory);
 
-            copyBuffer(NULL, allInOne.graphicCommandPool, stagingBuffer, 0, *pVertexBuffer, 0, bufferSize);
+//             copyBuffer(NULL, allInOne.graphicCommandPool, stagingBuffer, 0, *pVertexBuffer, 0, bufferSize);
 
-            vkDestroyBuffer(allInOne.device, stagingBuffer, allInOne.pAllocationCallbacks);
-            vkFreeMemory(allInOne.device, stagingBufferMemory, allInOne.pAllocationCallbacks);
-        }
-    }
+//             vkDestroyBuffer(allInOne.device, stagingBuffer, allInOne.pAllocationCallbacks);
+//             vkFreeMemory(allInOne.device, stagingBufferMemory, allInOne.pAllocationCallbacks);
+//         }
+//     }
+// }
+void initVertexBuffer(G_Buffer * pBuffer, void * data, Uint32 bufferSize)
+{
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+
+    resultVulkan(createBuffer(&stagingBuffer, &stagingBufferMemory, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), 0);
+
+    void * tempData;
+    vkMapMemory(allInOne.device, stagingBufferMemory, 0, bufferSize, 0, &tempData);
+    memcpy(tempData, data, bufferSize);
+    vkUnmapMemory(allInOne.device, stagingBufferMemory);
+
+    copyBuffer(NULL, allInOne.graphicCommandPool, stagingBuffer, 0, pBuffer->pBufferPool->buffer, pBuffer->startOffset, bufferSize);
+
+    vkDestroyBuffer(allInOne.device, stagingBuffer, allInOne.pAllocationCallbacks);
+    vkFreeMemory(allInOne.device, stagingBufferMemory, allInOne.pAllocationCallbacks);
 }
 void initVertices33(Uint32 width, Uint32 height, Uint32 row, Uint32 column, float depth, Vertex33_ * pVertices)
 {
