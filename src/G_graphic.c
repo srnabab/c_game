@@ -271,6 +271,11 @@ void initVulkan(void)
     createCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, allInOne.queueFamilyIndices.transferFamily.familyIndice, &allInOne.transferCommandPool);
     CO_addCommandPool(allInOne.transferCommandPool);// CO
 
+    createCommandBuffers(VK_COMMAND_BUFFER_LEVEL_PRIMARY, allInOne.graphicCommandPool, allInOne.pGraphicCommandBuffer, 2);
+    createCommandBuffers(VK_COMMAND_BUFFER_LEVEL_PRIMARY, allInOne.presentCommandPool, allInOne.pPresentCommandBuffer, 2);
+    createCommandBuffers(VK_COMMAND_BUFFER_LEVEL_PRIMARY, allInOne.computeCommandPool, allInOne.pComputeCommandBuffer, 2);
+    createCommandBuffers(VK_COMMAND_BUFFER_LEVEL_PRIMARY, allInOne.transferCommandPool, allInOne.pTransferCommandBuffer, 2);
+
     getSurfaceFormats(allInOne.surface3D, &allInOne.surface3DFormat);
     getPresentModes(&allInOne.presentMode3D);
     getSurfaceCapabilities(allInOne.surface3D, &allInOne.surface3DCapabilities);
@@ -510,11 +515,6 @@ void initVulkan(void)
     addComputePipeline(SSGIShaderStageCreateInfo, allInOne.SSGIPipelineLayout, NULL, 0, &allInOne.SSGIPipeline);
 
     executeCreateComputePipelines(NULL);
-
-    createCommandbufferByBuffering(VK_COMMAND_BUFFER_LEVEL_PRIMARY, allInOne.graphicCommandPool, &allInOne.pGraphicCommandBuffer);
-    createCommandbufferByBuffering(VK_COMMAND_BUFFER_LEVEL_PRIMARY, allInOne.presentCommandPool, &allInOne.pPresentCommandBuffer);
-    createCommandbufferByBuffering(VK_COMMAND_BUFFER_LEVEL_PRIMARY, allInOne.computeCommandPool, &allInOne.pComputeCommandBuffer);
-    createCommandbufferByBuffering(VK_COMMAND_BUFFER_LEVEL_PRIMARY, allInOne.transferCommandPool, &allInOne.pTransferCommandBuffer);
 
     createTimelineSemaphoreByBuffering(&allInOne.pTimelineSemaphore2d);
     CO_addSemaphore(allInOne.pTimelineSemaphore2d[0]);// CO
