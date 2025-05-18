@@ -365,7 +365,7 @@ void initVulkan(void)
         {{-0.5f, -0.5f}, {0.0f, 0.0f, 0.0f}}  // 4: 回到左下 (闭合)
     };
     allInOne.tempBuffer = allocateBuffer(5 * sizeof(Vertex23_), &allInOne.vertexBufferPool);
-    initVertexBuffer(allInOne.tempBuffer, shapeVertex, 5 * sizeof(Vertex23_));
+    initBufferData(allInOne.tempBuffer, shapeVertex, 5 * sizeof(Vertex23_));
     // createVertexBuffer(&allInOne.tempBuffer, &allInOne.tempBufferMemory, NULL, shapeVertex, 5 * sizeof(Vertex23_), false);
     // CO_addBuffer(false, allInOne.tempBuffer, allInOne.tempBufferMemory, NULL);
 
@@ -389,13 +389,15 @@ void initVulkan(void)
     allInOne.vertexBuffer2D[0] = allocateBuffer(VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex332_), &allInOne.vertexStagingBufferPool);
     allInOne.vertexBuffer2D[1] = allocateBuffer(VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex332_), &allInOne.vertexStagingBufferPool);
 
-    allInOne.pIndices2D = (Uint16 *)G_calloc(INDEX_COUNT_IN_BUFFER_2D, sizeof(Uint16));
-    indexInitialize(allInOne.pIndices2D, MAX_UNIT_COUNT_2D);
+    Uint16 * indices2D = (Uint16 *)G_calloc(INDEX_COUNT_IN_BUFFER_2D, sizeof(Uint16));
+    indexInitialize(indices2D, MAX_UNIT_COUNT_2D);
 
-    createIndexBuffer(&allInOne.indexBuffer2D, &allInOne.indexBuffer2DMem, NULL, allInOne.pIndices2D, INDEX_COUNT_IN_BUFFER_2D, sizeof(Uint16), false);
-    CO_addBuffer(false, allInOne.indexBuffer2D, allInOne.indexBuffer2DMem, NULL);// CO
+    allInOne.indexBuffer2D = allocateBuffer(INDEX_COUNT_IN_BUFFER_2D * sizeof(Uint16), &allInOne.indexBufferPool);
+    initBufferData(allInOne.indexBuffer2D, indices2D, INDEX_COUNT_IN_BUFFER_2D * sizeof(Uint16));
+    // createIndexBuffer(&allInOne.indexBuffer2D, &allInOne.indexBuffer2DMem, NULL, allInOne.pIndices2D, INDEX_COUNT_IN_BUFFER_2D, sizeof(Uint16), false);
+    // CO_addBuffer(false, allInOne.indexBuffer2D, allInOne.indexBuffer2DMem, NULL);// CO
 
-    G_free(allInOne.pIndices2D);
+    G_free(indices2D);
 
     allInOne.pVertices3D = (Vertex3323*)G_calloc(30000, sizeof(Vertex3323));
 

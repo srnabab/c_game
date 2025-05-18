@@ -68,8 +68,6 @@ static void recordCommandBuffer2D(Uint32 imageIndex, Uint32 currentFrame)
 
     vkCmdBeginRenderPass(currentCommandBuffer, &renderBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-    VkDeviceSize offsets[] = {0};
-
     vkCmdBindPipeline(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, allInOne.shapePipeline);
     vkCmdBindDescriptorSets(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, allInOne.shapePipelineLayout, 0, 1, allInOne.pShapeDescriptorSets + currentFrame, 0, NULL);
     vkCmdPushConstants(currentCommandBuffer, allInOne.shapePipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ShapeConstants), allInOne.pShapeConstants);
@@ -82,7 +80,7 @@ static void recordCommandBuffer2D(Uint32 imageIndex, Uint32 currentFrame)
     // VkDeviceSize vertexOffsets1[] = {0, allInOne.maxVerticesCount * sizeof(vec3), allInOne.maxVerticesCount * sizeof(vec3) + allInOne.maxVerticesCount * sizeof(vec3)};
     G_vkCmdBindVertexBuffers(currentCommandBuffer, 0, 1, vertexBuffer);
     // vkCmdBindVertexBuffers(currentCommandBuffer, 0, 1, vertexBuffer, offsets);
-    vkCmdBindIndexBuffer(currentCommandBuffer, allInOne.indexBuffer2D, 0, VK_INDEX_TYPE_UINT16);
+    G_vkCmdBindIndexBuffer(currentCommandBuffer, allInOne.indexBuffer2D, VK_INDEX_TYPE_UINT16);
     //loading1 png
     drawPic(TEXTURE_LOADING, currentFrame, currentCommandBuffer, allInOne.graphicPipelineLayout);
     //circle

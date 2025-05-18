@@ -2,6 +2,7 @@
 #include "vk_code_h/vk_drawTool.h"
 #include "vk_code_h/vk_buffer.h"
 #include "vk_code_h/vk_all_struct.h"
+#include "vk_code_h/vk_judge.h"
 
 extern VK_ALL allInOne;
 
@@ -230,4 +231,21 @@ void destroyBuffer(VkBuffer Buffer, VkDeviceMemory BufferMem)
     vkUnmapMemory(allInOne.device, BufferMem);
     vkDestroyBuffer(allInOne.device, Buffer, allInOne.pAllocationCallbacks);
     vkFreeMemory(allInOne.device, BufferMem, allInOne.pAllocationCallbacks);
+}
+void initBufferData(G_Buffer * pBuffer, void * data, Uint32 bufferSize)
+{
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+
+    resultVulkan(createBuffer(&stagingBuffer, &stagingBufferMemory, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), 0);
+
+    void * tempData;
+    vkMapMemory(allInOne.device, stagingBufferMemory, 0, bufferSize, 0, &tempData);
+    memcpy(tempData, data, bufferSize);
+    vkUnmapMemory(allInOne.device, stagingBufferMemory);
+
+    copyBuffer(NULL, allInOne.graphicCommandPool, stagingBuffer, 0, pBuffer->pBufferPool->buffer, pBuffer->startOffset, bufferSize);
+
+    vkDestroyBuffer(allInOne.device, stagingBuffer, allInOne.pAllocationCallbacks);
+    vkFreeMemory(allInOne.device, stagingBufferMemory, allInOne.pAllocationCallbacks);
 }

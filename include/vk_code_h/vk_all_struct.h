@@ -135,10 +135,9 @@ struct _VK_ALL
     // VkDeviceMemory pVertexBuffer2DMem[MAX_FRAMES_IN_FLIGHT];
     // void* pVertexBuffer2DMemMapped[MAX_FRAMES_IN_FLIGHT];
 
-    VkBuffer indexBuffer2D;
-    Uint16 * pIndices2D;
-    Uint32 indices2DCount;
-    VkDeviceMemory indexBuffer2DMem;
+    G_Buffer* indexBuffer2D;
+    // Uint16 * pIndices2D;
+    // VkDeviceMemory indexBuffer2DMem;
 
     G_Buffer * vertexBuffer3D[MAX_FRAMES_IN_FLIGHT];
     Uint32 maxVertices3DCount;

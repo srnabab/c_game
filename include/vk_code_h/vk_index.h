@@ -6,8 +6,6 @@
 
 #include "SDL3/SDL_begin_code.h"
 
-extern void createIndexBuffer(VkBuffer * pIndexBuffer, VkDeviceMemory * pIndexBufferMemory, void ** pIndexBufferMemMapped, void * indices, Uint32 indicesCount, size_t indexSize, bool staging);
-
 #include "SDL3/SDL_close_code.h"
 
 #endif

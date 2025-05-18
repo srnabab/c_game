@@ -37,23 +37,6 @@ extern VK_ALL allInOne;
 //         }
 //     }
 // }
-void initVertexBuffer(G_Buffer * pBuffer, void * data, Uint32 bufferSize)
-{
-    VkBuffer stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
-
-    resultVulkan(createBuffer(&stagingBuffer, &stagingBufferMemory, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), 0);
-
-    void * tempData;
-    vkMapMemory(allInOne.device, stagingBufferMemory, 0, bufferSize, 0, &tempData);
-    memcpy(tempData, data, bufferSize);
-    vkUnmapMemory(allInOne.device, stagingBufferMemory);
-
-    copyBuffer(NULL, allInOne.graphicCommandPool, stagingBuffer, 0, pBuffer->pBufferPool->buffer, pBuffer->startOffset, bufferSize);
-
-    vkDestroyBuffer(allInOne.device, stagingBuffer, allInOne.pAllocationCallbacks);
-    vkFreeMemory(allInOne.device, stagingBufferMemory, allInOne.pAllocationCallbacks);
-}
 void initVertices33(Uint32 width, Uint32 height, Uint32 row, Uint32 column, float depth, Vertex33_ * pVertices)
 {
     float tileWidth = (width / column) / (float)(height / 2);

@@ -1,5 +1,6 @@
 #include "SDL3/SDL_stdinc.h"
 #include "vulkan/vulkan.h"
+#include "G_buffer.h"
 
 #ifndef VK_VERTEXBUFFER_H
 #define VK_VERTEXBUFFER_H 1
@@ -10,6 +11,7 @@ extern VkResult SDLCALL createBuffer(VkBuffer * pBuffer, VkDeviceMemory * pBuffe
 extern VkResult SDLCALL beginSingleTimeCommands(VkCommandPool commandPool, VkCommandBuffer * pCommandBuffer);
 extern VkResult SDLCALL endSingleTimeCommands(VkCommandPool commandPool, VkQueue queue, VkCommandBuffer * pCommandBuffer);
 extern VkResult SDLCALL initBufferQueueFamily(VkCommandPool commandPool, Uint32 srcQueueFamilyIndice, Uint32 dstQueueFamilyIndice, VkBuffer buffer, VkDeviceSize bufferSize);
+extern void SDLCALL initBufferData(G_Buffer * pBuffer, void * data, Uint32 bufferSize);
 extern VkResult SDLCALL copyBuffer(VkCommandBuffer commandBuffer, VkCommandPool commandPool, VkBuffer srcBuffer, VkDeviceSize srcOffset, VkBuffer dstBuffer, VkDeviceSize dstOffset, VkDeviceSize size);
 extern void SDLCALL releaseBufferFromQueue(VkCommandPool commandPool, VkAccessFlags srcAccessMask, VkPipelineStageFlags srcStageFlags, Uint32 srcQueueFamilyIndice, Uint32 dstQueueFamilyIndice, VkBuffer buffer, VkDeviceSize offset, VkDeviceSize bufferSize);
 extern void SDLCALL _setMemoryBarrier(void * memPNext, VkAccessFlags memSrcAccessMask, VkAccessFlags memDstAccessMask, VkMemoryBarrier * pMemoryBarrier);
