@@ -131,8 +131,8 @@ static void recordCommandBufferShadow(Uint32 currentFrame)
 
     vkCmdBindPipeline(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, allInOne.shadowPipeline);
 
-    VkBuffer vertex3DBuffer[] = {allInOne.vertexBuffer3D[currentFrame]->pBufferPool->buffer, allInOne.pStaticModelPool->instanceBuffer[0], allInOne.pStaticModelPool->instanceBuffer[0]};
-    VkDeviceSize offsets[] = {allInOne.vertexBuffer3D[currentFrame]->startOffset, 0, allInOne.pStaticModelPool->totalInstanceCount * sizeof(mat4)};
+    VkBuffer vertex3DBuffer[] = {allInOne.vertexBuffer3D[currentFrame]->pBufferPool->buffer, allInOne.pStaticModelPool->instanceBuffer->pBufferPool->buffer, allInOne.pStaticModelPool->instanceBuffer->pBufferPool->buffer};
+    VkDeviceSize offsets[] = {allInOne.vertexBuffer3D[currentFrame]->startOffset, allInOne.pStaticModelPool->instanceBuffer->startOffset, allInOne.pStaticModelPool->instanceBuffer->startOffset + allInOne.pStaticModelPool->totalInstanceCount * sizeof(mat4)};
     vkCmdBindVertexBuffers(currentCommandBuffer, 0, 3, vertex3DBuffer, offsets);
 
     G_vkCmdBindIndexBuffer(currentCommandBuffer, allInOne.indexBuffer3D[currentFrame], VK_INDEX_TYPE_UINT32);
@@ -243,8 +243,8 @@ static void recordCommandBuffer_3D(Uint32 currentFrame)
     vkCmdBeginRenderPass(currentCommandBuffer, &renderBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
 
-    VkBuffer vertex3DBuffer[] = {allInOne.vertexBuffer3D[currentFrame]->pBufferPool->buffer, allInOne.pStaticModelPool->instanceBuffer[0], allInOne.pStaticModelPool->instanceBuffer[0]};
-    VkDeviceSize offsets[] = {allInOne.vertexBuffer3D[currentFrame]->startOffset, 0, allInOne.pStaticModelPool->totalInstanceCount * sizeof(mat4)};
+    VkBuffer vertex3DBuffer[] = {allInOne.vertexBuffer3D[currentFrame]->pBufferPool->buffer, allInOne.pStaticModelPool->instanceBuffer->pBufferPool->buffer, allInOne.pStaticModelPool->instanceBuffer->pBufferPool->buffer};
+    VkDeviceSize offsets[] = {allInOne.vertexBuffer3D[currentFrame]->startOffset, allInOne.pStaticModelPool->instanceBuffer->startOffset, allInOne.pStaticModelPool->instanceBuffer->startOffset + allInOne.pStaticModelPool->totalInstanceCount * sizeof(mat4)};
     vkCmdBindVertexBuffers(currentCommandBuffer, 0, 3, vertex3DBuffer, offsets);
 
     G_vkCmdBindIndexBuffer(currentCommandBuffer, allInOne.indexBuffer3D[currentFrame], VK_INDEX_TYPE_UINT32);

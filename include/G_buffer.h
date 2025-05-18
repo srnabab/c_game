@@ -36,7 +36,8 @@ extern G_BufferPool SDLCALL createBufferPool(VkDeviceSize size, VkBufferUsageFla
 extern void SDLCALL destroyBufferPool(G_BufferPool * pBufferPool);
 extern G_Buffer * SDLCALL allocateBuffer(Uint32 bufferSize, G_BufferPool * pBufferPool);
 extern void SDLCALL freeBuffer(G_Buffer * pBuffer);
-extern void SDLCALL bufferMemcpy(G_Buffer * pBuffer, void * src, size_t len);
+extern void SDLCALL bufferMemcpy(G_Buffer * pBuffer, VkDeviceSize offset, void * src, size_t len);
+extern void SDLCALL bufferMemmove(G_Buffer * pBuffer, VkDeviceSize srcOffset, VkDeviceSize dstOffset, size_t len);
 
 #include "SDL3/SDL_close_code.h"
 

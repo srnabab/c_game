@@ -276,7 +276,7 @@ int update(void * arg)
         currentFrame = allInOne.currentFrame;
         // particle 
         allInOne.pComputeUbo->deltaTime = delta_time;
-        bufferMemcpy(allInOne.pComputeUniformBuffer[currentFrame], allInOne.pComputeUbo, sizeof(ComputeUniformBufferObject));
+        bufferMemcpy(allInOne.pComputeUniformBuffer[currentFrame], 0, allInOne.pComputeUbo, sizeof(ComputeUniformBufferObject));
         // memcpy(allInOne.ppComputeUniformBufferMapped[currentFrame], allInOne.pComputeUbo, sizeof(ComputeUniformBufferObject));
         SDL_SignalSemaphore(allSync.vertexSemaphore);
 
@@ -304,7 +304,7 @@ int update(void * arg)
         glm_mul(lightProj, allInOne.pLightSpaceUbo->lightSpace, allInOne.pLightSpaceUbo->lightSpace);
 
 
-        bufferMemcpy(allInOne.pLightSpaceUniformBuffer[currentFrame], allInOne.pLightSpaceUbo , sizeof(LightSpace));
+        bufferMemcpy(allInOne.pLightSpaceUniformBuffer[currentFrame], 0, allInOne.pLightSpaceUbo , sizeof(LightSpace));
         // memcpy(allInOne.ppLightSpaceUniformBufferMapped[currentFrame], allInOne.pLightSpaceUbo , sizeof(LightSpace));
         SDL_SignalSemaphore(allSync.vertexSemaphore);
 
@@ -321,9 +321,9 @@ int update(void * arg)
 
         glm_mat4_copy(allInOne.pLightSpaceUbo->lightSpace, allInOne.pSunubo->lightSpace);
 
-        bufferMemcpy(allInOne.pSunUniformBuffer[currentFrame], allInOne.pSunubo, sizeof(DirectionLight));
+        bufferMemcpy(allInOne.pSunUniformBuffer[currentFrame], 0, allInOne.pSunubo, sizeof(DirectionLight));
         // memcpy(allInOne.ppSunUniformBufferMapped[currentFrame], allInOne.pSunubo, sizeof(DirectionLight));
-        bufferMemcpy(allInOne.pGraphic3DUniformBuffer[currentFrame], pGraphic3DUbo, sizeof(UniformBufferObject));
+        bufferMemcpy(allInOne.pGraphic3DUniformBuffer[currentFrame], 0, pGraphic3DUbo, sizeof(UniformBufferObject));
         // memcpy(allInOne.ppGraphic3DUniformBufferMapped[currentFrame], pGraphic3DUbo, sizeof(UniformBufferObject));
         SDL_SignalSemaphore(allSync.vertexSemaphore);
 
@@ -340,7 +340,7 @@ int update(void * arg)
         allInOne.pSSGIubo->maxRaySteps = 64;
         allInOne.pSSGIubo->ssgiStrength = 0.1f;
 
-        bufferMemcpy(allInOne.pSSGIUniformBuffer[currentFrame], allInOne.pSSGIubo, sizeof(SSGIUniformBufferObject));
+        bufferMemcpy(allInOne.pSSGIUniformBuffer[currentFrame], 0, allInOne.pSSGIubo, sizeof(SSGIUniformBufferObject));
         // memcpy(allInOne.ppSSGIUniformBufferMapped[currentFrame], allInOne.pSSGIubo, sizeof(SSGIUniformBufferObject));
         SDL_SignalSemaphore(allSync.vertexSemaphore);
 
@@ -356,9 +356,9 @@ int update(void * arg)
         glm_ortho_vulkan(-aspect, aspect, -aspect2, aspect2, -0.001f, -100.0f, pUIUbo->proj);
 
         memcpy(allInOne.pShapeConstants, &shapePushConstants, sizeof(ShapeConstants));
-        bufferMemcpy(allInOne.pGraphicUniformBuffer[currentFrame], pGraphicUbo, sizeof(UniformBufferObject));
+        bufferMemcpy(allInOne.pGraphicUniformBuffer[currentFrame], 0, pGraphicUbo, sizeof(UniformBufferObject));
         // memcpy(allInOne.ppGraphicUniformBufferMapped[currentFrame], pGraphicUbo, sizeof(UniformBufferObject));
-        bufferMemcpy(allInOne.pUIUniformBuffer[currentFrame], pUIUbo, sizeof(UniformBufferObject));
+        bufferMemcpy(allInOne.pUIUniformBuffer[currentFrame], 0, pUIUbo, sizeof(UniformBufferObject));
         // memcpy(allInOne.ppUIUniformBufferMapped[currentFrame], pUIUbo, sizeof(UniformBufferObject));
         SDL_SignalSemaphore(allSync.vertexSemaphore);
 
@@ -438,9 +438,7 @@ int update(void * arg)
             shapePushConstants.pos[0] = (float)tileCenter.x / (600 / 2);
             shapePushConstants.pos[1] = (float)tileCenter.y / (600 / 2);
             shapePushConstants.scale[0] = (float)18 / (600 / 2);
-            // shapePushConstants.scale[0] = 0.1f;
             shapePushConstants.scale[1] = (float)18 / (600 / 2);
-            // shapePushConstants.scale[1] = 0.1f;
 
             // print("mPoint: (%d, %d)", (int32_t)mPoint.position.x, (int32_t)mPoint.position.y);
             // SDL_LockMutex(sdl_mutex_2);
@@ -506,9 +504,9 @@ int update(void * arg)
             //print("time: %.2f\n", time);
             SDL_LockMutex(allSync.updateMutex);
 
-            bufferMemcpy(allInOne.vertexBuffer2D[currentFrame], allInOne.pVertices2D, vertexEnd * sizeof(Vertex332_));
-            bufferMemcpy(allInOne.vertexBuffer3D[currentFrame], allInOne.pVertices3D, 30000 * sizeof(Vertex3323));
-            bufferMemcpy(allInOne.indexBuffer3D[currentFrame], allInOne.pIndices3D, 45000 * sizeof(Uint32));
+            bufferMemcpy(allInOne.vertexBuffer2D[currentFrame], 0, allInOne.pVertices2D, vertexEnd * sizeof(Vertex332_));
+            bufferMemcpy(allInOne.vertexBuffer3D[currentFrame], 0, allInOne.pVertices3D, 30000 * sizeof(Vertex3323));
+            bufferMemcpy(allInOne.indexBuffer3D[currentFrame], 0, allInOne.pIndices3D, 45000 * sizeof(Uint32));
             // memcpy(allInOne.pIndexBuffer3DMemMapped[currentFrame], allInOne.pIndices3D, 45000 * sizeof(Uint32));
             // SDL_SignalSemaphore(allSync.vertexSemaphore);
 

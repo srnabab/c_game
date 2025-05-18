@@ -10,16 +10,17 @@
 
 extern VK_ALL allInOne;
 
-bool createStaticModelPool(G_StaticModelPool * pModelPool, Uint32 totalInstancecount)
+bool createStaticModelPool(G_StaticModelPool * pModelPool, G_BufferPool * pBufferPool, Uint32 totalInstancecount)
 {
     VkDeviceSize bufferSize = sizeof(mat4) * totalInstancecount * 2;
 
     // *pModelPool = (G_StaticModelPool)G_malloc(sizeof(G_StaticModelPool_T));
 
     // model matrix buffer and inverse transpose matrix buffer
-    createBuffer(pModelPool->instanceBuffer + 0, pModelPool->instanceBufferMem + 0, bufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    vkMapMemory(allInOne.device, pModelPool->instanceBufferMem[0], 0, bufferSize, 0, pModelPool->instanceBufferMemMapped + 0);
-    memset(pModelPool->instanceBufferMemMapped[0], 0, bufferSize);
+    pModelPool->instanceBuffer = allocateBuffer(bufferSize, pBufferPool);
+    // createBuffer(pModelPool->instanceBuffer + 0, pModelPool->instanceBufferMem + 0, bufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    // vkMapMemory(allInOne.device, pModelPool->instanceBufferMem[0], 0, bufferSize, 0, pModelPool->instanceBufferMemMapped + 0);
+    // memset(pModelPool->instanceBufferMemMapped[0], 0, bufferSize);
 
     pModelPool->totalInstanceCount = totalInstancecount;
     pModelPool->usedInstanceCount = 0;
@@ -91,6 +92,7 @@ G_StaticModel * loadStaticModel(G_StaticModelPool * pModelPool, Uint32 instanceC
     pModelPool->models[modelCount].firstInstance = pModelPool->offsets[offsetCount - 1];
     pModelPool->models[modelCount].matrix = (mat4*)G_malloc(sizeof(mat4) * instanceCount * 2);
     pModelPool->models[modelCount].matrixCount = 0;
+    pModelPool->models[modelCount].totalMatrixCount = instanceCount;
     SDL_strlcpy(pModelPool->models[modelCount].innerName, innerName, 16);
 
     return pModelPool->models + modelCount;
@@ -143,7 +145,7 @@ bool addModelMatrix(int32_t x, int32_t y, int32_t z, float scale_x, float scale_
         return false;
     }
 
-    totalMatrixCount = pModelPool->offsets[i + 1] - pModelPool->offsets[i];
+    totalMatrixCount = pModelPool->models[i].totalMatrixCount;
 
     if (pModel->matrixCount == totalMatrixCount)
     {
@@ -168,8 +170,10 @@ bool addModelMatrix(int32_t x, int32_t y, int32_t z, float scale_x, float scale_
 
     pModel->matrixCount++;
 
-    memcpy((mat4*)pModelPool->instanceBufferMemMapped[0] + pModel->firstInstance, pModel->matrix, sizeof(mat4) * pModel->matrixCount);
-    memcpy((mat4*)pModelPool->instanceBufferMemMapped[0] + pModel->firstInstance + pModelPool->totalInstanceCount, pModel->matrix + totalMatrixCount, sizeof(mat4) * pModel->matrixCount);
+    bufferMemcpy(pModelPool->instanceBuffer, pModel->firstInstance * sizeof(mat4), pModel->matrix, sizeof(mat4) * pModel->matrixCount);
+    // memcpy((mat4*)pModelPool->instanceBufferMemMapped[0] + pModel->firstInstance, pModel->matrix, sizeof(mat4) * pModel->matrixCount);
+    bufferMemcpy(pModelPool->instanceBuffer, (pModel->firstInstance + pModelPool->totalInstanceCount) * sizeof(mat4), pModel->matrix + totalMatrixCount, sizeof(mat4) * pModel->matrixCount);
+    // memcpy((mat4*)pModelPool->instanceBufferMemMapped[0] + pModel->firstInstance + pModelPool->totalInstanceCount, pModel->matrix + totalMatrixCount, sizeof(mat4) * pModel->matrixCount);
 
     SDL_UnlockMutex(pModelPool->mutex);
 
@@ -196,7 +200,9 @@ bool deleteModelMatrixByIndex(G_StaticModelPool * pModelPool, const char * inner
         return true;
     }
 
-    memmove((mat4*)pModelPool->instanceBufferMemMapped[0] + (pModel->firstInstance + index), (mat4*)pModelPool->instanceBufferMemMapped[0] + (pModel->firstInstance + index + 1), sizeof(mat4) * (pModel->matrixCount - index - 1)); 
+    bufferMemmove(pModelPool->instanceBuffer, (pModel->firstInstance + index + 1) * sizeof(mat4), (pModel->firstInstance + index) * sizeof(mat4), sizeof(mat4) * (pModel->matrixCount - index - 1));
+    // memmove((mat4*)pModelPool->instanceBufferMemMapped[0] + (pModel->firstInstance + index), (mat4*)pModelPool->instanceBufferMemMapped[0] + (pModel->firstInstance + index + 1), sizeof(mat4) * (pModel->matrixCount - index - 1)); 
+    bufferMemmove(pModelPool->instanceBuffer, (pModel->firstInstance + index + 1 + pModel->totalMatrixCount) * sizeof(mat4), (pModel->firstInstance + index + pModel->totalMatrixCount) * sizeof(mat4), sizeof(mat4) * (pModel->matrixCount - index - 1));
 
     pModel->matrixCount--;
 
@@ -207,6 +213,7 @@ bool deleteModelMatrixByIndex(G_StaticModelPool * pModelPool, const char * inner
 bool setModelMatrixByIndex(int32_t x, int32_t y, int32_t z, G_StaticModelPool * pModelPool, const char * innerName, Uint32 index)
 {
     G_StaticModel * pModel;
+    Uint32 totalMatrixCount; 
     vec3 tempVec3;
     tempVec3[0] = x * METER_PER_PIXEL;
     tempVec3[1] = y * METER_PER_PIXEL;
@@ -222,6 +229,8 @@ bool setModelMatrixByIndex(int32_t x, int32_t y, int32_t z, G_StaticModelPool * 
         return false;
     }
 
+    totalMatrixCount = pModel->totalMatrixCount;
+
     if (index >= pModel->matrixCount)
     {
         SDL_UnlockMutex(pModelPool->mutex);
@@ -233,7 +242,12 @@ bool setModelMatrixByIndex(int32_t x, int32_t y, int32_t z, G_StaticModelPool * 
     glm_rotate(pModel->matrix[index], glm_rad(180.0f), (vec3){0.0f, 1.0f, 0.0f});
     glm_rotate(pModel->matrix[index], glm_rad(-90.0f), (vec3){1.0f, 0.0f, 0.0f});
 
-    memcpy((mat4*)pModelPool->instanceBufferMemMapped[0] + pModel->firstInstance, pModel->matrix, sizeof(mat4) * pModel->matrixCount);
+    glm_mat4_copy(pModel->matrix[index], pModel->matrix[index + totalMatrixCount]);
+    glm_inv_tr(pModel->matrix[pModel->matrixCount + totalMatrixCount]);
+
+    bufferMemcpy(pModelPool->instanceBuffer, pModel->firstInstance * sizeof(mat4), pModel->matrix, sizeof(mat4) * pModel->matrixCount);
+    // memcpy((mat4*)pModelPool->instanceBufferMemMapped[0] + pModel->firstInstance, pModel->matrix, sizeof(mat4) * pModel->matrixCount);
+    bufferMemcpy(pModelPool->instanceBuffer, (pModel->firstInstance + pModelPool->totalInstanceCount) * sizeof(mat4), pModel->matrix + totalMatrixCount, sizeof(mat4) * pModel->matrixCount);
     
     SDL_UnlockMutex(pModelPool->mutex);
 
@@ -282,7 +296,7 @@ void destroyStaticModelPool(G_StaticModelPool * pModelPool)
         return;
     }
 
-    destroyBuffer(pModelPool->instanceBuffer[0], pModelPool->instanceBufferMem[0]);
+    // destroyBuffer(pModelPool->instanceBuffer[0], pModelPool->instanceBufferMem[0]);
 
     for (Uint32 i = 0;i < pModelPool->modelCount;i++)
     {

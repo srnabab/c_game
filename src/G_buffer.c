@@ -152,7 +152,11 @@ void freeBuffer(G_Buffer * pBuffer)
 {
     pBuffer->used = false;
 }
-void bufferMemcpy(G_Buffer * pBuffer, void * src, size_t len)
+void bufferMemcpy(G_Buffer * pBuffer, VkDeviceSize offset, void * src, size_t len)
 {
-    memcpy((char*)pBuffer->pBufferPool->bufferMemoryMapped + pBuffer->startOffset, src, len);
+    memcpy((char*)pBuffer->pBufferPool->bufferMemoryMapped + pBuffer->startOffset + offset, src, len);
+}
+void bufferMemmove(G_Buffer * pBuffer, VkDeviceSize srcOffset, VkDeviceSize dstOffset, size_t len)
+{
+    memmove(pBuffer->pBufferPool->bufferMemoryMapped + pBuffer->startOffset + dstOffset, pBuffer->pBufferPool->bufferMemoryMapped + pBuffer->startOffset + srcOffset, len);
 }
