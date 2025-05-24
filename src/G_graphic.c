@@ -344,6 +344,7 @@ void initVulkan(void)
     createShadowSampler(&allInOne.shadowSampler);
     CO_addSampler(allInOne.shadowSampler);// CO
 
+    allInOne.stagingBufferPool = createBufferPool(10 * 1024 * 1024, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
     allInOne.vertexStagingBufferPool = createBufferPool(VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex332_) * 2 + 30000 * sizeof(Vertex3323) * 2 + 60 * sizeof(mat4) * 2, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
     allInOne.vertexBufferPool = createBufferPool(5 * sizeof(Vertex23_), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, false);
     allInOne.indexStagingBufferPool = createBufferPool(45000 * sizeof(Uint32) * 2, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
@@ -536,6 +537,10 @@ void initVulkan(void)
     CO_addSemaphore(allInOne.pComputeSemaphore[0]);// CO
     CO_addSemaphore(allInOne.pComputeSemaphore[1]);// CO
 
+    createSemaphoreByBuffering(&allInOne.pGraphicSemaphore);
+    CO_addSemaphore(allInOne.pGraphicSemaphore[0]);// CO
+    CO_addSemaphore(allInOne.pGraphicSemaphore[1]);// CO
+
     createSemaphoreByBuffering(&allInOne.pTransferSemaphore);
     CO_addSemaphore(allInOne.pTransferSemaphore[0]);// CO
     CO_addSemaphore(allInOne.pTransferSemaphore[1]);// CO
@@ -671,6 +676,7 @@ void cleanVulkan(void)
     // destroyThreadPool(allInOne.pThreadPool);
 
     destroyStaticModelPool(&staticModelPool);
+    destroyBufferPool(&allInOne.stagingBufferPool);
     destroyBufferPool(&allInOne.vertexStagingBufferPool);
     destroyBufferPool(&allInOne.vertexBufferPool);
     destroyBufferPool(&allInOne.indexStagingBufferPool);

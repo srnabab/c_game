@@ -34,7 +34,9 @@ typedef struct _G_Buffer G_Buffer;
 
 extern G_BufferPool SDLCALL createBufferPool(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool staging);
 extern void SDLCALL destroyBufferPool(G_BufferPool * pBufferPool);
-extern G_Buffer * SDLCALL allocateBuffer(Uint32 bufferSize, G_BufferPool * pBufferPool);
+extern G_Buffer SDLCALL * allocateStagingBuffer(VkDeviceSize bufferSize, G_BufferPool * pBufferPool);
+extern void SDLCALL freeStagingBuffer(G_Buffer * pBuffer);
+extern G_Buffer * SDLCALL allocateBuffer(VkDeviceSize bufferSize, G_BufferPool * pBufferPool);
 extern void SDLCALL freeBuffer(G_Buffer * pBuffer);
 extern void SDLCALL bufferMemcpy(G_Buffer * pBuffer, VkDeviceSize offset, void * src, size_t len);
 extern void SDLCALL bufferMemmove(G_Buffer * pBuffer, VkDeviceSize srcOffset, VkDeviceSize dstOffset, size_t len);

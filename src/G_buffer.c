@@ -94,7 +94,47 @@ static G_Buffer * findFreeBuffer(G_Buffer * pBuffer, VkDeviceSize needBufferSize
 
     return NULL;
 }
-G_Buffer * allocateBuffer(Uint32 bufferSize, G_BufferPool * pBufferPool)
+G_Buffer * allocateStagingBuffer(VkDeviceSize bufferSize, G_BufferPool * pBufferPool)
+{
+    SDL_LockMutex(pBufferPool->mutex);
+
+    if (bufferSize > pBufferPool->totalBufferSize / 2) 
+    {
+        SDL_UnlockMutex(pBufferPool->mutex);
+        return NULL;
+    }
+
+    G_Buffer * tempBuffer = G_malloc(sizeof(G_Buffer));
+    if (tempBuffer == NULL) 
+    {
+        SDL_UnlockMutex(pBufferPool->mutex);
+        return NULL;
+    }
+
+    if (bufferSize + pBufferPool->usedBufferSize > pBufferPool->totalBufferSize) 
+    {
+        pBufferPool->usedBufferSize = 0;
+    }
+
+    tempBuffer->bufferSize = bufferSize;
+    tempBuffer->currentQueueIndex = -1;
+    tempBuffer->pBufferPool = pBufferPool;
+    tempBuffer->startOffset = pBufferPool->usedBufferSize;
+    tempBuffer->used = true;
+    tempBuffer->next = NULL;
+    pBufferPool->usedBufferSize += bufferSize;
+
+    SDL_UnlockMutex(pBufferPool->mutex);
+
+    return tempBuffer;
+}
+void freeStagingBuffer(G_Buffer * pBuffer)
+{
+    if (pBuffer == NULL) return;
+    G_free(pBuffer);
+    pBuffer = NULL;
+}
+G_Buffer * allocateBuffer(VkDeviceSize bufferSize, G_BufferPool * pBufferPool)
 {
     SDL_LockMutex(pBufferPool->mutex);
 

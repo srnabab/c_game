@@ -1,5 +1,6 @@
 #include "G_constants.h"
 
+#include "vk_code_h/vk_copy.h"
 #include "vk_code_h/vk_struct.h"
 #include "G_buffer.h"
 #include "G_threadPool.h"
@@ -113,6 +114,7 @@ struct _VK_ALL
     // VkBuffer tileMapTexCoordBuffer[MAX_FRAMES_IN_FLIGHT];
     // VkDeviceMemory pTimeMapTexCoordBufferMem[MAX_FRAMES_IN_FLIGHT];
     // void* pTimeMapTexCoordBufferMapped[MAX_FRAMES_IN_FLIGHT];
+    G_BufferPool stagingBufferPool;
     G_BufferPool vertexStagingBufferPool;
     G_BufferPool vertexBufferPool;
     G_BufferPool indexStagingBufferPool;
@@ -215,7 +217,7 @@ struct _VK_ALL
 
     VkSemaphore pImageAvailableSemaphore[MAX_FRAMES_IN_FLIGHT];
     VkSemaphore pRenderFinishedSemaphore[MAX_FRAMES_IN_FLIGHT];
-    VkSemaphore pCopyFinishedSemaphore[MAX_FRAMES_IN_FLIGHT];
+    VkSemaphore pGraphicSemaphore[MAX_FRAMES_IN_FLIGHT];
     VkSemaphore pComputeSemaphore[MAX_FRAMES_IN_FLIGHT];
     VkSemaphore pTransferSemaphore[MAX_FRAMES_IN_FLIGHT];
 
@@ -235,6 +237,8 @@ struct _VK_ALL
     ShapeConstants * pShapeConstants;
 
     G_Texture_Head * pGlobalTexture;
+
+    bufferCopyPack bufferCopy[MAX_FRAMES_IN_FLIGHT][MAX_BUFFER_COPY_COUNT];
 
     // G_Stack shaderModuleStack;
 

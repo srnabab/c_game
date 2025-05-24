@@ -108,7 +108,7 @@ VkResult initBufferQueueFamily(VkCommandPool commandPool, Uint32 srcQueueFamilyI
     else 
         return result;
 }
-static VkResult _setBufferCopyRegion(VkDeviceSize srcOffset, VkDeviceSize dstOffset, VkDeviceSize size, VkBufferCopy * pRegion)
+static void _setBufferCopyRegion(VkDeviceSize srcOffset, VkDeviceSize dstOffset, VkDeviceSize size, VkBufferCopy * pRegion)
 {
     pRegion->srcOffset = srcOffset;
     pRegion->dstOffset = dstOffset;
@@ -234,18 +234,23 @@ void destroyBuffer(VkBuffer Buffer, VkDeviceMemory BufferMem)
 }
 void initBufferData(G_Buffer * pBuffer, void * data, Uint32 bufferSize)
 {
-    VkBuffer stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
+    // VkBuffer stagingBuffer;
+    // VkDeviceMemory stagingBufferMemory;
+    G_Buffer * stagingBuffer;
 
-    resultVulkan(createBuffer(&stagingBuffer, &stagingBufferMemory, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), 0);
+    stagingBuffer = allocateStagingBuffer(bufferSize, &allInOne.stagingBufferPool);
 
-    void * tempData;
-    vkMapMemory(allInOne.device, stagingBufferMemory, 0, bufferSize, 0, &tempData);
-    memcpy(tempData, data, bufferSize);
-    vkUnmapMemory(allInOne.device, stagingBufferMemory);
+    // resultVulkan(createBuffer(&stagingBuffer, &stagingBufferMemory, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), 0);
 
-    copyBuffer(NULL, allInOne.graphicCommandPool, stagingBuffer, 0, pBuffer->pBufferPool->buffer, pBuffer->startOffset, bufferSize);
+    // void * tempData;
+    // vkMapMemory(allInOne.device, stagingBufferMemory, 0, bufferSize, 0, &tempData);
+    // memcpy(tempData, data, bufferSize);
+    bufferMemcpy(stagingBuffer, 0, data, bufferSize);
+    // vkUnmapMemory(allInOne.device, stagingBufferMemory);
 
-    vkDestroyBuffer(allInOne.device, stagingBuffer, allInOne.pAllocationCallbacks);
-    vkFreeMemory(allInOne.device, stagingBufferMemory, allInOne.pAllocationCallbacks);
+    copyBuffer(NULL, allInOne.graphicCommandPool, stagingBuffer->pBufferPool->buffer, 0, pBuffer->pBufferPool->buffer, pBuffer->startOffset, bufferSize);
+
+    // vkDestroyBuffer(allInOne.device, stagingBuffer, allInOne.pAllocationCallbacks);
+    // vkFreeMemory(allInOne.device, stagingBufferMemory, allInOne.pAllocationCallbacks);
+    freeStagingBuffer(stagingBuffer);
 }

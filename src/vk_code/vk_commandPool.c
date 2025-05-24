@@ -46,3 +46,45 @@ void createCommandBuffer(VkCommandBufferLevel level, VkCommandPool commandPool, 
     vkAllocateCommandBuffers(allInOne.device, &allocInfo, *ppCommandBuffer);
     print("command buffer allocated\n");
 }
+VkCommandPool getCommandPoolByIndice(Uint32 indice)
+{
+    if (indice == allInOne.queueFamilyIndices.graphicsFamily.familyIndice)
+    {
+        return allInOne.graphicCommandPool;
+    }
+    else if (indice == allInOne.queueFamilyIndices.presentFamily.familyIndice)
+    {
+        return allInOne.presentCommandPool;
+    }
+    else if (indice == allInOne.queueFamilyIndices.computeFamily.familyIndice)
+    {
+        return allInOne.computeCommandPool;
+    }
+    else if (indice == allInOne.queueFamilyIndices.transferFamily.familyIndice)
+    {
+        return allInOne.transferCommandPool;
+    }
+
+    return NULL;
+}
+VkCommandBuffer * getCommandBufferByIndice(Uint32 indice)
+{
+    if (indice == allInOne.queueFamilyIndices.graphicsFamily.familyIndice)
+    {
+        return allInOne.pGraphicCommandBuffer;
+    }
+    else if (indice == allInOne.queueFamilyIndices.presentFamily.familyIndice)
+    {
+        return allInOne.pPresentCommandBuffer;
+    }
+    else if (indice == allInOne.queueFamilyIndices.computeFamily.familyIndice)
+    {
+        return allInOne.pComputeCommandBuffer;
+    }
+    else if (indice == allInOne.queueFamilyIndices.transferFamily.familyIndice)
+    {
+        return allInOne.pTransferCommandBuffer;
+    }
+
+    return NULL;
+}

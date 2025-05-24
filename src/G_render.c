@@ -12,7 +12,7 @@ extern bool game_is_running;
 extern bool draw_done;
 extern bool resolutionChanged;
 
-// Render function to draw game objects in the SDL window_2D
+// Render function to draw game objects
 int render(void * arg) 
 {
     print("render init\n");

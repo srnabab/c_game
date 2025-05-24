@@ -88,6 +88,7 @@ add_executable(game ${SRC_ROOT}/main.c
                     ${SRC_ROOT}/spirv_reflect/spirv_reflect.c
                     ${SRC_ROOT}/spirv_reflect/shader_resolve.c
                     ${SRC_ROOT}/vk_code/vk_judge.c
+                    ${SRC_ROOT}/vk_code/vk_copy.c
                     ${SRC_ROOT}/vk_code/vk_instace.c
                     ${SRC_ROOT}/vk_code/vk_surface.c
                     ${SRC_ROOT}/vk_code/vk_device.c
