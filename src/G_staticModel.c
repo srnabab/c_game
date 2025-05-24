@@ -168,14 +168,21 @@ bool addModelMatrix(int32_t x, int32_t y, int32_t z, float scale_x, float scale_
     glm_mat4_copy(pModel->matrix[pModel->matrixCount], pModel->matrix[pModel->matrixCount + totalMatrixCount]);
     glm_inv_tr(pModel->matrix[pModel->matrixCount + totalMatrixCount]);
 
+    G_Buffer * stagingBuffer = allocateStagingBuffer(sizeof(mat4) * 2, &allInOne.stagingBufferPool);
+#warning error processing needed
+    // bufferMemcpy(pModelPool->instanceBuffer, (pModel->firstInstance + pModel->matrixCount) * sizeof(mat4), pModel->matrix + pModel->matrixCount, sizeof(mat4));
+    bufferMemcpy(stagingBuffer, 0, pModel->matrix + pModel->matrixCount, sizeof(mat4));
+    addBufferCopy(stagingBuffer, 0, pModelPool->instanceBuffer, (pModel->firstInstance + pModel->matrixCount) * sizeof(mat4), sizeof(mat4), allInOne.queueFamilyIndices.graphicsFamily.familyIndice, allInOne.currentFrame);
+
+    // bufferMemcpy(pModelPool->instanceBuffer, (pModel->firstInstance + pModelPool->totalInstanceCount + pModel->matrixCount) * sizeof(mat4), pModel->matrix + totalMatrixCount + pModel->matrixCount, sizeof(mat4));
+    bufferMemcpy(stagingBuffer, sizeof(mat4), pModel->matrix + totalMatrixCount + pModel->matrixCount, sizeof(mat4));
+    addBufferCopy(stagingBuffer, sizeof(mat4), pModelPool->instanceBuffer, (pModel->firstInstance + pModelPool->totalInstanceCount + pModel->matrixCount) * sizeof(mat4), sizeof(mat4), allInOne.queueFamilyIndices.graphicsFamily.familyIndice, allInOne.currentFrame);
+
     pModel->matrixCount++;
 
-    bufferMemcpy(pModelPool->instanceBuffer, pModel->firstInstance * sizeof(mat4), pModel->matrix, sizeof(mat4) * pModel->matrixCount);
-    // memcpy((mat4*)pModelPool->instanceBufferMemMapped[0] + pModel->firstInstance, pModel->matrix, sizeof(mat4) * pModel->matrixCount);
-    bufferMemcpy(pModelPool->instanceBuffer, (pModel->firstInstance + pModelPool->totalInstanceCount) * sizeof(mat4), pModel->matrix + totalMatrixCount, sizeof(mat4) * pModel->matrixCount);
-    // memcpy((mat4*)pModelPool->instanceBufferMemMapped[0] + pModel->firstInstance + pModelPool->totalInstanceCount, pModel->matrix + totalMatrixCount, sizeof(mat4) * pModel->matrixCount);
-
     SDL_UnlockMutex(pModelPool->mutex);
+
+    freeStagingBuffer(stagingBuffer);
 
     return true;
 }
@@ -200,9 +207,13 @@ bool deleteModelMatrixByIndex(G_StaticModelPool * pModelPool, const char * inner
         return true;
     }
 
-    bufferMemmove(pModelPool->instanceBuffer, (pModel->firstInstance + index + 1) * sizeof(mat4), (pModel->firstInstance + index) * sizeof(mat4), sizeof(mat4) * (pModel->matrixCount - index - 1));
+    addBufferCopy(pModelPool->instanceBuffer, (pModel->firstInstance + index + 1) * sizeof(mat4), pModelPool->instanceBuffer, (pModel->firstInstance + index) * sizeof(mat4), sizeof(mat4) * (pModel->matrixCount - index - 1)\
+    , allInOne.queueFamilyIndices.graphicsFamily.familyIndice, allInOne.currentFrame);
+    // bufferMemmove(pModelPool->instanceBuffer, (pModel->firstInstance + index + 1) * sizeof(mat4), (pModel->firstInstance + index) * sizeof(mat4), sizeof(mat4) * (pModel->matrixCount - index - 1));
     // memmove((mat4*)pModelPool->instanceBufferMemMapped[0] + (pModel->firstInstance + index), (mat4*)pModelPool->instanceBufferMemMapped[0] + (pModel->firstInstance + index + 1), sizeof(mat4) * (pModel->matrixCount - index - 1)); 
-    bufferMemmove(pModelPool->instanceBuffer, (pModel->firstInstance + index + 1 + pModel->totalMatrixCount) * sizeof(mat4), (pModel->firstInstance + index + pModel->totalMatrixCount) * sizeof(mat4), sizeof(mat4) * (pModel->matrixCount - index - 1));
+    addBufferCopy(pModelPool->instanceBuffer, (pModel->firstInstance + index + 1 + pModel->totalMatrixCount) * sizeof(mat4), pModelPool->instanceBuffer, (pModel->firstInstance + index + pModel->totalMatrixCount) * sizeof(mat4)\
+    , sizeof(mat4) * (pModel->matrixCount - index - 1), allInOne.queueFamilyIndices.graphicsFamily.familyIndice, allInOne.currentFrame);
+    // bufferMemmove(pModelPool->instanceBuffer, (pModel->firstInstance + index + 1 + pModel->totalMatrixCount) * sizeof(mat4), (pModel->firstInstance + index + pModel->totalMatrixCount) * sizeof(mat4), sizeof(mat4) * (pModel->matrixCount - index - 1));
 
     pModel->matrixCount--;
 
@@ -245,11 +256,19 @@ bool setModelMatrixByIndex(int32_t x, int32_t y, int32_t z, G_StaticModelPool * 
     glm_mat4_copy(pModel->matrix[index], pModel->matrix[index + totalMatrixCount]);
     glm_inv_tr(pModel->matrix[pModel->matrixCount + totalMatrixCount]);
 
-    bufferMemcpy(pModelPool->instanceBuffer, pModel->firstInstance * sizeof(mat4), pModel->matrix, sizeof(mat4) * pModel->matrixCount);
-    // memcpy((mat4*)pModelPool->instanceBufferMemMapped[0] + pModel->firstInstance, pModel->matrix, sizeof(mat4) * pModel->matrixCount);
-    bufferMemcpy(pModelPool->instanceBuffer, (pModel->firstInstance + pModelPool->totalInstanceCount) * sizeof(mat4), pModel->matrix + totalMatrixCount, sizeof(mat4) * pModel->matrixCount);
+    G_Buffer * stagingBuffer = allocateStagingBuffer(sizeof(mat4) * 2, &allInOne.stagingBufferPool);
+#warning error processing needed
+    bufferMemcpy(stagingBuffer, 0, pModel->matrix + index, sizeof(mat4));
+    addBufferCopy(stagingBuffer, 0, pModelPool->instanceBuffer, (pModel->firstInstance + index) * sizeof(mat4), sizeof(mat4), allInOne.queueFamilyIndices.graphicsFamily.familyIndice, allInOne.currentFrame);
+
+    bufferMemcpy(stagingBuffer, sizeof(mat4), pModel->matrix + totalMatrixCount + index, sizeof(mat4));
+    addBufferCopy(stagingBuffer, sizeof(mat4), pModelPool->instanceBuffer, (pModel->firstInstance + pModelPool->totalInstanceCount + index) * sizeof(mat4), sizeof(mat4), allInOne.queueFamilyIndices.graphicsFamily.familyIndice, allInOne.currentFrame);
+    // bufferMemcpy(pModelPool->instanceBuffer, (pModel->firstInstance + index) * sizeof(mat4), pModel->matrix + index, sizeof(mat4));
+    // bufferMemcpy(pModelPool->instanceBuffer, (pModel->firstInstance + pModelPool->totalInstanceCount + index) * sizeof(mat4), pModel->matrix + totalMatrixCount + index, sizeof(mat4));
     
     SDL_UnlockMutex(pModelPool->mutex);
+
+    freeStagingBuffer(stagingBuffer);
 
     return true;
 }
