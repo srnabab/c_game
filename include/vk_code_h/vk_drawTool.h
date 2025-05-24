@@ -9,7 +9,8 @@
 
 #include "SDL3/SDL_begin_code.h"
 
-extern VkResult beginCommandBuffer(VkCommandBuffer commandBuffer);
+extern VkResult SDLCALL beginPrimaryCommandBuffer(VkCommandBuffer commandBuffer);
+extern VkResult SDLCALL beginSecondaryCommandBuffer(VkCommandBuffer commandBuffer, VkCommandBufferUsageFlags flags, VkCommandBufferInheritanceInfo * pInheritanceInfo);
 extern void SDLCALL setViewport(VkExtent2D extent2D, VkCommandBuffer commandBuffer);
 extern void SDLCALL setScissor(VkExtent2D extent2D, VkCommandBuffer commandBuffer);
 extern void SDLCALL setSubmitInfo(void * pNext, Uint32 waitSeamphoreCount, const VkSemaphore * pWaitSemaphores, VkPipelineStageFlagBits * pWaitDstStageMask, Uint32 commandBufferCount\

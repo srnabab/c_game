@@ -185,7 +185,7 @@ static float camera_Y = 0.0f;
 static float pictureX = 0;
 static float pictureY = 0;
 
-static VkDeviceMemory shaderStorageBuffersMem[MAX_FRAMES_IN_FLIGHT];
+// static VkDeviceMemory shaderStorageBuffersMem[MAX_FRAMES_IN_FLIGHT];
 
 static PushConstants picturePushConstants = {0.0f};
 static ShapeConstants shapePushConstants = {(vec2){0.0f, 0.0f}, (vec2){0.053333333f, 0.053333333f}};
@@ -272,9 +272,12 @@ void initVulkan(void)
     CO_addCommandPool(allInOne.transferCommandPool);// CO
 
     createCommandBuffers(VK_COMMAND_BUFFER_LEVEL_PRIMARY, allInOne.graphicCommandPool, allInOne.pGraphicCommandBuffer, 2);
+    createCommandBuffers(VK_COMMAND_BUFFER_LEVEL_SECONDARY, allInOne.graphicCommandPool, allInOne.pGraphicCopyCommandBuffer, 2);
     createCommandBuffers(VK_COMMAND_BUFFER_LEVEL_PRIMARY, allInOne.presentCommandPool, allInOne.pPresentCommandBuffer, 2);
     createCommandBuffers(VK_COMMAND_BUFFER_LEVEL_PRIMARY, allInOne.computeCommandPool, allInOne.pComputeCommandBuffer, 2);
+    createCommandBuffers(VK_COMMAND_BUFFER_LEVEL_SECONDARY, allInOne.computeCommandPool, allInOne.pComputeCopyCommandBuffer, 2);
     createCommandBuffers(VK_COMMAND_BUFFER_LEVEL_PRIMARY, allInOne.transferCommandPool, allInOne.pTransferCommandBuffer, 2);
+    createCommandBuffers(VK_COMMAND_BUFFER_LEVEL_SECONDARY, allInOne.transferCommandPool, allInOne.pTransferCopyCommandBuffer, 2);
 
     getSurfaceFormats(allInOne.surface3D, &allInOne.surface3DFormat);
     getPresentModes(&allInOne.presentMode3D);
@@ -345,10 +348,10 @@ void initVulkan(void)
     CO_addSampler(allInOne.shadowSampler);// CO
 
     allInOne.stagingBufferPool = createBufferPool(10 * 1024 * 1024, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
-    allInOne.vertexStagingBufferPool = createBufferPool(VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex332_) * 2 + 30000 * sizeof(Vertex3323) * 2 + 60 * sizeof(mat4) * 2, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
-    allInOne.vertexBufferPool = createBufferPool(5 * sizeof(Vertex23_), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, false);
-    allInOne.indexStagingBufferPool = createBufferPool(45000 * sizeof(Uint32) * 2, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
-    allInOne.indexBufferPool = createBufferPool(INDEX_COUNT_IN_BUFFER_2D * sizeof(Uint16), VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, false);
+    allInOne.vertexStagingBufferPool = createBufferPool(60 * sizeof(mat4) * 2, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
+    allInOne.vertexBufferPool = createBufferPool(5 * sizeof(Vertex23_) + VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex332_) * 2 + 30000 * sizeof(Vertex3323) * 2, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, false);
+    allInOne.indexStagingBufferPool = createBufferPool(64, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
+    allInOne.indexBufferPool = createBufferPool(INDEX_COUNT_IN_BUFFER_2D * sizeof(Uint16) + 45000 * sizeof(Uint32) * 2, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, false);
     allInOne.uniformStagingBufferPool = createBufferPool(sizeof(UniformBufferObject) * 2 * 3 + sizeof(ComputeUniformBufferObject) * 2 + sizeof(SSGIUniformBufferObject) * 2 + sizeof(DirectionLight) * 2 + sizeof(LightSpace) * 2\
     , VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
     allInOne.storageBufferPool = createBufferPool(PARTICLE_COUNT * sizeof(Particle) * 2, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, false);
@@ -381,8 +384,8 @@ void initVulkan(void)
     // CO_addBuffer(false, allInOne.tilemapVertexBuffer[1], allInOne.pTilemapVertexBufferMem[1], NULL);
     allInOne.pVertices2D = (Vertex332_*)G_calloc(VERTEX_COUNT_IN_BUFFER_2D, sizeof(Vertex332_));
     allInOne.maxVertices2DCount = VERTEX_COUNT_IN_BUFFER_2D;
-    allInOne.vertexBuffer2D[0] = allocateBuffer(VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex332_), &allInOne.vertexStagingBufferPool);
-    allInOne.vertexBuffer2D[1] = allocateBuffer(VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex332_), &allInOne.vertexStagingBufferPool);
+    allInOne.vertexBuffer2D[0] = allocateBuffer(VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex332_), &allInOne.vertexBufferPool);
+    allInOne.vertexBuffer2D[1] = allocateBuffer(VERTEX_COUNT_IN_BUFFER_2D * sizeof(Vertex332_), &allInOne.vertexBufferPool);
 
     Uint16 * indices2D = (Uint16 *)G_calloc(INDEX_COUNT_IN_BUFFER_2D, sizeof(Uint16));
     indexInitialize(indices2D, MAX_UNIT_COUNT_2D);
@@ -395,12 +398,12 @@ void initVulkan(void)
     allInOne.pVertices3D = (Vertex3323*)G_calloc(30000, sizeof(Vertex3323));
 
     allInOne.maxVertices3DCount = 30000;
-    allInOne.vertexBuffer3D[0] = allocateBuffer(30000 * sizeof(Vertex3323), &allInOne.vertexStagingBufferPool);
-    allInOne.vertexBuffer3D[1] = allocateBuffer(30000 * sizeof(Vertex3323), &allInOne.vertexStagingBufferPool);
+    allInOne.vertexBuffer3D[0] = allocateBuffer(30000 * sizeof(Vertex3323), &allInOne.vertexBufferPool);
+    allInOne.vertexBuffer3D[1] = allocateBuffer(30000 * sizeof(Vertex3323), &allInOne.vertexBufferPool);
 
     allInOne.pIndices3D = (Uint32*)G_calloc(45000, sizeof(Uint32));
-    allInOne.indexBuffer3D[0] = allocateBuffer(45000 * sizeof(Uint32), &allInOne.indexStagingBufferPool);
-    allInOne.indexBuffer3D[1] = allocateBuffer(45000 * sizeof(Uint32), &allInOne.indexStagingBufferPool);
+    allInOne.indexBuffer3D[0] = allocateBuffer(45000 * sizeof(Uint32), &allInOne.indexBufferPool);
+    allInOne.indexBuffer3D[1] = allocateBuffer(45000 * sizeof(Uint32), &allInOne.indexBufferPool);
 
     allInOne.pGraphicUniformBuffer[0] = allocateBuffer(sizeof(UniformBufferObject), &allInOne.uniformStagingBufferPool);
     allInOne.pGraphicUniformBuffer[1] = allocateBuffer(sizeof(UniformBufferObject), &allInOne.uniformStagingBufferPool);

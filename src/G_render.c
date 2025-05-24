@@ -19,6 +19,7 @@ int render(void * arg)
     Uint32 render_frame = 0;
     Uint32 currentFrame = allInOne.currentFrame;
     bool bottomMoved = false;
+    Uint8 copy = 0;
     while (game_is_running)
     {
         SDL_WaitSemaphore(allSync.renderSemaphore);
@@ -30,8 +31,9 @@ int render(void * arg)
         }
 
         // bottomMoved = moveBottomImage(currentFrame);
+        copy = executeBufferCopy(currentFrame);
 
-        drawFrame(First_Scene, currentFrame, allInOne.extent2D.width, allInOne.extent2D.height, bottomMoved);
+        drawFrame(First_Scene, currentFrame, allInOne.extent2D.width, allInOne.extent2D.height, bottomMoved, copy);
 
         allInOne.currentFrame = (allInOne.currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
         currentFrame = allInOne.currentFrame;

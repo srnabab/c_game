@@ -108,7 +108,7 @@ VkResult copyBufferToImage(VkCommandBuffer commandBuffer, VkImage * pImage, Uint
     }
     else
     {
-        beginCommandBuffer(commandBuffer);
+        beginPrimaryCommandBuffer(commandBuffer);
     }
 
     VkBufferImageCopy region = {};

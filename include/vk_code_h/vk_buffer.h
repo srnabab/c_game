@@ -13,6 +13,7 @@ extern VkResult SDLCALL endSingleTimeCommands(VkCommandPool commandPool, VkQueue
 extern VkResult SDLCALL initBufferQueueFamily(VkCommandPool commandPool, Uint32 srcQueueFamilyIndice, Uint32 dstQueueFamilyIndice, VkBuffer buffer, VkDeviceSize bufferSize);
 extern void SDLCALL initBufferData(G_Buffer * pBuffer, void * data, Uint32 bufferSize);
 extern VkResult SDLCALL copyBuffer(VkCommandBuffer commandBuffer, VkCommandPool commandPool, VkBuffer srcBuffer, VkDeviceSize srcOffset, VkBuffer dstBuffer, VkDeviceSize dstOffset, VkDeviceSize size);
+extern void SDLCALL _setBufferCopyRegion(VkDeviceSize srcOffset, VkDeviceSize dstOffset, VkDeviceSize size, VkBufferCopy * pRegion);
 extern void SDLCALL releaseBufferFromQueue(VkCommandPool commandPool, VkAccessFlags srcAccessMask, VkPipelineStageFlags srcStageFlags, Uint32 srcQueueFamilyIndice, Uint32 dstQueueFamilyIndice, VkBuffer buffer, VkDeviceSize offset, VkDeviceSize bufferSize);
 extern void SDLCALL _setMemoryBarrier(void * memPNext, VkAccessFlags memSrcAccessMask, VkAccessFlags memDstAccessMask, VkMemoryBarrier * pMemoryBarrier);
 extern void SDLCALL _setBufferMemoryBarrier(void * bufferPNext, VkAccessFlags bufferSrcAccessMask, VkAccessFlags bufferDstAccessMask, Uint32 bufferSrcQueueFamilyIndex, Uint32 bufferDstQueueFamilyIndex, VkBuffer buffer, VkDeviceSize offset\

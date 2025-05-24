@@ -7,15 +7,23 @@
 extern G_SYNC allSync;
 extern VK_ALL allInOne;
 
-VkResult beginCommandBuffer(VkCommandBuffer commandBuffer)
+static VkResult _beginCommandBuffer(VkCommandBuffer commandBuffer, void * pNext, VkCommandBufferUsageFlags flags, VkCommandBufferInheritanceInfo * pInheritanceInfo)
 {
     VkCommandBufferBeginInfo beginInfo = {};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    beginInfo.pNext = NULL;
-    beginInfo.flags = 0;
-    beginInfo.pInheritanceInfo = NULL;
+    beginInfo.pNext = pNext;
+    beginInfo.flags = flags;
+    beginInfo.pInheritanceInfo = pInheritanceInfo;
 
     return vkBeginCommandBuffer(commandBuffer, &beginInfo);
+}
+VkResult beginPrimaryCommandBuffer(VkCommandBuffer commandBuffer)
+{
+    return _beginCommandBuffer(commandBuffer, NULL, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, NULL);
+}
+VkResult beginSecondaryCommandBuffer(VkCommandBuffer commandBuffer, VkCommandBufferUsageFlags flags, VkCommandBufferInheritanceInfo * pInheritanceInfo)
+{
+    return _beginCommandBuffer(commandBuffer, NULL, flags, pInheritanceInfo);
 }
 void setViewport(VkExtent2D extent2D, VkCommandBuffer commandBuffer)
 {

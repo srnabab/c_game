@@ -16,6 +16,7 @@
 
 #include "vk_code_h/vk_all_struct.h"
 #include "vk_code_h/vk_move.h"
+#include "vk_code_h/vk_copy.h"
 
 #include "SDL3/SDL_keyboard.h"
 #include "SDL3/SDL_timer.h"
@@ -181,6 +182,10 @@ int update(void * arg)
     initEntity(&mouse, 0.0f, 0.0f, 0.0f);
     
     bool playedMusic = false;
+    bool vertex2dChanged1, vertex2dChanged2 ;
+    vertex2dChanged1 = vertex2dChanged2 = true;
+    bool vertex3dChanged1, vertex3dChanged2;
+    vertex3dChanged1 = vertex3dChanged2 = true;
 
     Uint64 frequency = SDL_GetPerformanceFrequency();;
     Uint64 delta_time_ns = 0;
@@ -220,6 +225,7 @@ int update(void * arg)
     addModelMatrix(100, 100, 8, 1.0f, 1.0f, 1.0f, allInOne.pStaticModelPool, TEXTURE_MODEL);
     addModelMatrix(0, 0, -1, 10.0f, 10.0f, 1.0f, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
 
+    G_Buffer * tempStagingBuffer = NULL;
     // setMapBottom(allInOne.extent2D.width, allInOne.extent2D.height, 0, 0, &rowCount, &colCount, &firstBottom_X, &firstBottom_Y, &baseX, &baseY, &groupID);
     // memcpy(allInOne.pTimeMapTexCoordBufferMapped[0], allInOne.pTileMapUVs, sizeof(vec2) * VERTEX_COUNT_IN_UNIT_2D * MAX_TILES_IN_GROUP * (allInOne.bottomImageDrawStack.top + 1));
     // memcpy(allInOne.pTimeMapTexCoordBufferMapped[1], allInOne.pTileMapUVs, sizeof(vec2) * VERTEX_COUNT_IN_UNIT_2D * MAX_TILES_IN_GROUP * (allInOne.bottomImageDrawStack.top + 1));
@@ -424,6 +430,7 @@ int update(void * arg)
                     for (Uint32 i = 0;i < textLen;i++)
                     {
                         textureVertexInit_SetUV(-300.0 + (float)i * FONT_SIZE, -100.0, FONT_SIZE, FONT_SIZE, 0.1f, &allInOne.vertices2DCount, allInOne.pVertices2D, UVs[i], getTexture(TEXTURE_FONT));
+                        vertex2dChanged1 = vertex2dChanged2 = true;
                     }
                 }
                 textDisplay = false;
@@ -502,17 +509,40 @@ int update(void * arg)
 
             vertexEnd = allInOne.vertices2DCount;
             //print("time: %.2f\n", time);
-            SDL_LockMutex(allSync.updateMutex);
+            // SDL_LockMutex(allSync.updateMutex);
 
-            bufferMemcpy(allInOne.vertexBuffer2D[currentFrame], 0, allInOne.pVertices2D, vertexEnd * sizeof(Vertex332_));
-            bufferMemcpy(allInOne.vertexBuffer3D[currentFrame], 0, allInOne.pVertices3D, 30000 * sizeof(Vertex3323));
-            bufferMemcpy(allInOne.indexBuffer3D[currentFrame], 0, allInOne.pIndices3D, 45000 * sizeof(Uint32));
+            if (vertex2dChanged1 || vertex2dChanged2)
+            {
+                tempStagingBuffer = allocateStagingBuffer(vertexEnd * sizeof(Vertex332_), &allInOne.stagingBufferPool);
+                bufferMemcpy(tempStagingBuffer, 0, allInOne.pVertices2D, vertexEnd * sizeof(Vertex332_));
+                addBufferCopy(tempStagingBuffer, 0, allInOne.vertexBuffer2D[currentFrame], 0, vertexEnd * sizeof(Vertex332_), allInOne.queueFamilyIndices.graphicsFamily.familyIndice, currentFrame);
+                freeStagingBuffer(tempStagingBuffer);
+                if (currentFrame) vertex2dChanged1 = false;
+                else vertex2dChanged2 = false;
+            }
+            
+            if (vertex3dChanged1 || vertex3dChanged2)
+            {
+                tempStagingBuffer = allocateStagingBuffer(30000 * sizeof(Vertex3323), &allInOne.stagingBufferPool);
+                bufferMemcpy(tempStagingBuffer, 0, allInOne.pVertices3D, 30000 * sizeof(Vertex3323));
+                addBufferCopy(tempStagingBuffer, 0, allInOne.vertexBuffer3D[currentFrame], 0, 30000 * sizeof(Vertex3323), allInOne.queueFamilyIndices.graphicsFamily.familyIndice, currentFrame);
+                freeStagingBuffer(tempStagingBuffer);
+
+                tempStagingBuffer = allocateStagingBuffer(45000 * sizeof(Uint32), &allInOne.stagingBufferPool);
+                bufferMemcpy(tempStagingBuffer, 0, allInOne.pIndices3D, 45000 * sizeof(Uint32));
+                addBufferCopy(tempStagingBuffer, 0, allInOne.indexBuffer3D[currentFrame], 0, 45000 * sizeof(Uint32), allInOne.queueFamilyIndices.graphicsFamily.familyIndice, currentFrame);
+                freeStagingBuffer(tempStagingBuffer);
+
+                if (currentFrame) vertex3dChanged1 = false;
+                else vertex3dChanged2 = false;
+            }
+
             // memcpy(allInOne.pIndexBuffer3DMemMapped[currentFrame], allInOne.pIndices3D, 45000 * sizeof(Uint32));
             // SDL_SignalSemaphore(allSync.vertexSemaphore);
 
             allInOne.pPushConstants->rotation += delta_time * glm_rad(580.0f);
             
-            SDL_UnlockMutex(allSync.updateMutex);
+            // SDL_UnlockMutex(allSync.updateMutex);
 
             //print("test: %lf", testNum);
             //print("delta time:%f", delta_time);

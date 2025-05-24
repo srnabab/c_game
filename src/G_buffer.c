@@ -90,6 +90,10 @@ static G_Buffer * findFreeBuffer(G_Buffer * pBuffer, VkDeviceSize needBufferSize
                 return pBuffer;
             }
         }
+        else
+        {
+            tempBuffer = tempBuffer->next;
+        }
     }
 
     return NULL;
@@ -150,6 +154,12 @@ G_Buffer * allocateBuffer(VkDeviceSize bufferSize, G_BufferPool * pBufferPool)
         }
 
         tempBuffer = pBufferPool->buffers;
+        tempBuffer->next = NULL;
+        tempBuffer->bufferSize = 0;
+        tempBuffer->startOffset = 0;
+        tempBuffer->used = true;
+        tempBuffer->currentQueueIndex = -1;
+        tempBuffer->pBufferPool = pBufferPool;
     }
 
     if (bufferSize + pBufferPool->usedBufferSize > pBufferPool->totalBufferSize) 

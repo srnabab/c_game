@@ -212,6 +212,10 @@ struct _VK_ALL
     VkCommandBuffer pComputeCommandBuffer[MAX_FRAMES_IN_FLIGHT];
     VkCommandBuffer pTransferCommandBuffer[MAX_FRAMES_IN_FLIGHT];
 
+    VkCommandBuffer pGraphicCopyCommandBuffer[MAX_FRAMES_IN_FLIGHT];
+    VkCommandBuffer pComputeCopyCommandBuffer[MAX_FRAMES_IN_FLIGHT];
+    VkCommandBuffer pTransferCopyCommandBuffer[MAX_FRAMES_IN_FLIGHT];
+
     VkSemaphore pTimelineSemaphore2d[MAX_FRAMES_IN_FLIGHT];
     VkSemaphore pTimelineSemaphore3d[MAX_FRAMES_IN_FLIGHT];
 
@@ -239,6 +243,7 @@ struct _VK_ALL
     G_Texture_Head * pGlobalTexture;
 
     bufferCopyPack bufferCopy[MAX_FRAMES_IN_FLIGHT][MAX_BUFFER_COPY_COUNT];
+    Uint32 bufferCopyCount[MAX_FRAMES_IN_FLIGHT];
 
     // G_Stack shaderModuleStack;
 

@@ -1119,7 +1119,7 @@ extern G_SYNC allSync;
 // //     vkResetFences(allInOne.device, 1, &transferFence);
 
 // //     vkResetCommandBuffer(graphicCommandBuffer, 0);
-// //     beginCommandBuffer(graphicCommandBuffer);
+// //     beginPrimaryCommandBuffer(graphicCommandBuffer);
 // //     vkCmdPipelineBarrier(graphicCommandBuffer, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, NULL, 0, NULL, imageMemoryBarrierCount, imageMemoryBarrierGraphicRelease);
 // //     vkEndCommandBuffer(graphicCommandBuffer);
 
@@ -1131,7 +1131,7 @@ extern G_SYNC allSync;
 // //     vkResetFences(allInOne.device, 1, &transferFence);
 
 // //     vkResetCommandBuffer(transferCommandBuffer, 0);
-// //     beginCommandBuffer(transferCommandBuffer);
+// //     beginPrimaryCommandBuffer(transferCommandBuffer);
 // //     vkCmdPipelineBarrier(transferCommandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, imageMemoryBarrierCount, imageMemoryBarrierTransferGet);
 // //     vkEndCommandBuffer(transferCommandBuffer);
 
@@ -1144,7 +1144,7 @@ extern G_SYNC allSync;
 // //     vkResetFences(allInOne.device, 1, &transferFence);
 
 // //     vkResetCommandBuffer(transferCommandBuffer, 0);
-// //     beginCommandBuffer(transferCommandBuffer);
+// //     beginPrimaryCommandBuffer(transferCommandBuffer);
 // //     for (i = 0;i < arrayCap / 2;i++)
 // //     {
 // //         VkImageMemoryBarrier tempImageMemoryBarrier = {};
@@ -1228,7 +1228,7 @@ extern G_SYNC allSync;
 // //     vkQueueSubmit(getTransferQueue(), 1, &transferSubmitInfo2, transferFence);
 
 // //     vkResetCommandBuffer(graphicCommandBuffer, 0);
-// //     beginCommandBuffer(graphicCommandBuffer);
+// //     beginPrimaryCommandBuffer(graphicCommandBuffer);
 // //     vkCmdPipelineBarrier(graphicCommandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, NULL, 0, NULL, imageMemoryBarrierCount, imageMemoryBarrierGraphicGet);
 // //     vkEndCommandBuffer(graphicCommandBuffer);
 

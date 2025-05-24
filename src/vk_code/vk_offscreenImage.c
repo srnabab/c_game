@@ -23,7 +23,7 @@ VkResult drawImageView(Uint32 width, Uint32 height, const char * innerName, VkCo
     , Uint32 indexBufferCount, VkBuffer * indexBuffers, VkPipeline pipeline, VkPipelineLayout pipelineLayout)
 {
     VkResult result = VK_SUCCESS;
-    result = beginCommandBuffer(commandBuffer);
+    result = beginPrimaryCommandBuffer(commandBuffer);
     if (result != VK_SUCCESS) return result;
 
     setViewport((VkExtent2D){width, height}, commandBuffer);

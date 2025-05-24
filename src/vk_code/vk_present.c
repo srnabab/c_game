@@ -40,7 +40,7 @@ static void recordCommandBuffer2D(Uint32 imageIndex, Uint32 currentFrame)
 {
     VkCommandBuffer currentCommandBuffer = allInOne.pGraphicCommandBuffer[currentFrame];
 
-    beginCommandBuffer(currentCommandBuffer);
+    beginPrimaryCommandBuffer(currentCommandBuffer);
 
     VkBufferMemoryBarrier bufferBarrierGet = {};
     _setBufferMemoryBarrier(NULL, 0, VK_ACCESS_SHADER_READ_BIT, allInOne.queueFamilyIndices.computeFamily.familyIndice, allInOne.queueFamilyIndices.graphicsFamily.familyIndice\
@@ -102,11 +102,13 @@ static void recordCommandBuffer2D(Uint32 imageIndex, Uint32 currentFrame)
     , allInOne.pShaderStorageBuffer[currentFrame]->pBufferPool->buffer, allInOne.pShaderStorageBuffer[currentFrame]->startOffset, sizeof(Particle) * PARTICLE_COUNT, &bufferBarrierRelease);
     vkCmdPipelineBarrier(currentCommandBuffer, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, NULL, 1, &bufferBarrierRelease, 0, NULL);
 }
-static void recordCommandBufferShadow(Uint32 currentFrame)
+static void recordCommandBufferShadow(Uint32 currentFrame, bool graphicCopy)
 {
     VkCommandBuffer currentCommandBuffer = allInOne.pGraphicCommandBuffer[currentFrame];
 
-    beginCommandBuffer(currentCommandBuffer);
+    beginPrimaryCommandBuffer(currentCommandBuffer);
+
+    if (graphicCopy) vkCmdExecuteCommands(currentCommandBuffer, 1, allInOne.pGraphicCopyCommandBuffer + currentFrame);
 
     VkExtent2D shadow = {SHADOW_MAPPING_WIDTH, SHADOW_MAPPING_HEIGHT};
     setViewport(shadow, currentCommandBuffer);
@@ -167,7 +169,7 @@ static void recordCommandBufferShadow(Uint32 currentFrame)
 //     VkClearValue clearValue[1];
 //     clearValue[0].color = (VkClearColorValue){{0.0f, 0.0f, 0.0f, 1.0f}};
 
-//     beginCommandBuffer(currentCommandBuffer);
+//     beginPrimaryCommandBuffer(currentCommandBuffer);
 
 //     setViewport(bottomExtent2D, currentCommandBuffer);
 //     setScissor(bottomExtent2D, currentCommandBuffer);
@@ -214,7 +216,7 @@ static void recordCommandBuffer_3D(Uint32 currentFrame)
 {
     VkCommandBuffer currentCommandBuffer = allInOne.pGraphicCommandBuffer[currentFrame];
 
-    beginCommandBuffer(currentCommandBuffer);
+    beginPrimaryCommandBuffer(currentCommandBuffer);
 
     G_Texture_P * shadowTexture = getTexture(TEXTURE_SHADOW);
     transitionImageLayout(currentCommandBuffer, shadowTexture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 1);
@@ -258,11 +260,13 @@ static void recordCommandBuffer_3D(Uint32 currentFrame)
 
     vkCmdEndRenderPass(currentCommandBuffer);
 }
-static void recordComputeCommandBuffer(Uint32 currentFrame)
+static void recordComputeCommandBuffer(Uint32 currentFrame, bool computeCopy)
 {
     VkCommandBuffer currentCommandBuffer = allInOne.pComputeCommandBuffer[currentFrame];
 
-    beginCommandBuffer(currentCommandBuffer);
+    beginPrimaryCommandBuffer(currentCommandBuffer);
+
+    if (computeCopy) vkCmdExecuteCommands(currentCommandBuffer, 1, allInOne.pComputeCopyCommandBuffer + currentFrame);
 
     VkBufferMemoryBarrier bufferMemoryBarrierGet = {};
     _setBufferMemoryBarrier(NULL, 0, VK_ACCESS_SHADER_READ_BIT, allInOne.queueFamilyIndices.graphicsFamily.familyIndice, allInOne.queueFamilyIndices.computeFamily.familyIndice\
@@ -284,7 +288,7 @@ static void recordSSGICommandBuffer(Uint32 currentFrame, Uint32 width, Uint32 he
 {
     VkCommandBuffer currentCommandBuffer = allInOne.pGraphicCommandBuffer[currentFrame];
 
-    beginCommandBuffer(currentCommandBuffer);
+    beginPrimaryCommandBuffer(currentCommandBuffer);
 
     // G_Texture_P * depthTexture = getTexture(TEXTURE_MODEL_DEPTH);
     // transitionImageLayout(currentCommandBuffer, depthTexture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 1);
@@ -306,7 +310,7 @@ static void recordCommandBufferCombine(Uint32 imageIndex, Uint32 currentFrame)
 {
     VkCommandBuffer currentCommandBuffer = allInOne.pGraphicCommandBuffer[currentFrame];
 
-    beginCommandBuffer(currentCommandBuffer);
+    beginPrimaryCommandBuffer(currentCommandBuffer);
 
     G_Texture_P * ssgiTexture = getTexture(TEXTURE_SSGI_STORAGE_IMAGE);
     transitionImageLayout(currentCommandBuffer, ssgiTexture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 1);
@@ -339,7 +343,7 @@ static void recordCommandBufferCombine(Uint32 imageIndex, Uint32 currentFrame)
 
     vkCmdEndRenderPass(currentCommandBuffer);
 }
-static void drawFirstScene(Uint32 currentFrame, Uint32 width, Uint32 height, bool bottomMoved)
+static void drawFirstScene(Uint32 currentFrame, Uint32 width, Uint32 height, bool bottomMoved, Uint8 copy)
 {
     VkSemaphore * timelineSemaphore2d = allInOne.pTimelineSemaphore2d + currentFrame;
     Uint64 waitValue2D[] = {0, 0};
@@ -353,13 +357,21 @@ static void drawFirstScene(Uint32 currentFrame, Uint32 width, Uint32 height, boo
     Uint64 signalValue3D[] = {1, 0};
     signalValue3D[0] = waitValue3D[0] + 1;
 
+    bool graphicCopy, computeCopy, transferCopy;
+    graphicCopy = computeCopy = transferCopy = false;
+
+    if (copy & 1) graphicCopy = true;
+    if (copy & 2) computeCopy = true;
+    if (copy & 4) transferCopy = true;
+
     // particle
     resultVulkan(vkWaitForFences(allInOne.device, 1, &allInOne.pComputeInFlightFence[currentFrame], VK_TRUE, UINT64_MAX), 0);
     vkResetFences(allInOne.device, 1, &allInOne.pComputeInFlightFence[currentFrame]);
 
     vkResetCommandBuffer(allInOne.pComputeCommandBuffer[currentFrame], 0);
-    recordComputeCommandBuffer(currentFrame);
+    recordComputeCommandBuffer(currentFrame, computeCopy);
     vkEndCommandBuffer(allInOne.pComputeCommandBuffer[currentFrame]);
+    computeCopy = false;
 
     VkSubmitInfo particleSubmitInfo = {};
     setSubmitInfo(NULL, 0, NULL, NULL, 1, allInOne.pComputeCommandBuffer + currentFrame, 1, allInOne.pComputeSemaphore + currentFrame, &particleSubmitInfo);
@@ -372,8 +384,9 @@ static void drawFirstScene(Uint32 currentFrame, Uint32 width, Uint32 height, boo
     //printf("reset fences\n");
 
     resultVulkan(vkResetCommandBuffer(allInOne.pGraphicCommandBuffer[currentFrame], 0), 0);
-    recordCommandBufferShadow(currentFrame);
+    recordCommandBufferShadow(currentFrame, graphicCopy);
     resultVulkan(vkEndCommandBuffer(allInOne.pGraphicCommandBuffer[currentFrame]), 0);
+    graphicCopy = false;
 
     VkTimelineSemaphoreSubmitInfo timelineSemaphoreInfo = {};
     timelineSemaphoreInfo.sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO;
@@ -527,12 +540,12 @@ static void drawFirstScene(Uint32 currentFrame, Uint32 width, Uint32 height, boo
     presentInfo_3D.pResults = NULL;
     resultVulkan(vkQueuePresentKHR(getPresentQueue(), &presentInfo_3D), 0);
 }
-void drawFrame(Scene scene, Uint32 currentFrame, Uint32 width, Uint32 height, bool bottomMoved)
+void drawFrame(Scene scene, Uint32 currentFrame, Uint32 width, Uint32 height, bool bottomMoved, Uint8 copy)
 {
     switch (scene)
     {
         case First_Scene:
-        drawFirstScene(currentFrame, width, height, bottomMoved);
+        drawFirstScene(currentFrame, width, height, bottomMoved, copy);
         break;
         
         case Pause_Scene:
