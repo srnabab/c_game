@@ -101,6 +101,7 @@ void main()
     // vec3 specular = specularColor * sun.lightColor * sun.lightIntensity * specFactor;
 
     vec3 finalColor = shadow * (diffuse); // + specular;
+    // vec3 finalColor = (diffuse); // + specular;
     
     outNormalBuffer = vec4(inWorldNormal, 1.0);
 
@@ -108,7 +109,7 @@ void main()
     // outShadowFactor = shadow;
     // outShadowFactor = 1.0;
 
-    outColor = vec4(finalColor, textureColor.a);
+    outColor = vec4(finalColor * abs(step(1.0, textureColor.rgb) - 1.0), textureColor.a);
     // outColor = textureColor;
     // outColor = vec4(fragPosLightSpace);
     // outColor = vec4(projCoords, 1.0);

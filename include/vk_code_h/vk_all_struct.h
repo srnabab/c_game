@@ -101,6 +101,7 @@ struct _VK_ALL
     VkImageView * pSwapchain3DImageViews;
 
     VkFramebuffer * pGraphic2dFramebuffer;
+    VkFramebuffer * pBottomFramebuffer;
     VkFramebuffer * pSwapchain3DFramebuffer;
     VkFramebuffer * pShadowFramebuffer;
     VkFramebuffer * pDirectColorFramebuffer;

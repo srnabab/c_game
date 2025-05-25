@@ -36,6 +36,45 @@ static void drawShadow(const char * innerName, VkCommandBuffer commandBuffer)
 
     SDL_UnlockMutex(allSync.renderMutex);
 }
+static void recordCommandBufferBottom(Uint32 currentFrame, bool graphicCopy)
+{
+    VkCommandBuffer currentCommandBuffer = allInOne.pGraphicCommandBuffer[currentFrame];
+
+    beginPrimaryCommandBuffer(currentCommandBuffer);
+
+    if (graphicCopy) vkCmdExecuteCommands(currentCommandBuffer, 1, allInOne.pGraphicCopyCommandBuffer + currentFrame);
+
+    setViewport(allInOne.extent2D, currentCommandBuffer);
+
+    setScissor(allInOne.extent2D, currentCommandBuffer);
+
+    VkOffset2D offset = {0, 0};
+    VkRect2D renderArea = {offset, allInOne.extent2D};
+
+    VkClearValue clearValue[2];
+    clearValue[0].color= (VkClearColorValue){{0.0f, 0.0f, 0.0f, 0.0f}};
+
+    VkRenderPassBeginInfo renderBeginInfo = {};
+    renderBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderBeginInfo.pNext = NULL;
+    renderBeginInfo.renderPass = allInOne.renderPass;
+    renderBeginInfo.framebuffer = allInOne.pBottomFramebuffer[currentFrame];
+    renderBeginInfo.renderArea = renderArea;
+    renderBeginInfo.clearValueCount = 1;
+    renderBeginInfo.pClearValues = clearValue;
+
+    vkCmdBeginRenderPass(currentCommandBuffer, &renderBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+    vkCmdBindPipeline(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, allInOne.graphicPipeline);
+    vkCmdPushConstants(currentCommandBuffer, allInOne.graphicPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstants), allInOne.pPushConstants);
+    G_Buffer* vertexBuffer[] = {allInOne.vertexBuffer2D[currentFrame]};
+    G_vkCmdBindVertexBuffers(currentCommandBuffer, 0, 1, vertexBuffer);
+    G_vkCmdBindIndexBuffer(currentCommandBuffer, allInOne.indexBuffer2D, VK_INDEX_TYPE_UINT16);
+
+    drawPic(TEXTURE_TILE_SET, currentFrame, currentCommandBuffer, allInOne.graphicPipelineLayout);
+
+    vkCmdEndRenderPass(currentCommandBuffer);
+}
 static void recordCommandBuffer2D(Uint32 imageIndex, Uint32 currentFrame)
 {
     VkCommandBuffer currentCommandBuffer = allInOne.pGraphicCommandBuffer[currentFrame];
@@ -56,7 +95,6 @@ static void recordCommandBuffer2D(Uint32 imageIndex, Uint32 currentFrame)
 
     VkClearValue clearValue[2];
     clearValue[0].color= (VkClearColorValue){{0.0f, 0.0f, 0.0f, 0.0f}};
-    clearValue[1].depthStencil = (VkClearDepthStencilValue){1.0f, 0};
 
     VkRenderPassBeginInfo renderBeginInfo = {};
     renderBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -64,10 +102,16 @@ static void recordCommandBuffer2D(Uint32 imageIndex, Uint32 currentFrame)
     renderBeginInfo.renderPass = allInOne.renderPass;
     renderBeginInfo.framebuffer = allInOne.pGraphic2dFramebuffer[currentFrame];
     renderBeginInfo.renderArea = renderArea;
-    renderBeginInfo.clearValueCount = 2;
+    renderBeginInfo.clearValueCount = 1;
     renderBeginInfo.pClearValues = clearValue;
 
     vkCmdBeginRenderPass(currentCommandBuffer, &renderBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+    vkCmdBindPipeline(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, allInOne.particlePipeline);
+    G_vkCmdBindVertexBuffers(currentCommandBuffer, 0, 1, allInOne.pShaderStorageBuffer + currentFrame);
+    vkCmdBindDescriptorSets(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, allInOne.particlePipelineLayout, 0,\
+    1, &allInOne.pParticleDescriptorSets[currentFrame], 0, NULL);
+    vkCmdDraw(currentCommandBuffer, PARTICLE_COUNT, 1, 0, 0);
 
     vkCmdBindPipeline(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, allInOne.shapePipeline);
     vkCmdBindDescriptorSets(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, allInOne.shapePipelineLayout, 0, 1, allInOne.pShapeDescriptorSets + currentFrame, 0, NULL);
@@ -90,14 +134,7 @@ static void recordCommandBuffer2D(Uint32 imageIndex, Uint32 currentFrame)
     // main font png
     drawPic(TEXTURE_FONT, currentFrame, currentCommandBuffer, allInOne.graphicPipelineLayout);
 
-    drawPic(TEXTURE_TILE_SET, currentFrame, currentCommandBuffer, allInOne.graphicPipelineLayout);
-
-    vkCmdBindPipeline(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, allInOne.particlePipeline);
-    G_vkCmdBindVertexBuffers(currentCommandBuffer, 0, 1, allInOne.pShaderStorageBuffer + currentFrame);
-    vkCmdBindDescriptorSets(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, allInOne.particlePipelineLayout, 0,\
-    1, &allInOne.pParticleDescriptorSets[currentFrame], 0, NULL);
-    vkCmdDraw(currentCommandBuffer, PARTICLE_COUNT, 1, 0, 0);
-
+    // drawPic(TEXTURE_TILE_SET, currentFrame, currentCommandBuffer, allInOne.graphicPipelineLayout);
     vkCmdEndRenderPass(currentCommandBuffer);
 
     VkBufferMemoryBarrier bufferBarrierRelease = {};
@@ -154,67 +191,6 @@ static void recordCommandBufferShadow(Uint32 currentFrame, bool graphicCopy)
 
     setTextureImageLayout(getTexture(TEXTURE_SHADOW), VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, 0, 1);
 }
-// static void recordCommandBuffer_Bottom(Uint32 currentFrame, bool bottomMoved)
-// {
-//     VkCommandBuffer currentCommandBuffer = allInOne.pGraphicCommandBuffer[currentFrame];
-
-//     VkExtent2D bottomExtent2D = {BOTTOM_WIDTH, BOTTOM_HEIGHT};
-//     G_Texture_P * imageArray = getTexture(TEXTURE_MAP_ARRAY);
-//     G_Texture_P * tileSetTexture = getTexture(TEXTURE_TILE_SET);
-
-//     DrawHere tempDrawHere = {};
-//     Uint32 i = 0;
-//     Uint32 count = allInOne.bottomImageDrawStack.top + 1;
-
-//     VkOffset2D offset = {0, 0};
-//     VkRect2D renderArea = {offset, bottomExtent2D};
-
-//     VkClearValue clearValue[1];
-//     clearValue[0].color = (VkClearColorValue){{0.0f, 0.0f, 0.0f, 1.0f}};
-
-//     beginPrimaryCommandBuffer(currentCommandBuffer);
-
-//     setViewport(bottomExtent2D, currentCommandBuffer);
-//     setScissor(bottomExtent2D, currentCommandBuffer);
-
-//     VkDeviceSize singleUVBufferSize = sizeof(vec2) * MAX_TILES_IN_GROUP * VERTEX_COUNT_IN_UNIT_2D;
-
-//     VkBuffer vertexBuffers[] = {allInOne.tileMapVertexBuffer, allInOne.tileMapTexCoordBuffer[currentFrame]};
-//     VkDeviceSize offsets[] = {0, singleUVBufferSize * (count - 1)};
-
-//     while (StackIsEmpty(allInOne.bottomImageDrawStack) == false)
-//     {
-//         allInOne.bottomImageDrawStack.popFn(&allInOne.bottomImageDrawStack, &tempDrawHere);
-
-//         VkRenderPassBeginInfo renderBeginInfo = {};
-//         renderBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-//         renderBeginInfo.pNext = NULL;
-//         renderBeginInfo.renderPass = allInOne.offscreenRenderPass;
-//         renderBeginInfo.framebuffer = allInOne.pBottomImageArrayFramebuffers[tempDrawHere.BottomID];
-//         renderBeginInfo.renderArea = renderArea;
-//         renderBeginInfo.clearValueCount = 1;
-//         renderBeginInfo.pClearValues = clearValue;
-
-//         vkCmdBeginRenderPass(currentCommandBuffer, &renderBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-//         vkCmdBindPipeline(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, allInOne.tilemapPipeline);
-
-//         vkCmdBindDescriptorSets(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, allInOne.graphicPipelineLayout, 0, 1, tileSetTexture->pDescriptorSet, 0, NULL);
-
-//         vkCmdBindVertexBuffers(currentCommandBuffer, 0, 2, vertexBuffers, offsets);
-//         vkCmdBindIndexBuffer(currentCommandBuffer, allInOne.indexBuffer2D, 0, VK_INDEX_TYPE_UINT16);
-
-//         vkCmdPushConstants(currentCommandBuffer, allInOne.graphicPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstants), allInOne.pPushConstants);
-
-//         vkCmdDrawIndexed(currentCommandBuffer, MAX_TILES_IN_GROUP * INDEX_COUNT_IN_UNIT_2D, 1, 0, 0, 0);
-
-//         vkCmdEndRenderPass(currentCommandBuffer);
-
-//         setTextureImageLayout(imageArray, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, i, 1);
-//         i++;
-//         offsets[1] -= singleUVBufferSize;
-//     }
-// }
 static void recordCommandBuffer_3D(Uint32 currentFrame)
 {
     VkCommandBuffer currentCommandBuffer = allInOne.pGraphicCommandBuffer[currentFrame];
@@ -259,7 +235,7 @@ static void recordCommandBuffer_3D(Uint32 currentFrame)
 
     drawModel(TEXTURE_MODEL, currentFrame, currentCommandBuffer);
 
-    // drawModel(TEXTURE_BOTTOM, currentFrame, currentCommandBuffer);
+    drawModel(TEXTURE_BOTTOM, currentFrame, currentCommandBuffer);
 
     vkCmdEndRenderPass(currentCommandBuffer);
 }
@@ -367,6 +343,27 @@ static void drawFirstScene(Uint32 currentFrame, Uint32 width, Uint32 height, boo
     if (copy & 2) computeCopy = true;
     if (copy & 4) transferCopy = true;
 
+    VkTimelineSemaphoreSubmitInfo timelineSemaphoreInfo = {};
+    timelineSemaphoreInfo.sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO;
+
+    // bottom
+    vkWaitForFences(allInOne.device, 1, &allInOne.pGraphicInFlightFence[currentFrame], VK_TRUE, UINT64_MAX);
+    resultVulkan(vkResetFences(allInOne.device, 1, &allInOne.pGraphicInFlightFence[currentFrame]), 0);
+    resultVulkan(vkResetCommandBuffer(allInOne.pGraphicCommandBuffer[currentFrame], 0), 0);
+    recordCommandBufferBottom(currentFrame, graphicCopy);
+    resultVulkan(vkEndCommandBuffer(allInOne.pGraphicCommandBuffer[currentFrame]), 0);
+    graphicCopy = false;
+
+    timelineSemaphoreInfo.waitSemaphoreValueCount = 0;
+    timelineSemaphoreInfo.pWaitSemaphoreValues = NULL;
+    timelineSemaphoreInfo.signalSemaphoreValueCount = 1;
+    timelineSemaphoreInfo.pSignalSemaphoreValues = signalValue3D;
+
+    VkSubmitInfo submitInfoBottom = {};
+    setSubmitInfo(&timelineSemaphoreInfo, 0, NULL, NULL, 1, allInOne.pGraphicCommandBuffer + currentFrame, 1, timelineSemaphore3d, &submitInfoBottom);
+    resultVulkan(vkQueueSubmit(getGraphic3dQueue(), 1, &submitInfoBottom, allInOne.pGraphicInFlightFence[currentFrame]), 0);
+    signalValue3D[0]++;
+
     // particle
     resultVulkan(vkWaitForFences(allInOne.device, 1, &allInOne.pComputeInFlightFence[currentFrame], VK_TRUE, UINT64_MAX), 0);
     vkResetFences(allInOne.device, 1, &allInOne.pComputeInFlightFence[currentFrame]);
@@ -391,50 +388,19 @@ static void drawFirstScene(Uint32 currentFrame, Uint32 width, Uint32 height, boo
     resultVulkan(vkEndCommandBuffer(allInOne.pGraphicCommandBuffer[currentFrame]), 0);
     graphicCopy = false;
 
-    VkTimelineSemaphoreSubmitInfo timelineSemaphoreInfo = {};
-    timelineSemaphoreInfo.sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO;
-    timelineSemaphoreInfo.waitSemaphoreValueCount = 0;
-    timelineSemaphoreInfo.pWaitSemaphoreValues = NULL;
+    timelineSemaphoreInfo.waitSemaphoreValueCount = 1;
+    timelineSemaphoreInfo.pWaitSemaphoreValues = waitValue3D;
     timelineSemaphoreInfo.signalSemaphoreValueCount = 1;
     timelineSemaphoreInfo.pSignalSemaphoreValues = signalValue3D;
 
+    VkPipelineStageFlags waitStage_Shadow[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+
     VkSubmitInfo submitInfoShadow = {};
-    setSubmitInfo(&timelineSemaphoreInfo, 0, NULL, NULL, 1, allInOne.pGraphicCommandBuffer + currentFrame, 1, timelineSemaphore3d, &submitInfoShadow);
+    setSubmitInfo(&timelineSemaphoreInfo, 1, timelineSemaphore3d, waitStage_Shadow, 1, allInOne.pGraphicCommandBuffer + currentFrame, 1, timelineSemaphore3d, &submitInfoShadow);
     // print("semaphore value: %u", SDL_GetSemaphoreValue(allSync.vertexSemaphore));
     SDL_WaitSemaphore(allSync.vertexSemaphore);
     resultVulkan(vkQueueSubmit(getGraphic3dQueue(), 1, &submitInfoShadow, allInOne.pGraphicInFlightFence[currentFrame]), 0);
     signalValue3D[0]++;
-
-    // if (StackIsEmpty(allInOne.bottomImageDrawStack) == false)
-    // {
-    //     if (StackIsEmpty(allInOne.bottomImageMoveStack))
-    //     {
-    //         if (bottomMoved == true)
-    //         {
-    //             vkWaitForFences(allInOne.device, 1, &allInOne.pTransferInFlightFence[currentFrame], VK_TRUE, UINT64_MAX);
-    //         }
-    //         vkWaitForFences(allInOne.device, 1, &allInOne.pGraphicInFlightFence[currentFrame], VK_TRUE, UINT64_MAX);
-    //         vkResetFences(allInOne.device, 1, &allInOne.pGraphicInFlightFence[currentFrame]);
-    //         resultVulkan(vkResetCommandBuffer(allInOne.pGraphicCommandBuffer[currentFrame], 0), 0);
-    //         recordCommandBuffer_Bottom(currentFrame, bottomMoved);
-    //         resultVulkan(vkEndCommandBuffer(allInOne.pGraphicCommandBuffer[currentFrame]), 0);
-
-    //         bottomMoved = false;
-
-    //         waitValue3D[0] = signalValue3D[0] - 1;
-    //         timelineSemaphoreInfo.waitSemaphoreValueCount = 1;
-    //         timelineSemaphoreInfo.pWaitSemaphoreValues = waitValue3D;
-    //         timelineSemaphoreInfo.signalSemaphoreValueCount = 1;
-    //         timelineSemaphoreInfo.pSignalSemaphoreValues = signalValue3D;
-
-    //         VkPipelineStageFlags waitStage_Bottom[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-    //         VkSubmitInfo submitInfoBottom = {};
-    //         setSubmitInfo(&timelineSemaphoreInfo, 1, timelineSemaphore3d, waitStage_Bottom, 1, allInOne.pGraphicCommandBuffer + currentFrame, 1, timelineSemaphore3d, &submitInfoBottom);
-    //         resultVulkan(vkQueueSubmit(getGraphic3dQueue(), 1, &submitInfoBottom, allInOne.pGraphicInFlightFence[currentFrame]), 0);
-    //         signalValue3D[0]++;
-    //     }
-    // }
- 
 
     // 3d object
     vkWaitForFences(allInOne.device, 1, &allInOne.pGraphicInFlightFence[currentFrame], VK_TRUE, UINT64_MAX);

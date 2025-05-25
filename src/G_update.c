@@ -312,7 +312,6 @@ int update(void * arg)
         glm_lookat((vec3){x, y, z}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, allInOne.pLightSpaceUbo->lightSpace);
         glm_mul(lightProj, allInOne.pLightSpaceUbo->lightSpace, allInOne.pLightSpaceUbo->lightSpace);
 
-
         bufferMemcpy(allInOne.pLightSpaceUniformBuffer[currentFrame], 0, allInOne.pLightSpaceUbo , sizeof(LightSpace));
         // memcpy(allInOne.ppLightSpaceUniformBufferMapped[currentFrame], allInOne.pLightSpaceUbo , sizeof(LightSpace));
         SDL_SignalSemaphore(allSync.vertexSemaphore);

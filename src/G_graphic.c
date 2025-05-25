@@ -337,9 +337,13 @@ void initVulkan(void)
     createGraphicRenderPass(swapchainFormat, color2dDepthTexture->format, &allInOne.renderPass);
     CO_addRenderPass(allInOne.renderPass);// CO
     VkImageView color2dImageViews[] = {color2dTexture->imageView, color2dDepthTexture->imageView};
-    createFrameBuffer(2, allInOne.extent2D.width, allInOne.extent2D.height, 2, color2dImageViews, NULL, allInOne.renderPass, &allInOne.pGraphic2dFramebuffer);
+    createFrameBuffer(2, allInOne.extent2D.width, allInOne.extent2D.height, 1, color2dImageViews, NULL, allInOne.renderPass, &allInOne.pGraphic2dFramebuffer);
     CO_addFrameBuffer(2, allInOne.pGraphic2dFramebuffer);// CO
- 
+    
+    VkImageView bottomImageViews[] = {modelColorTexture->imageView};
+    createFrameBuffer(2, allInOne.extent2D.width, allInOne.extent2D.height, 1, bottomImageViews, NULL, allInOne.renderPass, &allInOne.pBottomFramebuffer);
+    CO_addFrameBuffer(2, allInOne.pBottomFramebuffer);// CO
+
     createTextureSampler(&allInOne.textureSampler);
     CO_addSampler(allInOne.textureSampler);// CO
     createNormalSampler(&allInOne.normalSampler);
@@ -646,10 +650,15 @@ void initVulkan(void)
     addDescriptorSetToTexture(TEXTURE_MODEL_COLOR, allInOne.pCombineDescriptorSets + 0);
     addDescriptorSetToTexture(TEXTURE_SSGI_STORAGE_IMAGE, allInOne.pCombineDescriptorSets + 0);
     addDescriptorSetToTexture(TEXTURE_2D_COLOR, allInOne.pCombineDescriptorSets + 0);
+    // addDescriptorSetToTexture(TEXTURE_2D_DEPTH, allInOne.pCombineDescriptorSets + 0);
+    addDescriptorSetToTexture(TEXTURE_MODEL_DEPTH, allInOne.pCombineDescriptorSets + 0);
+    addDescriptorSetToTexture(TEXTURE_SHADOW_MAP, allInOne.pCombineDescriptorSets + 0);
     // combine
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, TEXTURE_MODEL_COLOR, allInOne.textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_SSGI_STORAGE_IMAGE, allInOne.textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);//16
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2, TEXTURE_2D_COLOR, allInOne.textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);//16
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 3, TEXTURE_SHADOW_MAP, allInOne.depthSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    // addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4, TEXTURE_2D_DEPTH, allInOne.depthSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     executeUpdateDescriptorSets();
 
