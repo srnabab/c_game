@@ -371,7 +371,7 @@ bool textureOffsetsAdd(G_Texture_P * pTexture, Uint32 offset)
 {
     SDL_LockMutex(allSync.textureMutex);
     
-    if (pTexture->refCount && (offset == pTexture->offsets[pTexture->refCount - 1].count * 4 + pTexture->offsets[pTexture->refCount - 1].offset))
+    if (pTexture->refCount && (pTexture->offsets[pTexture->refCount - 1].count < (65532 / 6)) && (offset == pTexture->offsets[pTexture->refCount - 1].count * 4 + pTexture->offsets[pTexture->refCount - 1].offset))
     {
         pTexture->offsets[pTexture->refCount - 1].count += 1;
     }

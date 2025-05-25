@@ -60,22 +60,38 @@ void createTextureImageFromMem(void * pixels, Uint32 width, Uint32 height, VkDev
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
 
-    createBuffer(&stagingBuffer, &stagingBufferMemory, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    G_Buffer * stagingBuffer2 = allocateStagingBuffer(imageSize, &allInOne.stagingBufferPool);
+    if (stagingBuffer2 == NULL)
+    {
+        createBuffer(&stagingBuffer, &stagingBufferMemory, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-    void * data;
-    vkMapMemory(allInOne.device, stagingBufferMemory, 0, imageSize, 0, &data);
-    memcpy(data, pixels, imageSize);
-    vkUnmapMemory(allInOne.device, stagingBufferMemory);
+        void * data;
+        vkMapMemory(allInOne.device, stagingBufferMemory, 0, imageSize, 0, &data);
+        memcpy(data, pixels, imageSize);
+        vkUnmapMemory(allInOne.device, stagingBufferMemory);
 
-    createImage(width, height, format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, pTextureImage, pTextureImageMem);
+        createImage(width, height, format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, pTextureImage, pTextureImageMem);
 
-    _transitionImageLayout(NULL, *pTextureImage, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, 1);
-    copyBufferToImage(NULL, pTextureImage, width, height, &stagingBuffer);
+        _transitionImageLayout(NULL, *pTextureImage, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, 1);
+        copyBufferToImage(NULL, pTextureImage, width, height, &stagingBuffer, 0);
 
-    _transitionImageLayout(NULL, *pTextureImage, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 1);
+        _transitionImageLayout(NULL, *pTextureImage, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 1);
 
-    vkDestroyBuffer(allInOne.device, stagingBuffer, allInOne.pAllocationCallbacks);
-    vkFreeMemory(allInOne.device, stagingBufferMemory, allInOne.pAllocationCallbacks);
+        vkDestroyBuffer(allInOne.device, stagingBuffer, allInOne.pAllocationCallbacks);
+        vkFreeMemory(allInOne.device, stagingBufferMemory, allInOne.pAllocationCallbacks);
+    }
+    else
+    {
+        bufferMemcpy(stagingBuffer2, 0, pixels, imageSize);
+        createImage(width, height, format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, pTextureImage, pTextureImageMem);
+
+        _transitionImageLayout(NULL, *pTextureImage, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, 1);
+        copyBufferToImage(NULL, pTextureImage, width, height, &stagingBuffer2->pBufferPool->buffer, stagingBuffer2->startOffset);
+
+        _transitionImageLayout(NULL, *pTextureImage, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 1);
+
+        freeStagingBuffer(stagingBuffer2);
+    }
 }
 unsigned char * readPNG(PathType type, Uint32 * pWidth, Uint32 * pHeight, Uint8 * pChannel)
 {
@@ -97,7 +113,7 @@ unsigned char * readPNG(PathType type, Uint32 * pWidth, Uint32 * pHeight, Uint8 
 
     return pixels;
 }
-VkResult copyBufferToImage(VkCommandBuffer commandBuffer, VkImage * pImage, Uint32 width, Uint32 height, VkBuffer * pBuffer)
+VkResult copyBufferToImage(VkCommandBuffer commandBuffer, VkImage * pImage, Uint32 width, Uint32 height, VkBuffer * pBuffer, VkDeviceSize bufferOffset)
 {
     VkResult result = VK_SUCCESS;
 
@@ -112,7 +128,7 @@ VkResult copyBufferToImage(VkCommandBuffer commandBuffer, VkImage * pImage, Uint
     }
 
     VkBufferImageCopy region = {};
-    region.bufferOffset = 0;
+    region.bufferOffset = bufferOffset;
     region.bufferRowLength = 0;
     region.bufferImageHeight = 0;
 

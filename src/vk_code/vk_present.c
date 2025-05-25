@@ -56,6 +56,7 @@ static void recordCommandBuffer2D(Uint32 imageIndex, Uint32 currentFrame)
 
     VkClearValue clearValue[2];
     clearValue[0].color= (VkClearColorValue){{0.0f, 0.0f, 0.0f, 0.0f}};
+    clearValue[1].depthStencil = (VkClearDepthStencilValue){1.0f, 0};
 
     VkRenderPassBeginInfo renderBeginInfo = {};
     renderBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -63,7 +64,7 @@ static void recordCommandBuffer2D(Uint32 imageIndex, Uint32 currentFrame)
     renderBeginInfo.renderPass = allInOne.renderPass;
     renderBeginInfo.framebuffer = allInOne.pGraphic2dFramebuffer[currentFrame];
     renderBeginInfo.renderArea = renderArea;
-    renderBeginInfo.clearValueCount = 1;
+    renderBeginInfo.clearValueCount = 2;
     renderBeginInfo.pClearValues = clearValue;
 
     vkCmdBeginRenderPass(currentCommandBuffer, &renderBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -88,6 +89,8 @@ static void recordCommandBuffer2D(Uint32 imageIndex, Uint32 currentFrame)
     // drawPic(TEXTURE_BOX, currentFrame, currentCommandBuffer);
     // main font png
     drawPic(TEXTURE_FONT, currentFrame, currentCommandBuffer, allInOne.graphicPipelineLayout);
+
+    drawPic(TEXTURE_TILE_SET, currentFrame, currentCommandBuffer, allInOne.graphicPipelineLayout);
 
     vkCmdBindPipeline(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, allInOne.particlePipeline);
     G_vkCmdBindVertexBuffers(currentCommandBuffer, 0, 1, allInOne.pShaderStorageBuffer + currentFrame);

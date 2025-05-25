@@ -136,7 +136,6 @@ void freeStagingBuffer(G_Buffer * pBuffer)
 {
     if (pBuffer == NULL) return;
     G_free(pBuffer);
-    pBuffer = NULL;
 }
 G_Buffer * allocateBuffer(VkDeviceSize bufferSize, G_BufferPool * pBufferPool)
 {

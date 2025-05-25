@@ -11,13 +11,12 @@ extern G_SYNC allSync;
 
 void vertexInitialize(float x, float y, float width, float height, float depth, Uint32 vertexCount, Vertex332_ * pVertices)
 {
-    float WindowHeight = (float)LOGICAL_HEIGHT;
-    float xOffset = width / (WindowHeight / 2);
-    float yOffset = height / (WindowHeight / 2);
+    float xOffset = width / ((float)LOGICAL_HEIGHT / 2);
+    float yOffset = height / ((float)LOGICAL_HEIGHT / 2);
 
     vec2 leftUp;
-    leftUp[0] = x / (WindowHeight / 2);
-    leftUp[1] = y / (WindowHeight / 2);
+    leftUp[0] = x / ((float)LOGICAL_HEIGHT / 2);
+    leftUp[1] = y / ((float)LOGICAL_HEIGHT / 2);
     // vec2 rightUp; 
     // rightUp[0] = leftUp[0] + xOffset;
     // rightUp[1] = leftUp[1];
@@ -77,12 +76,14 @@ void textureVertexInit(float x, float y, float width, float height, float depth,
 
     Uint32 vertexCount = *pVertexCount;
     textureOffsetsAdd(tempTexture, vertexCount);
+#warning vertex count overflow processing needed
     if (*pVertexCount < allInOne.maxVertices2DCount) *pVertexCount += 4;
-    else return;
+    else 
+    {
+        SDL_UnlockMutex(allSync.vertexMutex);
+        return;
+    }
 
-    SDL_UnlockMutex(allSync.vertexMutex);
-
-    SDL_LockMutex(allSync.vertexMutex);
     vertexInitialize(x, y, width, height, depth, vertexCount, pVertices);
     SDL_UnlockMutex(allSync.vertexMutex);
 }
@@ -93,11 +94,12 @@ void textureVertexInit_SetUV(float x, float y, float width, float height, float 
     Uint32 vertexCount = *pVertexCount;
     textureOffsetsAdd(tempTexture, vertexCount);
     if (*pVertexCount < allInOne.maxVertices2DCount) *pVertexCount += 4;
-    else return;
+    else 
+    {
+        SDL_UnlockMutex(allSync.vertexMutex);
+        return;
+    }
 
-    SDL_UnlockMutex(allSync.vertexMutex);
-
-    SDL_LockMutex(allSync.vertexMutex);
     vertexInitialize(x, y, width, height, depth, vertexCount, pVertices);
     
     pVertices[vertexCount].texCoord[0] = UV[0][0];

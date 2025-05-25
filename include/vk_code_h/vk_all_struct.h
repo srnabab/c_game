@@ -134,8 +134,6 @@ struct _VK_ALL
     Uint32 maxVertices2DCount;
     Vertex332_ * pVertices2D;
     Uint32 vertices2DCount;
-    // VkDeviceMemory pVertexBuffer2DMem[MAX_FRAMES_IN_FLIGHT];
-    // void* pVertexBuffer2DMemMapped[MAX_FRAMES_IN_FLIGHT];
 
     G_Buffer* indexBuffer2D;
     // Uint16 * pIndices2D;
@@ -145,14 +143,10 @@ struct _VK_ALL
     Uint32 maxVertices3DCount;
     Vertex3323 * pVertices3D;
     Uint32 vertices3DCount;
-    // VkDeviceMemory vertexBuffer3DMem[MAX_FRAMES_IN_FLIGHT];
-    // void* pVertexBuffer3DMemMapped[MAX_FRAMES_IN_FLIGHT];
 
     G_Buffer * indexBuffer3D[MAX_FRAMES_IN_FLIGHT];
     Uint32 * pIndices3D;
     Uint32 indices3DCount;
-    // VkDeviceMemory indexBuffer3DMem[MAX_FRAMES_IN_FLIGHT];
-    // void* pIndexBuffer3DMemMapped[MAX_FRAMES_IN_FLIGHT];
 
     G_StaticModelPool * pStaticModelPool;
 

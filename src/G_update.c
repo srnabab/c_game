@@ -202,21 +202,24 @@ int update(void * arg)
 
     Uint32 currentFrame;
 
-    Uint32 vertexStart = 0;
+    // Uint32 vertexStart = 0;
     Uint32 vertexEnd = allInOne.vertices2DCount;
 
-    Uint32 rowCount = 0;
-    Uint32 colCount = 0;
+    // Uint32 rowCount = 0;
+    // Uint32 colCount = 0;
 
-    int firstBottom_X = 0;
-    int firstBottom_Y = 0;
+    // int firstBottom_X = 0;
+    // int firstBottom_Y = 0;
 
-    int baseX = 0;
-    int baseY = 0;
+    // int baseX = 0;
+    // int baseY = 0;
 
     int32_t groupID = -1;
+    TILE_SET * pTileSet;
+    getTileSetPtr(&pTileSet);
 
     textureVertexInit(-32, -32, 64, 64, 0.2f, &allInOne.vertices2DCount, allInOne.pVertices2D, getTexture(TEXTURE_LOADING));
+    mapVertexInitialize(-960.0f, 540.0f, 16.0f, 16.0f, 0.01f, &allInOne.vertices2DCount, allInOne.pVertices2D, pTileSet->maps, groupID);
     
     // tileMapVertexInit(&allInOne.vertices2DCount, allInOne.pVertices2D);
     addModelMatrix(0, 0, 8, 1.0f, 1.0f, 1.0f, allInOne.pStaticModelPool, TEXTURE_MODEL);
