@@ -24,7 +24,7 @@
 
 extern VK_ALL allInOne;
 extern G_SYNC allSync;
-extern bool update_done, draw_done;
+extern bool draw_done;
 extern bool game_is_running;
 
 extern bool keys[SDL_SCANCODE_COUNT + UINT8_MAX];
@@ -181,6 +181,7 @@ int update(void * arg)
     initEntity(&camera, 0.0f, 0.0f, 6.4f);
     initEntity(&mouse, 0.0f, 0.0f, 0.0f);
     
+    bool draw_done = false;
     bool playedMusic = false;
     bool vertex2dChanged1, vertex2dChanged2 ;
     vertex2dChanged1 = vertex2dChanged2 = true;
@@ -266,16 +267,35 @@ int update(void * arg)
         {
             SDL_SignalSemaphore(allSync.updateSemaphore);
 
-            while (!draw_done) SDL_SignalSemaphore(allSync.vertexSemaphore);
+            if (draw_done == false)
+            {
+                while (1)
+                {
+                    if (SDL_TryWaitSemaphore(allSync.signalSemaphore))
+                    {
+                        draw_done = true;
+                    }
 
-            while (SDL_TryWaitSemaphore(allSync.signalSemaphore));
+                    for (int i = 0;i < 10;i++)
+                    {
+                        SDL_SignalSemaphore(allSync.vertexSemaphore);
+                    }
 
-            update_done = false;
-            continue;
+                    if (draw_done) break;
+                    
+                    continue;
+                }
+            }
         }
         else
         {
-            while(SDL_TryWaitSemaphore(allSync.vertexSemaphore));
+            if (SDL_TryWaitSemaphore(allSync.vertexSemaphore))
+            {
+                SDL_DestroySemaphore(allSync.vertexSemaphore);
+                print("recreate vertex semaphore");
+                allSync.vertexSemaphore = SDL_CreateSemaphore(0);
+                last_frame_time = SDL_GetPerformanceCounter();
+            }
         }
  
         SDL_LockMutex(allSync.inputMutex);
@@ -550,10 +570,20 @@ int update(void * arg)
             //print("delta time:%f", delta_time);
             update_frame++;
             
-            update_done = true;
+            // update_done = true;
+            // print("1");
+            
+            SDL_WaitSemaphore(allSync.signalSemaphore);
+            draw_done = true;
+
+            SDL_SignalSemaphore(allSync.updateSemaphore);
+            SDL_SignalSemaphore(allSync.renderSemaphore);
+
+            draw_done = false;
+            // print("3");
         }
 
-        SDL_SignalSemaphore(allSync.signalSemaphore);
+        // SDL_SignalSemaphore(allSync.signalSemaphore);
     }
     return 0;
 }
