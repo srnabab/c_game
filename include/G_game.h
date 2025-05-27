@@ -16,7 +16,7 @@ extern int SDLCALL update(void *);
 // Render function to draw game objects in the SDL window
 extern int SDLCALL render(void *);
 // Function to destroy SDL window and renderer
-extern int SDLCALL signal_trans (void *);
+// extern int SDLCALL signal_trans (void *);
 
 extern void SDLCALL pauseCode(void);
 

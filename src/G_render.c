@@ -9,7 +9,6 @@
 extern VK_ALL allInOne;
 extern G_SYNC allSync;
 extern bool game_is_running;
-extern bool draw_done;
 extern bool resolutionChanged;
 
 // Render function to draw game objects
@@ -37,8 +36,6 @@ int render(void * arg)
 
         allInOne.currentFrame = (allInOne.currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
         currentFrame = allInOne.currentFrame;
-
-        draw_done = true;
 
         //print("render frames: %d ----%s", render_frame, timeNow);
 

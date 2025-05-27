@@ -80,7 +80,7 @@ extern SDL_Window * window_3D;
 // file variables
 static SDL_Thread * sdl_pid_update = NULL;
 static SDL_Thread * sdl_pid_draw = NULL;
-static SDL_Thread * sdl_pid_signal = NULL;
+// static SDL_Thread * sdl_pid_signal = NULL;
 
 void setup(int argc, char* argv[]) 
 {
@@ -192,7 +192,7 @@ void setup(int argc, char* argv[])
 
     sdl_pid_update = SDL_CreateThread(&update, "update", NULL);
     sdl_pid_draw = SDL_CreateThread(&render, "render", NULL);
-    sdl_pid_signal = SDL_CreateThread(&signal_trans, "signal", NULL);
+    // sdl_pid_signal = SDL_CreateThread(&signal_trans, "signal", NULL);
 
 clean:
     if (res < 0)
@@ -238,8 +238,8 @@ void destroy(void)
         print("Error %x: %s", _Code, SDL_GetError());
     }
 
-    SDL_WaitThread(sdl_pid_signal, NULL);
-    print("signal end\n");
+    // SDL_WaitThread(sdl_pid_signal, NULL);
+    // print("signal end\n");
     SDL_SignalSemaphore(allSync.updateSemaphore);
     SDL_WaitThread(sdl_pid_update, NULL);
     print("update end\n");

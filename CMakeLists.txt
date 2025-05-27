@@ -58,7 +58,7 @@ add_executable(game ${SRC_ROOT}/main.c
                     ${SRC_ROOT}/texture_generate/textureG.c
                     ${SRC_ROOT}/G_setup.c
                     ${SRC_ROOT}/G_render.c
-                    ${SRC_ROOT}/G_signal_trans.c
+                    # ${SRC_ROOT}/G_signal_trans.c
                     ${SRC_ROOT}/G_update.c
                     ${SRC_ROOT}/G_game.c
                     ${SRC_ROOT}/G_file/G_file.c
