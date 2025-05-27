@@ -37,13 +37,9 @@ int render(void * arg)
         allInOne.currentFrame = (allInOne.currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
         currentFrame = allInOne.currentFrame;
 
-        // draw_done = true;
-
         //print("render frames: %d ----%s", render_frame, timeNow);
 
         render_frame++;
-
-        // print("2");
 
         SDL_SignalSemaphore(allSync.signalSemaphore);
     }

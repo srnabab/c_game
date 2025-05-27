@@ -24,7 +24,6 @@
 
 extern VK_ALL allInOne;
 extern G_SYNC allSync;
-extern bool draw_done;
 extern bool game_is_running;
 
 extern bool keys[SDL_SCANCODE_COUNT + UINT8_MAX];
@@ -570,9 +569,6 @@ int update(void * arg)
             //print("delta time:%f", delta_time);
             update_frame++;
             
-            // update_done = true;
-            // print("1");
-            
             SDL_WaitSemaphore(allSync.signalSemaphore);
             draw_done = true;
 
@@ -580,7 +576,6 @@ int update(void * arg)
             SDL_SignalSemaphore(allSync.renderSemaphore);
 
             draw_done = false;
-            // print("3");
         }
 
         // SDL_SignalSemaphore(allSync.signalSemaphore);
