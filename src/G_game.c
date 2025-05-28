@@ -355,7 +355,8 @@ void pauseCode(void)
     keys[SDL_SCANCODE_PAUSE] = false;
     preKeys[SDL_SCANCODE_PAUSE] = true;
 }
-// Function to poll SDL events and process keyboard input
+// Function to poll SDL events and process keyboard 
+bool minimize = false;
 bool process_input(void)
 {
     static Uint32 preKeyState = 0;
@@ -377,13 +378,13 @@ bool process_input(void)
 
     SDL_Event event;
 
-    if (pause)
+    if (minimize)
     {
         SDL_WaitEvent(&event);
         SDL_SignalSemaphore(allSync.updateSemaphore);
-        print("pause: %d", pause);
+        print("pause: %d", minimize);
         pauseCode();
-        pause = (pause + 1) % 2;
+        minimize = (minimize + 1) % 2;
     }
 
     while(SDL_PollEvent(&event))
@@ -422,14 +423,14 @@ bool process_input(void)
 
             case SDL_EVENT_WINDOW_MINIMIZED:
             pauseCode();
-            pause = (pause + 1) % 2;
+            minimize = (minimize + 1) % 2;
             break;
 
             case SDL_EVENT_WINDOW_RESTORED:
             SDL_RaiseWindow(window_3D);
             resolutionChanged = true;
             pauseCode();
-            pause = (pause + 1) % 2;
+            minimize = (minimize + 1) % 2;
             break;
 
             case SDL_EVENT_MOUSE_MOTION:

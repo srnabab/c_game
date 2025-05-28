@@ -166,6 +166,8 @@ static void processKeys(void)
     }
 }
 
+extern bool minimize;
+
 // Update function with a fixed time step
 int update(void * arg)
 {
@@ -252,6 +254,13 @@ int update(void * arg)
     while (game_is_running)
     {
         SDL_WaitSemaphore(allSync.updateSemaphore);
+ 
+        Uint64 tempTime = SDL_GetPerformanceCounter();
+        delta_time_ns = ((tempTime - last_frame_time) * 1000000000ULL) / frequency;
+        last_frame_time = tempTime;
+        totalTimeNs += delta_time_ns;
+        delta_time = delta_time_ns / ((float)S_TO_NS);
+        totalTime = totalTimeNs / ((float)S_TO_NS);
 
         processKeys();
 
@@ -260,7 +269,8 @@ int update(void * arg)
             if (draw_done)
             {
                 pause:
-                SDL_WaitSemaphore(allSync.updateSemaphore);
+                if (minimize) SDL_WaitSemaphore(allSync.updateSemaphore);
+                else SDL_SignalSemaphore(allSync.updateSemaphore);
             }
             else
             {
@@ -277,6 +287,8 @@ int update(void * arg)
                     }
 
                     if (draw_done) goto pause;
+
+                    SDL_Delay(1);
                 }
             }
 
@@ -293,13 +305,6 @@ int update(void * arg)
                 // last_frame_time = SDL_GetPerformanceCounter();
             }
         }
- 
-        Uint64 tempTime = SDL_GetPerformanceCounter();
-        delta_time_ns = ((tempTime - last_frame_time) * 1000000000ULL) / frequency;
-        last_frame_time = tempTime;
-        totalTimeNs += delta_time_ns;
-        delta_time = delta_time_ns / ((float)S_TO_NS);
-        totalTime = totalTimeNs / ((float)S_TO_NS);
 
         SDL_LockMutex(allSync.inputMutex);
         setEntityPosition(&mouse, mouse_x, mouse_y);
