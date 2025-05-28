@@ -253,13 +253,6 @@ int update(void * arg)
     {
         SDL_WaitSemaphore(allSync.updateSemaphore);
 
-        Uint64 tempTime = SDL_GetPerformanceCounter();
-        delta_time_ns = ((tempTime - last_frame_time) * 1000000000ULL) / frequency;
-        last_frame_time = tempTime;
-        totalTimeNs += delta_time_ns;
-        delta_time = delta_time_ns / ((float)S_TO_NS);
-        totalTime = totalTimeNs / ((float)S_TO_NS);
-
         processKeys();
 
         if (scene == Pause_Scene)
@@ -287,8 +280,6 @@ int update(void * arg)
                 }
             }
 
-            // SDL_SignalSemaphore(allSync.updateSemaphore);
-
             continue;
         }
         else
@@ -299,10 +290,17 @@ int update(void * arg)
                 print("recreate vertex semaphore");
                 allSync.vertexSemaphore = SDL_CreateSemaphore(0);
                 SDL_SignalSemaphore(allSync.renderSemaphore);
-                last_frame_time = SDL_GetPerformanceCounter();
+                // last_frame_time = SDL_GetPerformanceCounter();
             }
         }
  
+        Uint64 tempTime = SDL_GetPerformanceCounter();
+        delta_time_ns = ((tempTime - last_frame_time) * 1000000000ULL) / frequency;
+        last_frame_time = tempTime;
+        totalTimeNs += delta_time_ns;
+        delta_time = delta_time_ns / ((float)S_TO_NS);
+        totalTime = totalTimeNs / ((float)S_TO_NS);
+
         SDL_LockMutex(allSync.inputMutex);
         setEntityPosition(&mouse, mouse_x, mouse_y);
         SDL_UnlockMutex(allSync.inputMutex);

@@ -381,7 +381,6 @@ bool process_input(void)
     {
         SDL_WaitEvent(&event);
         SDL_SignalSemaphore(allSync.updateSemaphore);
-        // BREAK_POINT
         print("pause: %d", pause);
         pauseCode();
         pause = (pause + 1) % 2;
