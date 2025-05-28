@@ -76,7 +76,7 @@ void printResidueMemory(void)
     HASH_ITER(hh, record, s, tmp)
     {
         print("residue memory: %p, return address0: %p, return address1: %p, allocations: %u\n%d, %s", s->rawptr, s->returnAddress0, s->returnAddress1, allocations, s->address1.line, s->address1.file);
-        __asm__ volatile("int3");
+        BREAK_POINT
         allocations--;
     }
     SDL_UnlockMutex(recordMutex);

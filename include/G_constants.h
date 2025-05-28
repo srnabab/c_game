@@ -4,6 +4,7 @@
 #define G_CONSTANTS_H 1
 
 #define TRACE_PTR
+#define BREAK_POINT __asm__ volatile("int3");
 
 #define TEST 0
 

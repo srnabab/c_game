@@ -264,9 +264,12 @@ int update(void * arg)
 
         if (scene == Pause_Scene)
         {
-            SDL_SignalSemaphore(allSync.updateSemaphore);
-
-            if (draw_done == false)
+            if (draw_done)
+            {
+                pause:
+                SDL_WaitSemaphore(allSync.updateSemaphore);
+            }
+            else
             {
                 while (1)
                 {
@@ -280,11 +283,13 @@ int update(void * arg)
                         SDL_SignalSemaphore(allSync.vertexSemaphore);
                     }
 
-                    if (draw_done) break;
-                    
-                    continue;
+                    if (draw_done) goto pause;
                 }
             }
+
+            // SDL_SignalSemaphore(allSync.updateSemaphore);
+
+            continue;
         }
         else
         {
@@ -293,6 +298,7 @@ int update(void * arg)
                 SDL_DestroySemaphore(allSync.vertexSemaphore);
                 print("recreate vertex semaphore");
                 allSync.vertexSemaphore = SDL_CreateSemaphore(0);
+                SDL_SignalSemaphore(allSync.renderSemaphore);
                 last_frame_time = SDL_GetPerformanceCounter();
             }
         }

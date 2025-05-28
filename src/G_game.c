@@ -361,18 +361,31 @@ bool process_input(void)
     static Uint32 preKeyState = 0;
     static uint8_t pressedKey = 0;
     static int buttonId = 0;
+    static int pause = 0;
 
     if (willPopWindow())
     {
         pauseCode();
+        pause = (pause + 1) % 2;
         
         popWindow();
 
         pauseCode();
+        pause = (pause + 1) % 2;
     }
 
 
     SDL_Event event;
+
+    if (pause)
+    {
+        SDL_WaitEvent(&event);
+        SDL_SignalSemaphore(allSync.updateSemaphore);
+        // BREAK_POINT
+        print("pause: %d", pause);
+        pauseCode();
+        pause = (pause + 1) % 2;
+    }
 
     while(SDL_PollEvent(&event))
     {
@@ -388,12 +401,14 @@ bool process_input(void)
             case SDL_EVENT_QUIT:
 
             pauseCode();
+            pause = (pause + 1) % 2;
 
             SDL_ShowMessageBox(boxData, &buttonId);
 
             if (buttonId == 2)
             {
                 pauseCode();
+                pause = (pause + 1) % 2;
 
                 game_is_running = false;
 
@@ -402,17 +417,20 @@ bool process_input(void)
             else if (buttonId == 1)
             {
                 pauseCode();
+                pause = (pause + 1) % 2;
             }
             break;
 
             case SDL_EVENT_WINDOW_MINIMIZED:
             pauseCode();
+            pause = (pause + 1) % 2;
             break;
 
             case SDL_EVENT_WINDOW_RESTORED:
             SDL_RaiseWindow(window_3D);
             resolutionChanged = true;
             pauseCode();
+            pause = (pause + 1) % 2;
             break;
 
             case SDL_EVENT_MOUSE_MOTION:
@@ -455,6 +473,7 @@ bool process_input(void)
 
                 case SDLK_F6:
                     pauseCode();
+                    pause = (pause + 1) % 2;
 
                     resolutionIndex = (resolutionIndex + 1) % (sizeof(resolutions) / sizeof(resolutions[0]));
 
@@ -473,12 +492,14 @@ bool process_input(void)
                     
                     print("sdl width: %u, height: %u", allInOne.extent2D.width, allInOne.extent2D.height);
                     pauseCode();
+                    pause = (pause + 1) % 2;
                     break;
 
                 case SDLK_F10:
                     print("F10");
 
                     pauseCode();
+                    pause = (pause + 1) % 2;
 
                     SDL_DisplayMode displayMode = {0};
 
@@ -492,12 +513,14 @@ bool process_input(void)
                     print("fullscreen");
 
                     pauseCode();
+                    pause = (pause + 1) % 2;
                     break;
 
                 case SDLK_F9:
                     print("F9");
 
                     pauseCode();
+                    pause = (pause + 1) % 2;
 
                     SDL_SetWindowFullscreen(window_3D, 0);
                     allInOne.oldExtent2D.width = allInOne.extent2D.width;
@@ -510,6 +533,7 @@ bool process_input(void)
 
                     print("windowed");
                     pauseCode();
+                    pause = (pause + 1) % 2;
                     break;
 
                 default:
