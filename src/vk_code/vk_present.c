@@ -357,12 +357,13 @@ static void drawFirstScene(Uint32 currentFrame, Uint32 width, Uint32 height, boo
     timelineSemaphoreInfo.waitSemaphoreValueCount = 0;
     timelineSemaphoreInfo.pWaitSemaphoreValues = NULL;
     timelineSemaphoreInfo.signalSemaphoreValueCount = 1;
-    timelineSemaphoreInfo.pSignalSemaphoreValues = signalValue3D;
+    timelineSemaphoreInfo.pSignalSemaphoreValues = signalValue2D;
 
     VkSubmitInfo submitInfoBottom = {};
-    setSubmitInfo(&timelineSemaphoreInfo, 0, NULL, NULL, 1, allInOne.pGraphicCommandBuffer + currentFrame, 1, timelineSemaphore3d, &submitInfoBottom);
-    resultVulkan(vkQueueSubmit(getGraphic3dQueue(), 1, &submitInfoBottom, allInOne.pGraphicInFlightFence[currentFrame]), 0);
-    signalValue3D[0]++;
+    setSubmitInfo(&timelineSemaphoreInfo, 0, NULL, NULL, 1, allInOne.pGraphicCommandBuffer + currentFrame, 1, timelineSemaphore2d, &submitInfoBottom);
+    SDL_WaitSemaphore(allSync.vertexSemaphore);
+    resultVulkan(vkQueueSubmit(getGraphic2dQueue(), 1, &submitInfoBottom, allInOne.pGraphicInFlightFence[currentFrame]), 0);
+    signalValue2D[0]++;
 
     // particle
     resultVulkan(vkWaitForFences(allInOne.device, 1, &allInOne.pComputeInFlightFence[currentFrame], VK_TRUE, UINT64_MAX), 0);
@@ -388,15 +389,16 @@ static void drawFirstScene(Uint32 currentFrame, Uint32 width, Uint32 height, boo
     resultVulkan(vkEndCommandBuffer(allInOne.pGraphicCommandBuffer[currentFrame]), 0);
     graphicCopy = false;
 
-    timelineSemaphoreInfo.waitSemaphoreValueCount = 1;
-    timelineSemaphoreInfo.pWaitSemaphoreValues = waitValue3D;
+    waitValue3D[0] = signalValue3D[0] - 1;
+    timelineSemaphoreInfo.waitSemaphoreValueCount = 0;
+    timelineSemaphoreInfo.pWaitSemaphoreValues = NULL;
     timelineSemaphoreInfo.signalSemaphoreValueCount = 1;
     timelineSemaphoreInfo.pSignalSemaphoreValues = signalValue3D;
 
-    VkPipelineStageFlags waitStage_Shadow[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+    // VkPipelineStageFlags waitStage_Shadow[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
 
     VkSubmitInfo submitInfoShadow = {};
-    setSubmitInfo(&timelineSemaphoreInfo, 1, timelineSemaphore3d, waitStage_Shadow, 1, allInOne.pGraphicCommandBuffer + currentFrame, 1, timelineSemaphore3d, &submitInfoShadow);
+    setSubmitInfo(&timelineSemaphoreInfo, 0, NULL, NULL, 1, allInOne.pGraphicCommandBuffer + currentFrame, 1, timelineSemaphore3d, &submitInfoShadow);
     // print("semaphore value: %u", SDL_GetSemaphoreValue(allSync.vertexSemaphore));
     SDL_WaitSemaphore(allSync.vertexSemaphore);
     resultVulkan(vkQueueSubmit(getGraphic3dQueue(), 1, &submitInfoShadow, allInOne.pGraphicInFlightFence[currentFrame]), 0);
@@ -410,16 +412,18 @@ static void drawFirstScene(Uint32 currentFrame, Uint32 width, Uint32 height, boo
     recordCommandBuffer_3D(currentFrame);
     resultVulkan(vkEndCommandBuffer(allInOne.pGraphicCommandBuffer[currentFrame]), 0);
 
-
     waitValue3D[0] = signalValue3D[0] - 1;
-    timelineSemaphoreInfo.waitSemaphoreValueCount = 1;
-    timelineSemaphoreInfo.pWaitSemaphoreValues = waitValue3D;
+    waitValue2D[0] = signalValue2D[0] - 1;
+    Uint64 graphicWaitValue[] = {waitValue2D[0], waitValue3D[0]};
+    timelineSemaphoreInfo.waitSemaphoreValueCount = 2;
+    timelineSemaphoreInfo.pWaitSemaphoreValues = graphicWaitValue;
     timelineSemaphoreInfo.signalSemaphoreValueCount = 1;
     timelineSemaphoreInfo.pSignalSemaphoreValues = signalValue3D;
 
-    VkPipelineStageFlags waitStage_3D[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+    VkSemaphore graphicWaitSemaphores[] = {*timelineSemaphore2d, *timelineSemaphore3d};
+    VkPipelineStageFlags waitStage_3D[] = {VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
     VkSubmitInfo submitInfo3D = {};
-    setSubmitInfo(&timelineSemaphoreInfo, 1, timelineSemaphore3d, waitStage_3D, 1, allInOne.pGraphicCommandBuffer + currentFrame, 1, timelineSemaphore3d, &submitInfo3D);
+    setSubmitInfo(&timelineSemaphoreInfo, 2, graphicWaitSemaphores, waitStage_3D, 1, allInOne.pGraphicCommandBuffer + currentFrame, 1, timelineSemaphore3d, &submitInfo3D);
     SDL_WaitSemaphore(allSync.vertexSemaphore);
     resultVulkan(vkQueueSubmit(getGraphic3dQueue(), 1, &submitInfo3D, allInOne.pGraphicInFlightFence[currentFrame]), 0);
     signalValue3D[0]++;

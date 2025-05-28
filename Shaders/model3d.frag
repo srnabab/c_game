@@ -106,8 +106,6 @@ void main()
     outNormalBuffer = vec4(inWorldNormal, 1.0);
 
     outShadowFactor = shadow * NdotL * sun.lightIntensity;
-    // outShadowFactor = shadow;
-    // outShadowFactor = 1.0;
 
     outColor = vec4(finalColor * abs(step(1.0, textureColor.rgb) - 1.0), textureColor.a);
     // outColor = textureColor;
