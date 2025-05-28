@@ -316,6 +316,7 @@ int update(void * arg)
         float aspect = ((float)allInOne.extent2D.width / allInOne.extent2D.height) * aspect2;
 
         // bottom
+        glm_mat4_identity(pGraphic3DUbo->model);
         glm_lookat((vec3){*pCamera_X * aspect, 0.0f + *pCamera_Y * aspect2, 10.0f}, (vec3){*pCamera_X * aspect, *pCamera_Y * aspect2, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pGraphic3DUbo->view);
         glm_ortho_vulkan(-aspect, aspect, -aspect2, aspect2, -0.001f, -100.0f, pGraphic3DUbo->proj);
 
@@ -383,13 +384,13 @@ int update(void * arg)
         SDL_SignalSemaphore(allSync.vertexSemaphore);
 
         // UI object
-        // glm_mat4_identity(pGraphicUbo->model);
+        glm_mat4_identity(pGraphicUbo->model);
         glm_lookat((vec3){*pCamera_X * aspect, 0.0f + *pCamera_Y * aspect2, 10.0f}, (vec3){*pCamera_X * aspect, *pCamera_Y * aspect2, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pGraphicUbo->view);
         glm_ortho_vulkan(-aspect, aspect, -aspect2, aspect2, -0.001f, -100.0f, pGraphicUbo->proj);
         // glm_ortho(-aspect, aspect, -1.0f, 1.0f, 0.001f, 100.0f, pGraphicUbo->proj);
         // pGraphicUbo->proj[1][1] *= -1;
 
-        // glm_mat4_identity(pUIUbo->model);
+        glm_mat4_identity(pUIUbo->model);
         glm_lookat((vec3){0.0f, 0.0f, 100.0f}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pUIUbo->view);
         glm_ortho_vulkan(-aspect, aspect, -aspect2, aspect2, -0.001f, -100.0f, pUIUbo->proj);
 

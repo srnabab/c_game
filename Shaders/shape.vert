@@ -1,6 +1,7 @@
 #version 460
 
 layout(set = 0, binding = 0) uniform UniformBufferObject {
+    mat4 model;
     mat4 view;
     mat4 proj;
 } ubo;
@@ -21,5 +22,5 @@ void main()
     vec2 finalPosition = inPosition * pc.scale + pc.offset;
 
     fragColor = inColor;
-    gl_Position = ubo.proj * ubo.view * vec4(finalPosition, 0.0, 1.0);
+    gl_Position = ubo.proj * ubo.view * ubo.model * vec4(finalPosition, 0.0, 1.0);
 }

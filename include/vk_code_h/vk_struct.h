@@ -72,7 +72,7 @@ typedef struct _Vertex3323
 
 typedef struct _UniformBufferObject 
 {
-    // mat4 model;
+    mat4 model;
     mat4 view;
     mat4 proj;
 }UniformBufferObject;
