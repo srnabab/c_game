@@ -17,7 +17,7 @@ typedef struct _BufferCopyPack bufferCopyPack;
 
 #include "SDL3/SDL_begin_code.h"
 
-extern Uint8 SDLCALL executeBufferCopy(Uint32 currentFrame);
+extern Uint8 SDLCALL recordBufferCopy(Uint32 currentFrame);
 extern bool SDLCALL addBufferCopy(G_Buffer * srcBuffer, VkDeviceSize srcOffset, G_Buffer * dstBuffer, VkDeviceSize dstOffset, VkDeviceSize size, int32_t queueFamilyindex, Uint32 currentFrame);
 
 #include "SDL3/SDL_close_code.h"

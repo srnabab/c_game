@@ -63,7 +63,7 @@ static void configurePipelineInputAssemblyState(VkPrimitiveTopology topology, Vk
     pPipelineInputAssemblyStateCreateInfo->topology = topology;
     pPipelineInputAssemblyStateCreateInfo->primitiveRestartEnable = primitiveRestartEnable;
 }
-static void configurePipelineTessellationStateCreateInfo(Uint32 patchControlPoints, VkPipelineTessellationStateCreateInfo * pPipelineTessellationStateCreateInfo)
+static void SDL_UNUSED configurePipelineTessellationStateCreateInfo(Uint32 patchControlPoints, VkPipelineTessellationStateCreateInfo * pPipelineTessellationStateCreateInfo)
 {
     pPipelineTessellationStateCreateInfo->sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
     pPipelineTessellationStateCreateInfo->pNext = NULL;

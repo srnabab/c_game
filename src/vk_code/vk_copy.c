@@ -22,7 +22,7 @@ bool addBufferCopy(G_Buffer * srcBuffer, VkDeviceSize srcOffset, G_Buffer * dstB
 
     return true;
 }
-Uint8 executeBufferCopy(Uint32 currentFrame)
+Uint8 recordBufferCopy(Uint32 currentFrame)
 {
 #warning error processing needed
     Uint32 i;

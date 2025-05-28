@@ -30,7 +30,7 @@ int render(void * arg)
         }
 
         // bottomMoved = moveBottomImage(currentFrame);
-        copy = executeBufferCopy(currentFrame);
+        copy = recordBufferCopy(currentFrame);
 
         drawFrame(First_Scene, currentFrame, allInOne.extent2D.width, allInOne.extent2D.height, bottomMoved, copy);
 
