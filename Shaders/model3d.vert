@@ -31,5 +31,5 @@ void main()
     fragTexCoord = inTexCoord;
     // instanceIndex = gl_InstanceIndex;
 
-    gl_Position = ubo.proj * ubo.view * ubo.model * inModelMatrix * vec4(inPosition, 1.0);
+    gl_Position = ubo.proj * ubo.view * inModelMatrix * vec4(inPosition, 1.0);
 }

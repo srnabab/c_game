@@ -73,4 +73,6 @@
 
 #define MAX_BUFFER_COPY_COUNT 64
 
+#define VIEW_SCALE 1.0f
+
 #endif

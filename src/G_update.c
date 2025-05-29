@@ -221,14 +221,14 @@ int update(void * arg)
     getTileSetPtr(&pTileSet);
 
     textureVertexInit(-32, -32, 64, 64, 0.2f, &allInOne.vertices2DCount, allInOne.pVertices2D, getTexture(TEXTURE_LOADING));
-    // mapVertexInitialize(-3200.0f, 2400.0f, 16.0f, 16.0f, 0.01f, &allInOne.vertices2DCount, allInOne.pVertices2D, pTileSet->maps, groupID);
-    mapVertexInitialize(-960.0f, 540.0f, 16.0f, 16.0f, 0.01f, &allInOne.vertices2DCount, allInOne.pVertices2D, pTileSet->maps, groupID);
+    mapVertexInitialize(-3200.0f, 2400.0f, 16.0f, 16.0f, 0.01f, &allInOne.vertices2DCount, allInOne.pVertices2D, pTileSet->maps, groupID);
+    // mapVertexInitialize(0.0f, 0.0f, 16.0f, 16.0f, 0.01f, &allInOne.vertices2DCount, allInOne.pVertices2D, pTileSet->maps, groupID);
 
     addModelMatrix(0, 0, 8, 1.0f, 1.0f, 1.0f, allInOne.pStaticModelPool, TEXTURE_MODEL);
     addModelMatrix(100, 0, 8, 1.0f, 1.0f, 1.0f, allInOne.pStaticModelPool, TEXTURE_MODEL);
     addModelMatrix(0, 100, 8, 1.0f, 1.0f, 1.0f, allInOne.pStaticModelPool, TEXTURE_MODEL);
     addModelMatrix(100, 100, 8, 1.0f, 1.0f, 1.0f, allInOne.pStaticModelPool, TEXTURE_MODEL);
-    addModelMatrix(0, 0, -1, 10.0f, 10.0f, 1.0f, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
+    addModelMatrix(0, 0, -1, 100.0f, 100.0f, 1.0f, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
 
     G_Buffer * tempStagingBuffer = NULL;
     // setMapBottom(allInOne.extent2D.width, allInOne.extent2D.height, 0, 0, &rowCount, &colCount, &firstBottom_X, &firstBottom_Y, &baseX, &baseY, &groupID);
@@ -316,9 +316,10 @@ int update(void * arg)
         float aspect = ((float)allInOne.extent2D.width / allInOne.extent2D.height) * aspect2;
 
         // bottom
-        glm_mat4_identity(pGraphic3DUbo->model);
+        // glm_mat4_identity(pGraphic3DUbo->model);
+        // glm_scale(pGraphic3DUbo->model, (vec3){VIEW_SCALE, VIEW_SCALE, 1.0f});
         glm_lookat((vec3){*pCamera_X * aspect, 0.0f + *pCamera_Y * aspect2, 10.0f}, (vec3){*pCamera_X * aspect, *pCamera_Y * aspect2, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pGraphic3DUbo->view);
-        glm_ortho_vulkan(-aspect, aspect, -aspect2, aspect2, -0.001f, -100.0f, pGraphic3DUbo->proj);
+        glm_ortho_vulkan(-aspect * VIEW_SCALE, aspect * VIEW_SCALE, -aspect2 * VIEW_SCALE, aspect2 * VIEW_SCALE, -0.001f, -100.0f, pGraphic3DUbo->proj);
 
         bufferMemcpy(allInOne.pGraphic3DUniformBuffer[currentFrame], 0, pGraphic3DUbo, sizeof(UniformBufferObject));
 
@@ -345,10 +346,12 @@ int update(void * arg)
         // print("x: %f, y: %f, z: %f", x, y, z);
 
         mat4 lightProj;
-        glm_ortho_vulkan(-(SHADOW_SIZE / 600.0f) / 2.0f, (SHADOW_SIZE / 600.0f) / 2.0f, -(SHADOW_SIZE / 800.0f) / 2.0f, (SHADOW_SIZE / 800.0f) / 2.0f, -0.001f, -100.0f, lightProj);
+        // glm_ortho_vulkan(-(SHADOW_SIZE / 600.0f) * VIEW_SCALE, (SHADOW_SIZE / 600.0f) * VIEW_SCALE, -(SHADOW_SIZE / 600.0f) * VIEW_SCALE, (SHADOW_SIZE / 600.0f) * VIEW_SCALE, -0.001f, -100.0f, lightProj);
+        glm_ortho_vulkan(-aspect, aspect, -aspect2, aspect2, -0.001f, -100.0f, lightProj);
 
-        glm_lookat((vec3){x, y, z}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, allInOne.pLightSpaceUbo->lightSpace);
+        glm_lookat((vec3){x + *pCamera_X * aspect, y + *pCamera_Y * aspect2, z}, (vec3){*pCamera_X * aspect, *pCamera_Y * aspect2, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, allInOne.pLightSpaceUbo->lightSpace);
         glm_mul(lightProj, allInOne.pLightSpaceUbo->lightSpace, allInOne.pLightSpaceUbo->lightSpace);
+        // glm_mat4_mul(lightProj, allInOne.pLightSpaceUbo->lightSpace, allInOne.pLightSpaceUbo->lightSpace);
 
         bufferMemcpy(allInOne.pLightSpaceUniformBuffer[currentFrame], 0, allInOne.pLightSpaceUbo , sizeof(LightSpace));
         // memcpy(allInOne.ppLightSpaceUniformBufferMapped[currentFrame], allInOne.pLightSpaceUbo , sizeof(LightSpace));
@@ -384,15 +387,17 @@ int update(void * arg)
         SDL_SignalSemaphore(allSync.vertexSemaphore);
 
         // UI object
-        glm_mat4_identity(pGraphicUbo->model);
+        // glm_mat4_identity(pGraphicUbo->model);
+        // glm_scale(pGraphicUbo->model, (vec3){VIEW_SCALE, VIEW_SCALE, 1.0f});
         glm_lookat((vec3){*pCamera_X * aspect, 0.0f + *pCamera_Y * aspect2, 10.0f}, (vec3){*pCamera_X * aspect, *pCamera_Y * aspect2, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pGraphicUbo->view);
-        glm_ortho_vulkan(-aspect, aspect, -aspect2, aspect2, -0.001f, -100.0f, pGraphicUbo->proj);
+        glm_ortho_vulkan(-aspect * VIEW_SCALE, aspect * VIEW_SCALE, -aspect2 * VIEW_SCALE, aspect2 * VIEW_SCALE, -0.001f, -100.0f, pGraphicUbo->proj);
         // glm_ortho(-aspect, aspect, -1.0f, 1.0f, 0.001f, 100.0f, pGraphicUbo->proj);
         // pGraphicUbo->proj[1][1] *= -1;
 
-        glm_mat4_identity(pUIUbo->model);
+        // glm_mat4_identity(pUIUbo->model);
+        // glm_scale(pUIUbo->model, (vec3){VIEW_SCALE, VIEW_SCALE, 1.0f});
         glm_lookat((vec3){0.0f, 0.0f, 100.0f}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pUIUbo->view);
-        glm_ortho_vulkan(-aspect, aspect, -aspect2, aspect2, -0.001f, -100.0f, pUIUbo->proj);
+        glm_ortho_vulkan(-aspect * VIEW_SCALE, aspect * VIEW_SCALE, -aspect2 * VIEW_SCALE, aspect2 * VIEW_SCALE, -0.001f, -100.0f, pUIUbo->proj);
 
         memcpy(allInOne.pShapeConstants, &shapePushConstants, sizeof(ShapeConstants));
         bufferMemcpy(allInOne.pGraphicUniformBuffer[currentFrame], 0, pGraphicUbo, sizeof(UniformBufferObject));

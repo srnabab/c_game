@@ -33,5 +33,5 @@ void main()
 
     vec3 position = rotatedPosition * step(abs(inPosition.z - 0.2), 0.0) + inPosition * sign(abs(inPosition.z - 0.2));
 
-    gl_Position = ubo.proj * ubo.view * ubo.model * vec4(position, 1.0);
+    gl_Position = ubo.proj * ubo.view  * vec4(position, 1.0);
 }

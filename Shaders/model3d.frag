@@ -100,8 +100,8 @@ void main()
     // float specFactor = pow(NdotH, shininess); // shininess 是材质光泽度
     // vec3 specular = specularColor * sun.lightColor * sun.lightIntensity * specFactor;
 
-    vec3 finalColor = shadow * (diffuse); // + specular;
-    // vec3 finalColor = (diffuse); // + specular;
+    // vec3 finalColor = shadow * (diffuse); // + specular;
+    vec3 finalColor = (diffuse); // + specular;
     
     outNormalBuffer = vec4(inWorldNormal, 1.0);
 
