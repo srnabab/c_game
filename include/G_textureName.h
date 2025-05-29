@@ -9,6 +9,7 @@
 #define MAIN_TILE_MAP "tileMap1"
 
 #define TEXTURE_MODEL "model"
+#define TEXTURE_VOXEL "voxel"
 #define TEXTURE_BOTTOM "bottom"
 
 #define TEXTURE_DEPTH "depth"

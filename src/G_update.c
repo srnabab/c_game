@@ -225,9 +225,10 @@ int update(void * arg)
     // mapVertexInitialize(0.0f, 0.0f, 16.0f, 16.0f, 0.01f, &allInOne.vertices2DCount, allInOne.pVertices2D, pTileSet->maps, groupID);
 
     addModelMatrix(0, 0, 8, 1.0f, 1.0f, 1.0f, allInOne.pStaticModelPool, TEXTURE_MODEL);
-    addModelMatrix(100, 0, 8, 1.0f, 1.0f, 1.0f, allInOne.pStaticModelPool, TEXTURE_MODEL);
-    addModelMatrix(0, 100, 8, 1.0f, 1.0f, 1.0f, allInOne.pStaticModelPool, TEXTURE_MODEL);
-    addModelMatrix(100, 100, 8, 1.0f, 1.0f, 1.0f, allInOne.pStaticModelPool, TEXTURE_MODEL);
+    // addModelMatrix(100, 0, 8, 1.0f, 1.0f, 1.0f, allInOne.pStaticModelPool, TEXTURE_MODEL);
+    // addModelMatrix(0, 100, 8, 1.0f, 1.0f, 1.0f, allInOne.pStaticModelPool, TEXTURE_MODEL);
+    // addModelMatrix(100, 100, 8, 1.0f, 1.0f, 1.0f, allInOne.pStaticModelPool, TEXTURE_MODEL);
+    addModelMatrix(0, 0, 0, 1.0f, 1.0f, 1.0f, allInOne.pStaticModelPool, TEXTURE_VOXEL);
     addModelMatrix(0, 0, -1, 100.0f, 100.0f, 1.0f, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
 
     G_Buffer * tempStagingBuffer = NULL;
@@ -360,6 +361,8 @@ int update(void * arg)
         // 3d object
         // glm_mat4_identity(pGraphic3DUbo->model);
         glm_lookat((vec3){-*pCamera_X * aspect, 4.0f - (*pCamera_Y * aspect2) / HEIGHT_FACTOR, 4.0f}, (vec3){-*pCamera_X * aspect, (-*pCamera_Y * aspect2) / HEIGHT_FACTOR, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, pGraphic3DUbo->view);
+        // glm_perspective(glm_rad(45.0f), (float)allInOne.extent2D.width / (float)allInOne.extent2D.height, 0.001f, 100.0f, pGraphic3DUbo->proj);
+        // pGraphic3DUbo->proj[1][1] *= -1.0f; // flip y axis for Vulkan
         glm_ortho_vulkan(-aspect * VIEW_SCALE, aspect * VIEW_SCALE, -aspect2 * VIEW_SCALE, aspect2 * VIEW_SCALE, -0.001f, -100.0f, pGraphic3DUbo->proj);
 
         glm_vec3_copy((vec3){-x, -y, -z}, allInOne.pSunubo->lightDirection);

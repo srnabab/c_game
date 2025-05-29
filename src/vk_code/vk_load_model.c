@@ -30,7 +30,9 @@ static const vec2 positions[6] = {
 
 static void tinyobj_SDL_readFile(void *ctx, const char *filename, int is_mtl, const char *obj_filename, char **buf, size_t *len)
 {
-    void ** ctxx = (void**)ctx;
+    void ** ctxx;
+    if (is_mtl) ctxx = &((void**)ctx)[1];
+    else ctxx = &((void**)ctx)[0];
 
     if (filename == NULL)
     {
@@ -96,8 +98,10 @@ bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex3323 * v
 
     SDL_UnlockMutex(allSync.textureMutex);
  
-    void * bufMem;
-    int res = tinyobj_parse_obj(&attrib, &shapes, &num_shapes, &materials, &num_materials, getPath(modelPath), tinyobj_SDL_readFile, &bufMem, TINYOBJ_FLAG_TRIANGULATE);
+    void * bufMem[2] = {};
+    int res = tinyobj_parse_obj(&attrib, &shapes, &num_shapes, &materials, &num_materials, getPath(modelPath), tinyobj_SDL_readFile, bufMem, TINYOBJ_FLAG_TRIANGULATE);
+
+    SDL_LockMutex(allSync.textureMutex);
 
     if (res == TINYOBJ_SUCCESS) 
     {
@@ -108,12 +112,15 @@ bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex3323 * v
             for (i = 0;i < attrib.num_faces;i++)
             {
                 indices[indexIndex] = i;
+                print("index: %u", indices[indexIndex]);
                 vertices[vertexIndex].pos[0] = attrib.vertices[attrib.faces[i].v_idx * 3 + 0];
                 vertices[vertexIndex].pos[1] = attrib.vertices[attrib.faces[i].v_idx * 3 + 1];
                 vertices[vertexIndex].pos[2] = attrib.vertices[attrib.faces[i].v_idx * 3 + 2];
+                // print("v_idx: %d", attrib.faces[i].v_idx);
 
                 vertices[vertexIndex].texCoord[0] = attrib.texcoords[attrib.faces[i].vt_idx * 2 + 0];
                 vertices[vertexIndex].texCoord[1] = 1 - attrib.texcoords[attrib.faces[i].vt_idx * 2 + 1];
+                // print("vt_idx: %d", attrib.faces[i].vt_idx);
 
                 vertices[vertexIndex].color[0] = 0.0f;
                 vertices[vertexIndex].color[1] = 0.0f;
@@ -122,6 +129,7 @@ bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex3323 * v
                 vertices[vertexIndex].normal[0] = attrib.normals[attrib.faces[i].vn_idx * 3 + 0];
                 vertices[vertexIndex].normal[1] = attrib.normals[attrib.faces[i].vn_idx * 3 + 1];
                 vertices[vertexIndex].normal[2] = attrib.normals[attrib.faces[i].vn_idx * 3 + 2];
+                // print("vn_idx: %d", attrib.faces[i].vn_idx);
 
                 if (ground)
                 {
@@ -199,8 +207,6 @@ bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex3323 * v
         return false;
     }
 
-    SDL_LockMutex(allSync.textureMutex);
-
     tempTexture->offsets[tempTexture->refCount].count = attrib.num_faces;
     tempTexture->refCount++;
 
@@ -210,7 +216,8 @@ bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex3323 * v
     tinyobj_shapes_free(shapes, num_shapes);
     tinyobj_materials_free(materials, num_materials);
 
-    G_free(bufMem);
+    G_free(bufMem[0]);
+    G_free(bufMem[1]);
 
     return true;
 }

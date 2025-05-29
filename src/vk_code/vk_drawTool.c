@@ -108,7 +108,7 @@ void drawModel(const char * innerName, Uint32 currentFrame, VkCommandBuffer comm
    
     for (int i = 0;i < tempTexture->refCount;i++)
     {
-        vkCmdDrawIndexed(commandBuffer, tempTexture->offsets[i].count, instanceCount, 0, tempTexture->offsets[i].offset, firstInstance);
+        vkCmdDrawIndexed(commandBuffer, tempTexture->offsets[i].count, instanceCount, tempTexture->offsets[i].offset, tempTexture->offsets[i].offset, firstInstance);
     }
 
     SDL_UnlockMutex(allSync.renderMutex);

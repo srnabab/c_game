@@ -131,6 +131,7 @@ static int getShaderStorageBufferIndex(void * pBufferAddress)
 static void outOfCount(void)
 {
     print("out of limit");
+    BREAK_POINT
 }
 void addDescriptorUpdate_Buffer(VkDescriptorType descriptorType, Uint32 binding, VkDescriptorSet * pSet, G_Buffer ** pBuffers)
 {

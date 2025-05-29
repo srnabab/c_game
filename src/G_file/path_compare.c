@@ -126,6 +126,18 @@ PathType pathCompare(char * buffer)
     {
         return ShapeFragShader;
     }
+    else if ((SDL_strcmp(buffer, "[VoxelMtl]") == 0))
+    {
+        return VoxelMtl;
+    }
+    else if ((SDL_strcmp(buffer, "[VoxelObj]") == 0))
+    {
+        return VoxelObj;
+    }
+    else if ((SDL_strcmp(buffer, "[VoxelPng]") == 0))
+    {
+        return VoxelPng;
+    }
     else if ((SDL_strcmp(buffer, "[Viking_roomPng]") == 0))
     {
         return Viking_roomPng;

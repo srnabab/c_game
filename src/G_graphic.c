@@ -353,7 +353,7 @@ void initVulkan(void)
     createShadowSampler(&allInOne.shadowSampler);
     CO_addSampler(allInOne.shadowSampler);// CO
 
-    allInOne.stagingBufferPool = createBufferPool(100 * 1024 * 1024, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
+    allInOne.stagingBufferPool = createBufferPool(200 * 1024 * 1024, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
     allInOne.vertexStagingBufferPool = createBufferPool(64, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
     allInOne.vertexBufferPool = createBufferPool(5 * sizeof(Vertex23_) + (VERTEX_COUNT_IN_BUFFER_2D + MAX_MAP_GROUP * MAX_TILES_IN_GROUP * VERTEX_COUNT_IN_UNIT_2D) * sizeof(Vertex332_) * 2 + 30000 * sizeof(Vertex3323) * 2 + 60 * sizeof(mat4) * 2\
     , VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, false);
@@ -443,7 +443,7 @@ void initVulkan(void)
     PathType modelTypes[] = {Model3dVertShader, Model3dFragShader};
     VkShaderModule * modelTempModule = NULL;
     Uint32 modelSetCount = CreateShaderModulesAndDescriptorSets(modelTypes, 2, &modelTempModule, &modelShaderStageCreateInfo, &modelDescriptorSetLayout, &allInOne.modelPipelineLayout);
-    createDescriptorSets(&graphicDescriptorPool, modelDescriptorSetLayout, modelSetCount, 2, &allInOne.pModelDescriptorSets);
+    createDescriptorSets(&graphicDescriptorPool, modelDescriptorSetLayout, modelSetCount, 3, &allInOne.pModelDescriptorSets);
     CO_addDescriptorSetsMem(allInOne.pModelDescriptorSets); // CO
     createModelPipeline(allInOne.extent2D, 2, modelShaderStageCreateInfo, allInOne.modelPipelineLayout, allInOne.modelRenderPass, &allInOne.modelPipeline);
 
@@ -565,6 +565,7 @@ void initVulkan(void)
     createStaticModelPool(&staticModelPool, &allInOne.vertexBufferPool, 60);
     loadStaticModel(&staticModelPool, 1, BottomObj, BottomPng, allInOne.pVertices3D, &allInOne.vertices3DCount, allInOne.pIndices3D, &allInOne.indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_BOTTOM, allInOne.pModelDescriptorSets + 0, false);
     loadStaticModel(&staticModelPool, 10, BoxObj, BoxPng, allInOne.pVertices3D, &allInOne.vertices3DCount, allInOne.pIndices3D, &allInOne.indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_MODEL, allInOne.pModelDescriptorSets + 2, false);
+    loadStaticModel(&staticModelPool, 1, VoxelObj, VoxelPng, allInOne.pVertices3D, &allInOne.vertices3DCount, allInOne.pIndices3D, &allInOne.indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_VOXEL, allInOne.pModelDescriptorSets + 4, false);
 
     loadImageResource(VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_GENERAL, TEXTURE_SSGI_STORAGE_IMAGE, allInOne.pSSGIDescriptorSets + 2);
 
@@ -582,6 +583,7 @@ void initVulkan(void)
     G_Texture_P * fontTexture = getTexture(TEXTURE_FONT);
     G_Texture_P * tileSetTexture = getTexture(TEXTURE_TILE_SET);
     G_Texture_P * modelTexture = getTexture(TEXTURE_MODEL);
+    G_Texture_P * voxelTexture = getTexture(TEXTURE_VOXEL);
     G_Texture_P * bottomTexture = getTexture(TEXTURE_BOTTOM);
     G_Texture_P * normalTexture = getTexture(TEXTURE_NORMAL);
     G_Texture_P * shadowTexture = getTexture(TEXTURE_SHADOW);
@@ -600,8 +602,10 @@ void initVulkan(void)
     // model
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, modelTexture->pDescriptorSet, allInOne.pGraphic3DUniformBuffer);//4
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, bottomTexture->pDescriptorSet, allInOne.pGraphic3DUniformBuffer);
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, voxelTexture->pDescriptorSet, allInOne.pGraphic3DUniformBuffer);
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3, modelTexture->pDescriptorSet, allInOne.pSunUniformBuffer);
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3, bottomTexture->pDescriptorSet, allInOne.pSunUniformBuffer);
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3, voxelTexture->pDescriptorSet, allInOne.pSunUniformBuffer);
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, allInOne.pShadowDescriptorSets, allInOne.pLightSpaceUniformBuffer);
 
     // shape
@@ -623,12 +627,17 @@ void initVulkan(void)
     // model
     addShadowDescriptorSetToTexture(TEXTURE_MODEL, shadowTexture->pDescriptorSet);
     addShadowDescriptorSetToTexture(TEXTURE_BOTTOM, shadowTexture->pDescriptorSet);
+    addShadowDescriptorSetToTexture(TEXTURE_VOXEL, shadowTexture->pDescriptorSet);
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_MODEL, allInOne.textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_BOTTOM, allInOne.textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);//12
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, TEXTURE_VOXEL, allInOne.textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);//12
     addDescriptorSetToTexture(TEXTURE_SHADOW, modelTexture->pDescriptorSet);
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2, TEXTURE_SHADOW, allInOne.shadowSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     addDescriptorSetToTexture(TEXTURE_SHADOW, bottomTexture->pDescriptorSet);
     addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2, TEXTURE_SHADOW, allInOne.shadowSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    addDescriptorSetToTexture(TEXTURE_SHADOW, voxelTexture->pDescriptorSet);
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2, TEXTURE_SHADOW, allInOne.shadowSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
     // addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4, TEXTURE_MAP_ARRAY, allInOne.textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     // SSGI

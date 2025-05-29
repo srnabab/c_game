@@ -71,7 +71,7 @@ static void recordCommandBufferBottom(Uint32 currentFrame, bool graphicCopy)
     G_vkCmdBindVertexBuffers(currentCommandBuffer, 0, 1, vertexBuffer);
     G_vkCmdBindIndexBuffer(currentCommandBuffer, allInOne.indexBuffer2D, VK_INDEX_TYPE_UINT16);
 
-    drawPic(TEXTURE_TILE_SET, currentFrame, currentCommandBuffer, allInOne.graphicPipelineLayout);
+    // drawPic(TEXTURE_TILE_SET, currentFrame, currentCommandBuffer, allInOne.graphicPipelineLayout);
 
     vkCmdEndRenderPass(currentCommandBuffer);
 }
@@ -187,6 +187,8 @@ static void recordCommandBufferShadow(Uint32 currentFrame, bool graphicCopy)
 
     drawShadow(TEXTURE_MODEL, currentCommandBuffer);
 
+    drawShadow(TEXTURE_VOXEL, currentCommandBuffer);
+
     vkCmdEndRenderPass(currentCommandBuffer);
 
     setTextureImageLayout(getTexture(TEXTURE_SHADOW), VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, 0, 1);
@@ -236,6 +238,8 @@ static void recordCommandBuffer_3D(Uint32 currentFrame)
     drawModel(TEXTURE_MODEL, currentFrame, currentCommandBuffer);
 
     drawModel(TEXTURE_BOTTOM, currentFrame, currentCommandBuffer);
+
+    drawModel(TEXTURE_VOXEL, currentFrame, currentCommandBuffer);
 
     vkCmdEndRenderPass(currentCommandBuffer);
 }
