@@ -318,10 +318,10 @@ int update(void * arg)
         // bottom
         // glm_mat4_identity(pGraphic3DUbo->model);
         // glm_scale(pGraphic3DUbo->model, (vec3){VIEW_SCALE, VIEW_SCALE, 1.0f});
-        glm_lookat((vec3){*pCamera_X * aspect, 0.0f + *pCamera_Y * aspect2, 10.0f}, (vec3){*pCamera_X * aspect, *pCamera_Y * aspect2, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pGraphic3DUbo->view);
-        glm_ortho_vulkan(-aspect * VIEW_SCALE, aspect * VIEW_SCALE, -aspect2 * VIEW_SCALE, aspect2 * VIEW_SCALE, -0.001f, -100.0f, pGraphic3DUbo->proj);
+        glm_lookat((vec3){*pCamera_X * aspect, 0.0f + *pCamera_Y * aspect2, 10.0f}, (vec3){*pCamera_X * aspect, *pCamera_Y * aspect2, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pGraphicUbo->view);
+        glm_ortho_vulkan(-aspect * VIEW_SCALE, aspect * VIEW_SCALE, -aspect2 * VIEW_SCALE, aspect2 * VIEW_SCALE, -0.001f, -100.0f, pGraphicUbo->proj);
 
-        bufferMemcpy(allInOne.pGraphic3DUniformBuffer[currentFrame], 0, pGraphic3DUbo, sizeof(UniformBufferObject));
+        bufferMemcpy(allInOne.pGraphicUniformBuffer[currentFrame], 0, pGraphicUbo, sizeof(UniformBufferObject));
 
         SDL_SignalSemaphore(allSync.vertexSemaphore);
 
@@ -336,8 +336,8 @@ int update(void * arg)
         float factor_y = LIGHT_HEIGHT / (allInOne.extent2D.height / 2);
 
         // shadow map
-        x = mouse.position[0] - (allInOne.extent2D.width / 2);
-        y = -mouse.position[1] + (allInOne.extent2D.height / 2);
+        x = -mouse.position[0] + (allInOne.extent2D.width / 2);
+        y = mouse.position[1] - (allInOne.extent2D.height / 2);
 
         x *= factor_x;
         y *= factor_y;
@@ -359,6 +359,8 @@ int update(void * arg)
 
         // 3d object
         // glm_mat4_identity(pGraphic3DUbo->model);
+        glm_lookat((vec3){-*pCamera_X * aspect, 4.0f - (*pCamera_Y * aspect2) / HEIGHT_FACTOR, 4.0f}, (vec3){-*pCamera_X * aspect, (-*pCamera_Y * aspect2) / HEIGHT_FACTOR, 0.0f}, (vec3){0.0f, 0.0f, 1.0f}, pGraphic3DUbo->view);
+        glm_ortho_vulkan(-aspect * VIEW_SCALE, aspect * VIEW_SCALE, -aspect2 * VIEW_SCALE, aspect2 * VIEW_SCALE, -0.001f, -100.0f, pGraphic3DUbo->proj);
 
         glm_vec3_copy((vec3){-x, -y, -z}, allInOne.pSunubo->lightDirection);
         glm_vec3_copy((vec3){1.0f, 1.0f, 1.0f}, allInOne.pSunubo->lightColor);
@@ -367,6 +369,7 @@ int update(void * arg)
         glm_mat4_copy(allInOne.pLightSpaceUbo->lightSpace, allInOne.pSunubo->lightSpace);
 
         bufferMemcpy(allInOne.pSunUniformBuffer[currentFrame], 0, allInOne.pSunubo, sizeof(DirectionLight));
+        bufferMemcpy(allInOne.pGraphic3DUniformBuffer[currentFrame], 0, pGraphic3DUbo, sizeof(UniformBufferObject));
         SDL_SignalSemaphore(allSync.vertexSemaphore);
 
         // SSGI
@@ -387,20 +390,10 @@ int update(void * arg)
         SDL_SignalSemaphore(allSync.vertexSemaphore);
 
         // UI object
-        // glm_mat4_identity(pGraphicUbo->model);
-        // glm_scale(pGraphicUbo->model, (vec3){VIEW_SCALE, VIEW_SCALE, 1.0f});
-        glm_lookat((vec3){*pCamera_X * aspect, 0.0f + *pCamera_Y * aspect2, 10.0f}, (vec3){*pCamera_X * aspect, *pCamera_Y * aspect2, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pGraphicUbo->view);
-        glm_ortho_vulkan(-aspect * VIEW_SCALE, aspect * VIEW_SCALE, -aspect2 * VIEW_SCALE, aspect2 * VIEW_SCALE, -0.001f, -100.0f, pGraphicUbo->proj);
-        // glm_ortho(-aspect, aspect, -1.0f, 1.0f, 0.001f, 100.0f, pGraphicUbo->proj);
-        // pGraphicUbo->proj[1][1] *= -1;
-
-        // glm_mat4_identity(pUIUbo->model);
-        // glm_scale(pUIUbo->model, (vec3){VIEW_SCALE, VIEW_SCALE, 1.0f});
         glm_lookat((vec3){0.0f, 0.0f, 100.0f}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pUIUbo->view);
         glm_ortho_vulkan(-aspect * VIEW_SCALE, aspect * VIEW_SCALE, -aspect2 * VIEW_SCALE, aspect2 * VIEW_SCALE, -0.001f, -100.0f, pUIUbo->proj);
 
         memcpy(allInOne.pShapeConstants, &shapePushConstants, sizeof(ShapeConstants));
-        bufferMemcpy(allInOne.pGraphicUniformBuffer[currentFrame], 0, pGraphicUbo, sizeof(UniformBufferObject));
         // memcpy(allInOne.ppGraphicUniformBufferMapped[currentFrame], pGraphicUbo, sizeof(UniformBufferObject));
         bufferMemcpy(allInOne.pUIUniformBuffer[currentFrame], 0, pUIUbo, sizeof(UniformBufferObject));
         // memcpy(allInOne.ppUIUniformBufferMapped[currentFrame], pUIUbo, sizeof(UniformBufferObject));
