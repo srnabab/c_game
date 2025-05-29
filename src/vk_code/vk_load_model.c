@@ -103,6 +103,7 @@ bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex3323 * v
 
     SDL_LockMutex(allSync.textureMutex);
 
+#warning vertex winding sequence is not guaranteed to be correct, need to check 
     if (res == TINYOBJ_SUCCESS) 
     {
         int i, groundTime, var;
