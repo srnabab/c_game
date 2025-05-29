@@ -348,7 +348,8 @@ int update(void * arg)
 
         mat4 lightProj;
         // glm_ortho_vulkan(-(SHADOW_SIZE / 600.0f) * VIEW_SCALE, (SHADOW_SIZE / 600.0f) * VIEW_SCALE, -(SHADOW_SIZE / 600.0f) * VIEW_SCALE, (SHADOW_SIZE / 600.0f) * VIEW_SCALE, -0.001f, -100.0f, lightProj);
-        glm_ortho_vulkan(-aspect, aspect, -aspect2, aspect2, -0.001f, -100.0f, lightProj);
+        glm_ortho_vulkan(-(SHADOW_MAPPING_WIDTH / LOGICAL_WIDTH), (SHADOW_MAPPING_WIDTH / LOGICAL_WIDTH), -(SHADOW_MAPPING_WIDTH / LOGICAL_WIDTH), (SHADOW_MAPPING_WIDTH / LOGICAL_WIDTH), -0.001f, -100.0f, lightProj);
+
 
         glm_lookat((vec3){x + *pCamera_X * aspect, y + *pCamera_Y * aspect2, z}, (vec3){*pCamera_X * aspect, *pCamera_Y * aspect2, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, allInOne.pLightSpaceUbo->lightSpace);
         glm_mul(lightProj, allInOne.pLightSpaceUbo->lightSpace, allInOne.pLightSpaceUbo->lightSpace);

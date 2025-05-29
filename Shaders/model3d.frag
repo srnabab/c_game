@@ -92,7 +92,7 @@ void main()
     textureColor = texture(texSampler, fragTexCoord);
 
 
-    vec3 diffuse = textureColor.rgb * sun.lightColor * sun.lightIntensity * NdotL;
+    vec3 diffuse = textureColor.rgb * sun.lightColor;// * sun.lightIntensity * NdotL;
 
     // vec3 V = normalize(viewDir);
     // vec3 H = normalize(L + V); // 半程向量
