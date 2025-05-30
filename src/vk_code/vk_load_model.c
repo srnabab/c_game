@@ -113,7 +113,7 @@ bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex3323 * v
             for (i = 0;i < attrib.num_faces;i++)
             {
                 indices[indexIndex] = i;
-                print("index: %u", indices[indexIndex]);
+                // print("index: %u", indices[indexIndex]);
                 vertices[vertexIndex].pos[0] = attrib.vertices[attrib.faces[i].v_idx * 3 + 0];
                 vertices[vertexIndex].pos[1] = attrib.vertices[attrib.faces[i].v_idx * 3 + 1];
                 vertices[vertexIndex].pos[2] = attrib.vertices[attrib.faces[i].v_idx * 3 + 2];
@@ -131,23 +131,6 @@ bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex3323 * v
                 vertices[vertexIndex].normal[1] = attrib.normals[attrib.faces[i].vn_idx * 3 + 1];
                 vertices[vertexIndex].normal[2] = attrib.normals[attrib.faces[i].vn_idx * 3 + 2];
                 // print("vn_idx: %d", attrib.faces[i].vn_idx);
-
-                if (ground)
-                {
-                    float dot = glm_vec3_dot(vertices[vertexIndex].normal, (vec3){0.0f, 1.0f, 0.0f});
-                    if (dot > 0.9999f)
-                    // if (SDL_fabsf(vertices[vertexIndex].normal[0]) < 0.0001f && SDL_fabsf(vertices[vertexIndex].normal[2]) < 0.0001f && vertices[vertexIndex].normal[1] > 0.9999f)
-                    {
-                        vertices[vertexIndex].color[0] = 1.0f;
-
-                        vertices[vertexIndex].texCoord[0] = positions[(i + var * 3) % 6][0];
-                        vertices[vertexIndex].texCoord[1] = positions[(i + var * 3) % 6][1];
-                        groundTime++;
-                        if (groundTime % 3 == 0) var++;
-                    }
-                    else vertices[vertexIndex].color[0] = 0.0f;
-                }
-                else vertices[vertexIndex].color[0] = 0.0f;
 
                 indexIndex++;
                 vertexIndex++;

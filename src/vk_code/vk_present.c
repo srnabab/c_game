@@ -31,7 +31,7 @@ static void drawShadow(const char * innerName, VkCommandBuffer commandBuffer)
     
     for (int i = 0;i < tempTexture->refCount;i++)
     {
-        vkCmdDrawIndexed(commandBuffer, tempTexture->offsets[i].count, instanceCount, 0, tempTexture->offsets[i].offset, firstInstance);
+        vkCmdDrawIndexed(commandBuffer, tempTexture->offsets[i].count, instanceCount, tempTexture->offsets[i].offset, tempTexture->offsets[i].offset, firstInstance);
     }
 
     SDL_UnlockMutex(allSync.renderMutex);
@@ -71,7 +71,7 @@ static void recordCommandBufferBottom(Uint32 currentFrame, bool graphicCopy)
     G_vkCmdBindVertexBuffers(currentCommandBuffer, 0, 1, vertexBuffer);
     G_vkCmdBindIndexBuffer(currentCommandBuffer, allInOne.indexBuffer2D, VK_INDEX_TYPE_UINT16);
 
-    // drawPic(TEXTURE_TILE_SET, currentFrame, currentCommandBuffer, allInOne.graphicPipelineLayout);
+    drawPic(TEXTURE_TILE_SET, currentFrame, currentCommandBuffer, allInOne.graphicPipelineLayout);
 
     vkCmdEndRenderPass(currentCommandBuffer);
 }

@@ -546,7 +546,7 @@ void createShadowPipeline(VkExtent2D extent2D, Uint32 shaderCount, VkPipelineSha
     configurePipelineViewportsStateCreateInfo(1, pViewport, 1, pScissor, &pipelineViewportStateCreateInfo);
 
     VkPipelineRasterizationStateCreateInfo pipelineRasterizationStateCreateInfo = {};
-    configurePipelineRasterizationStateCreateInfo(VK_FALSE, VK_FALSE, VK_POLYGON_MODE_FILL, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_CLOCKWISE, VK_FALSE, 0.0f, 0.0f, 0.0f, 1.0f, &pipelineRasterizationStateCreateInfo);
+    configurePipelineRasterizationStateCreateInfo(VK_FALSE, VK_FALSE, VK_POLYGON_MODE_FILL, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE, VK_TRUE, 0.05f, 0.0f, 0.05f, 1.0f, &pipelineRasterizationStateCreateInfo);
 
     VkPipelineMultisampleStateCreateInfo pipelineMultisampleStateCreateInfo = {};
     configurePipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT, VK_FALSE, 1.0f, NULL, VK_FALSE, VK_FALSE, &pipelineMultisampleStateCreateInfo);
