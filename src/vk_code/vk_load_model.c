@@ -74,7 +74,7 @@ static void tinyobj_SDL_readFile(void *ctx, const char *filename, int is_mtl, co
     SDL_CloseIO(stream);
 }
 bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex3323 * vertices, Uint32 * pVertexIndex, Uint32 * indices, Uint32 * pIndexIndex, VkFormat textureFormat, VkImageAspectFlags flags\
-, const char * innerName, VkDescriptorSet * pDescriptorSet, bool ground)
+, const char * innerName, VkDescriptorSet * pDescriptorSet, bool palette)
 {
     tinyobj_attrib_t attrib;
     tinyobj_shape_t * shapes;
@@ -103,11 +103,10 @@ bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex3323 * v
 
     SDL_LockMutex(allSync.textureMutex);
 
-#warning vertex winding sequence is not guaranteed to be correct, need to check 
+#warning lower memory usage if required
     if (res == TINYOBJ_SUCCESS) 
     {
-        int i, groundTime, var;
-        groundTime = var = 0;
+        int i;
         if (attrib.num_vertices != attrib.num_texcoords)
         {
             for (i = 0;i < attrib.num_faces;i++)

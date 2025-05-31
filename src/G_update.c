@@ -224,11 +224,11 @@ int update(void * arg)
     mapVertexInitialize(-3200.0f, 2400.0f, 16.0f, 16.0f, 0.01f, &allInOne.vertices2DCount, allInOne.pVertices2D, pTileSet->maps, groupID);
     // mapVertexInitialize(0.0f, 0.0f, 16.0f, 16.0f, 0.01f, &allInOne.vertices2DCount, allInOne.pVertices2D, pTileSet->maps, groupID);
 
-    addModelMatrix(0, 0, 8, 1.0f, 1.0f, 1.0f, allInOne.pStaticModelPool, TEXTURE_MODEL);
+    // addModelMatrix(0, 0, 8, 1.0f, 1.0f, 1.0f, allInOne.pStaticModelPool, TEXTURE_MODEL);
     addModelMatrix(100, 0, 8, 1.0f, 1.0f, 1.0f, allInOne.pStaticModelPool, TEXTURE_MODEL);
     addModelMatrix(0, 100, 8, 1.0f, 1.0f, 1.0f, allInOne.pStaticModelPool, TEXTURE_MODEL);
     addModelMatrix(100, 100, 8, 1.0f, 1.0f, 1.0f, allInOne.pStaticModelPool, TEXTURE_MODEL);
-    addModelMatrix(0, 0, 0, 1.0f, 1.0f, 1.0f, allInOne.pStaticModelPool, TEXTURE_VOXEL);
+    addModelMatrix(0, 0, 10, 1.0f, 1.0f, 1.0f, allInOne.pStaticModelPool, TEXTURE_VOXEL);
     addModelMatrix(0, 0, -1, 100.0f, 100.0f, 1.0f, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
 
     G_Buffer * tempStagingBuffer = NULL;
@@ -353,10 +353,8 @@ int update(void * arg)
 
         glm_lookat((vec3){x + *pCamera_X * aspect, y + *pCamera_Y * aspect2, z}, (vec3){*pCamera_X * aspect, *pCamera_Y * aspect2, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, allInOne.pLightSpaceUbo->lightSpace);
         glm_mul(lightProj, allInOne.pLightSpaceUbo->lightSpace, allInOne.pLightSpaceUbo->lightSpace);
-        // glm_mat4_mul(lightProj, allInOne.pLightSpaceUbo->lightSpace, allInOne.pLightSpaceUbo->lightSpace);
 
         bufferMemcpy(allInOne.pLightSpaceUniformBuffer[currentFrame], 0, allInOne.pLightSpaceUbo , sizeof(LightSpace));
-        // memcpy(allInOne.ppLightSpaceUniformBufferMapped[currentFrame], allInOne.pLightSpaceUbo , sizeof(LightSpace));
         SDL_SignalSemaphore(allSync.vertexSemaphore);
 
         // 3d object
