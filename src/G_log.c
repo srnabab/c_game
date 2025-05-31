@@ -209,7 +209,7 @@ void logMessage(char * format, ...)
 }
 void destroyLog(void)
 {
-    SDL_SignalSemaphore(allSync.logSemaphore);
+    if (allSync.logSemaphore) SDL_SignalSemaphore(allSync.logSemaphore);
     SDL_WaitThread(log_thread, NULL);
     SDL_Log("log end\n");
 }

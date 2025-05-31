@@ -81,6 +81,7 @@ void pushMessage(SDL_MessageBoxFlags flags, const char * title, char *fmt, ...)
 
 static void cleanList(void)
 {
+    if (root == NULL) return;
     PopList * next = root;
     while (next->next != NULL)
     {

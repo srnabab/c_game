@@ -364,6 +364,11 @@ bool process_input(void)
     static int buttonId = 0;
     static int pause = 0;
 
+    if (game_is_running == false)
+    {
+        return true;
+    }
+
     if (willPopWindow())
     {
         pauseCode();

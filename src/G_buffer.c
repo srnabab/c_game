@@ -27,6 +27,9 @@ G_BufferPool createBufferPool(VkDeviceSize size, VkBufferUsageFlags usage, VkMem
 }
 void destroyBufferPool(G_BufferPool * pBufferPool)
 {
+    if (pBufferPool->totalBufferSize == 0) return;
+    if (pBufferPool->buffer == NULL) return;
+    if (pBufferPool->bufferMemory == NULL) return;
     if (pBufferPool->bufferMemoryMapped) vkUnmapMemory(allInOne.device, pBufferPool->bufferMemory);
     vkFreeMemory(allInOne.device, pBufferPool->bufferMemory, allInOne.pAllocationCallbacks);
     vkDestroyBuffer(allInOne.device, pBufferPool->buffer, allInOne.pAllocationCallbacks);

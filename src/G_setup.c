@@ -2,6 +2,7 @@
 #include "G_graphic.h"
 #include "G_file/G_file.h"
 #include "G_log.h"
+#include "G_test_if.h"
 #include "G_pop_window.h"
 #include "G_world.h"
 #include "G_timer.h"
@@ -205,23 +206,23 @@ clean:
 
 static void destroyAllSync(void)
 {
-    SDL_DestroyMutex(allSync.updateMutex);
-    SDL_DestroyMutex(allSync.renderMutex);
-    SDL_DestroyMutex(allSync.logMutex);
-    SDL_DestroyMutex(allSync.printMutex);
-    SDL_DestroyMutex(allSync.popWindowMutex);
-    SDL_DestroyMutex(allSync.textureMutex);
-    SDL_DestroyMutex(allSync.timerMutex);
-    SDL_DestroyMutex(allSync.descriptorUpdateMutex);
-    SDL_DestroyMutex(allSync.vertexMutex);
-    SDL_DestroyMutex(allSync.tileSetMutex);
+    if (allSync.updateMutex) SDL_DestroyMutex(allSync.updateMutex);
+    if (allSync.renderMutex) SDL_DestroyMutex(allSync.renderMutex);
+    if (allSync.logMutex) SDL_DestroyMutex(allSync.logMutex);
+    if (allSync.printMutex) SDL_DestroyMutex(allSync.printMutex);
+    if (allSync.popWindowMutex) SDL_DestroyMutex(allSync.popWindowMutex);
+    if (allSync.textureMutex) SDL_DestroyMutex(allSync.textureMutex);
+    if (allSync.timerMutex) SDL_DestroyMutex(allSync.timerMutex);
+    if (allSync.descriptorUpdateMutex) SDL_DestroyMutex(allSync.descriptorUpdateMutex);
+    if (allSync.vertexMutex) SDL_DestroyMutex(allSync.vertexMutex);
+    if (allSync.tileSetMutex) SDL_DestroyMutex(allSync.tileSetMutex);
 
-    SDL_DestroySemaphore(allSync.updateSemaphore);
-    SDL_DestroySemaphore(allSync.renderSemaphore);
-    SDL_DestroySemaphore(allSync.vertexSemaphore);
-    SDL_DestroySemaphore(allSync.signalSemaphore);
-    SDL_DestroySemaphore(allSync.logSemaphore);
-    SDL_DestroySemaphore(allSync.worldSemaphore);
+    if (allSync.updateSemaphore) SDL_DestroySemaphore(allSync.updateSemaphore);
+    if (allSync.renderSemaphore) SDL_DestroySemaphore(allSync.renderSemaphore);
+    if (allSync.vertexSemaphore) SDL_DestroySemaphore(allSync.vertexSemaphore);
+    if (allSync.signalSemaphore) SDL_DestroySemaphore(allSync.signalSemaphore);
+    if (allSync.logSemaphore) SDL_DestroySemaphore(allSync.logSemaphore);
+    if (allSync.worldSemaphore) SDL_DestroySemaphore(allSync.worldSemaphore);
 }
 // Function to destroy SDL window_2D and renderer
 void destroy(void) 
@@ -240,10 +241,11 @@ void destroy(void)
 
     // SDL_WaitThread(sdl_pid_signal, NULL);
     // print("signal end\n");
-    SDL_SignalSemaphore(allSync.updateSemaphore);
+    if (allSync.updateSemaphore) SDL_SignalSemaphore(allSync.updateSemaphore);
     SDL_WaitThread(sdl_pid_update, NULL);
     print("update end\n");
-    SDL_SignalSemaphore(allSync.vertexSemaphore);
+    if (allSync.renderSemaphore) SDL_SignalSemaphore(allSync.renderSemaphore);
+    if (allSync.vertexSemaphore) for (int i = 0;i < 10;i++) SDL_SignalSemaphore(allSync.vertexSemaphore);
     SDL_WaitThread(sdl_pid_draw, NULL);
     print("draw end\n");
     

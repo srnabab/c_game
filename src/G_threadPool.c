@@ -293,6 +293,11 @@ void G_WaitTask(G_Thread_Pool * pThreadPool, int * pDone)
 }
 void destroyThreadPool(G_Thread_Pool * pThreadPool)
 {
+    if (pThreadPool->threadPoolSize == 0 || pThreadPool->pThreads == NULL)
+    {
+        return;
+    }
+
     SDL_LockMutex(pThreadPool->ThreadPoolMutex);
     pThreadPool->running = false;
     Uint32 size = pThreadPool->threadPoolSize;

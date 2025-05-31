@@ -221,15 +221,15 @@ int update(void * arg)
     getTileSetPtr(&pTileSet);
 
     textureVertexInit(-32, -32, 64, 64, 0.2f, &allInOne.vertices2DCount, allInOne.pVertices2D, getTexture(TEXTURE_LOADING));
-    mapVertexInitialize(-3200.0f, 2400.0f, 16.0f, 16.0f, 0.01f, &allInOne.vertices2DCount, allInOne.pVertices2D, pTileSet->maps, groupID);
-    // mapVertexInitialize(0.0f, 0.0f, 16.0f, 16.0f, 0.01f, &allInOne.vertices2DCount, allInOne.pVertices2D, pTileSet->maps, groupID);
+    tileMapVertexInitialize(-3200.0f, 2400.0f, 16.0f, 16.0f, 0.01f, &allInOne.vertices2DCount, allInOne.pVertices2D, pTileSet->maps, groupID);
+    // tileMapVertexInitialize(0.0f, 0.0f, 16.0f, 16.0f, 0.01f, &allInOne.vertices2DCount, allInOne.pVertices2D, pTileSet->maps, groupID);
 
     // addModelMatrix(0, 0, 8, 1.0f, 1.0f, 1.0f, allInOne.pStaticModelPool, TEXTURE_MODEL);
-    addModelMatrix(100, 0, 8, 1.0f, 1.0f, 1.0f, allInOne.pStaticModelPool, TEXTURE_MODEL);
-    addModelMatrix(0, 100, 8, 1.0f, 1.0f, 1.0f, allInOne.pStaticModelPool, TEXTURE_MODEL);
-    addModelMatrix(100, 100, 8, 1.0f, 1.0f, 1.0f, allInOne.pStaticModelPool, TEXTURE_MODEL);
-    addModelMatrix(0, 0, 10, 1.0f, 1.0f, 1.0f, allInOne.pStaticModelPool, TEXTURE_VOXEL);
-    addModelMatrix(0, 0, -1, 100.0f, 100.0f, 1.0f, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
+    addModelMatrix(100, 0, 8, 1.0f, 1.0f, 1.0f, 0.0f, allInOne.pStaticModelPool, TEXTURE_MODEL);
+    addModelMatrix(0, 100, 8, 1.0f, 1.0f, 1.0f, 0.0f, allInOne.pStaticModelPool, TEXTURE_MODEL);
+    addModelMatrix(100, 100, 8, 1.0f, 1.0f, 1.0f, 0.0f, allInOne.pStaticModelPool, TEXTURE_MODEL);
+    addModelMatrix(0, 0, 10, 1.0f, 1.0f, 1.0f, 0.0f, allInOne.pStaticModelPool, TEXTURE_VOXEL);
+    addModelMatrix(0, 0, -1, 100.0f, 100.0f, 1.0f, 0.0f, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
 
     G_Buffer * tempStagingBuffer = NULL;
     // setMapBottom(allInOne.extent2D.width, allInOne.extent2D.height, 0, 0, &rowCount, &colCount, &firstBottom_X, &firstBottom_Y, &baseX, &baseY, &groupID);

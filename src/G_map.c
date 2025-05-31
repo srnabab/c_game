@@ -33,7 +33,7 @@ static mapGroupVertex mapGroupVertices[MAX_MAP_GROUP];
 #define UP_ROW_DEL 64
 #define DOWN_ROW_DEL 128
 
-void mapVertexInitialize(float x, float y, float width, float height, float depth, Uint32 * pVertexCount, Vertex332_ * pVertices, TILE_MAP * pMap, int32_t firstGroupID)
+void tileMapVertexInitialize(float x, float y, float width, float height, float depth, Uint32 * pVertexCount, Vertex332_ * pVertices, TILE_MAP * pMap, int32_t firstGroupID)
 {
 #warning if map group is null not processed
     Uint32 i, l, j, k;

@@ -13,6 +13,10 @@ struct _G_Texture_P;
 struct _G_Texture_P
 {
 	char innerName[16];
+	Uint16 draw;
+
+	Uint32 layoutCount;
+	VkImageLayout * layouts;
 
 	struct _G_Texture_P * next;
 	struct _G_Texture_P * prev;
@@ -25,9 +29,6 @@ struct _G_Texture_P
 	VkImage image;
 	VkImageView imageView;
 	VkDeviceMemory imageMem;
-
-	VkImageLayout * layouts;
-	Uint32 layoutCount;
 
 	VkDescriptorSet * pDescriptorSet;
 	VkDescriptorSet * pShadowDescriptorSet;
@@ -56,6 +57,7 @@ struct _G_Descriptor_Update_Texture
 
 	VkSampler sampler;
 	VkImageLayout layout;
+	char align[4];
 };
 typedef struct _G_Descriptor_Update_Texture G_Descriptor_Update_Texture;
 
@@ -102,6 +104,7 @@ extern void SDLCALL setTextureImageMemoryBarrier(void * imgPNext, VkAccessFlags 
     , Uint32 imgDstQueueFamilyIndex, VkImageAspectFlags aspectMask, Uint32 baseMipLevel, Uint32 levelCount, Uint32 baseArrayLayer, Uint32 layerCount, VkImageMemoryBarrier * pImageMemoryBarrier\
     , G_Texture_P * pTexture);
 // extern void SDLCALL emptyTextureRefCount(void);
+extern void SDLCALL setTextureDraw(G_Texture_P * pTexture, bool draw);
 extern bool SDLCALL unloadTexture(const char * innerName);
 extern void SDLCALL unloadAllTexture(void);
 

@@ -19,23 +19,7 @@
 extern VK_ALL allInOne;
 extern G_SYNC allSync;
 
-static void drawShadow(const char * innerName, VkCommandBuffer commandBuffer)
-{
-    G_Texture_P * tempTexture = getTexture(innerName);
-    if (tempTexture == NULL) return;
 
-    Uint32 firstInstance, instanceCount;
-    getStaticModelDrawInfo(allInOne.pStaticModelPool, &firstInstance, &instanceCount, innerName);
-
-    SDL_LockMutex(allSync.renderMutex);
-    
-    for (int i = 0;i < tempTexture->refCount;i++)
-    {
-        vkCmdDrawIndexed(commandBuffer, tempTexture->offsets[i].count, instanceCount, tempTexture->offsets[i].offset, tempTexture->offsets[i].offset, firstInstance);
-    }
-
-    SDL_UnlockMutex(allSync.renderMutex);
-}
 static void recordCommandBufferBottom(Uint32 currentFrame, bool graphicCopy)
 {
     VkCommandBuffer currentCommandBuffer = allInOne.pGraphicCommandBuffer[currentFrame];

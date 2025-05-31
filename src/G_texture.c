@@ -129,8 +129,6 @@ bool loadTexture(PathType path, VkFormat format, VkImageAspectFlags flags, const
 
     G_Texture_P * pTexture = getEmptyTexture();
     
-    SDL_UnlockMutex(allSync.textureMutex);
-   
     Uint32 ID = HashID(innerName);
 
     Uint8 channel;
@@ -151,6 +149,7 @@ bool loadTexture(PathType path, VkFormat format, VkImageAspectFlags flags, const
         vkDestroyImageView(allInOne.device, pTexture->imageView, allInOne.pAllocationCallbacks);
         vkDestroyImage(allInOne.device, pTexture->image, allInOne.pAllocationCallbacks);
         deleteTexture(pTexture);
+        SDL_UnlockMutex(allSync.textureMutex);
 
         return false;
     }
@@ -164,6 +163,7 @@ bool loadTexture(PathType path, VkFormat format, VkImageAspectFlags flags, const
         vkDestroyImageView(allInOne.device, pTexture->imageView, allInOne.pAllocationCallbacks);
         vkDestroyImage(allInOne.device, pTexture->image, allInOne.pAllocationCallbacks);
         deleteTexture(pTexture);
+        SDL_UnlockMutex(allSync.textureMutex);
 
         return false;
     }
@@ -175,10 +175,9 @@ bool loadTexture(PathType path, VkFormat format, VkImageAspectFlags flags, const
     pTexture->pDescriptorSet = pDescriptorSet;
 
     pTexture->ID = ID;
+    pTexture->draw = false;
 
     pTexture->refCount = 0;
-
-    SDL_LockMutex(allSync.textureMutex);
 
     SDL_strlcpy(pTexture->innerName, innerName, 16);
     print(pTexture->innerName);
@@ -193,12 +192,12 @@ bool addTexture(Uint32 width, Uint32 height, VkFormat format, VkImage image, VkD
 
     G_Texture_P * pTexture = getEmptyTexture();
 
-    SDL_UnlockMutex(allSync.textureMutex);
-
     pTexture->layouts = G_calloc(layerCount, sizeof(VkImageLayout));
     if (pTexture->layouts == NULL)
     {
         deleteTexture(pTexture);
+
+        SDL_UnlockMutex(allSync.textureMutex);
 
         return false;
     }
@@ -221,8 +220,7 @@ bool addTexture(Uint32 width, Uint32 height, VkFormat format, VkImage image, VkD
     pTexture->pDescriptorSet = pDescriptorSet;
 
     pTexture->ID = ID;
-
-    SDL_LockMutex(allSync.textureMutex);
+    pTexture->draw = false;
 
     SDL_strlcpy(pTexture->innerName, innerName, 16);
 
@@ -273,14 +271,14 @@ bool loadImageResource(VkFormat format, VkImageTiling tiling, VkImageUsageFlags 
 
     G_Texture_P * pTexture = getEmptyTexture();
    
-    SDL_UnlockMutex(allSync.textureMutex);
-
     Uint32 ID = HashID(innerName);
 
     pTexture->layouts = G_calloc(1, sizeof(VkImageLayout));
     if (pTexture->layouts == NULL)
     {
         deleteTexture(pTexture);
+
+        SDL_UnlockMutex(allSync.textureMutex);
 
         return false;
     }
@@ -300,8 +298,7 @@ bool loadImageResource(VkFormat format, VkImageTiling tiling, VkImageUsageFlags 
     if (pDescriptorSet != NULL) pTexture->pDescriptorSet = pDescriptorSet;
 
     pTexture->ID = ID;
-
-    SDL_LockMutex(allSync.textureMutex);
+    pTexture->draw = false;
 
     SDL_strlcpy(pTexture->innerName, innerName, 16);
 
@@ -417,6 +414,16 @@ void setTextureImageLayout(G_Texture_P * pTexture, VkImageLayout layout, Uint32 
 
     SDL_UnlockMutex(allSync.textureMutex);
 }
+void setTextureDraw(G_Texture_P * pTexture, bool draw)
+{
+    if (pTexture == NULL) return;
+
+    SDL_LockMutex(allSync.textureMutex);
+
+    pTexture->draw = draw;
+
+    SDL_UnlockMutex(allSync.textureMutex);
+}
 void setTextureImageMemoryBarrier(void * imgPNext, VkAccessFlags imgSrcAccessMask, VkAccessFlags imgDstAccessMask, VkImageLayout newLayout, Uint32 imgSrcQueueFamilyIndex\
     , Uint32 imgDstQueueFamilyIndex, VkImageAspectFlags aspectMask, Uint32 baseMipLevel, Uint32 levelCount, Uint32 baseArrayLayer, Uint32 layerCount, VkImageMemoryBarrier * pImageMemoryBarrier\
     , G_Texture_P * pTexture)
@@ -454,6 +461,7 @@ bool unloadTexture(const char * innerName)
 }
 void unloadAllTexture(void)
 {
+    if (globalTexture == NULL) return;
     G_Texture_P * pTexture = globalTexture->pTexture;
     while (pTexture != NULL)
     {

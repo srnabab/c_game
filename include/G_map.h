@@ -27,7 +27,7 @@
 // extern void SDLCALL setMapBottom(Uint32 width, Uint32 height, int centerX, int centerY, Uint32 * pRowCount, Uint32 * pColumnCount, int * pFirstBottom_X, int * pFirstBottom_Y, int * pBaseX, int * pBaseY, int32_t * pFirstBottomID);
 // extern bool SDLCALL moveBottomImage(Uint32 currentFrame);
 extern G_Point_Int SDLCALL locatePoint(G_Entity * entity, Uint32 groupRowCount, Uint32 groupColCount, int32_t firstBottom_X, int32_t firstBottom_Y, Uint32 groupID);
-extern void SDLCALL mapVertexInitialize(float x, float y, float width, float height, float depth, Uint32 * pVertexCount, Vertex332_ * pVertices, TILE_MAP * pMap, int32_t firstGroupID);
+extern void SDLCALL tileMapVertexInitialize(float x, float y, float width, float height, float depth, Uint32 * pVertexCount, Vertex332_ * pVertices, TILE_MAP * pMap, int32_t firstGroupID);
 
 #include "SDL3/SDL_close_code.h"
 

@@ -110,7 +110,7 @@ static G_StaticModel * findStaticModel(G_StaticModelPool * pModelPool, const cha
 
     return NULL;
 }
-bool addModelMatrix(int32_t x, int32_t y, int32_t z, float scale_x, float scale_y, float scale_z, G_StaticModelPool * pModelPool, const char * innerName)
+bool addModelMatrix(int32_t x, int32_t y, int32_t z, float scale_x, float scale_y, float scale_z, float z_angle, G_StaticModelPool * pModelPool, const char * innerName)
 {
     SDL_LockMutex(pModelPool->mutex);
 
@@ -161,6 +161,7 @@ bool addModelMatrix(int32_t x, int32_t y, int32_t z, float scale_x, float scale_
     // rotate
     glm_rotate(pModel->matrix[pModel->matrixCount], glm_rad(180.0f), (vec3){0.0f, 1.0f, 0.0f});
     glm_rotate(pModel->matrix[pModel->matrixCount], glm_rad(-90.0f), (vec3){1.0f, 0.0f, 0.0f});
+    glm_rotate(pModel->matrix[pModel->matrixCount], glm_rad(z_angle), (vec3){0.0f, 0.0f, 1.0f});
 
     // scale
     glm_scale(pModel->matrix[pModel->matrixCount], (vec3){scale_x, scale_z, scale_y});
@@ -221,57 +222,57 @@ bool deleteModelMatrixByIndex(G_StaticModelPool * pModelPool, const char * inner
 
     return true;
 }
-bool setModelMatrixByIndex(int32_t x, int32_t y, int32_t z, G_StaticModelPool * pModelPool, const char * innerName, Uint32 index)
-{
-    G_StaticModel * pModel;
-    Uint32 totalMatrixCount; 
-    vec3 tempVec3;
-    tempVec3[0] = x * METER_PER_PIXEL;
-    tempVec3[1] = y * METER_PER_PIXEL;
-    tempVec3[2] = z * METER_PER_PIXEL;
+// bool setModelMatrixByIndex(int32_t x, int32_t y, int32_t z, G_StaticModelPool * pModelPool, const char * innerName, Uint32 index)
+// {
+//     G_StaticModel * pModel;
+//     Uint32 totalMatrixCount; 
+//     vec3 tempVec3;
+//     tempVec3[0] = x * METER_PER_PIXEL;
+//     tempVec3[1] = y * METER_PER_PIXEL;
+//     tempVec3[2] = z * METER_PER_PIXEL;
 
-    SDL_LockMutex(pModelPool->mutex);
+//     SDL_LockMutex(pModelPool->mutex);
 
-    pModel = findStaticModel(pModelPool, innerName);
-    if (pModel == NULL)
-    {
-        SDL_UnlockMutex(pModelPool->mutex);
+//     pModel = findStaticModel(pModelPool, innerName);
+//     if (pModel == NULL)
+//     {
+//         SDL_UnlockMutex(pModelPool->mutex);
 
-        return false;
-    }
+//         return false;
+//     }
 
-    totalMatrixCount = pModel->totalMatrixCount;
+//     totalMatrixCount = pModel->totalMatrixCount;
 
-    if (index >= pModel->matrixCount)
-    {
-        SDL_UnlockMutex(pModelPool->mutex);
-        return false;
-    }
+//     if (index >= pModel->matrixCount)
+//     {
+//         SDL_UnlockMutex(pModelPool->mutex);
+//         return false;
+//     }
 
-    glm_mat4_identity(pModel->matrix[index]);
-    glm_translate(pModel->matrix[index], tempVec3);
-    glm_rotate(pModel->matrix[index], glm_rad(180.0f), (vec3){0.0f, 1.0f, 0.0f});
-    glm_rotate(pModel->matrix[index], glm_rad(-90.0f), (vec3){1.0f, 0.0f, 0.0f});
+//     glm_mat4_identity(pModel->matrix[index]);
+//     glm_translate(pModel->matrix[index], tempVec3);
+//     glm_rotate(pModel->matrix[index], glm_rad(180.0f), (vec3){0.0f, 1.0f, 0.0f});
+//     glm_rotate(pModel->matrix[index], glm_rad(-90.0f), (vec3){1.0f, 0.0f, 0.0f});
 
-    glm_mat4_copy(pModel->matrix[index], pModel->matrix[index + totalMatrixCount]);
-    glm_inv_tr(pModel->matrix[pModel->matrixCount + totalMatrixCount]);
+//     glm_mat4_copy(pModel->matrix[index], pModel->matrix[index + totalMatrixCount]);
+//     glm_inv_tr(pModel->matrix[pModel->matrixCount + totalMatrixCount]);
 
-    G_Buffer * stagingBuffer = allocateStagingBuffer(sizeof(mat4) * 2, &allInOne.stagingBufferPool);
-#warning error processing needed
-    bufferMemcpy(stagingBuffer, 0, pModel->matrix + index, sizeof(mat4));
-    addBufferCopy(stagingBuffer, 0, pModelPool->instanceBuffer, (pModel->firstInstance + index) * sizeof(mat4), sizeof(mat4), allInOne.queueFamilyIndices.graphicsFamily.familyIndice, allInOne.currentFrame);
+//     G_Buffer * stagingBuffer = allocateStagingBuffer(sizeof(mat4) * 2, &allInOne.stagingBufferPool);
+// #warning error processing needed
+//     bufferMemcpy(stagingBuffer, 0, pModel->matrix + index, sizeof(mat4));
+//     addBufferCopy(stagingBuffer, 0, pModelPool->instanceBuffer, (pModel->firstInstance + index) * sizeof(mat4), sizeof(mat4), allInOne.queueFamilyIndices.graphicsFamily.familyIndice, allInOne.currentFrame);
 
-    bufferMemcpy(stagingBuffer, sizeof(mat4), pModel->matrix + totalMatrixCount + index, sizeof(mat4));
-    addBufferCopy(stagingBuffer, sizeof(mat4), pModelPool->instanceBuffer, (pModel->firstInstance + pModelPool->totalInstanceCount + index) * sizeof(mat4), sizeof(mat4), allInOne.queueFamilyIndices.graphicsFamily.familyIndice, allInOne.currentFrame);
-    // bufferMemcpy(pModelPool->instanceBuffer, (pModel->firstInstance + index) * sizeof(mat4), pModel->matrix + index, sizeof(mat4));
-    // bufferMemcpy(pModelPool->instanceBuffer, (pModel->firstInstance + pModelPool->totalInstanceCount + index) * sizeof(mat4), pModel->matrix + totalMatrixCount + index, sizeof(mat4));
+//     bufferMemcpy(stagingBuffer, sizeof(mat4), pModel->matrix + totalMatrixCount + index, sizeof(mat4));
+//     addBufferCopy(stagingBuffer, sizeof(mat4), pModelPool->instanceBuffer, (pModel->firstInstance + pModelPool->totalInstanceCount + index) * sizeof(mat4), sizeof(mat4), allInOne.queueFamilyIndices.graphicsFamily.familyIndice, allInOne.currentFrame);
+//     // bufferMemcpy(pModelPool->instanceBuffer, (pModel->firstInstance + index) * sizeof(mat4), pModel->matrix + index, sizeof(mat4));
+//     // bufferMemcpy(pModelPool->instanceBuffer, (pModel->firstInstance + pModelPool->totalInstanceCount + index) * sizeof(mat4), pModel->matrix + totalMatrixCount + index, sizeof(mat4));
     
-    SDL_UnlockMutex(pModelPool->mutex);
+//     SDL_UnlockMutex(pModelPool->mutex);
 
-    freeStagingBuffer(stagingBuffer);
+//     freeStagingBuffer(stagingBuffer);
 
-    return true;
-}
+//     return true;
+// }
 bool getStaticModelDrawInfo(G_StaticModelPool * pModelPool, Uint32 * pFirstInstance, Uint32 * pInstanceCount, const char * innerName)
 {
     SDL_LockMutex(pModelPool->mutex);

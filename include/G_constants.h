@@ -6,7 +6,7 @@
 #define TRACE_PTR
 #define BREAK_POINT __asm__ volatile("int3");
 
-#define TEST 0
+#define TEST 1
 
 #define VERTEX_UNIT_SIZE_2D 32
 #define INDEX_UNIT_SIZE_2D 2

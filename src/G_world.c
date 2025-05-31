@@ -228,7 +228,7 @@ void cleanWorld(void)
     }
     deInitStack(&ballStack);
     destroyThreadPool(&worldThreadPool);
-    b2DestroyWorld(worldId);
+    if (worldId.index1) b2DestroyWorld(worldId);
 }
 void destroyFloor(void)
 {

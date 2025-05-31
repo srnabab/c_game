@@ -7,8 +7,6 @@
 #define BYTE_OFFSET(ptr, offset) (((char*)(ptr) + (offset)))
 #define ROUND8(X) (((X)+7)&~7)
 
-typedef struct _G_aligned G_aligned;
-
 #include "SDL3/SDL_begin_code.h"
 
 extern void SDLCALL G_free(void * pMemory);

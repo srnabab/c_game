@@ -63,7 +63,7 @@ void drawPic(const char * innerName, Uint32 currentFrame, VkCommandBuffer comman
     SDL_LockMutex(allSync.renderMutex);
  
     G_Texture_P * tempTexture = getTexture(innerName);
-    if (tempTexture == NULL)
+    if (tempTexture == NULL || !tempTexture->draw)
     {
         SDL_UnlockMutex(allSync.renderMutex);
         return;
@@ -80,31 +80,44 @@ void drawPic(const char * innerName, Uint32 currentFrame, VkCommandBuffer comman
 
     SDL_UnlockMutex(allSync.renderMutex);
 }
-void drawModel(const char * innerName, Uint32 currentFrame, VkCommandBuffer commandBuffer)
+void drawShadow(const char * innerName, VkCommandBuffer commandBuffer)
 {
     Uint32 firstInstance, instanceCount;
-    getStaticModelDrawInfo(allInOne.pStaticModelPool, &firstInstance, &instanceCount, innerName);
 
     SDL_LockMutex(allSync.renderMutex);
 
     G_Texture_P * tempTexture = getTexture(innerName);
-    if (tempTexture == NULL)
+    if (tempTexture == NULL || !tempTexture->draw)
     {
         SDL_UnlockMutex(allSync.renderMutex);
         return;
     }
 
-    // if (bottom)
-    // {
-    //     VkDescriptorSet descriptorSet[] = {tempTexture->pDescriptorSet[currentFrame], tempTexture->pDescriptorSet[currentFrame + 2]};
-    //     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, allInOne.bottomPipelineLayout, 0,
-    //     2, descriptorSet, 0, NULL);
-    // }
-    // else
-    // {
-        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, allInOne.modelPipelineLayout, 0,
-        1, tempTexture->pDescriptorSet + currentFrame, 0, NULL);
-    // }
+    getStaticModelDrawInfo(allInOne.pStaticModelPool, &firstInstance, &instanceCount, innerName);
+    
+    for (int i = 0;i < tempTexture->refCount;i++)
+    {
+        vkCmdDrawIndexed(commandBuffer, tempTexture->offsets[i].count, instanceCount, tempTexture->offsets[i].offset, tempTexture->offsets[i].offset, firstInstance);
+    }
+
+    SDL_UnlockMutex(allSync.renderMutex);
+}
+void drawModel(const char * innerName, Uint32 currentFrame, VkCommandBuffer commandBuffer)
+{
+    Uint32 firstInstance, instanceCount;
+
+    SDL_LockMutex(allSync.renderMutex);
+
+    G_Texture_P * tempTexture = getTexture(innerName);
+    if (tempTexture == NULL || !tempTexture->draw)
+    {
+        SDL_UnlockMutex(allSync.renderMutex);
+        return;
+    }
+
+    getStaticModelDrawInfo(allInOne.pStaticModelPool, &firstInstance, &instanceCount, innerName);
+
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, allInOne.modelPipelineLayout, 0, 1, tempTexture->pDescriptorSet + currentFrame, 0, NULL);
    
     for (int i = 0;i < tempTexture->refCount;i++)
     {

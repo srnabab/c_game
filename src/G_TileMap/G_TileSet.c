@@ -414,7 +414,7 @@ bool loadTileMap(PathType tileMapData, const char * setInnerName, const char * m
         pSet->maps[pSet->mapCount].mapGroups[i].left = getGroupPointer(groupCount, pSet->maps[pSet->mapCount].mapGroups, tempIDs[i][2]);
         pSet->maps[pSet->mapCount].mapGroups[i].right = getGroupPointer(groupCount, pSet->maps[pSet->mapCount].mapGroups, tempIDs[i][3]);
 
-        print("ID: %d, upID: %d, downID: %d, leftID: %d, rightID: %d", pSet->maps[pSet->mapCount].mapGroups[i].groupID, (pSet->maps[pSet->mapCount].mapGroups[i].up == NULL) ? -1 : pSet->maps[pSet->mapCount].mapGroups[i].up->groupID,\
+        // print("ID: %d, upID: %d, downID: %d, leftID: %d, rightID: %d", pSet->maps[pSet->mapCount].mapGroups[i].groupID, (pSet->maps[pSet->mapCount].mapGroups[i].up == NULL) ? -1 : pSet->maps[pSet->mapCount].mapGroups[i].up->groupID,\
         (pSet->maps[pSet->mapCount].mapGroups[i].down == NULL) ? -1 : pSet->maps[pSet->mapCount].mapGroups[i].down->groupID, (pSet->maps[pSet->mapCount].mapGroups[i].left == NULL) ? -1 : pSet->maps[pSet->mapCount].mapGroups[i].left->groupID\
         , (pSet->maps[pSet->mapCount].mapGroups[i].right == NULL) ? -1 : pSet->maps[pSet->mapCount].mapGroups[i].right->groupID);
 
