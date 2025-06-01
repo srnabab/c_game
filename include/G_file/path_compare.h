@@ -40,6 +40,7 @@ typedef enum _PathType
     VoxelMtl,
     VoxelObj,
     VoxelPng,
+    MainBackgroundPng,
     Viking_roomPng,
     EmptyFragShader,
     MainBackgroundMusic1Wav,

@@ -64,14 +64,14 @@ static void * G_b2_EnqueueTaskCallback(b2TaskCallback * task, int itemCount, int
 }
 static void G_b2_FinishTaskCallback(void * userTask, void * userContext)
 {
-    G_WaitTask(userContext, userTask);
+    G_WaitTask(userContext, userTask, NULL);
 }
 void initWorld(void)
 {
     b2SetAllocator(box2d_SDL_Alloc, box2d_SDL_Free);
     b2SetAssertFcn(AssertFcn);
 
-    createThreadPool(&worldThreadPool, 8, false);
+    createThreadPool(&worldThreadPool, 4, false);
 
     worldDef = b2DefaultWorldDef();
     worldDef.enqueueTask = G_b2_EnqueueTaskCallback;

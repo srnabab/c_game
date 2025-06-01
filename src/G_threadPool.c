@@ -279,7 +279,7 @@ int * G_AddTask(G_Thread_Pool * pThreadPool, int itemCount, int minRange, G_Task
 
     return tempTrace.taskAllDone;
 }
-void G_WaitTask(G_Thread_Pool * pThreadPool, int * pDone)
+void G_WaitTask(G_Thread_Pool * pThreadPool, int * pDone, void * result)
 {
     if (pDone == NULL) return;
     while (*pDone != TRACE_DONE)

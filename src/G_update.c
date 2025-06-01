@@ -232,20 +232,8 @@ int update(void * arg)
     addModelMatrix(0, 0, -1, 100.0f, 100.0f, 1.0f, 0.0f, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
 
     G_Buffer * tempStagingBuffer = NULL;
-    // setMapBottom(allInOne.extent2D.width, allInOne.extent2D.height, 0, 0, &rowCount, &colCount, &firstBottom_X, &firstBottom_Y, &baseX, &baseY, &groupID);
-    // memcpy(allInOne.pTimeMapTexCoordBufferMapped[0], allInOne.pTileMapUVs, sizeof(vec2) * VERTEX_COUNT_IN_UNIT_2D * MAX_TILES_IN_GROUP * (allInOne.bottomImageDrawStack.top + 1));
-    // memcpy(allInOne.pTimeMapTexCoordBufferMapped[1], allInOne.pTileMapUVs, sizeof(vec2) * VERTEX_COUNT_IN_UNIT_2D * MAX_TILES_IN_GROUP * (allInOne.bottomImageDrawStack.top + 1));
-    // addModelMatrix(0, 100 / HEIGHT_FACTOR, -1, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
-    // addModelMatrix(-800, 100 / HEIGHT_FACTOR, -1, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
-    // addModelMatrix(0, 900 / HEIGHT_FACTOR, -1, allInOne.pStaticModelPool, TEXTURE_BOTTOM);
 
-    // glm_mat4_identity(allInOne.pTilemapUbo->model);
-    // glm_lookat((vec3){0.0f, 0.0f, 100.0f}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, allInOne.pTilemapUbo->view);
-    // glm_ortho_vulkan(-800.0f / 800.0f, 800.0f / 800.0f, -800.0f / 800.0f, 800.0f / 800.0f, -0.001f, -100.0f, allInOne.pTilemapUbo->proj);
-    // memcpy(allInOne.ppTilemapUniformBufferMapped[0], allInOne.pTilemapUbo, sizeof(UniformBufferObject));
-    // memcpy(allInOne.ppTilemapUniformBufferMapped[1], allInOne.pTilemapUbo, sizeof(UniformBufferObject));
-
-    SDL_Delay(300);
+    SDL_Delay(30);
     
     Uint64 last_frame_time = SDL_GetPerformanceCounter();
     SDL_SignalSemaphore(allSync.updateSemaphore);

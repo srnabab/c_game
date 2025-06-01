@@ -138,6 +138,10 @@ PathType pathCompare(char * buffer)
     {
         return VoxelPng;
     }
+    else if ((SDL_strcmp(buffer, "[MainBackgroundPng]") == 0))
+    {
+        return MainBackgroundPng;
+    }
     else if ((SDL_strcmp(buffer, "[Viking_roomPng]") == 0))
     {
         return Viking_roomPng;

@@ -4,6 +4,11 @@
 #define TEXTURE_LOADING "loading"
 #define TEXTURE_CIRCLE "circle"
 #define TEXTURE_FONT "font"
+#define TEXTURE_BACKGROUND "background"
+#define TEXTURE_START "start"
+#define TEXTURE_LOAD "load"
+#define TEXTURE_SETTING "setting"
+#define TEXTURE_EXIT "exit"
 
 #define TEXTURE_TILE_SET "tileSet"
 #define MAIN_TILE_MAP "tileMap1"
