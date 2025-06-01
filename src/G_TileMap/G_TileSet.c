@@ -13,7 +13,6 @@ static Uint32 tileCap = 0;
 
 extern G_SYNC allSync;
 
-
 bool initTileMapSystem(void)
 {
     tileCap++;
@@ -170,9 +169,9 @@ static TILE_SET * loadTileSetData(PathType setDataPath, const char * innerName)
 
     return tileSets + tileSetCount - 1;
 }
-bool loadTileSet(PathType setImagePath, PathType setDataPath, VkFormat format, VkImageAspectFlags flags, const char * innerName, VkDescriptorSet * pDescriptorSet)
+bool loadTileSet(PathType setImagePath, PathType setDataPath, VkFormat format, VkImageAspectFlags flags, const char * innerName, G_DescriptorSets * pDescriptorSet, void * pUniformBuffer, bool draw)
 {
-    bool res = loadTexture(setImagePath, format, flags, innerName, pDescriptorSet);
+    bool res = G_loadImage(setImagePath, format, flags, innerName, pDescriptorSet, 0, image2dDescriptorSetUpdate, pUniformBuffer, draw);
     if (res == false) return false;
 
     TILE_SET * pSet = loadTileSetData(setDataPath, innerName);

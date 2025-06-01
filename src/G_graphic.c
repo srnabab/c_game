@@ -228,11 +228,7 @@ static void initializeAllInOne(void)
     // allInOne.pThreadPool = &threadPool;
     // allInOne.timelineSemaphoreSignalValue = 0;
 }
-static void image2dDescriptorSetUpdate(G_Texture_P * pTexture, void * data)
-{
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, pTexture->pDescriptorSet, data);
-    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, pTexture, allInOne.textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-}
+
 void initVulkan(void)
 {
     /*fixed compoent*/
@@ -555,7 +551,7 @@ void initVulkan(void)
     CO_addFence(allInOne.pTransferInFlightFence[0]);// CO
     CO_addFence(allInOne.pTransferInFlightFence[1]);// CO
    
-    loadTileSet(TileSet1Png, TileSet1Tsd, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_TILE_SET, allInOne.graphicDescriptorSets.pSets + 6);
+    loadTileSet(TileSet1Png, TileSet1Tsd, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_TILE_SET, &allInOne.graphicDescriptorSets, allInOne.pGraphicUniformBuffer, true);
     loadTileMap(TileMap1TsdI, TEXTURE_TILE_SET, MAIN_TILE_MAP);
     // loadTileMap(TileMap1TsdI, -1200, -1100, TEXTURE_TILE_SET);
     // loadTileMap(TileMap1TsdI, -1200, -300, TEXTURE_TILE_SET);
@@ -599,7 +595,7 @@ void initVulkan(void)
 
     // graphic
     // addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, circleTexture->pDescriptorSet, allInOne.pGraphicUniformBuffer);
-    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, tileSetTexture->pDescriptorSet, allInOne.pGraphicUniformBuffer);
+    // addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, tileSetTexture->pDescriptorSet, allInOne.pGraphicUniformBuffer);
     // addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, getTexture(TEXTURE_BOX)->pDescriptorSet, graphicUniformBuffers);
 
     // model
@@ -621,7 +617,7 @@ void initVulkan(void)
     // addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, loadingTexture, allInOne.textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     // addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, circleTexture, allInOne.textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);//8
     // addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, fontTexture, allInOne.textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, tileSetTexture, allInOne.textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    // addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, tileSetTexture, allInOne.textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     // addDescriptorSetToTexture(TEXTURE_2D_COLOR, combine2DDescriptorSets);
     // addDescriptorSetToTexture(TEXTURE_SHADOW_MAP, combine2DDescriptorSets);
     // addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, TEXTURE_2D_COLOR, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);

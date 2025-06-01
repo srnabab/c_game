@@ -2,6 +2,7 @@
 #include "SDL3/SDL_stdinc.h"
 #include "G_file/G_file.h"
 #include "G_texture.h"
+#include "G_image.h"
 
 #ifndef G_TILE_SET_H
 #define G_TILE_SET_H 1
@@ -83,7 +84,7 @@ typedef struct _TSDI_Head TSDI_Head;
 extern bool SDLCALL initTileMapSystem(void);
 extern void SDLCALL getTileSetCount(Uint32 * pTileSetCount);
 extern void SDLCALL getTileSetPtr(TILE_SET ** ppSet);
-extern bool SDLCALL loadTileSet(PathType setImagePath, PathType setDataPath, VkFormat format, VkImageAspectFlags flags, const char * innerName, VkDescriptorSet * pDescriptorSet);
+extern bool SDLCALL loadTileSet(PathType setImagePath, PathType setDataPath, VkFormat format, VkImageAspectFlags flags, const char * innerName, G_DescriptorSets * pDescriptorSet, void * pUniformBuffer, bool draw);
 extern bool SDLCALL loadTileMap(PathType tileMapData, const char * setInnerName, const char * mapInnerName);
 extern Map_Group* SDLCALL getFirstMapGroup(const char * setInnerName, const char * mapInnerName);
 extern Map_Group* SDLCALL getMapGroup(const char * setInnerName, const char * mapInnerName, int32_t groupID);

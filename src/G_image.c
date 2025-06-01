@@ -14,5 +14,5 @@ int G_loadImage(PathType path, VkFormat format, VkImageAspectFlags flags, const 
         if (func != NULL) func(pTexture, data);
     }
 
-    return result ? 0 : -1;
+    return result;
 }

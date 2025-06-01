@@ -355,3 +355,8 @@ void executeUpdateDescriptorSets(void)
 
     SDL_UnlockMutex(allSync.descriptorUpdateMutex);
 }
+void image2dDescriptorSetUpdate(G_Texture_P * pTexture, void * data)
+{
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, pTexture->pDescriptorSet, data);
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, pTexture, allInOne.textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+}
