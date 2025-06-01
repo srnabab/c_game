@@ -197,7 +197,7 @@ struct _VK_ALL
     VkDescriptorSet * pParticleDescriptorSets;
     VkDescriptorSet * pComputeDescriptorSets;
     VkDescriptorSet * pShapeDescriptorSets;
-    VkDescriptorSet * pModelDescriptorSets;
+    G_DescriptorSets modelDescriptorSets;
     // VkDescriptorSet * pBottomDescriptorSets;
 
     VkDescriptorSet * pShadowDescriptorSets;

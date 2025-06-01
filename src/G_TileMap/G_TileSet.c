@@ -171,7 +171,7 @@ static TILE_SET * loadTileSetData(PathType setDataPath, const char * innerName)
 }
 bool loadTileSet(PathType setImagePath, PathType setDataPath, VkFormat format, VkImageAspectFlags flags, const char * innerName, G_DescriptorSets * pDescriptorSet, void * pUniformBuffer, bool draw)
 {
-    bool res = G_loadImage(setImagePath, format, flags, innerName, pDescriptorSet, 0, image2dDescriptorSetUpdate, pUniformBuffer, draw);
+    bool res = G_loadImage(setImagePath, format, flags, innerName, pDescriptorSet, 0, pUniformBuffer, draw);
     if (res == false) return false;
 
     TILE_SET * pSet = loadTileSetData(setDataPath, innerName);
@@ -413,9 +413,9 @@ bool loadTileMap(PathType tileMapData, const char * setInnerName, const char * m
         pSet->maps[pSet->mapCount].mapGroups[i].left = getGroupPointer(groupCount, pSet->maps[pSet->mapCount].mapGroups, tempIDs[i][2]);
         pSet->maps[pSet->mapCount].mapGroups[i].right = getGroupPointer(groupCount, pSet->maps[pSet->mapCount].mapGroups, tempIDs[i][3]);
 
-        // print("ID: %d, upID: %d, downID: %d, leftID: %d, rightID: %d", pSet->maps[pSet->mapCount].mapGroups[i].groupID, (pSet->maps[pSet->mapCount].mapGroups[i].up == NULL) ? -1 : pSet->maps[pSet->mapCount].mapGroups[i].up->groupID,\
-        (pSet->maps[pSet->mapCount].mapGroups[i].down == NULL) ? -1 : pSet->maps[pSet->mapCount].mapGroups[i].down->groupID, (pSet->maps[pSet->mapCount].mapGroups[i].left == NULL) ? -1 : pSet->maps[pSet->mapCount].mapGroups[i].left->groupID\
-        , (pSet->maps[pSet->mapCount].mapGroups[i].right == NULL) ? -1 : pSet->maps[pSet->mapCount].mapGroups[i].right->groupID);
+        // print("ID: %d, upID: %d, downID: %d, leftID: %d, rightID: %d", pSet->maps[pSet->mapCount].mapGroups[i].groupID, (pSet->maps[pSet->mapCount].mapGroups[i].up == NULL) ? -1 : pSet->maps[pSet->mapCount].mapGroups[i].up->groupID,
+        // (pSet->maps[pSet->mapCount].mapGroups[i].down == NULL) ? -1 : pSet->maps[pSet->mapCount].mapGroups[i].down->groupID, (pSet->maps[pSet->mapCount].mapGroups[i].left == NULL) ? -1 : pSet->maps[pSet->mapCount].mapGroups[i].left->groupID
+        // , (pSet->maps[pSet->mapCount].mapGroups[i].right == NULL) ? -1 : pSet->maps[pSet->mapCount].mapGroups[i].right->groupID);
 
         G_free(tempIDs[i]);
     }

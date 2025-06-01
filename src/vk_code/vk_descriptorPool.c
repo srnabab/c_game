@@ -54,7 +54,7 @@ void createDescriptorSets(VkDescriptorPool * pDescriptorPool, VkDescriptorSetLay
 
     G_free(layouts);
 }
-bool G_createDescriptorSets(VkDescriptorPool * pDescriptorPool, VkDescriptorSetLayout * pDescriptorSetLayout, Uint32 shaderSetCount, Uint32 SetsCount, G_DescriptorSets * pDescriptorSets)
+bool G_createDescriptorSets(VkDescriptorPool * pDescriptorPool, VkDescriptorSetLayout * pDescriptorSetLayout, Uint32 shaderSetCount, Uint32 SetsCount, G_ImageDescriptorUpdateFunc func, G_DescriptorSets * pDescriptorSets)
 {
     pDescriptorSets->used = G_calloc(shaderSetCount * SetsCount * MAX_FRAMES_IN_FLIGHT, sizeof(bool));
     if (pDescriptorSets->used == NULL) return false;
@@ -62,6 +62,7 @@ bool G_createDescriptorSets(VkDescriptorPool * pDescriptorPool, VkDescriptorSetL
     createDescriptorSets(pDescriptorPool, pDescriptorSetLayout, shaderSetCount, SetsCount, &pDescriptorSets->pSets);
     pDescriptorSets->shaderSetCount = shaderSetCount;
     pDescriptorSets->totalSetCount = shaderSetCount * SetsCount * MAX_FRAMES_IN_FLIGHT;
+    pDescriptorSets->updateFunc = func;
 
     return true;
 }
@@ -208,7 +209,7 @@ void addDescriptorUpdate_Buffer(VkDescriptorType descriptorType, Uint32 binding,
 
     SDL_UnlockMutex(allSync.descriptorUpdateMutex);
 }
-void addDescriptorUpdate_Texture(VkDescriptorType descriptorType, Uint32 binding, G_Texture_P * pTexture, VkSampler sampler, VkImageLayout layout)
+void addDescriptorUpdate_Texture(VkDescriptorType descriptorType, Uint32 binding, G_Texture_P * pTexture, VkDescriptorSet * pSet, VkSampler sampler, VkImageLayout layout)
 {
     G_Descriptor_Update_Texture tempTexture;
     tempTexture.pParent = pTexture;
@@ -225,7 +226,8 @@ void addDescriptorUpdate_Texture(VkDescriptorType descriptorType, Uint32 binding
 
     updates[updatesCount].descriptorType = descriptorType;
     updates[updatesCount].binding = binding;
-    updates[updatesCount].pSet = tempTexture.pParent->pDescriptorSet;
+    if (pSet) updates[updatesCount].pSet = pSet;
+    else updates[updatesCount].pSet = pTexture->pDescriptorSet;
     updates[updatesCount].bufferImage.Texture = tempTexture;
     updatesCount++;
 
@@ -358,5 +360,17 @@ void executeUpdateDescriptorSets(void)
 void image2dDescriptorSetUpdate(G_Texture_P * pTexture, void * data)
 {
     addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, pTexture->pDescriptorSet, data);
-    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, pTexture, allInOne.textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, pTexture, NULL, allInOne.textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+}
+void image3dDescriptorSetUpdate(G_Texture_P * pTexture, void * data)
+{
+    void ** dataPtr = (void**)data;
+    // allInOne.pGraphic3DUniformBuffer
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, pTexture->pDescriptorSet, dataPtr[0]);
+    // allInOne.pSunUniformBuffer
+    addDescriptorUpdate_Buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3, pTexture->pDescriptorSet, dataPtr[1]);
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, pTexture, NULL, allInOne.textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    // shadow texture
+    addDescriptorUpdate_Texture(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2, dataPtr[2], pTexture->pDescriptorSet, allInOne.shadowSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    addShadowDescriptorSetToTexture(TEXTURE_MODEL, ((G_Texture_P*)dataPtr[2])->pDescriptorSet);
 }

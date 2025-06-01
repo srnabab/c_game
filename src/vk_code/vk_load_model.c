@@ -74,7 +74,7 @@ static void tinyobj_SDL_readFile(void *ctx, const char *filename, int is_mtl, co
     SDL_CloseIO(stream);
 }
 bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex3323 * vertices, Uint32 * pVertexIndex, Uint32 * indices, Uint32 * pIndexIndex, VkFormat textureFormat, VkImageAspectFlags flags\
-, const char * innerName, VkDescriptorSet * pDescriptorSet, bool palette)
+, const char * innerName, G_DescriptorSets * pDescriptorSet, void * data, bool draw)
 {
     tinyobj_attrib_t attrib;
     tinyobj_shape_t * shapes;
@@ -88,7 +88,7 @@ bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex3323 * v
     Uint32 indexIndex = *pIndexIndex;
     SDL_UnlockMutex(allSync.textureMutex);
 
-    bool textureRes = loadTexture(texturePath, textureFormat, flags, innerName, pDescriptorSet);
+    bool textureRes = G_loadImage(texturePath, textureFormat, flags, innerName, pDescriptorSet, 0, data, draw);
     if (textureRes == false) return false;
 
     tempTexture = getTexture(innerName);
