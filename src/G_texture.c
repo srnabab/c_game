@@ -125,6 +125,12 @@ static void deleteTexture(G_Texture_P * pTexture)
 }
 bool loadTexture(PathType path, VkFormat format, VkImageAspectFlags flags, const char * innerName, VkDescriptorSet * pDescriptorSet)
 {
+    if (pDescriptorSet == NULL || innerName == NULL)
+    {
+        print("pDescriptorSet or innerName is NULL");
+        return false;
+    }
+
     SDL_LockMutex(allSync.textureMutex);
 
     G_Texture_P * pTexture = getEmptyTexture();

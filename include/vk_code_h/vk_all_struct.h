@@ -2,6 +2,7 @@
 
 #include "vk_code_h/vk_copy.h"
 #include "vk_code_h/vk_struct.h"
+#include "vk_code_h/vk_descriptorPool.h"
 #include "G_buffer.h"
 #include "G_threadPool.h"
 #include "G_staticModel.h"
@@ -190,7 +191,9 @@ struct _VK_ALL
 
     G_Buffer * pShaderStorageBuffer[MAX_FRAMES_IN_FLIGHT];
 
-    VkDescriptorSet * pGraphicDescriptorSets;
+    // VkDescriptorSet * pGraphicDescriptorSets;
+    G_DescriptorSets graphicDescriptorSets;
+
     VkDescriptorSet * pParticleDescriptorSets;
     VkDescriptorSet * pComputeDescriptorSets;
     VkDescriptorSet * pShapeDescriptorSets;

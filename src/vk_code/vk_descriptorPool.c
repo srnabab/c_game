@@ -30,29 +30,82 @@ void createDescriptorPool(VkDevice * pDevice, Uint32 poolSizeCount, VkDescriptor
 
     resultVulkan(vkCreateDescriptorPool(*pDevice, &poolInfo, allInOne.pAllocationCallbacks, pDescriptorPool), 0);
 }
-void createDescriptorSets(VkDescriptorPool * pDescriptorPool, VkDescriptorSetLayout * pDescriptorSetLayout, Uint32 setCount, Uint32 SetsCount, VkDescriptorSet ** ppDescriptorSets)
+void createDescriptorSets(VkDescriptorPool * pDescriptorPool, VkDescriptorSetLayout * pDescriptorSetLayout, Uint32 shaderSetCount, Uint32 SetsCount, VkDescriptorSet ** ppDescriptorSets)
 {
     int i, j, k;
-    VkDescriptorSetLayout * layouts = (VkDescriptorSetLayout *)G_malloc(MAX_FRAMES_IN_FLIGHT * setCount * SetsCount * sizeof(VkDescriptorSetLayout));
+    VkDescriptorSetLayout * layouts = (VkDescriptorSetLayout *)G_malloc(MAX_FRAMES_IN_FLIGHT * shaderSetCount * SetsCount * sizeof(VkDescriptorSetLayout));
     for (k = 0;k < SetsCount;k++)
-    for (i = 0;i < setCount;i++)
+    for (i = 0;i < shaderSetCount;i++)
     for (j = 0;j < MAX_FRAMES_IN_FLIGHT;j++)
     {
-        layouts[i * MAX_FRAMES_IN_FLIGHT + j + k * MAX_FRAMES_IN_FLIGHT * setCount] = pDescriptorSetLayout[i];
+        layouts[i * MAX_FRAMES_IN_FLIGHT + j + k * MAX_FRAMES_IN_FLIGHT * shaderSetCount] = pDescriptorSetLayout[i];
     }
 
-    *ppDescriptorSets = (VkDescriptorSet *)G_malloc(MAX_FRAMES_IN_FLIGHT * SetsCount * setCount * sizeof(VkDescriptorSet));
+    *ppDescriptorSets = (VkDescriptorSet *)G_malloc(MAX_FRAMES_IN_FLIGHT * SetsCount * shaderSetCount * sizeof(VkDescriptorSet));
 
     VkDescriptorSetAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.pNext = NULL;
-    allocInfo.descriptorSetCount = (Uint32)(MAX_FRAMES_IN_FLIGHT * setCount * SetsCount);
+    allocInfo.descriptorSetCount = (Uint32)(MAX_FRAMES_IN_FLIGHT * shaderSetCount * SetsCount);
     allocInfo.descriptorPool = *pDescriptorPool;
     allocInfo.pSetLayouts = layouts;
 
     print("%d", vkAllocateDescriptorSets(allInOne.device, &allocInfo, *ppDescriptorSets));
 
     G_free(layouts);
+}
+bool G_createDescriptorSets(VkDescriptorPool * pDescriptorPool, VkDescriptorSetLayout * pDescriptorSetLayout, Uint32 shaderSetCount, Uint32 SetsCount, G_DescriptorSets * pDescriptorSets)
+{
+    pDescriptorSets->used = G_calloc(shaderSetCount * SetsCount * MAX_FRAMES_IN_FLIGHT, sizeof(bool));
+    if (pDescriptorSets->used == NULL) return false;
+
+    createDescriptorSets(pDescriptorPool, pDescriptorSetLayout, shaderSetCount, SetsCount, &pDescriptorSets->pSets);
+    pDescriptorSets->shaderSetCount = shaderSetCount;
+    pDescriptorSets->totalSetCount = shaderSetCount * SetsCount * MAX_FRAMES_IN_FLIGHT;
+
+    return true;
+}
+VkDescriptorSet * G_getFreeDescriptorSet(G_DescriptorSets * pDescriptorSets, Uint32 shaderSetIndex)
+{
+    if (pDescriptorSets->pSets == NULL) return NULL;
+
+    SDL_LockMutex(allSync.descriptorUpdateMutex);
+
+    if (shaderSetIndex >= pDescriptorSets->shaderSetCount)
+    {
+        SDL_UnlockMutex(allSync.descriptorUpdateMutex);
+        return NULL;
+    }
+
+    Uint32 i, j;
+    for (i = 0;i < pDescriptorSets->totalSetCount;)
+    {
+        if (pDescriptorSets->used[i + shaderSetIndex * MAX_FRAMES_IN_FLIGHT] == false)
+        {
+            for (j = 0;j < MAX_FRAMES_IN_FLIGHT;j++)
+            {
+                pDescriptorSets->used[i + shaderSetIndex * MAX_FRAMES_IN_FLIGHT + j] = true;
+            }
+
+            SDL_UnlockMutex(allSync.descriptorUpdateMutex);
+
+            return pDescriptorSets->pSets + i;
+        }
+        i += pDescriptorSets->shaderSetCount * MAX_FRAMES_IN_FLIGHT;
+    }
+
+    SDL_UnlockMutex(allSync.descriptorUpdateMutex);
+
+    return NULL;
+}
+void G_destroyDescriptorSets(G_DescriptorSets * pDescriptorSets)
+{
+    if (pDescriptorSets->pSets == NULL) return;
+
+    G_free(pDescriptorSets->pSets);
+    G_free(pDescriptorSets->used);
+    pDescriptorSets->pSets = NULL;
+    pDescriptorSets->used = NULL;
 }
 static bool useImageInfo(VkDescriptorType type)
 {
@@ -130,8 +183,9 @@ static int getShaderStorageBufferIndex(void * pBufferAddress)
 }
 static void outOfCount(void)
 {
-    print("out of limit");
-    BREAK_POINT
+    print("out of limit, implicit call executeUpdateDescriptorSets");
+    executeUpdateDescriptorSets();
+    // BREAK_POINT
 }
 void addDescriptorUpdate_Buffer(VkDescriptorType descriptorType, Uint32 binding, VkDescriptorSet * pSet, G_Buffer ** pBuffers)
 {
@@ -143,7 +197,7 @@ void addDescriptorUpdate_Buffer(VkDescriptorType descriptorType, Uint32 binding,
     if (updatesCount == MAX_UPDATE_COUNT) 
     {
         outOfCount();
-        return;
+        // return;
     }
 
     updates[updatesCount].descriptorType = descriptorType;
@@ -154,10 +208,10 @@ void addDescriptorUpdate_Buffer(VkDescriptorType descriptorType, Uint32 binding,
 
     SDL_UnlockMutex(allSync.descriptorUpdateMutex);
 }
-void addDescriptorUpdate_Texture(VkDescriptorType descriptorType, Uint32 binding, const char *innerName, VkSampler sampler, VkImageLayout layout)
+void addDescriptorUpdate_Texture(VkDescriptorType descriptorType, Uint32 binding, G_Texture_P * pTexture, VkSampler sampler, VkImageLayout layout)
 {
     G_Descriptor_Update_Texture tempTexture;
-    tempTexture.pParent = getTexture(innerName);
+    tempTexture.pParent = pTexture;
     tempTexture.sampler = sampler;
     tempTexture.layout = layout;
 
@@ -166,7 +220,7 @@ void addDescriptorUpdate_Texture(VkDescriptorType descriptorType, Uint32 binding
     if (updatesCount == MAX_UPDATE_COUNT) 
     {
         outOfCount();
-        return;
+        // return;
     }
 
     updates[updatesCount].descriptorType = descriptorType;
@@ -187,7 +241,7 @@ void addDescriptorUpdate_TexelBuffer(VkDescriptorType descriptorType, Uint32 bin
     if (updatesCount == MAX_UPDATE_COUNT) 
     {
         outOfCount();
-        return;
+        // return;
     }
 
     updates[updatesCount].descriptorType = descriptorType;
