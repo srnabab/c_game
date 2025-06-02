@@ -64,7 +64,7 @@ static void * G_b2_EnqueueTaskCallback(b2TaskCallback * task, int itemCount, int
 }
 static void G_b2_FinishTaskCallback(void * userTask, void * userContext)
 {
-    G_WaitTask(userContext, userTask, NULL);
+    G_WaitTask(userContext, userTask);
 }
 void initWorld(void)
 {
@@ -76,7 +76,7 @@ void initWorld(void)
     worldDef = b2DefaultWorldDef();
     worldDef.enqueueTask = G_b2_EnqueueTaskCallback;
     worldDef.finishTask = G_b2_FinishTaskCallback;
-    worldDef.workerCount = 8;
+    worldDef.workerCount = 4;
     worldDef.userTaskContext = &worldThreadPool;
     worldDef.gravity = (b2Vec2){0.0f, -100.0f * SCALE_FACTOR};
     worldDef.restitutionThreshold = 0.5f;

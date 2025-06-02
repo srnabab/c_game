@@ -25,6 +25,7 @@ static int threadFunc(void * data)
         if (task.canRun) 
         {
             task.executeFunc(&task);
+            
         }
 
         SDL_LockMutex(pThreadPool->ThreadPoolMutex);
@@ -178,6 +179,7 @@ static int getActiveThread(G_Thread_Pool * pThreadPool)
 static void splitTask(int maxThreadCount, int itemCount, int minRange, int * pThreadsNeed, Range * pTaskRange)
 {
     int threadsNeedCount = 0;
+
     if (itemCount <= minRange)
     {
        threadsNeedCount = 1; 
@@ -234,7 +236,25 @@ static void splitTask(int maxThreadCount, int itemCount, int minRange, int * pTh
 int * G_AddTask(G_Thread_Pool * pThreadPool, int itemCount, int minRange, G_Task * pTask)
 {
     int threadsNeedCount = 0;
+
+    if (pThreadPool == NULL || pThreadPool->threadPoolSize == 0 || pThreadPool->pThreads == NULL)
+    {
+        print("thread pool is not initialized");
+        return NULL;
+    }
+    if (itemCount <= 0 || minRange <= 0 || pTask == NULL)
+    {
+        print("invalid item count of min range or task");
+        return NULL;
+    }
+
     Range * pRange = (Range*)G_malloc(pThreadPool->threadPoolSize * sizeof(Range));
+    if (pRange == NULL)
+    {
+        print("failed to allocate memory for task range");
+        return NULL;
+    }
+
     splitTask(pThreadPool->threadPoolSize, itemCount, minRange, &threadsNeedCount, pRange);
 
     Trace tempTrace = {};
@@ -279,7 +299,7 @@ int * G_AddTask(G_Thread_Pool * pThreadPool, int itemCount, int minRange, G_Task
 
     return tempTrace.taskAllDone;
 }
-void G_WaitTask(G_Thread_Pool * pThreadPool, int * pDone, void * result)
+void G_WaitTask(G_Thread_Pool * pThreadPool, int * pDone)
 {
     if (pDone == NULL) return;
     while (*pDone != TRACE_DONE)

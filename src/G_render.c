@@ -11,6 +11,13 @@ extern G_SYNC allSync;
 extern bool game_is_running;
 extern bool resolutionChanged;
 
+static void recordBufferCopyExecute(void * arg)
+{
+    G_Task * task = (G_Task *)arg;
+    void ** datas = (void**)task->arg;
+    bool (*func)(Uint32) = task->func;
+    *(Uint8*)datas[1] = func(*(Uint32*)datas[0]);
+}
 // Render function to draw game objects
 int render(void * arg) 
 {
@@ -20,6 +27,8 @@ int render(void * arg)
     G_Thread_Pool threadPool = {};
     G_Task task = {};
     Uint8 copy = 0;
+    int * threadIndex = NULL;
+    void * datas[4];
     copy = createThreadPool(&threadPool, 3, false);
     if (copy == false) 
     {
@@ -37,11 +46,14 @@ int render(void * arg)
             resolutionChanged = false;
         }
 
-        // bottomMoved = moveBottomImage(currentFrame);
-        // task.arg = &currentFrame;
-        // task.func = recordBufferCopy;
-        // task.executeFunc
-        copy = recordBufferCopy(currentFrame);
+        datas[0] = &currentFrame;
+        datas[1] = &copy;
+        task.arg = datas;
+        task.func = recordBufferCopy;
+        task.executeFunc = recordBufferCopyExecute;
+        threadIndex = G_AddTask(&threadPool, 1, 1, &task);
+
+        G_WaitTask(&threadPool, threadIndex);
 
         drawFrame(First_Scene, currentFrame, allInOne.extent2D.width, allInOne.extent2D.height, false, copy);
 

@@ -44,9 +44,6 @@ struct _G_Task
 
     // private
     int threadIndex;
-
-    // private
-    void * result;
 };
 typedef struct _G_Task G_Task;
 
@@ -90,7 +87,7 @@ typedef struct _Thread_Func_Arg Thread_Func_Arg;
 extern bool SDLCALL createThreadPool(G_Thread_Pool * pThreadPool, Uint32 threadCount, bool expandable);
 extern int* SDLCALL G_AddTask(G_Thread_Pool * pThreadPool, int itemCount, int minRange, G_Task * pTask);
 extern void SDLCALL destroyThreadPool(G_Thread_Pool * pThreadPool);
-extern void SDLCALL G_WaitTask(G_Thread_Pool * pThreadPool, int * taskIndex, void * result);
+extern void SDLCALL G_WaitTask(G_Thread_Pool * pThreadPool, int * taskIndex);
 
 #include "SDL3/SDL_close_code.h"
 
