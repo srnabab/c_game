@@ -9,6 +9,7 @@
 #include "G_threadPool.h"
 #include "G_staticModel.h"
 #include "G_stack.h"
+#include "vulkan_core.h"
 
 #ifndef VK_ALL_STRUCT
 #define VK_ALL_STRUCT 1
@@ -38,6 +39,10 @@ struct _VK_ALL
     G_ThreadCommandPool graphic2dThreadCommandPool;
     G_ThreadCommandPool graphic3dThreadCommandPool;
     G_ThreadCommandPool mainThreadCommandPool;
+
+    VkCommandBuffer pGraphicCopyCommandBuffer[MAX_FRAMES_IN_FLIGHT];
+    VkCommandBuffer pTransferCopyCommandBuffer[MAX_FRAMES_IN_FLIGHT];
+    VkCommandBuffer pComputeCopyCommandBuffer[MAX_FRAMES_IN_FLIGHT];
 
     VkExtent2D extent2D;
     VkExtent2D oldExtent2D;
@@ -200,27 +205,8 @@ struct _VK_ALL
     VkDescriptorSet * pCombineDescriptorSets;
     // VkDescriptorSet ** ppCombine2dDescriptorSets;
 
-    VkCommandBuffer pGraphicCommandBuffer[MAX_FRAMES_IN_FLIGHT];
-    VkCommandBuffer pPresentCommandBuffer[MAX_FRAMES_IN_FLIGHT];
-    VkCommandBuffer pComputeCommandBuffer[MAX_FRAMES_IN_FLIGHT];
-    VkCommandBuffer pTransferCommandBuffer[MAX_FRAMES_IN_FLIGHT];
-
-    VkCommandBuffer pGraphicCopyCommandBuffer[MAX_FRAMES_IN_FLIGHT];
-    VkCommandBuffer pComputeCopyCommandBuffer[MAX_FRAMES_IN_FLIGHT];
-    VkCommandBuffer pTransferCopyCommandBuffer[MAX_FRAMES_IN_FLIGHT];
-
-    VkSemaphore pTimelineSemaphore2d[MAX_FRAMES_IN_FLIGHT];
-    VkSemaphore pTimelineSemaphore3d[MAX_FRAMES_IN_FLIGHT];
-
     VkSemaphore pImageAvailableSemaphore[MAX_FRAMES_IN_FLIGHT];
     VkSemaphore pRenderFinishedSemaphore[MAX_FRAMES_IN_FLIGHT];
-    VkSemaphore pGraphicSemaphore[MAX_FRAMES_IN_FLIGHT];
-    VkSemaphore pComputeSemaphore[MAX_FRAMES_IN_FLIGHT];
-    VkSemaphore pTransferSemaphore[MAX_FRAMES_IN_FLIGHT];
-
-    VkFence pGraphicInFlightFence[MAX_FRAMES_IN_FLIGHT];
-    VkFence pComputeInFlightFence[MAX_FRAMES_IN_FLIGHT];
-    VkFence pTransferInFlightFence[MAX_FRAMES_IN_FLIGHT];
 
     Uint32 currentFrame;
 

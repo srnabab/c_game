@@ -51,7 +51,7 @@ Uint8 recordBufferCopy(Uint32 currentFrame)
     {
         if (allInOne.bufferCopy[currentFrame][i].queueFamilyindex == allInOne.queueFamilyIndices.graphicsFamily.familyIndice)
         {
-            VkBufferMemoryBarrier Barrier[2];
+            // VkBufferMemoryBarrier Barrier[2];
 
             // _setBufferMemoryBarrier(NULL, VK_ACCESS_HOST_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT, VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, allInOne.bufferCopy[currentFrame][i].srcBuffer, allInOne.bufferCopy[currentFrame][i].regions.srcOffset\
             //     , allInOne.bufferCopy[currentFrame][i].regions.size, &Barrier[0]);

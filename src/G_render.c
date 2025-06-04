@@ -55,7 +55,7 @@ int render(void * arg)
         // G_WaitTask(&threadPool, threadIndex);
         // copy = recordBufferCopy(currentFrame);
 
-        drawFrame(First_Scene, currentFrame, allInOne.extent2D.width, allInOne.extent2D.height, false, false, &threadPool);
+        drawFrame(First_Scene, currentFrame, allInOne.extent2D.width, allInOne.extent2D.height, false, copy, &threadPool);
 
         allInOne.currentFrame = (allInOne.currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
         currentFrame = allInOne.currentFrame;
