@@ -53,7 +53,7 @@ int render(void * arg)
         // task.executeFunc = recordBufferCopyExecute;
         // threadIndex = G_AddTask(&threadPool, 1, 1, &task);
         // G_WaitTask(&threadPool, threadIndex);
-        // copy = recordBufferCopy(currentFrame);
+        copy = recordBufferCopy(currentFrame);
 
         drawFrame(First_Scene, currentFrame, allInOne.extent2D.width, allInOne.extent2D.height, false, copy, &threadPool);
 

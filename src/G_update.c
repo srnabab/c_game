@@ -272,10 +272,10 @@ int update(void * arg)
                         draw_done = true;
                     }
 
-                    for (int i = 0;i < 10;i++)
-                    {
-                        SDL_SignalSemaphore(allSync.vertexSemaphore);
-                    }
+                    // for (int i = 0;i < 10;i++)
+                    // {
+                    //     SDL_SignalSemaphore(allSync.vertexSemaphore);
+                    // }
 
                     if (draw_done) goto pause;
 
@@ -312,13 +312,13 @@ int update(void * arg)
 
         bufferMemcpy(allInOne.pGraphicUniformBuffer[currentFrame], 0, pGraphicUbo, sizeof(UniformBufferObject));
 
-        SDL_SignalSemaphore(allSync.vertexSemaphore);
+        // SDL_SignalSemaphore(allSync.vertexSemaphore);
 
         // particle 
         allInOne.pComputeUbo->deltaTime = delta_time;
         bufferMemcpy(allInOne.pComputeUniformBuffer[currentFrame], 0, allInOne.pComputeUbo, sizeof(ComputeUniformBufferObject));
         // memcpy(allInOne.ppComputeUniformBufferMapped[currentFrame], allInOne.pComputeUbo, sizeof(ComputeUniformBufferObject));
-        SDL_SignalSemaphore(allSync.vertexSemaphore);
+        // SDL_SignalSemaphore(allSync.vertexSemaphore);
 
         float x, y, z;
         float factor_x = LIGHT_HEIGHT / (allInOne.extent2D.width / 2);
@@ -343,7 +343,7 @@ int update(void * arg)
         glm_mul(lightProj, allInOne.pLightSpaceUbo->lightSpace, allInOne.pLightSpaceUbo->lightSpace);
 
         bufferMemcpy(allInOne.pLightSpaceUniformBuffer[currentFrame], 0, allInOne.pLightSpaceUbo , sizeof(LightSpace));
-        SDL_SignalSemaphore(allSync.vertexSemaphore);
+        // SDL_SignalSemaphore(allSync.vertexSemaphore);
 
         // 3d object
         // glm_mat4_identity(pGraphic3DUbo->model);
@@ -360,7 +360,7 @@ int update(void * arg)
 
         bufferMemcpy(allInOne.pSunUniformBuffer[currentFrame], 0, allInOne.pSunubo, sizeof(DirectionLight));
         bufferMemcpy(allInOne.pGraphic3DUniformBuffer[currentFrame], 0, pGraphic3DUbo, sizeof(UniformBufferObject));
-        SDL_SignalSemaphore(allSync.vertexSemaphore);
+        // SDL_SignalSemaphore(allSync.vertexSemaphore);
 
         // SSGI
         glm_mat4_copy(allInOne.pGraphic3DUbo->proj, allInOne.pSSGIubo->projectionMatrix);
@@ -377,7 +377,7 @@ int update(void * arg)
 
         bufferMemcpy(allInOne.pSSGIUniformBuffer[currentFrame], 0, allInOne.pSSGIubo, sizeof(SSGIUniformBufferObject));
         // memcpy(allInOne.ppSSGIUniformBufferMapped[currentFrame], allInOne.pSSGIubo, sizeof(SSGIUniformBufferObject));
-        SDL_SignalSemaphore(allSync.vertexSemaphore);
+        // SDL_SignalSemaphore(allSync.vertexSemaphore);
 
         // UI object
         glm_lookat((vec3){0.0f, 0.0f, 100.0f}, (vec3){0.0f, 0.0f, 0.0f}, (vec3){0.0f, 1.0f, 0.0f}, pUIUbo->view);
@@ -387,7 +387,7 @@ int update(void * arg)
         // memcpy(allInOne.ppGraphicUniformBufferMapped[currentFrame], pGraphicUbo, sizeof(UniformBufferObject));
         bufferMemcpy(allInOne.pUIUniformBuffer[currentFrame], 0, pUIUbo, sizeof(UniformBufferObject));
         // memcpy(allInOne.ppUIUniformBufferMapped[currentFrame], pUIUbo, sizeof(UniformBufferObject));
-        SDL_SignalSemaphore(allSync.vertexSemaphore);
+        // SDL_SignalSemaphore(allSync.vertexSemaphore);
 
         static int id_click = 0;
         if (leftButtonClickedTimes)

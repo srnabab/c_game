@@ -18,6 +18,7 @@
 #include "G_struct.h"
 #include "G_map.h"
 #include "vulkan_core.h"
+#include <string.h>
 
 extern VK_ALL allInOne;
 extern G_SYNC allSync;
@@ -516,7 +517,19 @@ static void drawFirstScene(Uint32 currentFrame, Uint32 width, Uint32 height, boo
     if (copy & 2) computeCopy = true;
     if (copy & 4) transferCopy = true;
 
-    // beginSecondaryCommandBuffer(VkCommandBuffer commandBuffer, VkCommandBufferUsageFlags flags, VkCommandBufferInheritanceInfo *pInheritanceInfo)
+    if (copy)
+    {
+        VkSubmitInfo submitInfo = {0};
+        vkWaitForFences(allInOne.device, 1, &allInOne.mainThreadCommandPool.pFence[currentFrame], VK_TRUE, UINT64_MAX);
+        setSubmitInfo(NULL, 0, NULL, NULL, 1, &allInOne.mainThreadCommandPool.pGraphicCommandBuffer[currentFrame], 0, NULL, &submitInfo);
+        beginPrimaryCommandBuffer(allInOne.mainThreadCommandPool.pGraphicCommandBuffer[currentFrame]);
+        if (graphicCopy) vkCmdExecuteCommands(allInOne.mainThreadCommandPool.pGraphicCommandBuffer[currentFrame], 1, &allInOne.pGraphicCopyCommandBuffer[currentFrame]);
+        vkEndCommandBuffer(allInOne.mainThreadCommandPool.pGraphicCommandBuffer[currentFrame]);
+        resultVulkan(vkResetFences(allInOne.device, 1, &allInOne.mainThreadCommandPool.pFence[currentFrame]), 0);
+        G_vkQueueSubmit(&allInOne.pGraphicQueue[GRAPHIC_2D_QUEUE], 1, &submitInfo, allInOne.mainThreadCommandPool.pFence[currentFrame]);
+        graphicCopy = false;
+        vkWaitForFences(allInOne.device, 1, &allInOne.mainThreadCommandPool.pFence[currentFrame], VK_TRUE, UINT64_MAX);
+    }
 
     Uint64 semaphore3dValue, semaphore2dValue;
 
@@ -555,18 +568,6 @@ static void drawFirstScene(Uint32 currentFrame, Uint32 width, Uint32 height, boo
 // void drawFrame(Scene scene, Uint32 currentFrame, Uint32 width, Uint32 height, bool bottomMoved, Uint8 copy, G_Thread_Pool * pThreadPool)
 void drawFrame(Scene scene, Uint32 currentFrame, Uint32 width, Uint32 height, bool bottomMoved, Uint8 copy, G_Thread_Pool * pThreadPool)
 {
-    // drawFirstScene(currentFrame, width, height, bottomMoved, copy, pThreadPool);
-    drawFirstScene(currentFrame, width, height, bottomMoved, copy, pThreadPool);
-    // switch (scene)
-    // {
-    //     case First_Scene:
-    //     drawFirstScene(currentFrame, width, height, bottomMoved, copy);
-    //     break;
-        
-    //     case Pause_Scene:
-    //     break;
 
-    //     case Menu_Scene:
-    //     break;
-    // }
+    drawFirstScene(currentFrame, width, height, bottomMoved, copy, pThreadPool);
 }
