@@ -1,7 +1,6 @@
 #include "SDL3/SDL_stdinc.h"
 #include "G_file/G_file.h"
 #include "G_buffer.h"
-#include "vulkan/vulkan.h"
 
 #ifndef G_RESOURCE_H
 #define G_RESOURCE_H
@@ -110,4 +109,4 @@ extern void SDLCALL unloadAllTexture(void);
 
 #include "SDL3/SDL_close_code.h"
 
-#endif
+#endif // G_texture.h

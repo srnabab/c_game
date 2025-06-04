@@ -110,7 +110,7 @@ static void setOptionalExtensions(uint32_t extensionCount, const char ** extensi
 }
 void createInstance(void)
 {
-    VkApplicationInfo appInfo = {};
+    VkApplicationInfo appInfo = {0};
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     appInfo.pNext = NULL;
     appInfo.pApplicationName = APP_NAME;

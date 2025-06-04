@@ -8,10 +8,10 @@ extern VK_ALL allInOne;
 // nearest, linear, clamp to edge, anisotropy
 void createTextureSampler(VkSampler * pSampler)
 {
-    VkPhysicalDeviceProperties properties = {};
+    VkPhysicalDeviceProperties properties = {0};
     vkGetPhysicalDeviceProperties(allInOne.physicalDevice, &properties);
 
-    VkSamplerCreateInfo samplerInfo = {};
+    VkSamplerCreateInfo samplerInfo = {0};
     samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
     samplerInfo.pNext = NULL;
     samplerInfo.flags = 0;
@@ -36,10 +36,10 @@ void createTextureSampler(VkSampler * pSampler)
 // linear, linear, clamp to edge, anisotropy
 void createNormalSampler(VkSampler * pSampler)
 {
-    VkPhysicalDeviceProperties properties = {};
+    VkPhysicalDeviceProperties properties = {0};
     vkGetPhysicalDeviceProperties(allInOne.physicalDevice, &properties);
 
-    VkSamplerCreateInfo samplerInfo = {};
+    VkSamplerCreateInfo samplerInfo = {0};
     samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
     samplerInfo.pNext = NULL;
     samplerInfo.flags = 0;
@@ -64,7 +64,7 @@ void createNormalSampler(VkSampler * pSampler)
 // linear, false, clamp to border, false, compare, less, opaque white
 void createDepthSampler(VkSampler * pSampler)
 {
-    VkSamplerCreateInfo samplerInfo = {};
+    VkSamplerCreateInfo samplerInfo = {0};
     samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
     samplerInfo.pNext = NULL;
     samplerInfo.flags = 0;
@@ -88,7 +88,7 @@ void createDepthSampler(VkSampler * pSampler)
 }
 void createShadowSampler(VkSampler * pSampler)
 {
-    VkSamplerCreateInfo samplerInfo = {};
+    VkSamplerCreateInfo samplerInfo = {0};
     samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
     samplerInfo.pNext = NULL;
     samplerInfo.flags = 0;

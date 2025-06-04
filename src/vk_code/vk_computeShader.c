@@ -62,7 +62,7 @@ void createShaderStorageBuffers(G_Buffer ** pShaderStorageBuffers, G_BufferPool 
 
     // createBuffer((*ppShaderStorageBuffers) + 1, (*ppShaderStorageBuffersMem) + 1, bufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     copyBuffer(NULL, allInOne.computeCommandPool, stagingBuffer, 0, pShaderStorageBuffers[1]->pBufferPool->buffer, pShaderStorageBuffers[1]->startOffset, bufferSize);
-    releaseBufferFromQueue(allInOne.graphicCommandPool, VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, allInOne.queueFamilyIndices.graphicsFamily.familyIndice, allInOne.queueFamilyIndices.computeFamily.familyIndice\
+    releaseBufferFromQueue(allInOne.graphic2dCommandPool, VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, allInOne.queueFamilyIndices.graphicsFamily.familyIndice, allInOne.queueFamilyIndices.computeFamily.familyIndice\
     , pShaderStorageBuffers[1]->pBufferPool->buffer, pShaderStorageBuffers[1]->startOffset, bufferSize);
 
     vkDestroyBuffer(allInOne.device, stagingBuffer, allInOne.pAllocationCallbacks);

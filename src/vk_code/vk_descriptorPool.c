@@ -20,7 +20,7 @@ static Uint32 updatesCount = 0;
 
 void createDescriptorPool(VkDevice * pDevice, Uint32 poolSizeCount, VkDescriptorPoolSize * pPoolSizes, Uint32 maxSets, VkDescriptorPool * pDescriptorPool)
 {
-    VkDescriptorPoolCreateInfo poolInfo = {};
+    VkDescriptorPoolCreateInfo poolInfo = {0};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     poolInfo.pNext = NULL;
     poolInfo.flags = 0;
@@ -43,7 +43,7 @@ void createDescriptorSets(VkDescriptorPool * pDescriptorPool, VkDescriptorSetLay
 
     *ppDescriptorSets = (VkDescriptorSet *)G_malloc(MAX_FRAMES_IN_FLIGHT * SetsCount * shaderSetCount * sizeof(VkDescriptorSet));
 
-    VkDescriptorSetAllocateInfo allocInfo = {};
+    VkDescriptorSetAllocateInfo allocInfo = {0};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.pNext = NULL;
     allocInfo.descriptorSetCount = (Uint32)(MAX_FRAMES_IN_FLIGHT * shaderSetCount * SetsCount);

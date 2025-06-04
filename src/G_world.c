@@ -10,8 +10,8 @@
 #include "G_threadPool.h"
 #include "G_allocator.h"
 
-static b2WorldDef worldDef = {};
-static b2WorldId worldId = {};
+static b2WorldDef worldDef = {0};
+static b2WorldId worldId = {0};
 
 /*middle, left, right*/
 static b2BodyDef groundBodyDef[4];
@@ -22,7 +22,7 @@ static b2ShapeId groundShapeId[4];
 
 static SDL_Thread * worldThread = NULL;
 
-static G_Thread_Pool worldThreadPool = {};
+static G_Thread_Pool worldThreadPool = {0};
 
 G_Stack ballStack;
 
@@ -52,7 +52,7 @@ static void G_b2_EnqueueTaskCallback_Execute(void * arg)
 }
 static void * G_b2_EnqueueTaskCallback(b2TaskCallback * task, int itemCount, int minRange, void * taskContext, void* userContext)
 {
-    G_Task tempTask = {};
+    G_Task tempTask = {0};
     tempTask.arg = taskContext;
     tempTask.func = task;
     tempTask.executeFunc = G_b2_EnqueueTaskCallback_Execute;
@@ -71,7 +71,7 @@ void initWorld(void)
     b2SetAllocator(box2d_SDL_Alloc, box2d_SDL_Free);
     b2SetAssertFcn(AssertFcn);
 
-    createThreadPool(&worldThreadPool, 4, false);
+    createThreadPool(&worldThreadPool, 4, "worldTask", false);
 
     worldDef = b2DefaultWorldDef();
     worldDef.enqueueTask = G_b2_EnqueueTaskCallback;

@@ -1,9 +1,11 @@
 #include "G_constants.h"
 
 #include "vk_code_h/vk_copy.h"
+#include "vk_code_h/vk_queue.h"
 #include "vk_code_h/vk_struct.h"
 #include "vk_code_h/vk_descriptorPool.h"
 #include "G_buffer.h"
+#include "G_VkCommandPool.h"
 #include "G_threadPool.h"
 #include "G_staticModel.h"
 #include "G_stack.h"
@@ -21,31 +23,24 @@ struct _VK_ALL
 
     VkDevice device;
 
-    // VkSurfaceCapabilitiesKHR * pSurface2DCapabilities;
-    // VkSurfaceFormatKHR * pSurface2DFormat;
-    // VkPresentModeKHR * pPresentMode2D;
-
-    // VkSurfaceKHR * pSurface2D;
-    
     QueueFamilyIndices queueFamilyIndices;
-    VkQueue pGraphicQueue[16];
-    VkQueue pPresentQueue[16];
-    VkQueue pComputeQueue[16];
-    VkQueue pTransferQueue[16];
+    G_VkQueue pGraphicQueue[16];
+    G_VkQueue pPresentQueue[2];
+    G_VkQueue pComputeQueue[16];
+    G_VkQueue pTransferQueue[16];
     
-    VkCommandPool graphicCommandPool;
-    VkCommandPool presentCommandPool;
-    VkCommandPool computeCommandPool;
-    VkCommandPool transferCommandPool;
+    G_CommandPool graphic2dCommandPool;
+    G_CommandPool graphic3dCommandPool;
+    G_CommandPool computeCommandPool;
+    G_CommandPool mainGraphicCommandPool;
+    G_CommandPool transferCommandPool;
+
+    G_ThreadCommandPool graphic2dThreadCommandPool;
+    G_ThreadCommandPool graphic3dThreadCommandPool;
+    G_ThreadCommandPool mainThreadCommandPool;
 
     VkExtent2D extent2D;
     VkExtent2D oldExtent2D;
-
-    // Uint32 * pImageCount2D;
-    // VkSwapchainKHR * pSwapchain2D;
-    // VkImage ** ppSwapchain2DImages;
-    // VkImageView ** ppSwapchain2DImageViews;
-    // VkFramebuffer ** ppSwapchain2DFramebuffer;
 
 
     VkRenderPass renderPass;

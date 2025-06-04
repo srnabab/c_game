@@ -11,7 +11,7 @@ extern VK_ALL allInOne;
 
 void createCommandPool(VkCommandPoolCreateFlags flag, Uint32 graphicsFamilyIndice, VkCommandPool * pCommandPool)
 {
-    VkCommandPoolCreateInfo commandPoolCreateInfo = {};
+    VkCommandPoolCreateInfo commandPoolCreateInfo = {0};
     commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     commandPoolCreateInfo.pNext = NULL;
     commandPoolCreateInfo.flags = flag;
@@ -22,7 +22,7 @@ void createCommandPool(VkCommandPoolCreateFlags flag, Uint32 graphicsFamilyIndic
 } 
 void createCommandBuffers(VkCommandBufferLevel level, VkCommandPool commandPool, VkCommandBuffer * pCommandBuffer, Uint32 count)
 { 
-    VkCommandBufferAllocateInfo allocInfo = {};
+    VkCommandBufferAllocateInfo allocInfo = {0};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.pNext = NULL;
     allocInfo.commandPool = commandPool;
@@ -36,7 +36,7 @@ void createCommandBuffer(VkCommandBufferLevel level, VkCommandPool commandPool, 
 {
     *ppCommandBuffer = (VkCommandBuffer*)G_malloc(bufferCount * sizeof(VkCommandBuffer));
 
-    VkCommandBufferAllocateInfo allocInfo = {};
+    VkCommandBufferAllocateInfo allocInfo = {0};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.pNext = NULL;
     allocInfo.commandPool = commandPool;
@@ -45,46 +45,4 @@ void createCommandBuffer(VkCommandBufferLevel level, VkCommandPool commandPool, 
 
     vkAllocateCommandBuffers(allInOne.device, &allocInfo, *ppCommandBuffer);
     print("command buffer allocated\n");
-}
-VkCommandPool getCommandPoolByIndice(Uint32 indice)
-{
-    if (indice == allInOne.queueFamilyIndices.graphicsFamily.familyIndice)
-    {
-        return allInOne.graphicCommandPool;
-    }
-    else if (indice == allInOne.queueFamilyIndices.presentFamily.familyIndice)
-    {
-        return allInOne.presentCommandPool;
-    }
-    else if (indice == allInOne.queueFamilyIndices.computeFamily.familyIndice)
-    {
-        return allInOne.computeCommandPool;
-    }
-    else if (indice == allInOne.queueFamilyIndices.transferFamily.familyIndice)
-    {
-        return allInOne.transferCommandPool;
-    }
-
-    return NULL;
-}
-VkCommandBuffer * getCommandBufferByIndice(Uint32 indice)
-{
-    if (indice == allInOne.queueFamilyIndices.graphicsFamily.familyIndice)
-    {
-        return allInOne.pGraphicCommandBuffer;
-    }
-    else if (indice == allInOne.queueFamilyIndices.presentFamily.familyIndice)
-    {
-        return allInOne.pPresentCommandBuffer;
-    }
-    else if (indice == allInOne.queueFamilyIndices.computeFamily.familyIndice)
-    {
-        return allInOne.pComputeCommandBuffer;
-    }
-    else if (indice == allInOne.queueFamilyIndices.transferFamily.familyIndice)
-    {
-        return allInOne.pTransferCommandBuffer;
-    }
-
-    return NULL;
 }

@@ -49,9 +49,9 @@ extern Uint32 ballCount;
 static Uint32 textLine = 0;
 static bool textDisplay = false;
 
-static G_Entity mPoint = {};
-static G_Entity camera = {};
-static G_Entity mouse = {};
+static G_Entity mPoint = {0};
+static G_Entity camera = {0};
+static G_Entity mouse = {0};
 
 static void processKeys(void)
 {
@@ -196,7 +196,7 @@ int update(void * arg)
     float totalTime = 0.0f;
     
     G_Point_Int tileCenter = {0, 0};
-    ShapeConstants shapePushConstants = {};
+    ShapeConstants shapePushConstants = {0};
     shapePushConstants.pos[0] = 0.0f;
     shapePushConstants.pos[1] = 0.0f;
     shapePushConstants.scale[0] = 0.053333333f;
@@ -286,14 +286,14 @@ int update(void * arg)
             continue;
         }
 
-        if (SDL_TryWaitSemaphore(allSync.vertexSemaphore))
-        {
-            SDL_DestroySemaphore(allSync.vertexSemaphore);
-            print("recreate vertex semaphore");
-            allSync.vertexSemaphore = SDL_CreateSemaphore(0);
-            SDL_SignalSemaphore(allSync.renderSemaphore);
-            // last_frame_time = SDL_GetPerformanceCounter();
-        }
+        // if (SDL_TryWaitSemaphore(allSync.vertexSemaphore))
+        // {
+        //     SDL_DestroySemaphore(allSync.vertexSemaphore);
+        //     print("recreate vertex semaphore");
+        //     allSync.vertexSemaphore = SDL_CreateSemaphore(0);
+        //     SDL_SignalSemaphore(allSync.renderSemaphore);
+        //     // last_frame_time = SDL_GetPerformanceCounter();
+        // }
 
         SDL_LockMutex(allSync.inputMutex);
         setEntityPosition(&mouse, mouse_x, mouse_y);

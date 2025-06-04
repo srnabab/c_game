@@ -21,11 +21,11 @@ int SDL_SQLite_RoundUp(int size)
 {
     return ROUND8(size);
 }
-void SDL_SQLite_shutDown(void *)
+void SDL_SQLite_shutDown(void * arg)
 {
     return;
 }
-int SDL_SQLite_Init(void *)
+int SDL_SQLite_Init(void * arg)
 {
     return SQLITE_OK;
 }

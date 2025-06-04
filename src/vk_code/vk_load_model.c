@@ -98,7 +98,7 @@ bool loadModelSetVertex(PathType modelPath, PathType texturePath, Vertex3323 * v
 
     SDL_UnlockMutex(allSync.textureMutex);
  
-    void * bufMem[2] = {};
+    void * bufMem[2] = {0};
     int res = tinyobj_parse_obj(&attrib, &shapes, &num_shapes, &materials, &num_materials, getPath(modelPath), tinyobj_SDL_readFile, bufMem, TINYOBJ_FLAG_TRIANGULATE);
 
     SDL_LockMutex(allSync.textureMutex);

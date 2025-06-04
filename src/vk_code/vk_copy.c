@@ -35,7 +35,7 @@ Uint8 recordBufferCopy(Uint32 currentFrame)
     VkCommandBuffer transferCommandBuffer = allInOne.pTransferCopyCommandBuffer[currentFrame];
     VkCommandBuffer computeCommandBuffer = allInOne.pComputeCopyCommandBuffer[currentFrame];
 
-    VkCommandBufferInheritanceInfo inheritanceInfo = {};
+    VkCommandBufferInheritanceInfo inheritanceInfo = {0};
     inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
     inheritanceInfo.pNext = NULL;
     inheritanceInfo.renderPass = VK_NULL_HANDLE;
@@ -51,7 +51,21 @@ Uint8 recordBufferCopy(Uint32 currentFrame)
     {
         if (allInOne.bufferCopy[currentFrame][i].queueFamilyindex == allInOne.queueFamilyIndices.graphicsFamily.familyIndice)
         {
+            VkBufferMemoryBarrier Barrier[2];
+
+            // _setBufferMemoryBarrier(NULL, VK_ACCESS_HOST_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT, VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, allInOne.bufferCopy[currentFrame][i].srcBuffer, allInOne.bufferCopy[currentFrame][i].regions.srcOffset\
+            //     , allInOne.bufferCopy[currentFrame][i].regions.size, &Barrier[0]);
+            // _setBufferMemoryBarrier(NULL, allInOne.bufferCopy[currentFrame][i].dstBufferSrcAccessMask, VK_ACCESS_TRANSFER_WRITE_BIT, VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, allInOne.bufferCopy[currentFrame][i].dstBuffer\
+            //     , allInOne.bufferCopy[currentFrame][i].regions.dstOffset, allInOne.bufferCopy[currentFrame][i].regions.size, &Barrier[1]);
+            // vkCmdPipelineBarrier(graphicCommandBuffer, VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 1, &Barrier[0], 0, NULL);
+            // vkCmdPipelineBarrier(graphicCommandBuffer, allInOne.bufferCopy[currentFrame][i].dstBufferSrcStageMask, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 1, &Barrier[1], 0, NULL);
+
             vkCmdCopyBuffer(graphicCommandBuffer, allInOne.bufferCopy[currentFrame][i].srcBuffer, allInOne.bufferCopy[currentFrame][i].dstBuffer, 1, &allInOne.bufferCopy[currentFrame][i].regions);
+
+            // _setBufferMemoryBarrier(NULL, VK_ACCESS_TRANSFER_WRITE_BIT, allInOne.bufferCopy[currentFrame][i].dstBufferSrcAccessMask, VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, allInOne.bufferCopy[currentFrame][i].dstBuffer\
+            //     , allInOne.bufferCopy[currentFrame][i].regions.dstOffset, allInOne.bufferCopy[currentFrame][i].regions.size, &Barrier[1]);
+            // vkCmdPipelineBarrier(graphicCommandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, allInOne.bufferCopy[currentFrame][i].dstBufferSrcStageMask, 0, 0, NULL, 1, &Barrier[1], 0, NULL);
+
             allInOne.bufferCopy[currentFrame][i].used = 0;
             usedCount--;
         }

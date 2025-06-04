@@ -10,6 +10,8 @@ struct _BufferCopyPack
     VkBuffer srcBuffer;
     VkBuffer dstBuffer;
     VkBufferCopy regions;
+    VkAccessFlags dstBufferSrcAccessMask;
+    VkPipelineStageFlags dstBufferSrcStageMask;
     int32_t queueFamilyindex;
     int32_t used;
 };

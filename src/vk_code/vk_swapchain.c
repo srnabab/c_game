@@ -78,7 +78,7 @@ void createSwapchain(VkSurfaceKHR surface, VkSurfaceCapabilitiesKHR surfaceCapab
         //printf("imageCount: %u\n", imageCount);
     }
 
-    VkSwapchainCreateInfoKHR createInfo = {};
+    VkSwapchainCreateInfoKHR createInfo = {0};
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
     createInfo.pNext = NULL;
     createInfo.flags = 0;

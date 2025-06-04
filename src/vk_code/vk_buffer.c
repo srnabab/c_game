@@ -11,7 +11,7 @@ VkResult createBuffer(VkBuffer * pBuffer, VkDeviceMemory * pBufferMemory, VkDevi
 #warning error process needed
     VkResult result = VK_SUCCESS;
 
-    VkBufferCreateInfo bufferCreateInfo = {};
+    VkBufferCreateInfo bufferCreateInfo = {0};
     bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     bufferCreateInfo.pNext = NULL;
     bufferCreateInfo.flags = 0;
@@ -26,7 +26,7 @@ VkResult createBuffer(VkBuffer * pBuffer, VkDeviceMemory * pBufferMemory, VkDevi
     VkMemoryRequirements memRequirements;
     vkGetBufferMemoryRequirements(allInOne.device, *pBuffer, &memRequirements);
 
-    VkMemoryAllocateInfo bufferMemAllocateInfo = {};
+    VkMemoryAllocateInfo bufferMemAllocateInfo = {0};
     bufferMemAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     bufferMemAllocateInfo.pNext = NULL;
     bufferMemAllocateInfo.allocationSize = memRequirements.size;
@@ -49,7 +49,7 @@ VkResult beginSingleTimeCommands(VkCommandPool commandPool, VkCommandBuffer * pC
 {
     VkResult result = VK_SUCCESS;
 
-    VkCommandBufferAllocateInfo allocInfo = {};
+    VkCommandBufferAllocateInfo allocInfo = {0};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.pNext = NULL;
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -62,13 +62,13 @@ VkResult beginSingleTimeCommands(VkCommandPool commandPool, VkCommandBuffer * pC
 
     return result;
 }
-VkResult endSingleTimeCommands(VkCommandPool commandPool, VkQueue queue, VkCommandBuffer * pCommandBuffer)
+VkResult endSingleTimeCommands(VkCommandPool commandPool, G_VkQueue * queue, VkCommandBuffer * pCommandBuffer)
 {
     VkResult result = VK_SUCCESS;
 
     result |= vkEndCommandBuffer(*pCommandBuffer);
 
-    VkSubmitInfo submitInfo = {};
+    VkSubmitInfo submitInfo = {0};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.pNext = NULL;
     submitInfo.waitSemaphoreCount = 0;
@@ -79,8 +79,8 @@ VkResult endSingleTimeCommands(VkCommandPool commandPool, VkQueue queue, VkComma
     submitInfo.signalSemaphoreCount = 0;
     submitInfo.pSignalSemaphores = NULL;
 
-    result |= vkQueueSubmit(queue, 1, &submitInfo, NULL);
-    result |= vkQueueWaitIdle(queue);
+    result |= G_vkQueueSubmit(queue, 1, &submitInfo, NULL);
+    result |= vkQueueWaitIdle(queue->queue);
 
     vkFreeCommandBuffers(allInOne.device, commandPool, 1, pCommandBuffer);
 
@@ -97,11 +97,11 @@ VkResult initBufferQueueFamily(VkCommandPool commandPool, Uint32 srcQueueFamilyI
 
     vkCmdFillBuffer(singleTimeCommandBuffer, buffer, 0, bufferSize, clearValue);
 
-    VkBufferMemoryBarrier bufferMemoryBarrierRelease = {};
+    VkBufferMemoryBarrier bufferMemoryBarrierRelease = {0};
     _setBufferMemoryBarrier(NULL, VK_ACCESS_SHADER_WRITE_BIT, 0, srcQueueFamilyIndice, dstQueueFamilyIndice , buffer, 0, bufferSize, &bufferMemoryBarrierRelease);
     vkCmdPipelineBarrier(singleTimeCommandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, NULL, 1, &bufferMemoryBarrierRelease, 0, NULL);
 
-    result |= endSingleTimeCommands(commandPool, getFirstQueueByCommandPool(commandPool), &singleTimeCommandBuffer);
+    result |= endSingleTimeCommands(commandPool, getFirstQueueByIndex(srcQueueFamilyIndice), &singleTimeCommandBuffer);
 
     if (result)
         return 0x7FFFFFFF;
@@ -114,28 +114,28 @@ void _setBufferCopyRegion(VkDeviceSize srcOffset, VkDeviceSize dstOffset, VkDevi
     pRegion->dstOffset = dstOffset;
     pRegion->size = size;
 }
-VkResult copyBuffer(VkCommandBuffer commandBuffer, VkCommandPool commandPool, VkBuffer srcBuffer, VkDeviceSize srcOffset, VkBuffer dstBuffer, VkDeviceSize dstOffset, VkDeviceSize size)
+VkResult copyBuffer(VkCommandBuffer commandBuffer, G_CommandPool commandPool, VkBuffer srcBuffer, VkDeviceSize srcOffset, VkBuffer dstBuffer, VkDeviceSize dstOffset, VkDeviceSize size)
 {
     VkResult result = VK_SUCCESS;
 
     VkCommandBuffer singleTimeCommandBuffer = NULL;
     if (commandBuffer == NULL)
     {
-        result |= beginSingleTimeCommands(commandPool, &singleTimeCommandBuffer);
+        result |= beginSingleTimeCommands(commandPool.commandPool, &singleTimeCommandBuffer);
     }
     else
     {
         singleTimeCommandBuffer = commandBuffer;
     }
 
-    VkBufferCopy copyRegion = {};
+    VkBufferCopy copyRegion = {0};
     _setBufferCopyRegion(srcOffset, dstOffset, size, &copyRegion);
 
     vkCmdCopyBuffer(singleTimeCommandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
 
     if (commandBuffer == NULL)
     {
-        result |= endSingleTimeCommands(commandPool, getFirstQueueByCommandPool(commandPool), &singleTimeCommandBuffer);
+        result |= endSingleTimeCommands(commandPool.commandPool, getFirstQueueByIndex(commandPool.queueFamilyIndex), &singleTimeCommandBuffer);
     }
 
 
@@ -200,22 +200,22 @@ void _setImageMemoryBarrier(void * imgPNext, VkAccessFlags imgSrcAccessMask, VkA
 //     VkCommandBuffer singleTimeCommandBuffer = NULL;
 //     beginSingleTimeCommands(commandPool, &singleTimeCommandBuffer);
 
-//     VkBufferMemoryBarrier bufferMemoryBarrierRelease = {};
+//     VkBufferMemoryBarrier bufferMemoryBarrierRelease = {0};
 //     _setBufferMemoryBarrier(NULL, srcAccessMask, 0, srcQueueFamilyIndice, dstQueueFamilyIndice , buffer, 0, bufferSize, &bufferMemoryBarrierRelease);
 //     vkCmdPipelineBarrier(singleTimeCommandBuffer, srcStageFlags, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, NULL, 1, &bufferMemoryBarrierRelease, 0, NULL);
 
 //     endSingleTimeCommands(commandPool, getFirstQueueByCommandPool(commandPool), &singleTimeCommandBuffer);
 // }
-void releaseBufferFromQueue(VkCommandPool commandPool, VkAccessFlags srcAccessMask, VkPipelineStageFlags srcStageFlags, Uint32 srcQueueFamilyIndice, Uint32 dstQueueFamilyIndice, VkBuffer buffer, VkDeviceSize offset, VkDeviceSize bufferSize)
+void releaseBufferFromQueue(G_CommandPool commandPool, VkAccessFlags srcAccessMask, VkPipelineStageFlags srcStageFlags, Uint32 srcQueueFamilyIndice, Uint32 dstQueueFamilyIndice, VkBuffer buffer, VkDeviceSize offset, VkDeviceSize bufferSize)
 {
     VkCommandBuffer singleTimeCommandBuffer = NULL;
-    beginSingleTimeCommands(commandPool, &singleTimeCommandBuffer);
+    beginSingleTimeCommands(commandPool.commandPool, &singleTimeCommandBuffer);
 
-    VkBufferMemoryBarrier bufferMemoryBarrierRelease = {};
+    VkBufferMemoryBarrier bufferMemoryBarrierRelease = {0};
     _setBufferMemoryBarrier(NULL, srcAccessMask, 0, srcQueueFamilyIndice, dstQueueFamilyIndice , buffer, offset, bufferSize, &bufferMemoryBarrierRelease);
     vkCmdPipelineBarrier(singleTimeCommandBuffer, srcStageFlags, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, NULL, 1, &bufferMemoryBarrierRelease, 0, NULL);
 
-    endSingleTimeCommands(commandPool, getFirstQueueByCommandPool(commandPool), &singleTimeCommandBuffer);
+    endSingleTimeCommands(commandPool.commandPool, getFirstQueueByIndex(commandPool.queueFamilyIndex), &singleTimeCommandBuffer);
 }
 void destroyBufferByBuffering(VkBuffer pBuffers[2], VkDeviceMemory pBuffersMem[2])
 {
@@ -240,7 +240,7 @@ void initBufferData(G_Buffer * pBuffer, void * data, Uint32 bufferSize)
 
     bufferMemcpy(stagingBuffer, 0, data, bufferSize);
 
-    copyBuffer(NULL, allInOne.graphicCommandPool, stagingBuffer->pBufferPool->buffer, stagingBuffer->startOffset, pBuffer->pBufferPool->buffer, pBuffer->startOffset, bufferSize);
+    copyBuffer(NULL, allInOne.graphic2dCommandPool, stagingBuffer->pBufferPool->buffer, stagingBuffer->startOffset, pBuffer->pBufferPool->buffer, pBuffer->startOffset, bufferSize);
 
     freeStagingBuffer(stagingBuffer);
 }

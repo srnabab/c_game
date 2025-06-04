@@ -1,0 +1,10 @@
+# .clangd
+CompileFlags:
+  Add: [
+    "-isystemC:/msys64/mingw64/include",
+  ]
+
+# .clangd
+Diagnostics:
+  Suppress: '*'
+

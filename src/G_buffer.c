@@ -210,5 +210,5 @@ void bufferMemcpy(G_Buffer * pBuffer, VkDeviceSize offset, void * src, size_t le
 }
 void bufferMemmove(G_Buffer * pBuffer, VkDeviceSize srcOffset, VkDeviceSize dstOffset, size_t len)
 {
-    memmove(pBuffer->pBufferPool->bufferMemoryMapped + pBuffer->startOffset + dstOffset, pBuffer->pBufferPool->bufferMemoryMapped + pBuffer->startOffset + srcOffset, len);
+    memmove((char*)pBuffer->pBufferPool->bufferMemoryMapped + pBuffer->startOffset + dstOffset, (char*)pBuffer->pBufferPool->bufferMemoryMapped + pBuffer->startOffset + srcOffset, len);
 }

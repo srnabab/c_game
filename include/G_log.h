@@ -1,3 +1,4 @@
+#include "config.h"
 #include "SDL3/SDL_stdinc.h"
 #include "SDL3/SDL_log.h"
 
@@ -5,8 +6,6 @@
 #define LOG_H 1
 
 #include "SDL3/SDL_begin_code.h"
-
-#define DEBUG_PRINT 1
 
 #define LOG_ENABLED 1
 #define LOG_TXT 2

@@ -24,12 +24,12 @@ int render(void * arg)
     print("render init\n");
     Uint32 render_frame = 0;
     Uint32 currentFrame = allInOne.currentFrame;
-    G_Thread_Pool threadPool = {};
-    G_Task task = {};
+    G_Thread_Pool threadPool = {0};
+    G_Task task = {0};
     Uint8 copy = 0;
     int * threadIndex = NULL;
     void * datas[4];
-    copy = createThreadPool(&threadPool, 3, false);
+    copy = createThreadPool(&threadPool, 3, "renderTask", false);
     if (copy == false) 
     {
         game_is_running = false;
@@ -46,16 +46,16 @@ int render(void * arg)
             resolutionChanged = false;
         }
 
-        datas[0] = &currentFrame;
-        datas[1] = &copy;
-        task.arg = datas;
-        task.func = recordBufferCopy;
-        task.executeFunc = recordBufferCopyExecute;
-        threadIndex = G_AddTask(&threadPool, 1, 1, &task);
+        // datas[0] = &currentFrame;
+        // datas[1] = &copy;
+        // task.arg = datas;
+        // task.func = recordBufferCopy;
+        // task.executeFunc = recordBufferCopyExecute;
+        // threadIndex = G_AddTask(&threadPool, 1, 1, &task);
+        // G_WaitTask(&threadPool, threadIndex);
+        // copy = recordBufferCopy(currentFrame);
 
-        G_WaitTask(&threadPool, threadIndex);
-
-        drawFrame(First_Scene, currentFrame, allInOne.extent2D.width, allInOne.extent2D.height, false, copy);
+        drawFrame(First_Scene, currentFrame, allInOne.extent2D.width, allInOne.extent2D.height, false, false, &threadPool);
 
         allInOne.currentFrame = (allInOne.currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
         currentFrame = allInOne.currentFrame;

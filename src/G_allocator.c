@@ -1,8 +1,7 @@
 #include "G_allocator.h"
 
+#include "SDL3/SDL_log.h"
 #include "SDL3/SDL_atomic.h"
-
-#include "G_log.h"
 
 static Uint64 totalAllocSize = 0;
 static Uint32 allocations = 0;
@@ -75,7 +74,7 @@ void printResidueMemory(void)
 
     HASH_ITER(hh, record, s, tmp)
     {
-        print("residue memory: %p, return address0: %p, return address1: %p, allocations: %u\n%d, %s", s->rawptr, s->returnAddress0, s->returnAddress1, allocations, s->address1.line, s->address1.file);
+        SDL_Log("residue memory: %p, return address0: %p, return address1: %p, allocations: %u\n%d, %s\n", s->rawptr, s->returnAddress0, s->returnAddress1, allocations, s->address1.line, s->address1.file);
         BREAK_POINT
         allocations--;
     }

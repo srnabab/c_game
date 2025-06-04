@@ -26,7 +26,7 @@ void createFrameBuffer(uint32_t imageCount, Uint32 width, Uint32 height, Uint32 
         for (i = 0;i < imageCount;i++)
         {
 
-            VkFramebufferCreateInfo framebufferInfo = {};
+            VkFramebufferCreateInfo framebufferInfo = {0};
             framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
             framebufferInfo.pNext = NULL;
             framebufferInfo.flags = 0;
@@ -51,7 +51,7 @@ void createFrameBuffer(uint32_t imageCount, Uint32 width, Uint32 height, Uint32 
         {
             pImageViewAttachments[0] = pSwapchainImageView[i];
 
-            VkFramebufferCreateInfo framebufferInfo = {};
+            VkFramebufferCreateInfo framebufferInfo = {0};
             framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
             framebufferInfo.pNext = NULL;
             framebufferInfo.flags = 0;
@@ -76,7 +76,7 @@ void createFrameBufferByImageArray(Uint32 imageCount, Uint32 width, Uint32 heigh
 
     for (i = 0;i < imageCount;i++)
     {
-        VkFramebufferCreateInfo framebufferInfo = {};
+        VkFramebufferCreateInfo framebufferInfo = {0};
         framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         framebufferInfo.pNext = NULL;
         framebufferInfo.flags = 0;

@@ -84,7 +84,7 @@ struct _Thread_Func_Arg
 };
 typedef struct _Thread_Func_Arg Thread_Func_Arg;
 
-extern bool SDLCALL createThreadPool(G_Thread_Pool * pThreadPool, Uint32 threadCount, bool expandable);
+extern bool SDLCALL createThreadPool(G_Thread_Pool * pThreadPool, Uint32 threadCount, const char * name, bool expandable);
 extern int* SDLCALL G_AddTask(G_Thread_Pool * pThreadPool, int itemCount, int minRange, G_Task * pTask);
 extern void SDLCALL destroyThreadPool(G_Thread_Pool * pThreadPool);
 extern void SDLCALL G_WaitTask(G_Thread_Pool * pThreadPool, int * taskIndex);

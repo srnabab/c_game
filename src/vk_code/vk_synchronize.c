@@ -1,47 +1,54 @@
 #include "G_constants.h"
 
 #include "vk_code_h/vk_synchronize.h"
+#include "SDL_stdinc.h"
 #include "vk_code_h/vk_judge.h"
 #include "vk_code_h/vk_all_struct.h"
+#include "vulkan_core.h"
 
 extern VK_ALL allInOne;
 
-void createSemaphoreByBuffering(VkSemaphore (*ppSemaphore)[2])
+void createNormalSemaphore(VkSemaphore * pSemaphore, Uint32 count)
 {
-    VkSemaphoreCreateInfo semaphoreCreateInfo = {};
-    semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-    semaphoreCreateInfo.pNext = NULL;
-    semaphoreCreateInfo.flags = 0;
-
-    for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
-        resultVulkan(vkCreateSemaphore(allInOne.device, &semaphoreCreateInfo, allInOne.pAllocationCallbacks, (*ppSemaphore) + i), 0);
-    //printf("semaphor created\n");
+    _createSemaphore(NULL, 0, pSemaphore, count);
 }
-void createTimelineSemaphoreByBuffering(VkSemaphore (*ppSemaphore)[2])
+void createTimelineSemaphore(Uint64 initalValue, VkSemaphore * pSemaphore, Uint32 count)
 {
-    VkSemaphoreTypeCreateInfo timelineCreateInfo = {};
+    VkSemaphoreTypeCreateInfo timelineCreateInfo = {0};
     timelineCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO;
     timelineCreateInfo.pNext = NULL;
     timelineCreateInfo.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE;
-    timelineCreateInfo.initialValue = 0;
+    timelineCreateInfo.initialValue = initalValue;
 
-    VkSemaphoreCreateInfo semaphoreCreateInfo = {};
-    semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-    semaphoreCreateInfo.pNext = &timelineCreateInfo;
-    semaphoreCreateInfo.flags = 0;
-
-    for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
-        resultVulkan(vkCreateSemaphore(allInOne.device, &semaphoreCreateInfo, allInOne.pAllocationCallbacks, (*ppSemaphore) + i), 0);
-    //printf("timeline semaphor created\n");
+    _createSemaphore(&timelineCreateInfo, 0, pSemaphore, count);
 }
-void createFenceByBuffering(VkFence (*ppFence)[2])
+void _createSemaphore(void * pNext, VkSemaphoreCreateFlags flags, VkSemaphore * pSemaphore, Uint32 count)
 {
-    VkFenceCreateInfo fenceCreateInfo = {};
-    fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-    fenceCreateInfo.pNext = NULL;
-    fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+    VkSemaphoreCreateInfo semaphoreCreateInfo = {0};
+    semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+    semaphoreCreateInfo.pNext = pNext;
+    semaphoreCreateInfo.flags = flags;
 
-    for (int i = 0;i < MAX_FRAMES_IN_FLIGHT;i++)
-        resultVulkan(vkCreateFence(allInOne.device, &fenceCreateInfo, allInOne.pAllocationCallbacks, (*ppFence) + i), 0);
-    //printf("fence created\n");
+    for (int i = 0;i < count;i++) vkCreateSemaphore(allInOne.device, &semaphoreCreateInfo, allInOne.pAllocationCallbacks, pSemaphore + i);
+}
+void destroySemaphore(VkSemaphore * pSemaphore, Uint32 count)
+{
+    for (int i = 0;i < count;i++) vkDestroySemaphore(allInOne.device, pSemaphore[i], allInOne.pAllocationCallbacks);
+}
+void createNormalFences(VkFence * pFence, Uint32 count)
+{
+    _createFences(NULL, VK_FENCE_CREATE_SIGNALED_BIT, pFence, count);
+}
+void _createFences(void * pNext, VkFenceCreateFlags flags, VkFence * pFence, Uint32 count)
+{
+    VkFenceCreateInfo fenceCreateInfo = {0};
+    fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    fenceCreateInfo.pNext = pNext;
+    fenceCreateInfo.flags = flags;
+
+    for (int i = 0;i < count;i++) vkCreateFence(allInOne.device, &fenceCreateInfo, allInOne.pAllocationCallbacks, pFence + i);
+}
+void destroyFence(VkFence * pFence, Uint32 count)
+{
+    for (int i = 0;i < count;i++) vkDestroyFence(allInOne.device, pFence[i], allInOne.pAllocationCallbacks);
 }

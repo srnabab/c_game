@@ -39,7 +39,7 @@ static int putMessage_file(void * arg)
 {
     char timeBuffer[255];
     SDL_Time ticks;
-    SDL_DateTime dateTime = {};
+    SDL_DateTime dateTime = {0};
     while(1)
     {
         if ((messagePrintCount % MAX_MESSAGE_STORAGE == 0) && messagePrintCount != 0)

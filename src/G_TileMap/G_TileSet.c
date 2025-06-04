@@ -50,7 +50,7 @@ static unsigned char* readTileSetData(PathType path, Uint32 * pTileWidth, Uint32
         return NULL;
     }
 
-    TSD_Head head = {};
+    TSD_Head head = {0};
 
     SDL_ReadIO(tsd, &head, sizeof(TSD_Head));
 
@@ -200,7 +200,7 @@ static Uint32 * loadTileMapData(PathType tileMapData, Uint32 * pRow, Uint32 * pC
     SDL_IOStream * tsdI = SDL_IOFromFile(getPath(tileMapData), "rb");
     if (tsdI == NULL);
 
-    TSDI_Head head = {};
+    TSDI_Head head = {0};
 
     SDL_ReadIO(tsdI, &head, sizeof(TSDI_Head));
 

@@ -43,6 +43,8 @@
 #include "vk_code_h/vk_judge.h"
 
 #include "spirv_reflect/shader_resolve.h"
+#include "vulkan_core.h"
+#include <string.h>
 
 static bool initSDL(void)
 {
@@ -131,7 +133,7 @@ bool initWindow_3D(void)
     return true;
 }
 
-static VkAllocationCallbacks SDL_allocationCallBacks = {};
+static VkAllocationCallbacks SDL_allocationCallBacks = {0};
 
 static VkFormat swapchainFormat = 0;
 
@@ -161,19 +163,19 @@ static VkDescriptorSetLayout * computeDescriptorSetLayout = NULL;
 static VkDescriptorSetLayout * SSGIDescriptorSetLayout = NULL;
 static VkDescriptorSetLayout * combineDescriptorSetLayout = NULL;
 
-static UniformBufferObject ubo = {};
+static UniformBufferObject ubo = {0};
 
-static UniformBufferObject ubo3D = {};
+static UniformBufferObject ubo3D = {0};
 
-static UniformBufferObject uboUI = {};
+static UniformBufferObject uboUI = {0};
 
-static ComputeUniformBufferObject computeUbo = {};
+static ComputeUniformBufferObject computeUbo = {0};
 
-static SSGIUniformBufferObject SSGIubo = {};
+static SSGIUniformBufferObject SSGIubo = {0};
 
-static DirectionLight  Sunubo = {};
+static DirectionLight  Sunubo = {0};
 
-static LightSpace lightSpaceubo = {};
+static LightSpace lightSpaceubo = {0};
 
 
 static VkDescriptorPool graphicDescriptorPool = NULL;
@@ -191,12 +193,12 @@ static float pictureY = 0;
 static PushConstants picturePushConstants = {0.0f};
 static ShapeConstants shapePushConstants = {(vec2){0.0f, 0.0f}, (vec2){0.053333333f, 0.053333333f}};
 
-static G_StaticModelPool staticModelPool = {};
+static G_StaticModelPool staticModelPool = {0};
 
-// static G_Thread_Pool threadPool = {};
+// static G_Thread_Pool threadPool = {0};
 
 //store all compoents for initialize vulkan in a struct
-VK_ALL allInOne = {};
+VK_ALL allInOne = {0};
 
 static void initializeAllInOne(void)
 {
@@ -263,22 +265,27 @@ void initVulkan(void)
 
     createQueue();
 
-    createCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, allInOne.queueFamilyIndices.graphicsFamily.familyIndice, &allInOne.graphicCommandPool);
-    CO_addCommandPool(allInOne.graphicCommandPool);// CO
-    createCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, allInOne.queueFamilyIndices.presentFamily.familyIndice, &allInOne.presentCommandPool);
-    CO_addCommandPool(allInOne.presentCommandPool);// CO
-    createCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, allInOne.queueFamilyIndices.computeFamily.familyIndice, &allInOne.computeCommandPool);
-    CO_addCommandPool(allInOne.computeCommandPool);// CO
-    createCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, allInOne.queueFamilyIndices.transferFamily.familyIndice, &allInOne.transferCommandPool);
-    CO_addCommandPool(allInOne.transferCommandPool);// CO
+    G_CreateCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, allInOne.queueFamilyIndices.graphicsFamily.familyIndice, &allInOne.graphic2dCommandPool);
+    CO_addCommandPool(allInOne.graphic2dCommandPool.commandPool);// CO
+    G_CreateCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, allInOne.queueFamilyIndices.graphicsFamily.familyIndice, &allInOne.graphic3dCommandPool);
+    CO_addCommandPool(allInOne.graphic3dCommandPool.commandPool);// CO
+    G_CreateCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, allInOne.queueFamilyIndices.graphicsFamily.familyIndice, &allInOne.mainGraphicCommandPool);
+    CO_addCommandPool(allInOne.mainGraphicCommandPool.commandPool);// CO
+    G_CreateCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, allInOne.queueFamilyIndices.computeFamily.familyIndice, &allInOne.computeCommandPool);
+    CO_addCommandPool(allInOne.computeCommandPool.commandPool);// CO
+    // G_CreateCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, allInOne.queueFamilyIndices.transferFamily.familyIndice, &allInOne.transferCommandPool);
+    // CO_addCommandPool(allInOne.transferCommandPool.commandPool);// CO
 
-    createCommandBuffers(VK_COMMAND_BUFFER_LEVEL_PRIMARY, allInOne.graphicCommandPool, allInOne.pGraphicCommandBuffer, 2);
-    createCommandBuffers(VK_COMMAND_BUFFER_LEVEL_SECONDARY, allInOne.graphicCommandPool, allInOne.pGraphicCopyCommandBuffer, 2);
-    createCommandBuffers(VK_COMMAND_BUFFER_LEVEL_PRIMARY, allInOne.presentCommandPool, allInOne.pPresentCommandBuffer, 2);
-    createCommandBuffers(VK_COMMAND_BUFFER_LEVEL_PRIMARY, allInOne.computeCommandPool, allInOne.pComputeCommandBuffer, 2);
-    createCommandBuffers(VK_COMMAND_BUFFER_LEVEL_SECONDARY, allInOne.computeCommandPool, allInOne.pComputeCopyCommandBuffer, 2);
-    createCommandBuffers(VK_COMMAND_BUFFER_LEVEL_PRIMARY, allInOne.transferCommandPool, allInOne.pTransferCommandBuffer, 2);
-    createCommandBuffers(VK_COMMAND_BUFFER_LEVEL_SECONDARY, allInOne.transferCommandPool, allInOne.pTransferCopyCommandBuffer, 2);
+    G_CreateThreadCommandPool(&allInOne.graphic2dCommandPool, &allInOne.computeCommandPool, &allInOne.graphic2dThreadCommandPool);
+    G_CreateThreadCommandPool(&allInOne.graphic3dCommandPool, NULL, &allInOne.graphic3dThreadCommandPool);
+    G_CreateThreadCommandPool(&allInOne.mainGraphicCommandPool, NULL, &allInOne.mainThreadCommandPool);
+
+    createCommandBuffers(VK_COMMAND_BUFFER_LEVEL_PRIMARY, allInOne.graphic2dCommandPool.commandPool, allInOne.pGraphicCommandBuffer, 2);
+    createCommandBuffers(VK_COMMAND_BUFFER_LEVEL_SECONDARY, allInOne.graphic2dCommandPool.commandPool, allInOne.pGraphicCopyCommandBuffer, 2);
+    createCommandBuffers(VK_COMMAND_BUFFER_LEVEL_PRIMARY, allInOne.computeCommandPool.commandPool, allInOne.pComputeCommandBuffer, 2);
+    createCommandBuffers(VK_COMMAND_BUFFER_LEVEL_SECONDARY, allInOne.computeCommandPool.commandPool, allInOne.pComputeCopyCommandBuffer, 2);
+    // createCommandBuffers(VK_COMMAND_BUFFER_LEVEL_PRIMARY, allInOne.transferCommandPool.commandPool, allInOne.pTransferCommandBuffer, 2);
+    // createCommandBuffers(VK_COMMAND_BUFFER_LEVEL_SECONDARY, allInOne.transferCommandPool.commandPool, allInOne.pTransferCopyCommandBuffer, 2);
 
     getSurfaceFormats(allInOne.surface3D, &allInOne.surface3DFormat);
     getPresentModes(&allInOne.presentMode3D);
@@ -309,10 +316,10 @@ void initVulkan(void)
 
     loadDepthResource(TEXTURE_MODEL_DEPTH, true);
     loadDepthResource(TEXTURE_2D_DEPTH, true);
-    loadImageResource(VK_FORMAT_R16_SFLOAT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_UNDEFINED, TEXTURE_SHADOW_MAP, NULL);
+    loadImageResource(VK_FORMAT_R16_SFLOAT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, TEXTURE_SHADOW_MAP, NULL);
     loadNormalResource(TEXTURE_NORMAL);
     loadImageResource(swapchainFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_UNDEFINED, TEXTURE_MODEL_COLOR, NULL);
-    loadImageResource(swapchainFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_UNDEFINED, TEXTURE_2D_COLOR, NULL);
+    loadImageResource(swapchainFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, TEXTURE_2D_COLOR, NULL);
 
     G_Texture_P * modelDepthTexutre = getTexture(TEXTURE_MODEL_DEPTH);
     G_Texture_P * modelNormalTexture = getTexture(TEXTURE_NORMAL);
@@ -510,43 +517,43 @@ void initVulkan(void)
 
     executeCreateComputePipelines(NULL);
 
-    createTimelineSemaphoreByBuffering(&allInOne.pTimelineSemaphore2d);
+    createTimelineSemaphore(0, allInOne.pTimelineSemaphore2d, MAX_FRAMES_IN_FLIGHT);
     CO_addSemaphore(allInOne.pTimelineSemaphore2d[0]);// CO
     CO_addSemaphore(allInOne.pTimelineSemaphore2d[1]);// CO
 
-    createTimelineSemaphoreByBuffering(&allInOne.pTimelineSemaphore3d);
+    createTimelineSemaphore(0, allInOne.pTimelineSemaphore3d, MAX_FRAMES_IN_FLIGHT);
     CO_addSemaphore(allInOne.pTimelineSemaphore3d[0]);// CO
     CO_addSemaphore(allInOne.pTimelineSemaphore3d[1]);// CO
 
-    createSemaphoreByBuffering(&allInOne.pImageAvailableSemaphore);
+    createNormalSemaphore(allInOne.pImageAvailableSemaphore, MAX_FRAMES_IN_FLIGHT);
     CO_addSemaphore(allInOne.pImageAvailableSemaphore[0]);// CO
     CO_addSemaphore(allInOne.pImageAvailableSemaphore[1]);// CO
 
-    createSemaphoreByBuffering(&allInOne.pRenderFinishedSemaphore);
+    createNormalSemaphore(allInOne.pRenderFinishedSemaphore, MAX_FRAMES_IN_FLIGHT);
     CO_addSemaphore(allInOne.pRenderFinishedSemaphore[0]);// CO
     CO_addSemaphore(allInOne.pRenderFinishedSemaphore[1]);// CO
 
-    createSemaphoreByBuffering(&allInOne.pComputeSemaphore);
+    createNormalSemaphore(allInOne.pComputeSemaphore, MAX_FRAMES_IN_FLIGHT);
     CO_addSemaphore(allInOne.pComputeSemaphore[0]);// CO
     CO_addSemaphore(allInOne.pComputeSemaphore[1]);// CO
 
-    createSemaphoreByBuffering(&allInOne.pGraphicSemaphore);
+    createNormalSemaphore(allInOne.pGraphicSemaphore, MAX_FRAMES_IN_FLIGHT);
     CO_addSemaphore(allInOne.pGraphicSemaphore[0]);// CO
     CO_addSemaphore(allInOne.pGraphicSemaphore[1]);// CO
 
-    createSemaphoreByBuffering(&allInOne.pTransferSemaphore);
+    createNormalSemaphore(allInOne.pTransferSemaphore, MAX_FRAMES_IN_FLIGHT);
     CO_addSemaphore(allInOne.pTransferSemaphore[0]);// CO
     CO_addSemaphore(allInOne.pTransferSemaphore[1]);// CO
 
-    createFenceByBuffering(&allInOne.pGraphicInFlightFence);
+    createNormalFences(allInOne.pGraphicInFlightFence, MAX_FRAMES_IN_FLIGHT);
     CO_addFence(allInOne.pGraphicInFlightFence[0]);// CO
     CO_addFence(allInOne.pGraphicInFlightFence[1]);// CO
 
-    createFenceByBuffering(&allInOne.pComputeInFlightFence);
+    createNormalFences(allInOne.pComputeInFlightFence, MAX_FRAMES_IN_FLIGHT);
     CO_addFence(allInOne.pComputeInFlightFence[0]);// CO
     CO_addFence(allInOne.pComputeInFlightFence[1]);// CO
 
-    createFenceByBuffering(&allInOne.pTransferInFlightFence);
+    createNormalFences(allInOne.pTransferInFlightFence, MAX_FRAMES_IN_FLIGHT);
     CO_addFence(allInOne.pTransferInFlightFence[0]);// CO
     CO_addFence(allInOne.pTransferInFlightFence[1]);// CO
    
@@ -618,6 +625,35 @@ void initVulkan(void)
     resultVulkan(VK_SUCCESS, 0);
 }
 
+static void cleanAllInOne(void)
+{
+    Uint32 i;
+    for (i = 0;i < 16;i++)
+    {
+        if (allInOne.pGraphicQueue[i].queue)
+        {
+            SDL_DestroyMutex(allInOne.pGraphicQueue[i].mutex);
+        }
+
+        if (allInOne.pTransferQueue[i].queue)
+        {
+            SDL_DestroyMutex(allInOne.pTransferQueue[i].mutex);
+        }
+
+        if (allInOne.pComputeQueue[i].queue)
+        {
+            SDL_DestroyMutex(allInOne.pComputeQueue[i].mutex);
+        }
+    }
+
+    for (i = 0;i < 2;i++)
+    {
+        if (allInOne.pPresentQueue[i].queue)
+        {
+            SDL_DestroyMutex(allInOne.pPresentQueue[i].mutex);
+        }
+    }
+}
 void cleanVulkan(void)
 {
     print("\nclean begin");
@@ -639,7 +675,11 @@ void cleanVulkan(void)
     G_free(allInOne.pVertices2D);
     G_free(allInOne.pVertices3D);
     G_free(allInOne.pIndices3D);
+    G_DestroyThreadCommandPool(&allInOne.graphic2dThreadCommandPool);
+    G_DestroyThreadCommandPool(&allInOne.graphic3dThreadCommandPool);
+    G_DestroyThreadCommandPool(&allInOne.mainThreadCommandPool);
     unloadAllTexture();
+    cleanAllInOne();
     CO_CleanAllVkResource();
     // destroyThreadPool(allInOne.pThreadPool);
 }

@@ -138,6 +138,11 @@ bool findQueueFamilies(void)
 
     return true;
 }
+static void getGVkQueue( VkDevice device, uint32_t queueFamilyIndex, uint32_t queueIndex, G_VkQueue * pQueue)
+{
+    vkGetDeviceQueue(device, queueFamilyIndex, queueIndex, &pQueue->queue);
+    pQueue->mutex = SDL_CreateMutex();
+}
 void createQueue(void)
 {
     Uint32 i, graphicQueueCount, graphicQueueIndex;
@@ -148,7 +153,7 @@ void createQueue(void)
     {
         if (allInOne.queueFamilyIndices.graphicsFamily.queueCount < 2)
         {
-            vkGetDeviceQueue(allInOne.device, allInOne.queueFamilyIndices.graphicsFamily.familyIndice, 0, allInOne.pGraphicQueue + 0);
+            getGVkQueue(allInOne.device, allInOne.queueFamilyIndices.graphicsFamily.familyIndice, 0, &allInOne.pGraphicQueue[0]);
 
             allInOne.pGraphicQueue[1] = allInOne.pGraphicQueue[0];
 
@@ -159,7 +164,8 @@ void createQueue(void)
         {
             for (i = 0;i < GRAPHIC_QUEUE_COUNT;i++)
             {
-                vkGetDeviceQueue(allInOne.device, allInOne.queueFamilyIndices.graphicsFamily.familyIndice, graphicQueueIndex, allInOne.pGraphicQueue + i);
+                getGVkQueue(allInOne.device, allInOne.queueFamilyIndices.graphicsFamily.familyIndice, graphicQueueIndex, &allInOne.pGraphicQueue[i]);
+
                 graphicQueueIndex++;
             }
             graphicQueueCount -= GRAPHIC_QUEUE_COUNT;
@@ -170,7 +176,7 @@ void createQueue(void)
     {
         for (i = 0;i < allInOne.queueFamilyIndices.transferFamily.queueCount;i++)
         {
-            vkGetDeviceQueue(allInOne.device, allInOne.queueFamilyIndices.transferFamily.familyIndice, i, allInOne.pTransferQueue + i);
+            getGVkQueue(allInOne.device, allInOne.queueFamilyIndices.transferFamily.familyIndice, i, &allInOne.pTransferQueue[i]);
         }
     }
     else
@@ -183,7 +189,8 @@ void createQueue(void)
         {
             for (i = 0;i < TRANSFER_QUEUE_COUNT;i++)
             {
-                vkGetDeviceQueue(allInOne.device, allInOne.queueFamilyIndices.graphicsFamily.familyIndice, graphicQueueIndex, allInOne.pTransferQueue + 0);
+                getGVkQueue(allInOne.device, allInOne.queueFamilyIndices.graphicsFamily.familyIndice, graphicQueueIndex, &allInOne.pTransferQueue[0]);
+
                 graphicQueueIndex++;
             }
             graphicQueueCount -= TRANSFER_QUEUE_COUNT;
@@ -195,7 +202,7 @@ void createQueue(void)
     {
         for (i = 0;i < allInOne.queueFamilyIndices.computeFamily.queueCount;i++)
         {
-            vkGetDeviceQueue(allInOne.device, allInOne.queueFamilyIndices.computeFamily.familyIndice, i, allInOne.pComputeQueue + i);
+            getGVkQueue(allInOne.device, allInOne.queueFamilyIndices.computeFamily.familyIndice, i, allInOne.pComputeQueue + i);
         }
 
         if (allInOne.queueFamilyIndices.computeFamily.queueCount != 2)
@@ -213,7 +220,7 @@ void createQueue(void)
         {
             for (i = 0;i < COMPUTE_QUEUE_COUNT;i++)
             {
-                vkGetDeviceQueue(allInOne.device, allInOne.queueFamilyIndices.graphicsFamily.familyIndice, graphicQueueIndex, allInOne.pComputeQueue + i);
+                getGVkQueue(allInOne.device, allInOne.queueFamilyIndices.graphicsFamily.familyIndice, graphicQueueIndex, allInOne.pComputeQueue + i);
                 graphicQueueIndex++;
             }
             graphicQueueCount -= COMPUTE_QUEUE_COUNT;
@@ -221,7 +228,7 @@ void createQueue(void)
         }
         else if (graphicQueueCount >= 1)
         {
-            vkGetDeviceQueue(allInOne.device, allInOne.queueFamilyIndices.graphicsFamily.familyIndice, graphicQueueIndex, allInOne.pComputeQueue + 0);
+            getGVkQueue(allInOne.device, allInOne.queueFamilyIndices.graphicsFamily.familyIndice, graphicQueueIndex, allInOne.pComputeQueue + 0);
             for (i = 1;i < COMPUTE_QUEUE_COUNT;i++)
             {
                 allInOne.pComputeQueue[i] = allInOne.pComputeQueue[0];
@@ -238,7 +245,7 @@ void createQueue(void)
     {
         for (i = 0;i < allInOne.queueFamilyIndices.presentFamily.queueCount;i++)
         {
-            vkGetDeviceQueue(allInOne.device, allInOne.queueFamilyIndices.presentFamily.familyIndice, graphicQueueIndex, allInOne.pPresentQueue + i);
+            getGVkQueue(allInOne.device, allInOne.queueFamilyIndices.presentFamily.familyIndice, graphicQueueIndex, allInOne.pPresentQueue + i);
             graphicQueueIndex++;
         }
     }
@@ -252,7 +259,7 @@ void createQueue(void)
         {
             for (i = 0;i < PRESENT_QUEUE_COUNT;i++)
             {
-                vkGetDeviceQueue(allInOne.device, allInOne.queueFamilyIndices.graphicsFamily.familyIndice, graphicQueueIndex, allInOne.pPresentQueue + i);
+                getGVkQueue(allInOne.device, allInOne.queueFamilyIndices.graphicsFamily.familyIndice, graphicQueueIndex, allInOne.pPresentQueue + i);
                 graphicQueueIndex++;
             }
             graphicQueueCount -= PRESENT_QUEUE_COUNT;
@@ -260,48 +267,32 @@ void createQueue(void)
         allInOne.queueFamilyIndices.presentFamily.familyIndice = allInOne.queueFamilyIndices.graphicsFamily.familyIndice;
     }
 }
-VkQueue getFirstQueueByCommandPool(VkCommandPool commandPool)
+G_VkQueue * getFirstQueueByIndex(Uint32 index)
 {
-    if (commandPool == allInOne.graphicCommandPool)
+    if (index == allInOne.queueFamilyIndices.graphicsFamily.familyIndice)
     {
-        return allInOne.pGraphicQueue[0];
+        return allInOne.pGraphicQueue;
     }
-    else if (commandPool == allInOne.presentCommandPool)
+    else if (index == allInOne.queueFamilyIndices.presentFamily.familyIndice)
     {
-        return allInOne.pPresentQueue[0];
+        return allInOne.pPresentQueue;
     }
-    else if (commandPool == allInOne.computeCommandPool)
+    else if (index == allInOne.queueFamilyIndices.computeFamily.familyIndice)
     {
-        return allInOne.pComputeQueue[0];
+        return allInOne.pComputeQueue;
     }
-    else if (commandPool == allInOne.transferCommandPool)
+    else if (index == allInOne.queueFamilyIndices.transferFamily.familyIndice)
     {
-        return allInOne.pTransferQueue[0];
+        return allInOne.pTransferQueue;
     }
 
-    return allInOne.pGraphicQueue[0];
+    return allInOne.pGraphicQueue;
 }
-VkQueue getGraphic3dQueue(void)
+VkResult G_vkQueueSubmit(G_VkQueue * queue, Uint32 submitCount, const VkSubmitInfo * pSubmits, VkFence fence)
 {
-    return allInOne.pGraphicQueue[0];
-}
-VkQueue getGraphic2dQueue(void)
-{
-    return allInOne.pGraphicQueue[1];
-}
-VkQueue getPresentQueue(void)
-{
-    return allInOne.pPresentQueue[0];
-}
-VkQueue getComputeQueue(void)
-{
-    return allInOne.pComputeQueue[0];
-}
-VkQueue getSSGIComputeQueue(void)
-{
-    return allInOne.pComputeQueue[1];
-}
-VkQueue getTransferQueue(void)
-{
-    return allInOne.pTransferQueue[0];
+    SDL_LockMutex(queue->mutex);
+    VkResult result = vkQueueSubmit(queue->queue, submitCount, pSubmits, fence);
+    SDL_UnlockMutex(queue->mutex);
+
+    return result;
 }

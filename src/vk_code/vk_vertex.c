@@ -30,7 +30,7 @@ extern VK_ALL allInOne;
 //             memcpy(tempData, data, bufferSize);
 //             vkUnmapMemory(allInOne.device, stagingBufferMemory);
 
-//             copyBuffer(NULL, allInOne.graphicCommandPool, stagingBuffer, 0, *pVertexBuffer, 0, bufferSize);
+//             copyBuffer(NULL, allInOne.graphic2dCommandPool, stagingBuffer, 0, *pVertexBuffer, 0, bufferSize);
 
 //             vkDestroyBuffer(allInOne.device, stagingBuffer, allInOne.pAllocationCallbacks);
 //             vkFreeMemory(allInOne.device, stagingBufferMemory, allInOne.pAllocationCallbacks);

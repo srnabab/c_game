@@ -38,7 +38,7 @@ void createShaderModuleFromFile(PathType type, VkShaderModule * pShaderModule)
 }
 VkResult createShaderModuleFromMem(size_t codeSize, const Uint32 * pCode, VkShaderModule * pShaderModule)
 {
-    VkShaderModuleCreateInfo createInfo = {};
+    VkShaderModuleCreateInfo createInfo = {0};
     createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     createInfo.pNext = NULL;
     createInfo.flags = 0;
@@ -49,7 +49,7 @@ VkResult createShaderModuleFromMem(size_t codeSize, const Uint32 * pCode, VkShad
 }
 void addShaderStageCreateInfo(VkShaderModule * pShaderModule, VkShaderStageFlags stage, uint32_t * pShaderCount, VkPipelineShaderStageCreateInfo ** pPipelineShaderStageCreateInfo)
 {
-    VkPipelineShaderStageCreateInfo shaderStageCreateInfo = {};
+    VkPipelineShaderStageCreateInfo shaderStageCreateInfo = {0};
     shaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     shaderStageCreateInfo.pNext = NULL;
     shaderStageCreateInfo.flags = 0;
@@ -67,7 +67,7 @@ void addShaderStageCreateInfo(VkShaderModule * pShaderModule, VkShaderStageFlags
 /*
 void configureShaderStageCreateInfo(VkShaderModule * vertShaderModule, VkShaderModule * fragShaderModule, VkPipelineShaderStageCreateInfo ** pPipelineShaderStageCreateInfo)
 {
-    VkPipelineShaderStageCreateInfo vertShaderStageCreateInfo = {};
+    VkPipelineShaderStageCreateInfo vertShaderStageCreateInfo = {0};
     vertShaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     vertShaderStageCreateInfo.pNext = NULL;
     vertShaderStageCreateInfo.flags = 0;
@@ -76,7 +76,7 @@ void configureShaderStageCreateInfo(VkShaderModule * vertShaderModule, VkShaderM
     vertShaderStageCreateInfo.pName = "main";
     vertShaderStageCreateInfo.pSpecializationInfo = NULL;
 
-    VkPipelineShaderStageCreateInfo fragShaderStageCreateInfo = {};
+    VkPipelineShaderStageCreateInfo fragShaderStageCreateInfo = {0};
     fragShaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     fragShaderStageCreateInfo.pNext = NULL;
     fragShaderStageCreateInfo.flags = 0;

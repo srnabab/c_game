@@ -46,24 +46,24 @@ static void setSubpassDependency(Uint32 srcSubpass, Uint32 dstSubpass, VkPipelin
 }
 void createGraphicRenderPass(VkFormat surfaceFormat, VkFormat depthFormat, VkRenderPass * pRenderPass)
 {
-    VkAttachmentDescription colorAttachment = {};
+    VkAttachmentDescription colorAttachment = {0};
 
     setAttachmentDescription(0, surfaceFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE\
         , VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, &colorAttachment);
 
-    VkAttachmentReference colorAttachmentRef = {};
+    VkAttachmentReference colorAttachmentRef = {0};
     colorAttachmentRef.attachment = 0;
     colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-    // VkAttachmentDescription depthAttachment = {};
+    // VkAttachmentDescription depthAttachment = {0};
     // setAttachmentDescription(0, depthFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE
     //     , VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, &depthAttachment);
 
-    // VkAttachmentReference depthAttachmentRef = {};
+    // VkAttachmentReference depthAttachmentRef = {0};
     // depthAttachmentRef.attachment = 1;
     // depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-    VkSubpassDescription subpass1 = {};
+    VkSubpassDescription subpass1 = {0};
     setSubpassDescription(0, VK_PIPELINE_BIND_POINT_GRAPHICS, 0, NULL, 1, &colorAttachmentRef, NULL, NULL, 0, NULL, &subpass1);
 
     VkSubpassDependency dependency[2];
@@ -74,7 +74,7 @@ void createGraphicRenderPass(VkFormat surfaceFormat, VkFormat depthFormat, VkRen
 
     VkAttachmentDescription attachments[] = {colorAttachment};
 
-    VkRenderPassCreateInfo renderPassCreateInfo = {};
+    VkRenderPassCreateInfo renderPassCreateInfo = {0};
     renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
     renderPassCreateInfo.pNext = NULL;
     renderPassCreateInfo.flags = 0;
@@ -117,25 +117,25 @@ void createModelRenderPass(VkFormat colorFormat, VkFormat normalFormat, VkFormat
     attachmentRef[2].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
 
-    VkAttachmentDescription depthAttachment = {};
+    VkAttachmentDescription depthAttachment = {0};
     setAttachmentDescription(0, depthFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE\
         , VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, &depthAttachment);
 
-    VkAttachmentReference depthAttachmentRef = {};
+    VkAttachmentReference depthAttachmentRef = {0};
     depthAttachmentRef.attachment = 3;
     depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-    VkSubpassDescription subpass0 = {};
+    VkSubpassDescription subpass0 = {0};
     setSubpassDescription(0, VK_PIPELINE_BIND_POINT_GRAPHICS, 0, NULL, 3, attachmentRef, NULL, &depthAttachmentRef, 0, NULL, &subpass0);
 
-    VkSubpassDependency dependency = {};
+    VkSubpassDependency dependency = {0};
     setSubpassDependency(VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT\
         , 0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT, 0, &dependency);
 
     VkAttachmentDescription attachments[] = {attachment[0], attachment[1], attachment[2], depthAttachment};
     VkSubpassDescription subpasses[] = {subpass0};
 
-    VkRenderPassCreateInfo renderPassCreateInfo = {};
+    VkRenderPassCreateInfo renderPassCreateInfo = {0};
     renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
     renderPassCreateInfo.pNext = NULL;
     renderPassCreateInfo.flags = 0;
@@ -152,7 +152,7 @@ void createModelRenderPass(VkFormat colorFormat, VkFormat normalFormat, VkFormat
 }
 void createShadowRenderPass(VkFormat depthFormat, VkRenderPass * pRenderPass)
 {
-    VkAttachmentDescription depthAttachment = {};
+    VkAttachmentDescription depthAttachment = {0};
     depthAttachment.flags = 0;
     depthAttachment.format = depthFormat;
     depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -163,11 +163,11 @@ void createShadowRenderPass(VkFormat depthFormat, VkRenderPass * pRenderPass)
     depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 
-    VkAttachmentReference depthAttachmentRef = {};
+    VkAttachmentReference depthAttachmentRef = {0};
     depthAttachmentRef.attachment = 0;
     depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-    VkSubpassDescription subpass0 = {};
+    VkSubpassDescription subpass0 = {0};
     subpass0.flags = 0;
     subpass0.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     subpass0.inputAttachmentCount = 0;
@@ -200,7 +200,7 @@ void createShadowRenderPass(VkFormat depthFormat, VkRenderPass * pRenderPass)
     VkAttachmentDescription attachments[] = {depthAttachment};
     VkSubpassDescription subpasses[] = {subpass0};
 
-    VkRenderPassCreateInfo renderPassCreateInfo = {};
+    VkRenderPassCreateInfo renderPassCreateInfo = {0};
     renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
     renderPassCreateInfo.pNext = NULL;
     renderPassCreateInfo.flags = 0;
@@ -233,7 +233,7 @@ void createCombineRenderPass(VkFormat colorFormat, VkRenderPass * pRenderPass)
     attachmentRef[0].attachment = 0;
     attachmentRef[0].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-    VkSubpassDescription subpass0 = {};
+    VkSubpassDescription subpass0 = {0};
     subpass0.flags = 0;
     subpass0.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     subpass0.inputAttachmentCount = 0;
@@ -268,7 +268,7 @@ void createCombineRenderPass(VkFormat colorFormat, VkRenderPass * pRenderPass)
     // dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;        // Access type for next pass reading
     // dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
-    VkRenderPassCreateInfo renderPassCreateInfo = {};
+    VkRenderPassCreateInfo renderPassCreateInfo = {0};
     renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
     renderPassCreateInfo.pNext = NULL;
     renderPassCreateInfo.flags = 0;
@@ -285,21 +285,21 @@ void createCombineRenderPass(VkFormat colorFormat, VkRenderPass * pRenderPass)
 }
 void createOffscreenRenderPass(VkFormat format, VkRenderPass * pRenderPass)
 {
-    VkAttachmentDescription colorAttachment = {};
+    VkAttachmentDescription colorAttachment = {0};
     setAttachmentDescription(0, format, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED\
         , VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, &colorAttachment);
 
-    VkAttachmentReference colorAttachmentRef = {};
+    VkAttachmentReference colorAttachmentRef = {0};
     colorAttachmentRef.attachment = 0;
     colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-    VkSubpassDescription subpass = {};
+    VkSubpassDescription subpass = {0};
     setSubpassDescription(0, VK_PIPELINE_BIND_POINT_GRAPHICS, 0, NULL, 1, &colorAttachmentRef, NULL, NULL, 0, NULL, &subpass);
 
-    VkSubpassDependency dependency = {};
+    VkSubpassDependency dependency = {0};
     setSubpassDependency(VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_COLOR_ATTACHMENT_READ_BIT, 0, &dependency);
 
-    VkRenderPassCreateInfo renderPassCreateInfo = {};
+    VkRenderPassCreateInfo renderPassCreateInfo = {0};
     renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
     renderPassCreateInfo.pNext = NULL;
     renderPassCreateInfo.flags = 0;

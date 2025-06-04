@@ -20,7 +20,7 @@ extern SDL_Window * window_3D;
 extern SDL_DisplayID displayId;
 extern VK_ALL allInOne;
 
-G_SYNC allSync = {};
+G_SYNC allSync = {0};
 
 SDL_MessageBoxData * boxData = NULL;
 

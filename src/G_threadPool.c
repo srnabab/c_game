@@ -2,6 +2,7 @@
 #include "G_log.h"
 #include "G_allocator.h"
 #include "SDL3/SDL_timer.h"
+#include "SDL_stdinc.h"
 
 static int threadFunc(void * data)
 {
@@ -83,7 +84,7 @@ static int processTrace(void * data)
 
     return 0;
 }
-bool createThreadPool(G_Thread_Pool * pThreadPool, Uint32 threadCount, bool expandable)
+bool createThreadPool(G_Thread_Pool * pThreadPool, Uint32 threadCount, const char * name, bool expandable)
 {
     pThreadPool->pThreads = (SDL_Thread**)G_malloc((threadCount + 1) * sizeof(SDL_Thread*));
     if (pThreadPool->pThreads == NULL)
@@ -141,19 +142,24 @@ bool createThreadPool(G_Thread_Pool * pThreadPool, Uint32 threadCount, bool expa
     Thread_Func_Arg data = {0};
     data.pThreadPool = pThreadPool;
 
+    char buffer[16] = {0};
+    SDL_strlcpy(buffer, name, 14);
+    int len = SDL_strlen(buffer);
+
     for (Uint32 i = 0;i < threadCount;i++)
     {
         pThreadPool->tasks[i].canRun = false;
         data.index = i;
+        buffer[len] = (char)(i + 48);
 
         pThreadPool->pThreadSeamphore[i] = SDL_CreateSemaphore(0);
         pThreadPool->pWaitTaskSemaphore[i] = SDL_CreateSemaphore(0);
-        pThreadPool->pThreads[i] = SDL_CreateThread(threadFunc, "threadPool", &data);
+        pThreadPool->pThreads[i] = SDL_CreateThread(threadFunc, buffer, &data);
 
         pThreadPool->leisureThread[i] = true;
         SDL_Delay(100);
     }
-    pThreadPool->pThreads[threadCount] = SDL_CreateThread(processTrace, "traceThread", &data);
+    pThreadPool->pThreads[threadCount] = SDL_CreateThread(processTrace, name, &data);
     SDL_Delay(100);
 
     return true;
@@ -257,7 +263,7 @@ int * G_AddTask(G_Thread_Pool * pThreadPool, int itemCount, int minRange, G_Task
 
     splitTask(pThreadPool->threadPoolSize, itemCount, minRange, &threadsNeedCount, pRange);
 
-    Trace tempTrace = {};
+    Trace tempTrace = {0};
     tempTrace.threadUsedCount = threadsNeedCount;
 
     tempTrace.threadIndices = (int*)G_malloc(threadsNeedCount * sizeof(int));

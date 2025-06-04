@@ -26,7 +26,7 @@ VkPipelineShaderStageCreateInfo ** ppShaderStageCreateInfo, VkDescriptorSetLayou
     int32_t i, j;
     int32_t setCount = 1;
     int32_t biggestSet = 0;
-    int32_t bindingsCount[10] = {};
+    int32_t bindingsCount[10] = {0};
     int32_t pushConstantCount = 0;
     Uint32 pushConstantOffset = 0;
     VkDescriptorSetLayoutBinding ppSetLayoutBinding[5][5];
@@ -122,7 +122,7 @@ VkPipelineShaderStageCreateInfo ** ppShaderStageCreateInfo, VkDescriptorSetLayou
 
     for (i = 0;i < setCount;i++)
     {
-        VkDescriptorSetLayoutCreateInfo layoutInfo = {};
+        VkDescriptorSetLayoutCreateInfo layoutInfo = {0};
         layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
         layoutInfo.pNext = NULL;
         layoutInfo.flags = 0;
@@ -133,7 +133,7 @@ VkPipelineShaderStageCreateInfo ** ppShaderStageCreateInfo, VkDescriptorSetLayou
     }
     CO_addDescriptorSetLayout(setCount, (*ppDescriptorSetLayout));// CO
 
-    VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
+    VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {0};
     pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipelineLayoutCreateInfo.pNext = NULL;
     pipelineLayoutCreateInfo.flags = 0;
@@ -155,7 +155,7 @@ VkPipelineShaderStageCreateInfo ** ppShaderStageCreateInfo, VkDescriptorSetLayou
     // }
     // *ppDescriptorSets = (VkDescriptorSet *)G_malloc(MAX_FRAMES_IN_FLIGHT * setCount * sizeof(VkDescriptorSet));
 
-    // VkDescriptorSetAllocateInfo allocInfo = {};
+    // VkDescriptorSetAllocateInfo allocInfo = 0;
     // allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     // allocInfo.pNext = NULL;
     // allocInfo.descriptorSetCount = (Uint32)(MAX_FRAMES_IN_FLIGHT * setCount);

@@ -120,14 +120,14 @@ VkResult copyBufferToImage(VkCommandBuffer commandBuffer, VkImage * pImage, Uint
     VkCommandBuffer singleTimeCommandBuffer = NULL;
     if (commandBuffer == NULL)
     {
-        result |= beginSingleTimeCommands(allInOne.graphicCommandPool, &singleTimeCommandBuffer);
+        result |= beginSingleTimeCommands(allInOne.graphic2dCommandPool.commandPool, &singleTimeCommandBuffer);
     }
     else
     {
         beginPrimaryCommandBuffer(commandBuffer);
     }
 
-    VkBufferImageCopy region = {};
+    VkBufferImageCopy region = {0};
     region.bufferOffset = bufferOffset;
     region.bufferRowLength = 0;
     region.bufferImageHeight = 0;
@@ -147,7 +147,7 @@ VkResult copyBufferToImage(VkCommandBuffer commandBuffer, VkImage * pImage, Uint
     if (commandBuffer == NULL)
     {
         vkCmdCopyBufferToImage(singleTimeCommandBuffer, *pBuffer, *pImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
-        result |= endSingleTimeCommands(allInOne.graphicCommandPool, getGraphic2dQueue(), &singleTimeCommandBuffer);
+        result |= endSingleTimeCommands(allInOne.graphic2dCommandPool.commandPool, &allInOne.pGraphicQueue[GRAPHIC_2D_QUEUE], &singleTimeCommandBuffer);
     }
     else
     {

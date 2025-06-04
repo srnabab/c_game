@@ -5,7 +5,7 @@ void findSupportFormat(VkFormat * candiates, VkPhysicalDevice * pPhysicalDevice,
 {
     for (int i = 0;i < 3;i++)
     {
-        VkFormatProperties props = {};
+        VkFormatProperties props = {0};
         vkGetPhysicalDeviceFormatProperties(*pPhysicalDevice, candiates[i], &props);
         //printf("1: %d, 2: %d\n", props.linearTilingFeatures & features, props.optimalTilingFeatures & features);
 

@@ -101,7 +101,7 @@ void recreateSwapchain(Uint32 currentFrame)
     CO_addFrameBuffer(2, allInOne.pGraphic2dFramebuffer);// CO
     SDL_UnlockMutex(allSync.renderMutex);
 
-    releaseBufferFromQueue(allInOne.graphicCommandPool, VK_ACCESS_SHADER_READ_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, allInOne.queueFamilyIndices.graphicsFamily.familyIndice, allInOne.queueFamilyIndices.computeFamily.familyIndice\
+    releaseBufferFromQueue(allInOne.graphic2dCommandPool, VK_ACCESS_SHADER_READ_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, allInOne.queueFamilyIndices.graphicsFamily.familyIndice, allInOne.queueFamilyIndices.computeFamily.familyIndice\
         , allInOne.pShaderStorageBuffer[(currentFrame + 1) % MAX_FRAMES_IN_FLIGHT]->pBufferPool->buffer, allInOne.pShaderStorageBuffer[(currentFrame + 1) % MAX_FRAMES_IN_FLIGHT]->startOffset, sizeof(Particle) * PARTICLE_COUNT);
  
     CO_cleanSwapchainImageView(oldImageCount3D, oldSwapchainImageView3D);

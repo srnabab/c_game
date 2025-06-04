@@ -20,7 +20,7 @@ VkResult _createImage(void * pNext, VkImageCreateFlags flags, VkImageType imageT
 {
     VkResult result = VK_SUCCESS;
 
-    VkImageCreateInfo imageInfo = {};
+    VkImageCreateInfo imageInfo = {0};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     imageInfo.pNext = pNext;
     imageInfo.flags = flags;
@@ -42,7 +42,7 @@ VkResult _createImage(void * pNext, VkImageCreateFlags flags, VkImageType imageT
     VkMemoryRequirements memRequirements;
     vkGetImageMemoryRequirements(allInOne.device, *pImage, &memRequirements);
 
-    VkMemoryAllocateInfo allocInfo = {};
+    VkMemoryAllocateInfo allocInfo = {0};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
     allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
@@ -68,7 +68,7 @@ VkResult _createImageView(void * pNext, VkImageViewCreateFlags flags, VkImage im
 {
     VkResult result = VK_SUCCESS;
 
-    VkImageViewCreateInfo viewInfo = {};
+    VkImageViewCreateInfo viewInfo = {0};
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     viewInfo.pNext = pNext;
     viewInfo.flags = flags;
@@ -294,7 +294,7 @@ VkResult _transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, Vk
     VkCommandBuffer singleCommandBuffer = NULL;
     if (commandBuffer == NULL)
     {
-        result |= beginSingleTimeCommands(allInOne.graphicCommandPool, &singleCommandBuffer);
+        result |= beginSingleTimeCommands(allInOne.graphic2dCommandPool.commandPool, &singleCommandBuffer);
     }
 
     VkAccessFlags srcAccessMask = 0;
@@ -306,19 +306,19 @@ VkResult _transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, Vk
     {
         if (commandBuffer == NULL)
         {
-            endSingleTimeCommands(allInOne.graphicCommandPool, getGraphic2dQueue(), &singleCommandBuffer);
+            endSingleTimeCommands(allInOne.graphic2dCommandPool.commandPool, &allInOne.pGraphicQueue[GRAPHIC_2D_QUEUE], &singleCommandBuffer);
         }
         return false;
     }
 
-    VkImageMemoryBarrier barrier = {};
+    VkImageMemoryBarrier barrier = {0};
     _setImageMemoryBarrier(NULL, srcAccessMask, dstAccessMask, oldLayout, newLayout, VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, image, aspectMask, 0, 1, baseArrayLayer, layerCount, &barrier);
 
     if (commandBuffer == NULL)
     {
         vkCmdPipelineBarrier(singleCommandBuffer, sourceStage, destinationStage, 0, 0, NULL, 0, NULL, 1, &barrier);
 
-        result |= endSingleTimeCommands(allInOne.graphicCommandPool, getGraphic2dQueue(), &singleCommandBuffer);
+        result |= endSingleTimeCommands(allInOne.graphic2dCommandPool.commandPool, &allInOne.pGraphicQueue[GRAPHIC_2D_QUEUE], &singleCommandBuffer);
     }
     else
     {

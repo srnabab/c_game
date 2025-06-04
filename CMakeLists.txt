@@ -4,6 +4,7 @@ project(game VERSION 0.1.0 LANGUAGES C)
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_STANDARD_REQUIRED TRUE)
 set(CMAKE_MAKE_PROGRAM )
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # set(CMAKE_SYSTEM_NAME Windows)
 # set(CMAKE_SYSTEM_NAME Linux)
@@ -58,7 +59,6 @@ add_executable(game ${SRC_ROOT}/main.c
                     ${SRC_ROOT}/texture_generate/textureG.c
                     ${SRC_ROOT}/G_setup.c
                     ${SRC_ROOT}/G_render.c
-                    # ${SRC_ROOT}/G_signal_trans.c
                     ${SRC_ROOT}/G_update.c
                     ${SRC_ROOT}/G_game.c
                     ${SRC_ROOT}/G_file/G_file.c
@@ -66,6 +66,7 @@ add_executable(game ${SRC_ROOT}/main.c
                     ${SRC_ROOT}/G_graphic.c
                     ${SRC_ROOT}/version.rc
                     ${SRC_ROOT}/G_log.c
+                    ${SRC_ROOT}/G_allocator.c
                     ${SRC_ROOT}/G_music.c
                     ${SRC_ROOT}/G_world.c
                     ${SRC_ROOT}/G_list.c
@@ -78,12 +79,12 @@ add_executable(game ${SRC_ROOT}/main.c
                     ${SRC_ROOT}/G_scene.c
                     ${SRC_ROOT}/G_texture.c
                     ${SRC_ROOT}/G_image.c
+                    ${SRC_ROOT}/G_VkCommandPool.c
                     ${SRC_ROOT}/G_TileMap/G_TileSet.c
                     ${SRC_ROOT}/G_staticModel.c
                     ${SRC_ROOT}/G_map.c
                     ${SRC_ROOT}/G_entity.c
                     ${SRC_ROOT}/G_buffer.c
-                    ${SRC_ROOT}/G_allocator.c
                     ${SRC_ROOT}/G_test.c
                     ${SRC_ROOT}/SDL_complement.c
                     ${SRC_ROOT}/spirv_reflect/spirv_reflect.c
@@ -125,8 +126,6 @@ add_executable(game ${SRC_ROOT}/main.c
 target_include_directories(game PUBLIC ${INCLUDE_ROOT}
                             "${INCLUDE_ROOT}/cglm"
                             "${INCLUDE_ROOT}/vk_code_h"
-                            # "${INCLUDE_ROOT}/GLFW"
-                            # "${INCLUDE_ROOT}/libpng"
                             "${INCLUDE_ROOT}/SDL3"
                             "${INCLUDE_ROOT}/SDL3_mixer"
                             "${INCLUDE_ROOT}/SDL3_image"
@@ -154,7 +153,11 @@ target_link_libraries(game PRIVATE
 
 # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mwindows")
 
-target_compile_options(game PUBLIC -static-libgcc -gdwarf-2 -g -O0 -Wall)
+# target_compile_options(game PUBLIC -static-libgcc -gdwarf-2 -g -DDEBUG -O0 -Wall -Werror -Wpedantic -Wconversion -Wsign-conversion -Wfloat-conversion -Wdouble-promotion
+#  -Wcast-qual -Wnull-dereference -Winit-self -Wmaybe-uninitialized -Wstrict-aliasing=2 -Wshadow -Wformat=2 -Wundef -Wmissing-declarations -Wmissing-prototypes
+#  -Wredundant-decls -Wpacked-bitfield-compat -Wuseless-cast -Wlogical-op -Warray-bounds=2 -Wstack-usage=8192 -Winline -std=c17)
+# target_compile_options(game PUBLIC -static-libgcc -gdwarf-2 -g -DDEBUG -O0 -Wall -Werror -Wpedantic -std=c17)
+target_compile_options(game PUBLIC -static-libgcc -gdwarf-2 -g -DDEBUG -O0 -Wall -Wpedantic -std=c17)
 # target_compile_options(game PUBLIC -fsanitize=address -fno-omit-frame-pointer -g)
 # target_link_options(game PRIVATE -fsanitize=address)
 # target_compile_options(game PUBLIC -O0 -Wall -Wextra)

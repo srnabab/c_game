@@ -9,7 +9,7 @@ extern VK_ALL allInOne;
 
 static VkResult _beginCommandBuffer(VkCommandBuffer commandBuffer, void * pNext, VkCommandBufferUsageFlags flags, VkCommandBufferInheritanceInfo * pInheritanceInfo)
 {
-    VkCommandBufferBeginInfo beginInfo = {};
+    VkCommandBufferBeginInfo beginInfo = {0};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     beginInfo.pNext = pNext;
     beginInfo.flags = flags;
@@ -27,7 +27,7 @@ VkResult beginSecondaryCommandBuffer(VkCommandBuffer commandBuffer, VkCommandBuf
 }
 void setViewport(VkExtent2D extent2D, VkCommandBuffer commandBuffer)
 {
-    VkViewport viewport = {};
+    VkViewport viewport = {0};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
     viewport.width = (float)extent2D.width;
@@ -39,7 +39,7 @@ void setViewport(VkExtent2D extent2D, VkCommandBuffer commandBuffer)
 }
 void setScissor(VkExtent2D extent2D, VkCommandBuffer commandBuffer)
 {
-    VkRect2D scissor = {};
+    VkRect2D scissor = {0};
     scissor.offset = (VkOffset2D){0, 0};
     scissor.extent = extent2D;
 

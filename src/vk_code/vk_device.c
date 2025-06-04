@@ -336,22 +336,22 @@ void createLogicalDevice(void)
         "VK_LAYER_KHRONOS_validation"
     };
 
-    VkPhysicalDeviceTimelineSemaphoreFeatures timelineSemaphoreFeatures = {};
+    VkPhysicalDeviceTimelineSemaphoreFeatures timelineSemaphoreFeatures = {0};
     timelineSemaphoreFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES;
     timelineSemaphoreFeatures.pNext = NULL;
     timelineSemaphoreFeatures.timelineSemaphore = VK_TRUE;
 
-    VkPhysicalDeviceFeatures deviceFeatures = {};
+    VkPhysicalDeviceFeatures deviceFeatures = {0};
     deviceFeatures.samplerAnisotropy = VK_TRUE;
     deviceFeatures.independentBlend = VK_TRUE;
     deviceFeatures.wideLines = VK_TRUE;
 
-    VkPhysicalDeviceFeatures2 deviceFeatures2 = {};
+    VkPhysicalDeviceFeatures2 deviceFeatures2 = {0};
     deviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
     deviceFeatures2.pNext = &timelineSemaphoreFeatures;
     deviceFeatures2.features = deviceFeatures;
 
-    VkDeviceCreateInfo createInfo = {};
+    VkDeviceCreateInfo createInfo = {0};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
     createInfo.pNext = &deviceFeatures2;
     createInfo.flags = 0;
