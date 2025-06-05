@@ -17,7 +17,11 @@ void G_CreateThreadCommandPool(G_CommandPool * pGraphicCommandPool, G_CommandPoo
     if (pThreadCommandPool == NULL) return;
 
     if (pGraphicCommandPool) createCommandBuffers(VK_COMMAND_BUFFER_LEVEL_PRIMARY, pGraphicCommandPool->commandPool, pThreadCommandPool->pGraphicCommandBuffer, MAX_FRAMES_IN_FLIGHT);
-    if (pComputeComandPool) createCommandBuffers(VK_COMMAND_BUFFER_LEVEL_PRIMARY, pComputeComandPool->commandPool, pThreadCommandPool->pComputeCommandBuffer, MAX_FRAMES_IN_FLIGHT);
+    if (pComputeComandPool) 
+    {
+        createCommandBuffers(VK_COMMAND_BUFFER_LEVEL_PRIMARY, pComputeComandPool->commandPool, pThreadCommandPool->pComputeCommandBuffer, MAX_FRAMES_IN_FLIGHT);
+        createNormalFences(pThreadCommandPool->pComputeFence, MAX_FRAMES_IN_FLIGHT);
+    }
 
     pThreadCommandPool->pGraphicCommandPool = pGraphicCommandPool;
     pThreadCommandPool->pComputeCommandPool = pComputeComandPool;
@@ -30,7 +34,11 @@ void G_CreateThreadCommandPool(G_CommandPool * pGraphicCommandPool, G_CommandPoo
 void G_DestroyThreadCommandPool(G_ThreadCommandPool * pThreadCommandPool)
 {
     if (pThreadCommandPool->pGraphicCommandPool) vkFreeCommandBuffers(allInOne.device, pThreadCommandPool->pGraphicCommandPool->commandPool, MAX_FRAMES_IN_FLIGHT, pThreadCommandPool->pGraphicCommandBuffer);
-    if (pThreadCommandPool->pComputeCommandPool) vkFreeCommandBuffers(allInOne.device, pThreadCommandPool->pComputeCommandPool->commandPool, MAX_FRAMES_IN_FLIGHT, pThreadCommandPool->pComputeCommandBuffer);
+    if (pThreadCommandPool->pComputeCommandPool) 
+    {
+        vkFreeCommandBuffers(allInOne.device, pThreadCommandPool->pComputeCommandPool->commandPool, MAX_FRAMES_IN_FLIGHT, pThreadCommandPool->pComputeCommandBuffer);
+        destroyFence(pThreadCommandPool->pComputeFence, MAX_FRAMES_IN_FLIGHT);
+    }
 
     destroyFence(pThreadCommandPool->pFence, MAX_FRAMES_IN_FLIGHT);
     destroySemaphore(pThreadCommandPool->pSemaphore, MAX_FRAMES_IN_FLIGHT);

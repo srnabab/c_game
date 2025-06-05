@@ -20,6 +20,7 @@ struct _G_ThreadCommandPool
     G_CommandPool * pComputeCommandPool;
     VkCommandBuffer pComputeCommandBuffer[MAX_FRAMES_IN_FLIGHT];
     VkFence pFence[MAX_FRAMES_IN_FLIGHT];
+    VkFence pComputeFence[MAX_FRAMES_IN_FLIGHT];
     VkSemaphore pSemaphore[MAX_FRAMES_IN_FLIGHT];
     VkSemaphore pThreadDoneSemaphore[MAX_FRAMES_IN_FLIGHT];
     SDL_Mutex * mutex;

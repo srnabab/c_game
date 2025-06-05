@@ -418,6 +418,7 @@ static void draw2d(void * data)
     VkCommandBuffer graphicCommandBuffer = pThreadCommandPool->pGraphicCommandBuffer[currentFrame];
     VkCommandBuffer computeCommandBuffer = pThreadCommandPool->pComputeCommandBuffer[currentFrame];
     VkFence * pFence = pThreadCommandPool->pFence + currentFrame;
+    VkFence * pComputeFence = &pThreadCommandPool->pComputeFence[currentFrame];
     VkSemaphore * timelineSemaphore = pThreadCommandPool->pSemaphore + currentFrame;
     VkSemaphore * pDoneSemaphore = pThreadCommandPool->pThreadDoneSemaphore + currentFrame;
     VkTimelineSemaphoreSubmitInfo timelineSemaphoreInfo = {0};
@@ -429,7 +430,7 @@ static void draw2d(void * data)
     signalValue[0] = waitValue[0] + 1;
 
     // particle
-    resultVulkan(vkWaitForFences(allInOne.device, 1, pFence, VK_TRUE, UINT64_MAX), 0);
+    resultVulkan(vkWaitForFences(allInOne.device, 1, pComputeFence, VK_TRUE, UINT64_MAX), 0);
 
     vkResetCommandBuffer(computeCommandBuffer, 0);
     recordComputeCommandBuffer(currentFrame, false, computeCommandBuffer);
@@ -443,8 +444,8 @@ static void draw2d(void * data)
     VkSubmitInfo particleSubmitInfo = {0};
     setSubmitInfo(&timelineSemaphoreInfo, 0, NULL, NULL, 1, &computeCommandBuffer, 1, timelineSemaphore, &particleSubmitInfo);
     // SDL_WaitSemaphore(allSync.vertexSemaphore);
-    vkResetFences(allInOne.device, 1, pFence);
-    G_vkQueueSubmit(&allInOne.pComputeQueue[COMPUTE_QUEUE], 1, &particleSubmitInfo, *pFence);
+    vkResetFences(allInOne.device, 1, pComputeFence);
+    G_vkQueueSubmit(&allInOne.pComputeQueue[COMPUTE_QUEUE], 1, &particleSubmitInfo, *pComputeFence);
     signalValue[0]++;
 
     // 2d
