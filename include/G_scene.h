@@ -7,21 +7,27 @@
 
 enum _Scene
 {
-    First_Scene,
+    First_Scene = 1,
     Pause_Scene,
     Menu_Scene,
+    MAX_Scene = 0x7FFFFFFF
 };
 typedef enum _Scene Scene;
 
-struct _Scene_Pack
+struct _SceneParameter
 {
     Scene scene;
-    const char* backgroundMusic;
+    Uint32 draw3d;
+    Uint32 draw2d;
+    Uint32 SSGI;
+    struct _SceneParameter * next;
 };
-typedef struct _Scene_Pack Scene_Pack;
+typedef struct _SceneParameter SceneParameter;
 
-extern bool SDLCALL cleanScene(Scene preScene);
-extern bool SDLCALL loadScene(Scene scene);
+extern bool SDLCALL registerScene(Scene scene, bool draw3d, bool draw2d, bool SSGI);
+extern SceneParameter * SDLCALL getSceneParameter(Scene scene);
+extern bool SDLCALL deleteScene(Scene scene);
+extern void SDLCALL deleteAllScene(void);
 
 #include "SDL3/SDL_close_code.h"
 

@@ -273,6 +273,14 @@ bool getImageFlags(VkImageLayout oldLayout, VkImageLayout newLayout, VkFormat fo
         sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
         destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
     }
+    else if (oldLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+    {
+        srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_SHADER_READ_BIT;
+        dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+        sourceStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    }
     else 
     {
         print("unsupported layout transition!");

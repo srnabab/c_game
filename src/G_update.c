@@ -207,6 +207,8 @@ int update(void * arg)
     // Uint32 vertexStart = 0;
     Uint32 vertexEnd = allInOne.vertices2DCount;
 
+    registerScene(First_Scene, false, true, false);
+
     // Uint32 rowCount = 0;
     // Uint32 colCount = 0;
 
@@ -582,5 +584,6 @@ int update(void * arg)
 
         // SDL_SignalSemaphore(allSync.signalSemaphore);
     }
+    deleteAllScene();
     return 0;
 }

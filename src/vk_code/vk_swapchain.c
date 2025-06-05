@@ -58,8 +58,6 @@ void getPresentModes(VkPresentModeKHR * pPresentMode)
         *pPresentMode = VK_PRESENT_MODE_FIFO_KHR;
     }
 
-    *pPresentMode = VK_PRESENT_MODE_FIFO_KHR;
-
     G_free(presentModes);
 }
 void getSurfaceCapabilities(VkSurfaceKHR surface, VkSurfaceCapabilitiesKHR * pSurfaceCapabilities)

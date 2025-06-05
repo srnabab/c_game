@@ -17,8 +17,7 @@
 #include "G_log.h"
 #include "G_struct.h"
 #include "G_map.h"
-#include "vulkan_core.h"
-#include <string.h>
+#include "G_scene.h"
 
 extern VK_ALL allInOne;
 extern G_SYNC allSync;
@@ -444,9 +443,12 @@ static void draw2d(void * data)
     VkSubmitInfo particleSubmitInfo = {0};
     setSubmitInfo(&timelineSemaphoreInfo, 0, NULL, NULL, 1, &computeCommandBuffer, 1, timelineSemaphore, &particleSubmitInfo);
     // SDL_WaitSemaphore(allSync.vertexSemaphore);
-    G_vkQueueSubmit(&allInOne.pComputeQueue[COMPUTE_QUEUE], 1, &particleSubmitInfo, NULL);
+    vkResetFences(allInOne.device, 1, pFence);
+    G_vkQueueSubmit(&allInOne.pComputeQueue[COMPUTE_QUEUE], 1, &particleSubmitInfo, *pFence);
+    signalValue[0]++;
 
     // 2d
+    resultVulkan(vkWaitForFences(allInOne.device, 1, pFence, VK_TRUE, UINT64_MAX), 0);
 
     vkResetCommandBuffer(graphicCommandBuffer, 0);
     recordCommandBuffer2D(0, currentFrame, graphicCommandBuffer);
@@ -495,12 +497,21 @@ static void combine(void * data)
     recordCommandBufferCombine(imageIndex_3D, currentFrame, graphicCommandBuffer);
     resultVulkan(vkEndCommandBuffer(graphicCommandBuffer), 0);
 
-    VkSemaphore combineWaitSemaphores[] = {allInOne.pImageAvailableSemaphore[currentFrame], *semaphore3d, *semaphore2d};
+    Uint32 waitSemaphoreCount = 3;
+
+    VkSemaphore combineWaitSemaphores[3] = {allInOne.pImageAvailableSemaphore[currentFrame], *semaphore2d, NULL};
+
+    if (semaphore3d) 
+    {
+        combineWaitSemaphores[2] = *semaphore3d;
+    }
+    else waitSemaphoreCount--;
+
     VkPipelineStageFlags combineWaitStage[] = {VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT};
     VkSemaphore graphic2dSignalSemaphores[] = {allInOne.pRenderFinishedSemaphore[currentFrame]};
 
     VkSubmitInfo submitInfo = {0};
-    setSubmitInfo(NULL, 3, combineWaitSemaphores, combineWaitStage, 1, &graphicCommandBuffer, 1, graphic2dSignalSemaphores, &submitInfo);
+    setSubmitInfo(NULL, waitSemaphoreCount, combineWaitSemaphores, combineWaitStage, 1, &graphicCommandBuffer, 1, graphic2dSignalSemaphores, &submitInfo);
     resultVulkan(vkResetFences(allInOne.device, 1, pFence), 0);
     resultVulkan(G_vkQueueSubmit(&allInOne.pGraphicQueue[GRAPHIC_2D_QUEUE], 1, &submitInfo, *pFence), 0);
     *imageIndex = imageIndex_3D;
@@ -509,6 +520,8 @@ static void drawFirstScene(Uint32 currentFrame, Uint32 width, Uint32 height, boo
 {
     Uint32 imageIndex = 0;
     int * taskIndex1, *taskIndex2, *taskIndex3;
+
+    SceneParameter * scenePack = getSceneParameter(First_Scene);
 
     bool graphicCopy, computeCopy, transferCopy;
     graphicCopy = computeCopy = transferCopy = false;
@@ -543,11 +556,15 @@ static void drawFirstScene(Uint32 currentFrame, Uint32 width, Uint32 height, boo
     task.arg = pData1;
     task.executeFunc = draw3d;
     task.func = NULL;
-    taskIndex1 = G_AddTask(pThreadPool, 1, 1, &task);
+    taskIndex1 = NULL;
+    if (scenePack->draw3d) taskIndex1 = G_AddTask(pThreadPool, 1, 1, &task);
+    else pData3[2] = NULL;
 
     task.executeFunc = draw2d;
     task.arg = pData2;
-    taskIndex2 = G_AddTask(pThreadPool, 1, 1, &task);
+    taskIndex2 = NULL;
+    if (scenePack->draw2d) taskIndex2 = G_AddTask(pThreadPool, 1, 1, &task);
+    else pData3[3] = NULL;
 
     G_WaitTask(pThreadPool, taskIndex1);
     G_WaitTask(pThreadPool, taskIndex2);

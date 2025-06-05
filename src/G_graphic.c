@@ -318,7 +318,7 @@ void initVulkan(void)
     loadDepthResource(TEXTURE_2D_DEPTH, true);
     loadImageResource(VK_FORMAT_R16_SFLOAT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, TEXTURE_SHADOW_MAP, NULL);
     loadNormalResource(TEXTURE_NORMAL);
-    loadImageResource(swapchainFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_UNDEFINED, TEXTURE_MODEL_COLOR, NULL);
+    loadImageResource(swapchainFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, TEXTURE_MODEL_COLOR, NULL);
     loadImageResource(swapchainFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, TEXTURE_2D_COLOR, NULL);
 
     G_Texture_P * modelDepthTexutre = getTexture(TEXTURE_MODEL_DEPTH);
@@ -432,10 +432,10 @@ void initVulkan(void)
 
     VkDescriptorPoolSize graphicDescriptorPoolSize[2];
     graphicDescriptorPoolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    graphicDescriptorPoolSize[0].descriptorCount = 32;
+    graphicDescriptorPoolSize[0].descriptorCount = 50;
     graphicDescriptorPoolSize[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    graphicDescriptorPoolSize[1].descriptorCount = 34;
-    createDescriptorPool(&allInOne.device, 2, graphicDescriptorPoolSize, 34, &graphicDescriptorPool);
+    graphicDescriptorPoolSize[1].descriptorCount = 50;
+    createDescriptorPool(&allInOne.device, 2, graphicDescriptorPoolSize, 50, &graphicDescriptorPool);
     CO_addDescriptorPool(graphicDescriptorPool);// CO
 
     //graphic shader
