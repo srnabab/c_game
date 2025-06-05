@@ -8,6 +8,7 @@
 enum _Scene
 {
     First_Scene = 1,
+    Secone_Scene,
     Pause_Scene,
     Menu_Scene,
     MAX_Scene = 0x7FFFFFFF

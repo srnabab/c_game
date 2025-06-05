@@ -517,12 +517,12 @@ static void combine(void * data)
     resultVulkan(G_vkQueueSubmit(&allInOne.pGraphicQueue[GRAPHIC_2D_QUEUE], 1, &submitInfo, *pFence), 0);
     *imageIndex = imageIndex_3D;
 }
-static void drawFirstScene(Uint32 currentFrame, Uint32 width, Uint32 height, bool bottomMoved, Uint8 copy, G_Thread_Pool * pThreadPool)
+static void drawFirstScene(Scene scene, Uint32 currentFrame, Uint32 width, Uint32 height, bool bottomMoved, Uint8 copy, G_Thread_Pool * pThreadPool)
 {
     Uint32 imageIndex = 0;
     int * taskIndex1, *taskIndex2, *taskIndex3;
 
-    SceneParameter * scenePack = getSceneParameter(First_Scene);
+    SceneParameter * scenePack = getSceneParameter(scene);
 
     bool graphicCopy, computeCopy, transferCopy;
     graphicCopy = computeCopy = transferCopy = false;
@@ -587,5 +587,5 @@ static void drawFirstScene(Uint32 currentFrame, Uint32 width, Uint32 height, boo
 void drawFrame(Scene scene, Uint32 currentFrame, Uint32 width, Uint32 height, bool bottomMoved, Uint8 copy, G_Thread_Pool * pThreadPool)
 {
 
-    drawFirstScene(currentFrame, width, height, bottomMoved, copy, pThreadPool);
+    drawFirstScene(scene, currentFrame, width, height, bottomMoved, copy, pThreadPool);
 }

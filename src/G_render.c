@@ -10,6 +10,7 @@ extern VK_ALL allInOne;
 extern G_SYNC allSync;
 extern bool game_is_running;
 extern bool resolutionChanged;
+extern Scene scene;
 
 static void recordBufferCopyExecute(void * arg)
 {
@@ -42,7 +43,7 @@ int render(void * arg)
 
         if (resolutionChanged)
         {
-            recreateSwapchain(currentFrame);
+            recreateSwapchain(currentFrame); 
             resolutionChanged = false;
         }
 
@@ -55,7 +56,7 @@ int render(void * arg)
         // G_WaitTask(&threadPool, threadIndex);
         copy = recordBufferCopy(currentFrame);
 
-        drawFrame(First_Scene, currentFrame, allInOne.extent2D.width, allInOne.extent2D.height, false, copy, &threadPool);
+        drawFrame(scene, currentFrame, allInOne.extent2D.width, allInOne.extent2D.height, false, copy, &threadPool);
 
         allInOne.currentFrame = (allInOne.currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
         currentFrame = allInOne.currentFrame;

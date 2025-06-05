@@ -14,6 +14,7 @@
 #include "G_pop_window.h"
 #include "G_TileMap/G_TileSet.h"
 
+#include "SDL_scancode.h"
 #include "vk_code_h/vk_all_struct.h"
 #include "vk_code_h/vk_move.h"
 #include "vk_code_h/vk_copy.h"
@@ -21,6 +22,7 @@
 #include "SDL3/SDL_keyboard.h"
 #include "SDL3/SDL_timer.h"
 #include "SDL3_mixer/SDL_mixer.h"
+#include <stdbool.h>
 
 extern VK_ALL allInOne;
 extern G_SYNC allSync;
@@ -34,7 +36,7 @@ extern G_Stack ballStack;
 extern vec2 UVs[MAX_CHARACTERS][FOUR_POINT];
 
 static Scene preScene = First_Scene;
-static Scene scene = First_Scene;
+Scene scene = First_Scene;
 
 extern float mouse_x;
 extern float mouse_y;
@@ -71,6 +73,13 @@ static void processKeys(void)
             preScene = scene;
             scene = Pause_Scene;
         }
+    }
+
+    if (!keys[SDL_SCANCODE_SPACE] && preKeys[SDL_SCANCODE_SPACE])
+    {
+        preKeys[SDL_SCANCODE_SPACE] = false;
+
+        scene = Secone_Scene;
     }
 
     if (keys[SDL_SCANCODE_ESCAPE])
@@ -208,6 +217,7 @@ int update(void * arg)
     Uint32 vertexEnd = allInOne.vertices2DCount;
 
     registerScene(First_Scene, false, true, false);
+    registerScene(Secone_Scene, true, true, true);
 
     // Uint32 rowCount = 0;
     // Uint32 colCount = 0;
@@ -386,10 +396,7 @@ int update(void * arg)
         glm_ortho_vulkan(-aspect * VIEW_SCALE, aspect * VIEW_SCALE, -aspect2 * VIEW_SCALE, aspect2 * VIEW_SCALE, -0.001f, -100.0f, pUIUbo->proj);
 
         memcpy(allInOne.pShapeConstants, &shapePushConstants, sizeof(ShapeConstants));
-        // memcpy(allInOne.ppGraphicUniformBufferMapped[currentFrame], pGraphicUbo, sizeof(UniformBufferObject));
         bufferMemcpy(allInOne.pUIUniformBuffer[currentFrame], 0, pUIUbo, sizeof(UniformBufferObject));
-        // memcpy(allInOne.ppUIUniformBufferMapped[currentFrame], pUIUbo, sizeof(UniformBufferObject));
-        // SDL_SignalSemaphore(allSync.vertexSemaphore);
 
         static int id_click = 0;
         if (leftButtonClickedTimes)
@@ -427,7 +434,7 @@ int update(void * arg)
             // SDL_UnlockMutex(allSync.updateMutex);
         }
 
-        if (scene == First_Scene)
+        if (scene == First_Scene || scene == Secone_Scene)
         {
             if (!Mix_PlayingMusic() && !playedMusic)
             {
@@ -571,17 +578,17 @@ int update(void * arg)
             //print("delta time:%f", delta_time);
             update_frame++;
             
-            SDL_WaitSemaphore(allSync.signalSemaphore);
-            draw_done = true;
-
-            // SDL_Delay(16);
-
-            SDL_SignalSemaphore(allSync.updateSemaphore);
-            SDL_SignalSemaphore(allSync.renderSemaphore);
-
-            draw_done = false;
         }
 
+        SDL_WaitSemaphore(allSync.signalSemaphore);
+        draw_done = true;
+
+        // SDL_Delay(16);
+
+        SDL_SignalSemaphore(allSync.updateSemaphore);
+        SDL_SignalSemaphore(allSync.renderSemaphore);
+
+        draw_done = false;
         // SDL_SignalSemaphore(allSync.signalSemaphore);
     }
     deleteAllScene();
