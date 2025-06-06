@@ -2,7 +2,7 @@
 #include "G_log.h"
 #include "G_allocator.h"
 #include "SDL3/SDL_timer.h"
-#include "SDL_stdinc.h"
+#include "SDL_mutex.h"
 
 static int threadFunc(void * data)
 {
@@ -26,14 +26,20 @@ static int threadFunc(void * data)
         if (task.canRun) 
         {
             task.executeFunc(&task);
-            
         }
+
+        pThreadPool->tasks[index].canRun = false;
 
         SDL_LockMutex(pThreadPool->ThreadPoolMutex);
 
-        pThreadPool->tasks[index].canRun = false;
         pThreadPool->leisureThread[index] = true;
         running = pThreadPool->running;
+
+        if (pThreadPool->needThread)
+        {
+            SDL_SignalSemaphore(pThreadPool->pWaitFreeThreadSemaphore);
+            pThreadPool->needThread = false;
+        }
 
         SDL_UnlockMutex(pThreadPool->ThreadPoolMutex);
 
@@ -45,10 +51,10 @@ static int threadFunc(void * data)
 }
 static int processTrace(void * data)
 {
-    G_Thread_Pool * pThreadPool = ((Thread_Func_Arg*)data)->pThreadPool;
-    bool running = pThreadPool->running;
-    G_Queue * pQueue = &pThreadPool->traceQueue; 
     Trace innerTrace;
+    G_Thread_Pool * pThreadPool = ((Thread_Func_Arg*)data)->pThreadPool;
+    G_Queue * pQueue = &pThreadPool->traceQueue; 
+    bool running = pThreadPool->running;
     bool res;
     int i;
 
@@ -142,6 +148,9 @@ bool createThreadPool(G_Thread_Pool * pThreadPool, Uint32 threadCount, const cha
     Thread_Func_Arg data = {0};
     data.pThreadPool = pThreadPool;
 
+    pThreadPool->needThread = false;
+    pThreadPool->pWaitFreeThreadSemaphore = SDL_CreateSemaphore(0);
+
     char buffer[16] = {0};
     SDL_strlcpy(buffer, name, 14);
     int len = SDL_strlen(buffer);
@@ -167,7 +176,6 @@ bool createThreadPool(G_Thread_Pool * pThreadPool, Uint32 threadCount, const cha
 static int getActiveThread(G_Thread_Pool * pThreadPool)
 {
     SDL_LockMutex(pThreadPool->ThreadPoolMutex);
-
     for (int i = 0;i < pThreadPool->threadPoolSize;i++)
     {
         if (pThreadPool->leisureThread[i]) 
@@ -178,8 +186,8 @@ static int getActiveThread(G_Thread_Pool * pThreadPool)
         }
     }
 
+    pThreadPool->needThread = true;
     SDL_UnlockMutex(pThreadPool->ThreadPoolMutex);
-
     return -1;
 }
 static void splitTask(int maxThreadCount, int itemCount, int minRange, int * pThreadsNeed, Range * pTaskRange)
@@ -290,6 +298,8 @@ int * G_AddTask(G_Thread_Pool * pThreadPool, int itemCount, int minRange, G_Task
         tempTrace.threadIndices[i] = getActiveThread(pThreadPool);
         while (tempTrace.threadIndices[i] == -1)
         {
+            SDL_WaitSemaphore(pThreadPool->pWaitFreeThreadSemaphore);
+
             tempTrace.threadIndices[i] = getActiveThread(pThreadPool);
         }
 
@@ -329,6 +339,9 @@ void destroyThreadPool(G_Thread_Pool * pThreadPool)
     Uint32 size = pThreadPool->threadPoolSize;
     SDL_UnlockMutex(pThreadPool->ThreadPoolMutex);
 
+    SDL_SignalSemaphore(pThreadPool->pWaitFreeThreadSemaphore);
+    pThreadPool->needThread = false;
+
     for (int i = 0;i < size;i++)
     {
         SDL_SignalSemaphore(pThreadPool->pThreadSeamphore[i]);
@@ -352,6 +365,8 @@ void destroyThreadPool(G_Thread_Pool * pThreadPool)
     G_free(pThreadPool->doneWatch);
 
     G_deInitQueue(&pThreadPool->traceQueue);
+
+    SDL_DestroySemaphore(pThreadPool->pWaitFreeThreadSemaphore);
 
     SDL_UnlockMutex(pThreadPool->ThreadPoolMutex);
 

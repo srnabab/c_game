@@ -54,18 +54,6 @@ PathType pathCompare(char * buffer)
     {
         return CombineVertShader;
     }
-    else if ((SDL_strcmp(buffer, "[BottomGlb]") == 0))
-    {
-        return BottomGlb;
-    }
-    else if ((SDL_strcmp(buffer, "[TestMtl]") == 0))
-    {
-        return TestMtl;
-    }
-    else if ((SDL_strcmp(buffer, "[TestObj]") == 0))
-    {
-        return TestObj;
-    }
     else if ((SDL_strcmp(buffer, "[Model3dVertShader]") == 0))
     {
         return Model3dVertShader;
@@ -74,10 +62,6 @@ PathType pathCompare(char * buffer)
     {
         return MainFontPng;
     }
-    else if ((SDL_strcmp(buffer, "[Viking_room_CopyPng]") == 0))
-    {
-        return Viking_room_CopyPng;
-    }
     else if ((SDL_strcmp(buffer, "[ShadowVertShader]") == 0))
     {
         return ShadowVertShader;
@@ -85,14 +69,6 @@ PathType pathCompare(char * buffer)
     else if ((SDL_strcmp(buffer, "[ShapeVertShader]") == 0))
     {
         return ShapeVertShader;
-    }
-    else if ((SDL_strcmp(buffer, "[Cornell_boxObj]") == 0))
-    {
-        return Cornell_boxObj;
-    }
-    else if ((SDL_strcmp(buffer, "[Viking_roomObj]") == 0))
-    {
-        return Viking_roomObj;
     }
     else if ((SDL_strcmp(buffer, "[BoxObj]") == 0))
     {
@@ -141,10 +117,6 @@ PathType pathCompare(char * buffer)
     else if ((SDL_strcmp(buffer, "[MainBackgroundPng]") == 0))
     {
         return MainBackgroundPng;
-    }
-    else if ((SDL_strcmp(buffer, "[Viking_roomPng]") == 0))
-    {
-        return Viking_roomPng;
     }
     else if ((SDL_strcmp(buffer, "[EmptyFragShader]") == 0))
     {

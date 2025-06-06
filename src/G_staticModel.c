@@ -37,6 +37,7 @@ bool createStaticModelPool(G_StaticModelPool * pModelPool, G_BufferPool * pBuffe
 G_StaticModel * loadStaticModel(G_StaticModelPool * pModelPool, Uint32 instanceCount, PathType modelPath, PathType texturePath, Vertex3323 * vertices, Uint32 * pVertexIndex, Uint32 * indices, Uint32 * pIndexIndex\
 , VkFormat textureFormat, VkImageAspectFlags flags, const char * innerName, G_DescriptorSets * pDescriptorSet, void * data, bool draw)
 {
+#warning find if have same name first
     SDL_LockMutex(pModelPool->mutex);
 
     bool res;
@@ -118,12 +119,6 @@ bool addModelMatrix(int32_t x, int32_t y, int32_t z, float scale_x, float scale_
     Uint32 modelCount = pModelPool->modelCount;
     Uint32 totalMatrixCount;
     G_StaticModel * pModel;
-    // mat4 translateMatrix;
-    // mat4 rotateMatrix = {{-1.0f, 0.0f, 0.0f, 0.0f},
-    //                      {0.0f, 0.0f, M_SQRT2, 0.0f},
-    //                      {0.0f, M_SQRT2, 0.0f, 0.0f},
-    //                      {0.0f, 0.0f, 0.0f, 1.0f}};
-    // mat4 scaleMatrix;
     vec3 tempVec3;
     tempVec3[0] = x * METER_PER_PIXEL;
     tempVec3[1] = y * METER_PER_PIXEL;

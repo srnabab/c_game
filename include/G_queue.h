@@ -11,9 +11,6 @@ typedef bool (*QueueOp)(struct _G_Queue *, void * data);
 struct _G_Queue
 {
     void * data;
-    int32_t capacity;
-    int32_t head;
-    int32_t tail;
     size_t dataSize;
 
     SDL_Mutex * mutex;
@@ -21,6 +18,10 @@ struct _G_Queue
     QueueOp getHead;
     QueueOp addHead;
     QueueOp getTail;
+    
+    int32_t capacity;
+    int32_t head;
+    int32_t tail;
 };
 typedef struct _G_Queue G_Queue;
 

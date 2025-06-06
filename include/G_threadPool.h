@@ -24,9 +24,9 @@ typedef struct _Range Range;
 
 struct _Trace
 {
-    int threadUsedCount;
     int * threadIndices;
     int * taskAllDone;
+    int threadUsedCount;
 };
 typedef struct _Trace Trace;
 
@@ -37,13 +37,13 @@ struct _G_Task
     void * arg;
 
     // private
-    bool canRun;
-
-    // private
     Range indexRange;
 
     // private
     int threadIndex;
+
+    // private
+    bool canRun;
 };
 typedef struct _G_Task G_Task;
 
@@ -55,6 +55,8 @@ struct _G_Thread_Pool
     SDL_Semaphore ** pThreadSeamphore;
     // private
     SDL_Semaphore ** pWaitTaskSemaphore;
+    // private
+    SDL_Semaphore * pWaitFreeThreadSemaphore;
     // private
     bool * leisureThread;
 
@@ -68,19 +70,21 @@ struct _G_Thread_Pool
     int * doneWatch;
 
     // private
+    int threadPoolSize;
+    // private
     bool expandable;
     // private
     bool running;
     // private
-    int threadPoolSize;
+    bool needThread;
 };
 typedef struct _G_Thread_Pool G_Thread_Pool;
 
 struct _Thread_Func_Arg
 {
     G_Thread_Pool * pThreadPool;
-    Uint32 index;
     SDL_Semaphore * tempSemaphore;
+    Uint32 index;
 };
 typedef struct _Thread_Func_Arg Thread_Func_Arg;
 

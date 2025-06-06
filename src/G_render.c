@@ -30,7 +30,7 @@ int render(void * arg)
     Uint8 copy = 0;
     int * threadIndex = NULL;
     void * datas[4];
-    copy = createThreadPool(&threadPool, 3, "renderTask", false);
+    copy = createThreadPool(&threadPool, 2, "renderTask", false);
     if (copy == false) 
     {
         game_is_running = false;
@@ -47,13 +47,6 @@ int render(void * arg)
             resolutionChanged = false;
         }
 
-        // datas[0] = &currentFrame;
-        // datas[1] = &copy;
-        // task.arg = datas;
-        // task.func = recordBufferCopy;
-        // task.executeFunc = recordBufferCopyExecute;
-        // threadIndex = G_AddTask(&threadPool, 1, 1, &task);
-        // G_WaitTask(&threadPool, threadIndex);
         copy = recordBufferCopy(currentFrame);
 
         drawFrame(scene, currentFrame, allInOne.extent2D.width, allInOne.extent2D.height, false, copy, &threadPool);

@@ -190,7 +190,7 @@ int update(void * arg)
     initEntity(&mPoint, 0.0f, 0.0f, 87.0f);
     initEntity(&camera, 0.0f, 0.0f, 6.4f);
     initEntity(&mouse, 0.0f, 0.0f, 0.0f);
-    
+
     bool draw_done = false;
     bool playedMusic = false;
     bool vertex2dChanged1, vertex2dChanged2 ;
