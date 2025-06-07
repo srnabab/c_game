@@ -7,6 +7,7 @@
 #include "SDL3/SDL_iostream.h"
 
 #include "SDL_stdinc.h"
+#include "SDL_timer.h"
 #include "sqlite3/sqlite3_alloc_func.h"
 #include "uthash/uthash.h"
 
@@ -53,7 +54,7 @@ static void createTable(const char * tableName, sqlite3 * db)
     {
         const char *createTableSQL = "CREATE TABLE IF NOT EXISTS ContentPath (\
                                     ID INTEGER PRIMARY KEY AUTOINCREMENT, \
-                                    Name TEXT NOT NULL UNIQUE, \
+                                    RelativePath TEXT NOT NULL UNIQUE, \
                                     ModifiedTime INTERGER,\
                                     TYPE INTERGER,\
                                     FileType INTERGER, \
@@ -108,8 +109,8 @@ static void insertNode_2(sqlite3 *db, const char * alias, const char * name)
 // insert to minest ID row in ContentPath
 static void insertNode(sqlite3 *db, const char *name, int parentID, Sint64 timeStamp, int type, Uint32 fileType) 
 {
-    static const char *insertSQL = "INSERT INTO ContentPath (Name, ParentID, ModifiedTime, TYPE, FileType) VALUES (?, ?, ?, ?, ?);";
-    static const char *insertSQL_ID = "INSERT INTO ContentPath (ID, Name, ParentID, ModifiedTime, TYPE, FileType) VALUES (?, ?, ?, ?, ?, ?);";
+    static const char *insertSQL = "INSERT INTO ContentPath (RelativePath, ParentID, ModifiedTime, TYPE, FileType) VALUES (?, ?, ?, ?, ?);";
+    static const char *insertSQL_ID = "INSERT INTO ContentPath (ID, RelativePath, ParentID, ModifiedTime, TYPE, FileType) VALUES (?, ?, ?, ?, ?, ?);";
     static const char *findMinestIDSQL = "SELECT t1.ID + 1 AS first_unused_id \
                                         FROM ( \
                                         SELECT ID \
@@ -219,7 +220,7 @@ static bool tableExistJudge(sqlite3 * db)
 // get ID in ContentPath by Name
 static int getID(sqlite3 *db, const char * name)
 {
-    static const char *findSQL = "SELECT ID FROM ContentPath WHERE Name = ?;";
+    static const char *findSQL = "SELECT ID FROM ContentPath WHERE RelativePath = ?;";
     sqlite3_stmt * stmt;
 
     if (sqlite3_prepare_v2(db, findSQL, -1, &stmt, NULL) != SQLITE_OK) 
@@ -346,7 +347,7 @@ static SDL_PathType getPathType(sqlite3 * db, const int id)
 // get Name in ContentPath by ID
 static char * getName(sqlite3 * db, const int ID)
 {
-    const char * SQL = "SELECT Name FROM ContentPath WHERE ID = ?";
+    const char * SQL = "SELECT RelativePath FROM ContentPath WHERE ID = ?";
     sqlite3_stmt * stmt;
     
 
@@ -675,8 +676,53 @@ static bool isShader(const char * name)
     
     return false;
 }
+static void updateDatabase(DB_Path * pPack)
+{
+    char * ContentPath = pPack->A_path;
+    SDL_PathInfo info = {0};
+    SDL_GetPathInfo(ContentPath, &info);
+
+    existInDatabase[0] = true;
+
+    int i;
+    int ID = getID(pPack->db, ContentPath + pPack->R_Begin);
+
+    int rowsCount = 0;
+    if (ID == 1)
+    {
+        if (info.modify_time > getModifyTime(pPack->db, ID))
+        {
+            updateModifyTime(pPack->db, info.modify_time, ID);
+            // SDL_Log("update");
+        }
+        existInDatabase[ID] = true;
+
+        // SDL_Log("count: %d", rowsCount);
+        SDL_EnumerateDirectory(ContentPath, updateFolderDatabase, pPack);
+
+        rowsCount = getRowsCount(pPack->db);
+        rowsCount *= 2;
+        // SDL_Log("count: %d", rowsCount);
+        for (i = 0;i < MAX_ROW;i++)
+        {
+            if (!existInDatabase[i])
+            {
+                deleteRow(pPack->db, i);
+            }
+            if (i > rowsCount) break;
+        }
+        
+    }
+    else
+    {
+        insertNode(pPack->db, ContentPath + pPack->R_Begin, 0, info.modify_time, (int)info.type, (Uint32)info.type);
+
+        SDL_EnumerateDirectory(ContentPath, createFolderDatabase, pPack);
+    }
+}
 int generatePath(int argc, char * argv[])
 {
+    Uint64 timeStart = SDL_GetPerformanceCounter();
     char dataBasePath[255];
 
     SDL_strlcpy(dataBasePath, argv[0], 255);
@@ -690,16 +736,13 @@ int generatePath(int argc, char * argv[])
     SDL_strlcpy(ContentPath, dataBasePath, 255);
 
     SDL_strlcat(ContentPath, "Content", 255);
-    // SDL_Log(ContentPath);
     
     char PathPath[255] = {0};
     SDL_strlcpy(PathPath, dataBasePath, 255);
 
     SDL_strlcat(PathPath, "Path", 255);
-    // SDL_Log(PathPath);
 
     SDL_strlcat(dataBasePath, "Content.db", 255);
-    // SDL_Log(dataBasePath);
 
     initFileTypeHashTable();
     setSQLiteMem();
@@ -739,53 +782,14 @@ int generatePath(int argc, char * argv[])
     createTable("ContentPath", db);
 
     DB_Path pack = {0};
-
     pack.R_Begin = (Uint16)PathBeginLocation;
     pack.LenGetId = pack.R_Begin;
-
     pack.db = db;
     pack.A_path = ContentPath;
 
-    SDL_PathInfo info = {0};
-    SDL_GetPathInfo(ContentPath, &info);
-
-    existInDatabase[0] = true;
-
-    int ID = getID(db, ContentPath + pack.R_Begin);
+    updateDatabase(&pack);
 
     int rowsCount = 0;
-    if (ID == 1)
-    {
-        if (info.modify_time > getModifyTime(db, ID))
-        {
-            updateModifyTime(db, info.modify_time, ID);
-            // SDL_Log("update");
-        }
-        existInDatabase[ID] = true;
-
-        // SDL_Log("count: %d", rowsCount);
-        SDL_EnumerateDirectory(ContentPath, updateFolderDatabase, &pack);
-
-        rowsCount = getRowsCount(db);
-        rowsCount *= 2;
-        // SDL_Log("count: %d", rowsCount);
-        for (int i = 0;i < MAX_ROW;i++)
-        {
-            if (!existInDatabase[i])
-            {
-                deleteRow(db, i);
-            }
-            if (i > rowsCount) break;
-        }
-        
-    }
-    else
-    {
-        insertNode(db, ContentPath + pack.R_Begin, 0, info.modify_time, (int)info.type, (Uint32)info.type);
-
-        SDL_EnumerateDirectory(ContentPath, createFolderDatabase, &pack);
-    }
-
     rowsCount = getRowsCount(db) * 2;
     SDL_IOStream * io = NULL;
     io = SDL_IOFromFile(PathPath, "wb");
@@ -890,6 +894,9 @@ int generatePath(int argc, char * argv[])
     SDL_CloseIO(io);
 
     sqlite3_close(db);
+
+    Uint64 ns = ((SDL_GetPerformanceCounter() - timeStart) * 1000000000ULL) / SDL_GetPerformanceFrequency();
+    SDL_Log("time used: %llu ns, %lf ms, %lf s\n", ns, (double)ns / 1000000ULL, (double)ns / 1000000000ULL);
 
     return 0;
 }
