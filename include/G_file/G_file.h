@@ -12,6 +12,16 @@ extern int SDLCALL initFileSystem(int argc, char * argv[]);
 extern const char* SDLCALL getRootPath(void);
 extern const char* SDLCALL getPath(PathType type);
 
+/**
+ * first time call get file size, second time get file content 
+ * this function will not allocate memory from heap
+ * \param file
+ * \param data
+ * \param fileSize 
+ * 
+ */
+extern bool SDLCALL readFile(const char * file, char * data, Sint64 * fileSize);
+
 #include "SDL3/SDL_close_code.h"
 
 #endif
