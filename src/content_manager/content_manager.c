@@ -1,15 +1,51 @@
 #include "content_manager/content_manager.h"
 #include "G_constants.h"
 
+#include "G_file_type.h"
 #include "SDL3/SDL_filesystem.h"
 #include "SDL3/SDL_log.h"
 #include "SDL3/SDL_iostream.h"
 
+#include "SDL_stdinc.h"
 #include "sqlite3/sqlite3_alloc_func.h"
+#include "uthash/uthash.h"
 
-static int PathBeginLocation = 0;
+static size_t PathBeginLocation = 0;
 static bool existInDatabase[MAX_ROW];
+static FileTypeHashTable * fileTypeHash = NULL;
 
+static void initFileTypeHashTable(void)
+{
+    Uint32 i;
+
+    static FileTypeHashTable allFileType[] = {
+        {Folder, "", {0}},
+        {Obj, ".obj", {0}},
+        {Mtl, ".mtl", {0}},
+        {Png, ".png", {0}},
+        {Tsdi, ".tsdi", {0}},
+        {Tsd, ".tsd", {0}},
+        {Ttf, ".ttf", {0}},
+        {Wav, ".wav", {0}},
+        {Shader, ".spv", {0}},
+        {Txt, ".txt", {0}},
+        {HashTable, ".hash", {0}}, 
+        {Unknown, ".unknow", {0}},
+    };
+
+    for (i = 0;i < Unknown;i++)
+    {
+        HASH_ADD_STR(fileTypeHash, suffix, allFileType + i);
+    }
+}
+static FileType findFileType(const char * suffix)
+{
+    if (suffix == NULL) return Folder;
+    FileTypeHashTable * temp = NULL;
+    HASH_FIND_STR(fileTypeHash, suffix, temp);
+    if (temp) return temp->fileType;
+    return Unknown;
+}
 // only for two different tables: ContentPath, AliasNamePair
 static void createTable(const char * tableName, sqlite3 * db)
 {
@@ -20,6 +56,7 @@ static void createTable(const char * tableName, sqlite3 * db)
                                     Name TEXT NOT NULL UNIQUE, \
                                     ModifiedTime INTERGER,\
                                     TYPE INTERGER,\
+                                    FileType INTERGER, \
                                     ParentID INTEGER, \
                                     FOREIGN KEY (ParentID) REFERENCES DirectoryTree(ID));";
 
@@ -69,10 +106,10 @@ static void insertNode_2(sqlite3 *db, const char * alias, const char * name)
     sqlite3_finalize(stmt);
 }
 // insert to minest ID row in ContentPath
-static void insertNode(sqlite3 *db, const char *name, int parentID, Sint64 timeStamp, int type) 
+static void insertNode(sqlite3 *db, const char *name, int parentID, Sint64 timeStamp, int type, Uint32 fileType) 
 {
-    static const char *insertSQL = "INSERT INTO ContentPath (Name, ParentID, ModifiedTime, TYPE) VALUES (?, ?, ?, ?);";
-    static const char *insertSQL_ID = "INSERT INTO ContentPath (ID, Name, ParentID, ModifiedTime, TYPE) VALUES (?, ?, ?, ?, ?);";
+    static const char *insertSQL = "INSERT INTO ContentPath (Name, ParentID, ModifiedTime, TYPE, FileType) VALUES (?, ?, ?, ?, ?);";
+    static const char *insertSQL_ID = "INSERT INTO ContentPath (ID, Name, ParentID, ModifiedTime, TYPE, FileType) VALUES (?, ?, ?, ?, ?, ?);";
     static const char *findMinestIDSQL = "SELECT t1.ID + 1 AS first_unused_id \
                                         FROM ( \
                                         SELECT ID \
@@ -122,6 +159,7 @@ static void insertNode(sqlite3 *db, const char *name, int parentID, Sint64 timeS
         sqlite3_bind_int(stmt, 2, parentID);
         sqlite3_bind_int64(stmt, 3, timeStamp) ;
         sqlite3_bind_int(stmt, 4, type);
+        sqlite3_bind_int(stmt, 5, fileType);
 
         if (sqlite3_step(stmt) != SQLITE_DONE) 
         {
@@ -143,6 +181,7 @@ static void insertNode(sqlite3 *db, const char *name, int parentID, Sint64 timeS
         sqlite3_bind_int(stmt, 3, parentID);
         sqlite3_bind_int64(stmt, 4, timeStamp);
         sqlite3_bind_int(stmt, 5, type);
+        sqlite3_bind_int(stmt, 6, fileType);
 
         if (sqlite3_step(stmt) != SQLITE_DONE) 
         {
@@ -388,6 +427,28 @@ static void updateParentID(sqlite3 * db, int parentID, int ID)
 
     return;
 }
+static FileType SDLCALL fileTypeJudge(const char * fname)
+{
+    char * temp;
+    char * suffix = SDL_strrchr(fname, '.');
+
+    temp = suffix;
+    while (temp)
+    {
+        *temp = (char)SDL_tolower(*temp);
+        temp++;
+        if (*temp == '\0') break;
+    }
+
+    // SDL_Log("file: %s, suffix: %s", fname, suffix);
+
+    if (suffix)
+    {
+        return findFileType(suffix);
+    }
+
+    return Folder;
+}
 // recursion to get all file and folder in Content Folder and create database
 static SDL_EnumerationResult SDLCALL createFolderDatabase(void *userdata, const char *dirname, const char *fname)
 {
@@ -401,16 +462,22 @@ static SDL_EnumerationResult SDLCALL createFolderDatabase(void *userdata, const 
 
         SDL_strlcat(temp_A_Path, fname, 255);
         SDL_GetPathInfo(temp_A_Path, &info);
+
+        FileType fileType = Folder;
+
+        if (info.type != SDL_PATHTYPE_DIRECTORY) fileType = fileTypeJudge(fname);
+
         // SDL_Log(temp_A_Path);
         // SDL_Log(temp_A_Path + ((DB_Path*)userdata)->R_Begin);
         // SDL_Log("type: %d, size: %llu, dirname:%s, fname:%s, begin: %u", info.type, info.size, dirname, fname, ((DB_Path*)userdata)->R_Begin);
+
         insertNode(((DB_Path*)userdata)->db, temp_A_Path + ((DB_Path*)userdata)->R_Begin, getID(((DB_Path*)userdata)->db, ((DB_Path*)userdata)->A_path + ((DB_Path*)userdata)->LenGetId),
-                     info.modify_time, (int)info.type);
+                     info.modify_time, (int)info.type, fileType);
         if (info.type == SDL_PATHTYPE_DIRECTORY)
         {
             DB_Path pack = {0};
             pack.LenGetId = ((DB_Path*)userdata)->R_Begin;
-            pack.R_Begin = pack.LenGetId + SDL_strlen(dirname + ((DB_Path*)userdata)->R_Begin);
+            pack.R_Begin = pack.LenGetId + (Uint16)SDL_strlen(dirname + ((DB_Path*)userdata)->R_Begin);
             pack.db = ((DB_Path*)userdata)->db;
             pack.A_path = temp_A_Path;
             SDL_EnumerateDirectory(temp_A_Path, createFolderDatabase, &pack);
@@ -427,7 +494,7 @@ static SDL_EnumerationResult SDLCALL createFolderDatabase(void *userdata, const 
 // recursion to update all file and folder in Content Folder and create database
 static SDL_EnumerationResult SDLCALL updateFolderDatabase(void *userdata, const char *dirname, const char *fname)
 {
-    if (fname != NULL)
+    if (fname)
     {
         SDL_PathInfo info = {0};
         char temp_A_Path[255];
@@ -437,6 +504,10 @@ static SDL_EnumerationResult SDLCALL updateFolderDatabase(void *userdata, const 
 
         SDL_strlcat(temp_A_Path, fname, 255);
         SDL_GetPathInfo(temp_A_Path, &info);
+
+        FileType fileType = Folder;
+
+        if (info.type != SDL_PATHTYPE_DIRECTORY) fileType = fileTypeJudge(fname);
         // SDL_Log(temp_A_Path);
         // SDL_Log(temp_A_Path + ((DB_Path*)userdata)->R_Begin);
         // SDL_Log("type: %d, size: %llu, dirname:%s, fname:%s, begin: %u", info.type, info.size, dirname, fname, ((DB_Path*)userdata)->R_Begin);
@@ -449,7 +520,7 @@ static SDL_EnumerationResult SDLCALL updateFolderDatabase(void *userdata, const 
         if (ID < 0)
         {
             insertNode(tempDB, temp_R_Path, ParentID,
-                     info.modify_time, (int)info.type);
+                     info.modify_time, (int)info.type, fileType);
             existInDatabase[getID(tempDB, temp_R_Path)] = true;
         }
         else if (info.modify_time > getModifyTime(tempDB, ID))
@@ -474,13 +545,13 @@ static SDL_EnumerationResult SDLCALL updateFolderDatabase(void *userdata, const 
         {
             DB_Path pack = {0};
             pack.LenGetId = ((DB_Path*)userdata)->R_Begin;
-            pack.R_Begin = pack.LenGetId + SDL_strlen(dirname + ((DB_Path*)userdata)->R_Begin);
+            pack.R_Begin = pack.LenGetId + (Uint16)SDL_strlen(dirname + ((DB_Path*)userdata)->R_Begin);
             pack.db = ((DB_Path*)userdata)->db;
             pack.A_path = temp_A_Path;
             SDL_EnumerateDirectory(temp_A_Path, updateFolderDatabase, &pack);
         }
     }
-    else if (fname == NULL)
+    else
     {
         // SDL_Log("End");
         return SDL_ENUM_SUCCESS;
@@ -560,12 +631,12 @@ static char * getPathByID(sqlite3 * db, const int ID)
     i++;
     for (;i < 15;i++)
     {
-        char * temp = getName(db, IDs[i]);
-        SDL_strlcat(path, SDL_strchr(temp, SEPRATOR_C), 255);
+        char * tempName = getName(db, IDs[i]);
+        SDL_strlcat(path, SDL_strchr(tempName, SEPRATOR_C), 255);
 
         // SDL_strlcat(path, temp, 255);
         // SDL_Log(path);
-        SDL_free(temp);
+        SDL_free(tempName);
     }
     // char * temp = getName(db, IDs[i]);
     // SDL_strlcat(path, temp, 255);
@@ -592,14 +663,15 @@ static int setSQLiteMem(void)
 // judge shader file by suffix
 static bool isShader(const char * name)
 {
-    const char * shaderSuffix[] = {
+    static const char * shaderSuffix[] = {
         "frag", "vert", "comp", "tesc", "tese",
         "rgen", "rint", "rahit", "rchit", "rmiss",
         "rcall", "mesh", "task",
     };
-    const int count = (int)(sizeof(shaderSuffix) / sizeof(shaderSuffix[0]));
+    static const int count = (int)(sizeof(shaderSuffix) / sizeof(shaderSuffix[0]));
+    int i;
 
-    for (int i = 0;i < count;i++) if (SDL_strcmp(name, shaderSuffix[i]) == 0) return true;
+    for (i = 0;i < count;i++) if (SDL_strcmp(name, shaderSuffix[i]) == 0) return true;
     
     return false;
 }
@@ -629,6 +701,7 @@ int generatePath(int argc, char * argv[])
     SDL_strlcat(dataBasePath, "Content.db", 255);
     // SDL_Log(dataBasePath);
 
+    initFileTypeHashTable();
     setSQLiteMem();
 
     Fixed_File template[] = {
@@ -706,9 +779,9 @@ int generatePath(int argc, char * argv[])
         }
         
     }
-    else 
+    else
     {
-        insertNode(db, ContentPath + pack.R_Begin, 0, info.modify_time, (int)info.type);
+        insertNode(db, ContentPath + pack.R_Begin, 0, info.modify_time, (int)info.type, (Uint32)info.type);
 
         SDL_EnumerateDirectory(ContentPath, createFolderDatabase, &pack);
     }
@@ -774,7 +847,7 @@ int generatePath(int argc, char * argv[])
 
             if (!jump)
             {
-                alias[0] = SDL_toupper(alias[0]);
+                alias[0] = (char)SDL_toupper(alias[0]);
                 char * ptr2 = SDL_strrchr(temp, '.');
 
                 if (ptr2 != NULL)
@@ -791,7 +864,7 @@ int generatePath(int argc, char * argv[])
                     if (font) ptr = SDL_strchr(alias, '.');
                     else ptr = SDL_strrchr(alias, '.');
                     SDL_strlcpy(ptr, ptr2 + 1, 255);
-                    *ptr = SDL_toupper(*ptr);
+                    *ptr = (char)SDL_toupper(*ptr);
                     if (shader) SDL_strlcat(alias, "Shader", 255);
                 }
             }

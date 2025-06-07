@@ -1,8 +1,18 @@
 #include "SDL3/SDL_stdinc.h"
 #include "sqlite3/sqlite3.h"
+#include "G_file/G_file_type.h"
+#include "uthash/uthash.h"
 
 #ifndef CONTENT_MANAGER_H
 #define CONTENT_MANAGER_H
+
+struct FileTypeHashTable
+{
+    FileType fileType;
+    char suffix[64];
+    UT_hash_handle hh;
+};
+typedef struct FileTypeHashTable FileTypeHashTable;
 
 #include "SDL3/SDL_begin_code.h"
 
