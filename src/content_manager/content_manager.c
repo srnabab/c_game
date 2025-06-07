@@ -720,82 +720,16 @@ static void updateDatabase(DB_Path * pPack)
         SDL_EnumerateDirectory(ContentPath, createFolderDatabase, pPack);
     }
 }
-int generatePath(int argc, char * argv[])
-{
-    Uint64 timeStart = SDL_GetPerformanceCounter();
-    char dataBasePath[255];
-
-    SDL_strlcpy(dataBasePath, argv[0], 255);
-
-    char * slash = SDL_strrchr(dataBasePath, SEPRATOR_C);
-    if (slash != NULL) *(slash + 1) = '\0';
-    
-    PathBeginLocation = SDL_strlen(dataBasePath);
-
-    char ContentPath[255] = {0};
-    SDL_strlcpy(ContentPath, dataBasePath, 255);
-
-    SDL_strlcat(ContentPath, "Content", 255);
-    
-    char PathPath[255] = {0};
-    SDL_strlcpy(PathPath, dataBasePath, 255);
-
-    SDL_strlcat(PathPath, "Path", 255);
-
-    SDL_strlcat(dataBasePath, "Content.db", 255);
-
-    initFileTypeHashTable();
-    setSQLiteMem();
-
-    Fixed_File template[] = {
-        {"MainFont", "SourceHanSansSC-VF.ttf"},
-        {"EmojiFont", "OpenMoji-color-glyf_colr_0.ttf"},
-        {"Font1", ""},
-        {"FontHashTable1", ""},
-        {"FontPng1", ""},
-        {"DepthImage", ""},
-        {"CustomePath1", ""},
-        {"CustomePath2", ""},
-        {"CustomePath3", ""},
-        {"CustomePath4", ""},
-        {"LogPath", "log"SEPRATOR"log0.txt"},
-        {"PathPath", "Path"},
-    };
-    int templateCount = (int)(sizeof(template) / sizeof(template[0]));
-
-    sqlite3 * db;
-
-    if (sqlite3_open(dataBasePath, &db) != SQLITE_OK)
-    {
-        SDL_Log("failed to open database %s\n", sqlite3_errmsg(db));
-    }
-    if (!tableExistJudge(db))
-    {
-        createTable("AliasNamePair", db);
-        for (int i = 0;i < templateCount;i++)
-        {
-            insertNode_2(db, template[i].alias, template[i].name);
-        }
-        // SDL_Log("create AliasNamePair");
-    }
-
-    createTable("ContentPath", db);
-
-    DB_Path pack = {0};
-    pack.R_Begin = (Uint16)PathBeginLocation;
-    pack.LenGetId = pack.R_Begin;
-    pack.db = db;
-    pack.A_path = ContentPath;
-
-    updateDatabase(&pack);
-
+static void writePathFile(sqlite3 * db, const char * PathPath, Fixed_File * template, int templateCount)
+{    
     int rowsCount = 0;
     rowsCount = getRowsCount(db) * 2;
     SDL_IOStream * io = NULL;
     io = SDL_IOFromFile(PathPath, "wb");
     int fixedFileCount = 0;
     int here = 0;
-    for (int i = 0;i < templateCount;i++)
+    int i, j;
+    for (i = 0;i < templateCount;i++)
     {
         if (*template[i].name == '\0') 
         {
@@ -808,7 +742,7 @@ int generatePath(int argc, char * argv[])
         }
     }
     here++;
-    for (int i = here;i < templateCount;i++)
+    for (i = here;i < templateCount;i++)
     {
         char alias[255];
         SDL_snprintf(alias, 255, "[%s]:\n", template[i].alias);
@@ -820,7 +754,7 @@ int generatePath(int argc, char * argv[])
         fixedFileCount++;
         here = i;
     }
-    for (int i = 0;i < rowsCount;i++)
+    for (i = 0;i < rowsCount;i++)
     {
         if (getPathType(db, i) == SDL_PATHTYPE_FILE)
         {
@@ -835,7 +769,7 @@ int generatePath(int argc, char * argv[])
             SDL_strlcpy(alias, SDL_strrchr(temp, SEPRATOR_C) + 1, 255);
             if (fixedFileCount != templateCount)
             {
-                for (int j = 0;j < templateCount;j++)
+                for (j = 0;j < templateCount;j++)
                 {
                     if (SDL_strcmp(alias, template[j].name) == 0)
                     {
@@ -892,6 +826,79 @@ int generatePath(int argc, char * argv[])
         }
     }
     SDL_CloseIO(io);
+}
+int generatePath(int argc, char * argv[])
+{
+    Uint64 timeStart = SDL_GetPerformanceCounter();
+    char dataBasePath[255];
+
+    SDL_strlcpy(dataBasePath, argv[0], 255);
+
+    char * slash = SDL_strrchr(dataBasePath, SEPRATOR_C);
+    if (slash != NULL) *(slash + 1) = '\0';
+    
+    PathBeginLocation = SDL_strlen(dataBasePath);
+
+    char ContentPath[255] = {0};
+    SDL_strlcpy(ContentPath, dataBasePath, 255);
+
+    SDL_strlcat(ContentPath, "Content", 255);
+    
+    char PathPath[255] = {0};
+    SDL_strlcpy(PathPath, dataBasePath, 255);
+
+    SDL_strlcat(PathPath, "Path", 255);
+
+    SDL_strlcat(dataBasePath, "Content.db", 255);
+
+    initFileTypeHashTable();
+    setSQLiteMem();
+
+    Fixed_File template[] = {
+        {"MainFont", "SourceHanSansSC-VF.ttf"},
+        {"EmojiFont", "OpenMoji-color-glyf_colr_0.ttf"},
+        {"Font1", ""},
+        {"FontHashTable1", ""},
+        {"FontPng1", ""},
+        {"DepthImage", ""},
+        {"CustomePath1", ""},
+        {"CustomePath2", ""},
+        {"CustomePath3", ""},
+        {"CustomePath4", ""},
+        {"LogPath", "log"SEPRATOR"log0.txt"},
+        {"PathPath", "Path"},
+    };
+    int templateCount = (int)(sizeof(template) / sizeof(template[0]));
+
+    sqlite3 * db;
+
+    if (sqlite3_open(dataBasePath, &db) != SQLITE_OK)
+    {
+        SDL_Log("failed to open database %s\n", sqlite3_errmsg(db));
+        return -1;
+    }
+
+    if (!tableExistJudge(db))
+    {
+        createTable("AliasNamePair", db);
+        for (int i = 0;i < templateCount;i++)
+        {
+            insertNode_2(db, template[i].alias, template[i].name);
+        }
+        // SDL_Log("create AliasNamePair");
+    }
+
+    createTable("ContentPath", db);
+
+    DB_Path pack = {0};
+    pack.R_Begin = (Uint16)PathBeginLocation;
+    pack.LenGetId = pack.R_Begin;
+    pack.db = db;
+    pack.A_path = ContentPath;
+
+    updateDatabase(&pack);
+
+    writePathFile(db, PathPath, template, templateCount);
 
     sqlite3_close(db);
 
