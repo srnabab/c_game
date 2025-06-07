@@ -1,231 +1,94 @@
 #include "G_file/path_compare.h"
 
+#include "G_allocator.h"
+
+static PathTypeHashTable * root = NULL;
+
+static PathTypeHashTable * hashTable = NULL;
+
+static bool initPathHashTable(void)
+{
+    const PathTypeHashTable hashTableTemp[] = {
+        {Font1, "[Font1]", {0}},
+        {FontHashTable1, "[FontHashTable1]", {0}},
+        {FontPng1, "[FontPng1]", {0}},
+        {DepthImage, "[DepthImage]", {0}},
+        {CustomePath1, "[CustomePath1]", {0}},
+        {CustomePath2, "[CustomePath2]", {0}},
+        {CustomePath3, "[CustomePath3]", {0}},
+        {CustomePath4, "[CustomePath4]", {0}},
+        {LogPath, "[LogPath]", {0}},
+        {PathPath, "[PathPath]", {0}},
+        {MainBackgroundMusic1Wav, "[MainBackgroundMusic1Wav]", {0}},
+        {TestWav, "[TestWav]", {0}},
+        {EmojiHashTable, "[EmojiHashTable]", {0}},
+        {MainFontHashTable, "[MainFontHashTable]", {0}},
+        {EmojiFont, "[EmojiFont]", {0}},
+        {MainFont, "[MainFont]", {0}},
+        {BottomObj, "[BottomObj]", {0}},
+        {BottomPng, "[BottomPng]", {0}},
+        {BoxObj, "[BoxObj]", {0}},
+        {BoxPng, "[BoxPng]", {0}},
+        {VoxelMtl, "[VoxelMtl]", {0}},
+        {VoxelObj, "[VoxelObj]", {0}},
+        {VoxelPng, "[VoxelPng]", {0}},
+        {CombineFragShader, "[CombineFragShader]", {0}},
+        {CombineVertShader, "[CombineVertShader]", {0}},
+        {Combine2dFragShader, "[Combine2dFragShader]", {0}},
+        {EmptyFragShader, "[EmptyFragShader]", {0}},
+        {Model3dFragShader, "[Model3dFragShader]", {0}},
+        {Model3dVertShader, "[Model3dVertShader]", {0}},
+        {ModelBottomFragShader, "[ModelBottomFragShader]", {0}},
+        {ParticleCompShader, "[ParticleCompShader]", {0}},
+        {ParticleFragShader, "[ParticleFragShader]", {0}},
+        {ParticleVertShader, "[ParticleVertShader]", {0}},
+        {ShadowVertShader, "[ShadowVertShader]", {0}},
+        {ShapeFragShader, "[ShapeFragShader]", {0}},
+        {ShapeVertShader, "[ShapeVertShader]", {0}},
+        {Spirv_reflectExe, "[Spirv_reflectExe]", {0}},
+        {SSGICompShader, "[SSGICompShader]", {0}},
+        {TriangleFragShader, "[TriangleFragShader]", {0}},
+        {TriangleVertShader, "[TriangleVertShader]", {0}},
+        {TextTxt, "[TextTxt]", {0}},
+        {CirclePng, "[CirclePng]", {0}},
+        {EmojiPng, "[EmojiPng]", {0}},
+        {IconPng, "[IconPng]", {0}},
+        {Loading1Png, "[Loading1Png]", {0}},
+        {MainBackgroundPng, "[MainBackgroundPng]", {0}},
+        {MainFontPng, "[MainFontPng]", {0}},
+        {Non_existPng, "[Non_existPng]", {0}},
+        {ExitPng, "[ExitPng]", {0}},
+        {LoadPng, "[LoadPng]", {0}},
+        {SettingPng, "[SettingPng]", {0}},
+        {StartPng, "[StartPng]", {0}},
+        {TextRectangle1Png, "[TextRectangle1Png]", {0}},
+        {TileSet1Png, "[TileSet1Png]", {0}},
+        {TileMap1TsdI, "[TileMap1TsdI]", {0}},
+        {TileSet1Tsd, "[TileSet1Tsd]", {0}},
+    };
+
+
+    int size = sizeof(hashTableTemp) / sizeof(PathTypeHashTable);
+    static int i = 0;
+    if (i != 0) return true;
+
+    hashTable = G_malloc(sizeof(hashTableTemp));
+    memcpy(hashTable, hashTableTemp, sizeof(hashTableTemp));
+    for (i = 0;i < size;i++)
+        {
+            HASH_ADD_STR(root, str, hashTable + i);
+        }
+    return false;
+}
 PathType pathCompare(char * buffer)
 {
-    if ((SDL_strcmp(buffer, "[Font1]") == 0))
-    {
-        return Font1;
-    }
-    else if ((SDL_strcmp(buffer, "[FontHashTable1]") == 0))
-    {
-        return FontHashTable1;
-    }
-    else if ((SDL_strcmp(buffer, "[FontPng1]") == 0))
-    {
-        return FontPng1;
-    }
-    else if ((SDL_strcmp(buffer, "[DepthImage]") == 0))
-    {
-        return DepthImage;
-    }
-    else if ((SDL_strcmp(buffer, "[CustomePath1]") == 0))
-    {
-        return CustomePath1;
-    }
-    else if ((SDL_strcmp(buffer, "[CustomePath2]") == 0))
-    {
-        return CustomePath2;
-    }
-    else if ((SDL_strcmp(buffer, "[CustomePath3]") == 0))
-    {
-        return CustomePath3;
-    }
-    else if ((SDL_strcmp(buffer, "[CustomePath4]") == 0))
-    {
-        return CustomePath4;
-    }
-    else if ((SDL_strcmp(buffer, "[LogPath]") == 0))
-    {
-        return LogPath;
-    }
-    else if ((SDL_strcmp(buffer, "[PathPath]") == 0))
-    {
-        return PathPath;
-    }
-    else if ((SDL_strcmp(buffer, "[CombineFragShader]") == 0))
-    {
-        return CombineFragShader;
-    }
-    else if ((SDL_strcmp(buffer, "[Combine2dFragShader]") == 0))
-    {
-        return Combine2dFragShader;
-    }
-    else if ((SDL_strcmp(buffer, "[CombineVertShader]") == 0))
-    {
-        return CombineVertShader;
-    }
-    else if ((SDL_strcmp(buffer, "[Model3dVertShader]") == 0))
-    {
-        return Model3dVertShader;
-    }
-    else if ((SDL_strcmp(buffer, "[MainFontPng]") == 0))
-    {
-        return MainFontPng;
-    }
-    else if ((SDL_strcmp(buffer, "[ShadowVertShader]") == 0))
-    {
-        return ShadowVertShader;
-    }
-    else if ((SDL_strcmp(buffer, "[ShapeVertShader]") == 0))
-    {
-        return ShapeVertShader;
-    }
-    else if ((SDL_strcmp(buffer, "[BoxObj]") == 0))
-    {
-        return BoxObj;
-    }
-    else if ((SDL_strcmp(buffer, "[BoxPng]") == 0))
-    {
-        return BoxPng;
-    }
-    else if ((SDL_strcmp(buffer, "[SSGICompShader]") == 0))
-    {
-        return SSGICompShader;
-    }
-    else if ((SDL_strcmp(buffer, "[BottomObj]") == 0))
-    {
-        return BottomObj;
-    }
-    else if ((SDL_strcmp(buffer, "[BottomPng]") == 0))
-    {
-        return BottomPng;
-    }
-    else if ((SDL_strcmp(buffer, "[Model3dFragShader]") == 0))
-    {
-        return Model3dFragShader;
-    }
-    else if ((SDL_strcmp(buffer, "[ModelBottomFragShader]") == 0))
-    {
-        return ModelBottomFragShader;
-    }
-    else if ((SDL_strcmp(buffer, "[ShapeFragShader]") == 0))
-    {
-        return ShapeFragShader;
-    }
-    else if ((SDL_strcmp(buffer, "[VoxelMtl]") == 0))
-    {
-        return VoxelMtl;
-    }
-    else if ((SDL_strcmp(buffer, "[VoxelObj]") == 0))
-    {
-        return VoxelObj;
-    }
-    else if ((SDL_strcmp(buffer, "[VoxelPng]") == 0))
-    {
-        return VoxelPng;
-    }
-    else if ((SDL_strcmp(buffer, "[MainBackgroundPng]") == 0))
-    {
-        return MainBackgroundPng;
-    }
-    else if ((SDL_strcmp(buffer, "[EmptyFragShader]") == 0))
-    {
-        return EmptyFragShader;
-    }
-    else if ((SDL_strcmp(buffer, "[MainBackgroundMusic1Wav]") == 0))
-    {
-        return MainBackgroundMusic1Wav;
-    }
-    else if ((SDL_strcmp(buffer, "[TestWav]") == 0))
-    {
-        return TestWav;
-    }
-    else if ((SDL_strcmp(buffer, "[EmojiHashTable]") == 0))
-    {
-        return EmojiHashTable;
-    }
-    else if ((SDL_strcmp(buffer, "[MainFontHashTable]") == 0))
-    {
-        return MainFontHashTable;
-    }
-    else if ((SDL_strcmp(buffer, "[EmojiFont]") == 0))
-    {
-        return EmojiFont;
-    }
-    else if ((SDL_strcmp(buffer, "[MainFont]") == 0))
-    {
-        return MainFont;
-    }
-    else if ((SDL_strcmp(buffer, "[ParticleCompShader]") == 0))
-    {
-        return ParticleCompShader;
-    }
-    else if ((SDL_strcmp(buffer, "[ParticleFragShader]") == 0))
-    {
-        return ParticleFragShader;
-    }
-    else if ((SDL_strcmp(buffer, "[ParticleVertShader]") == 0))
-    {
-        return ParticleVertShader;
-    }
-    else if ((SDL_strcmp(buffer, "[Spirv_reflectExe]") == 0))
-    {
-        return Spirv_reflectExe;
-    }
-    else if ((SDL_strcmp(buffer, "[TriangleFragShader]") == 0))
-    {
-        return TriangleFragShader;
-    }
-    else if ((SDL_strcmp(buffer, "[TriangleVertShader]") == 0))
-    {
-        return TriangleVertShader;
-    }
-    else if ((SDL_strcmp(buffer, "[TextTxt]") == 0))
-    {
-        return TextTxt;
-    }
-    else if ((SDL_strcmp(buffer, "[CirclePng]") == 0))
-    {
-        return CirclePng;
-    }
-    else if ((SDL_strcmp(buffer, "[EmojiPng]") == 0))
-    {
-        return EmojiPng;
-    }
-    else if ((SDL_strcmp(buffer, "[IconPng]") == 0))
-    {
-        return IconPng;
-    }
-    else if ((SDL_strcmp(buffer, "[Loading1Png]") == 0))
-    {
-        return Loading1Png;
-    }
-    else if ((SDL_strcmp(buffer, "[Non_existPng]") == 0))
-    {
-        return Non_existPng;
-    }
-    else if ((SDL_strcmp(buffer, "[ExitPng]") == 0))
-    {
-        return ExitPng;
-    }
-    else if ((SDL_strcmp(buffer, "[LoadPng]") == 0))
-    {
-        return LoadPng;
-    }
-    else if ((SDL_strcmp(buffer, "[SettingPng]") == 0))
-    {
-        return SettingPng;
-    }
-    else if ((SDL_strcmp(buffer, "[StartPng]") == 0))
-    {
-        return StartPng;
-    }
-    else if ((SDL_strcmp(buffer, "[TextRectangle1Png]") == 0))
-    {
-        return TextRectangle1Png;
-    }
-    else if ((SDL_strcmp(buffer, "[TileSet1Png]") == 0))
-    {
-        return TileSet1Png;
-    }
-    else if ((SDL_strcmp(buffer, "[TileMap1TsdI]") == 0))
-    {
-        return TileMap1TsdI;
-    }
-    else if ((SDL_strcmp(buffer, "[TileSet1Tsd]") == 0))
-    {
-        return TileSet1Tsd;
-    }
-
-    return None;
+    initPathHashTable();
+    PathTypeHashTable * temp = NULL;
+    HASH_FIND_STR(root, buffer, temp);
+    if (temp) return temp->type;
+    else return None;
+}
+void freePathHashTable(void)
+{
+    G_free(hashTable);
 }

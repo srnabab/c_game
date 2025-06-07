@@ -128,6 +128,7 @@ static bool initPath(void)
     }
     SDL_CloseIO(io);
     Path = (const char (*)[MAX_PATHLEN])PathTemp;
+    freePathHashTable();
     return true;
 }
 static bool setPath(void)

@@ -5,7 +5,6 @@
 
 #include "SDL3/SDL_begin_code.h"
 
-#define ROUND8(X) (((X)+7)&~7)
 #define ALIGNMENT 8
 
 extern void* SDLCALL SDL_SQLite_malloc(int size);

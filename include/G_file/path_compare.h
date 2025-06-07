@@ -1,5 +1,7 @@
 #include "SDL3/SDL_stdinc.h"
 
+#include "uthash/uthash.h"
+
 #ifndef G_PATH_COMPARE_H
 #define G_PATH_COMPARE_H 1
 
@@ -16,36 +18,34 @@ typedef enum _PathType
     CustomePath4,
     LogPath,
     PathPath,
-    CombineFragShader,
-    Combine2dFragShader,
-    CombineVertShader,
-    Model3dVertShader,
-    MainFontPng,
-    ShadowVertShader,
-    ShapeVertShader,
-    BoxObj,
-    BoxPng,
-    SSGICompShader,
-    BottomObj,
-    BottomPng,
-    Model3dFragShader,
-    ModelBottomFragShader,
-    ShapeFragShader,
-    VoxelMtl,
-    VoxelObj,
-    VoxelPng,
-    MainBackgroundPng,
-    EmptyFragShader,
     MainBackgroundMusic1Wav,
     TestWav,
     EmojiHashTable,
     MainFontHashTable,
     EmojiFont,
     MainFont,
+    BottomObj,
+    BottomPng,
+    BoxObj,
+    BoxPng,
+    VoxelMtl,
+    VoxelObj,
+    VoxelPng,
+    CombineFragShader,
+    CombineVertShader,
+    Combine2dFragShader,
+    EmptyFragShader,
+    Model3dFragShader,
+    Model3dVertShader,
+    ModelBottomFragShader,
     ParticleCompShader,
     ParticleFragShader,
     ParticleVertShader,
+    ShadowVertShader,
+    ShapeFragShader,
+    ShapeVertShader,
     Spirv_reflectExe,
+    SSGICompShader,
     TriangleFragShader,
     TriangleVertShader,
     TextTxt,
@@ -53,6 +53,8 @@ typedef enum _PathType
     EmojiPng,
     IconPng,
     Loading1Png,
+    MainBackgroundPng,
+    MainFontPng,
     Non_existPng,
     ExitPng,
     LoadPng,
@@ -65,6 +67,14 @@ typedef enum _PathType
     MAX_PATH_TYPE = 0x7FFFFFFF
 } PathType;
 
-extern PathType SDLCALL pathCompare(char * buffer);
+ struct _PathTypeHashTable
+{    PathType type;
+    char str[256];
+    UT_hash_handle hh;
+};
+typedef struct _PathTypeHashTable PathTypeHashTable;
 
-#endif
+extern PathType SDLCALL pathCompare(char * buffer);
+extern void SDLCALL freePathHashTable(void);
+
+#endif // path_compare.h
