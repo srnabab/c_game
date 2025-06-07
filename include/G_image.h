@@ -9,7 +9,7 @@
 
 #include "SDL3/SDL_begin_code.h"
 
-extern int SDLCALL G_loadImage(PathType path, VkFormat format, VkImageAspectFlags flags, const char * innerName, G_DescriptorSets * pDescriptorSets, Uint32 setIndex, void * data, bool draw);
+extern int SDLCALL G_loadImage(PathType path, VkFormat format, VkImageAspectFlags flags, const char * innerName, G_DescriptorSets * pDescriptorSets, Uint32 setIndex, void * data);
 
 #include "SDL3/SDL_close_code.h"
 

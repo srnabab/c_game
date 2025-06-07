@@ -84,7 +84,7 @@ typedef struct _TSDI_Head TSDI_Head;
 extern bool SDLCALL initTileMapSystem(void);
 extern void SDLCALL getTileSetCount(Uint32 * pTileSetCount);
 extern void SDLCALL getTileSetPtr(TILE_SET ** ppSet);
-extern bool SDLCALL loadTileSet(PathType setImagePath, PathType setDataPath, VkFormat format, VkImageAspectFlags flags, const char * innerName, G_DescriptorSets * pDescriptorSet, void * pUniformBuffer, bool draw);
+extern bool SDLCALL loadTileSet(PathType setImagePath, PathType setDataPath, VkFormat format, VkImageAspectFlags flags, const char * innerName, G_DescriptorSets * pDescriptorSet, void * pUniformBuffer);
 extern bool SDLCALL loadTileMap(PathType tileMapData, const char * setInnerName, const char * mapInnerName);
 extern Map_Group* SDLCALL getFirstMapGroup(const char * setInnerName, const char * mapInnerName);
 extern Map_Group* SDLCALL getMapGroup(const char * setInnerName, const char * mapInnerName, int32_t groupID);

@@ -169,9 +169,9 @@ static TILE_SET * loadTileSetData(PathType setDataPath, const char * innerName)
 
     return tileSets + tileSetCount - 1;
 }
-bool loadTileSet(PathType setImagePath, PathType setDataPath, VkFormat format, VkImageAspectFlags flags, const char * innerName, G_DescriptorSets * pDescriptorSet, void * pUniformBuffer, bool draw)
+bool loadTileSet(PathType setImagePath, PathType setDataPath, VkFormat format, VkImageAspectFlags flags, const char * innerName, G_DescriptorSets * pDescriptorSet, void * pUniformBuffer)
 {
-    bool res = G_loadImage(setImagePath, format, flags, innerName, pDescriptorSet, 0, pUniformBuffer, draw);
+    bool res = G_loadImage(setImagePath, format, flags, innerName, pDescriptorSet, 0, pUniformBuffer);
     if (res == false) return false;
 
     TILE_SET * pSet = loadTileSetData(setDataPath, innerName);

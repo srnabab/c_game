@@ -557,26 +557,26 @@ void initVulkan(void)
     // CO_addFence(allInOne.pTransferInFlightFence[0]);// CO
     // CO_addFence(allInOne.pTransferInFlightFence[1]);// CO
    
-    loadTileSet(TileSet1Png, TileSet1Tsd, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_TILE_SET, &allInOne.graphicDescriptorSets, allInOne.pGraphicUniformBuffer, true);
+    loadTileSet(TileSet1Png, TileSet1Tsd, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_TILE_SET, &allInOne.graphicDescriptorSets, allInOne.pGraphicUniformBuffer);
     loadTileMap(TileMap1TsdI, TEXTURE_TILE_SET, MAIN_TILE_MAP);
 
     createStaticModelPool(&staticModelPool, &allInOne.vertexBufferPool, 60);
 
     void * datas[] = {allInOne.pGraphic3DUniformBuffer, allInOne.pSunUniformBuffer, getTexture(TEXTURE_SHADOW)};
-    loadStaticModel(&staticModelPool, 1, BottomObj, BottomPng, allInOne.pVertices3D, &allInOne.vertices3DCount, allInOne.pIndices3D, &allInOne.indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_BOTTOM, &allInOne.modelDescriptorSets, datas, true);
-    loadStaticModel(&staticModelPool, 10, BoxObj, BoxPng, allInOne.pVertices3D, &allInOne.vertices3DCount, allInOne.pIndices3D, &allInOne.indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_MODEL, &allInOne.modelDescriptorSets, datas, true);
-    loadStaticModel(&staticModelPool, 1, VoxelObj, VoxelPng, allInOne.pVertices3D, &allInOne.vertices3DCount, allInOne.pIndices3D, &allInOne.indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_VOXEL, &allInOne.modelDescriptorSets, datas, true);
+    loadStaticModel(&staticModelPool, 1, BottomObj, BottomPng, allInOne.pVertices3D, &allInOne.vertices3DCount, allInOne.pIndices3D, &allInOne.indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_BOTTOM, &allInOne.modelDescriptorSets, datas);
+    loadStaticModel(&staticModelPool, 10, BoxObj, BoxPng, allInOne.pVertices3D, &allInOne.vertices3DCount, allInOne.pIndices3D, &allInOne.indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_MODEL, &allInOne.modelDescriptorSets, datas);
+    loadStaticModel(&staticModelPool, 1, VoxelObj, VoxelPng, allInOne.pVertices3D, &allInOne.vertices3DCount, allInOne.pIndices3D, &allInOne.indices3DCount, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_VOXEL, &allInOne.modelDescriptorSets, datas);
 
     loadImageResource(VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_GENERAL, TEXTURE_SSGI_STORAGE_IMAGE, allInOne.pSSGIDescriptorSets + 2);
 
-    G_loadImage(Loading1Png, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_LOADING, &allInOne.graphicDescriptorSets, 0, allInOne.pUIUniformBuffer, true);
-    G_loadImage(CirclePng, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_CIRCLE, &allInOne.graphicDescriptorSets, 0, allInOne.pGraphicUniformBuffer, true);
-    G_loadImage(MainFontPng, VK_FORMAT_R8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_FONT, &allInOne.graphicDescriptorSets, 0, allInOne.pUIUniformBuffer, true);
-    G_loadImage(MainBackgroundPng, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_BACKGROUND, &allInOne.graphicDescriptorSets, 0, allInOne.pUIUniformBuffer, true);
-    G_loadImage(StartPng, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_START, &allInOne.graphicDescriptorSets, 0, allInOne.pUIUniformBuffer, true);
-    G_loadImage(SettingPng, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_SETTING, &allInOne.graphicDescriptorSets, 0, allInOne.pUIUniformBuffer, true);
-    G_loadImage(LoadPng, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_LOAD, &allInOne.graphicDescriptorSets, 0, allInOne.pUIUniformBuffer, true);
-    G_loadImage(ExitPng, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_EXIT, &allInOne.graphicDescriptorSets, 0, allInOne.pUIUniformBuffer, true);
+    G_loadImage(Loading1Png, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_LOADING, &allInOne.graphicDescriptorSets, 0, allInOne.pUIUniformBuffer);
+    G_loadImage(CirclePng, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_CIRCLE, &allInOne.graphicDescriptorSets, 0, allInOne.pGraphicUniformBuffer);
+    G_loadImage(MainFontPng, VK_FORMAT_R8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_FONT, &allInOne.graphicDescriptorSets, 0, allInOne.pUIUniformBuffer);
+    G_loadImage(MainBackgroundPng, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_BACKGROUND, &allInOne.graphicDescriptorSets, 0, allInOne.pUIUniformBuffer);
+    G_loadImage(StartPng, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_START, &allInOne.graphicDescriptorSets, 0, allInOne.pUIUniformBuffer);
+    G_loadImage(SettingPng, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_SETTING, &allInOne.graphicDescriptorSets, 0, allInOne.pUIUniformBuffer);
+    G_loadImage(LoadPng, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_LOAD, &allInOne.graphicDescriptorSets, 0, allInOne.pUIUniformBuffer);
+    G_loadImage(ExitPng, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, TEXTURE_EXIT, &allInOne.graphicDescriptorSets, 0, allInOne.pUIUniformBuffer);
 
     addDescriptorSetToTexture(TEXTURE_MODEL_DEPTH, allInOne.pSSGIDescriptorSets + 0);
     addDescriptorSetToTexture(TEXTURE_NORMAL, allInOne.pSSGIDescriptorSets + 0);
