@@ -1,6 +1,7 @@
 #include "G_game.h"
 #include "G_map.h"
 #include "G_log.h"
+#include "G_test_if.h"
 #include "G_struct.h"
 #include "vk_code_h/vk_present.h"
 #include "vk_code_h/vk_recreate.h"
@@ -31,10 +32,10 @@ int render(void * arg)
     int * threadIndex = NULL;
     void * datas[4];
     copy = createThreadPool(&threadPool, 2, "renderTask", false);
-    if (copy == false) 
+    test_if (copy == false) 
     {
         game_is_running = false;
-        return -1;
+        SDL_SignalSemaphore(allSync.signalSemaphore);
     }
 
     while (game_is_running)

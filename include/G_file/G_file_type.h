@@ -19,6 +19,13 @@ enum _FileType
 };
 typedef enum _FileType FileType;
 
+struct _G_Resource
+{
+    char innerName[16]; 
+    FileType type;
+};
+typedef struct _G_Resource G_Resource;
+
 #include "SDL3/SDL_begin_code.h"
 
 #include "SDL3/SDL_close_code.h"

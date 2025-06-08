@@ -113,8 +113,6 @@ static int putMessage_file(void * arg)
 
         SDL_WaitSemaphore(allSync.logSemaphore);
         
-        if (!game_is_running && (messageCount + 1 == messagePrintCount))
-            break;
 
 
         SDL_GetCurrentTime(&ticks);
@@ -122,6 +120,12 @@ static int putMessage_file(void * arg)
         getCurrentTime(timeBuffer, dateTime);
         
         SDL_LockMutex(allSync.printMutex);
+
+        if (!game_is_running && (messageCount + 1 == messagePrintCount))
+        {
+            SDL_UnlockMutex(allSync.printMutex);
+            break;
+        }
 
         SDL_strlcat(getCurrentTime(timeBuffer, dateTime), "\n", 3);
         SDL_strlcat(message[messagePrintCount % MAX_MESSAGE_STORAGE], timeBuffer, 255);
@@ -146,10 +150,13 @@ static int putMessage_print(void * arg)
     {
         SDL_WaitSemaphore(allSync.logSemaphore);
         
-        if (!game_is_running && (messageCount + 1 == messagePrintCount))
-            break;
-
         SDL_LockMutex(allSync.printMutex);
+
+        if (!game_is_running && (messageCount + 1 == messagePrintCount))
+        {
+            SDL_UnlockMutex(allSync.printMutex);
+            break;
+        }
 
         SDL_Log(message[messagePrintCount % MAX_MESSAGE_STORAGE]);
         messagePrintCount++;

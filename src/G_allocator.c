@@ -74,7 +74,7 @@ void printResidueMemory(void)
 
     HASH_ITER(hh, record, s, tmp)
     {
-        SDL_Log("residue memory: %p, return address0: %p, return address1: %p, allocations: %u\n%d, %s\n", s->rawptr, s->returnAddress0, s->returnAddress1, allocations, s->address1.line, s->address1.file);
+        SDL_Log("residue memory: 0x%p, return address0: 0x%p, return address1: 0x%p, allocations: %u\n%d, %s\n", s->rawptr, s->returnAddress0, s->returnAddress1, allocations, s->address1.line, s->address1.file);
         BREAK_POINT
         allocations--;
     }
