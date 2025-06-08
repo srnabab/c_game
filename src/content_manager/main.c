@@ -1,6 +1,11 @@
 #include "content_manager/content_manager.h"
+#include "G_allocator.h"
 
 int main(int argc, char * argv[])
 {
-    return generatePath(argc, argv);
+    initMemoryRecord();
+    generatePath(argc, argv);
+    printResidueMemory();
+
+    return 0;
 }

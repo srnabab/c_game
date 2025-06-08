@@ -18,7 +18,6 @@ typedef struct FileTypeHashTable FileTypeHashTable;
 
 struct _DB_Path
 {
-    sqlite3 * db;
     char * A_path;// absolutely path
     Uint16 R_Begin;// relative path
     Uint16 LenGetId;// where to begin get short file path

@@ -54,6 +54,7 @@ add_custom_target(GenerateCode ALL
 
 
 add_executable(game ${SRC_ROOT}/main.c
+                    # ${SRC_ROOT}/sqlite3/sqlite3.c
                     ${SRC_ROOT}/sqlite3_alloc_func.c
                     ${SRC_ROOT}/content_manager/content_manager.c
                     ${SRC_ROOT}/texture_generate/textureG.c
