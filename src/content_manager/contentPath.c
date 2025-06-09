@@ -257,21 +257,12 @@ static int findMinesID(void)
 
     return gap_id;
 }
-// insert to minest ID row in ContentPath
-static bool insertNode(const char *name, int parentID, Sint64 timeStamp, int type, Uint32 fileType)
-{
-    int res = false;
-
-    res = insertNodeInsertSQL_ID(name, parentID, timeStamp, type, fileType, findMinesID());
-
-    return res < 0 ? false : true;
-}
 static bool insertMetaData(const char * innerName, int ID)
 {
     static const char * insertMetaData = "UPDATE ContentPath SET InnerName = ? WHERE ID = ?;";
 
     bool finalize = false;
-    int res = true;
+    int res = false;
     sqlite3_stmt * stmt = NULL;
 
     if (sqlite3_prepare_v2(db, insertMetaData, -1, &stmt, NULL) != SQLITE_OK) 
@@ -303,6 +294,24 @@ static bool insertMetaData(const char * innerName, int ID)
     if (finalize) if (sqlite3_finalize(stmt)) SDL_Log("Failed to finalize statement: %s\n", sqlite3_errmsg(db));
 
     return res;
+}
+// insert to minest ID row in ContentPath
+static bool insertNode(const char *name, int parentID, Sint64 timeStamp, int type, Uint32 fileType)
+{
+    char innerName[16];
+    int contentID = -1;
+    int id = -1;
+    int res = false;
+
+    id = findSameDeletedRow(name, type, fileType, innerName);
+    res = insertNodeInsertSQL_ID(name, parentID, timeStamp, type, fileType, findMinesID());
+    contentID = getID(name);
+    if (res > 0 && id > 0) 
+    {
+        res = insertMetaData(innerName, contentID);
+    }
+
+    return res < 0 ? false : true;
 }
 // get ParentID in ContentPath by ID
 static int getParentID(const int ID)

@@ -20,55 +20,57 @@ static size_t PathBeginLocation = 0;
 bool existInDatabase[MAX_ROW];
 
 // only for two different tables: ContentPath, AliasNamePair
-static bool createTable(const char * tableName)
+static bool createTableContentPath(void)
 {
-    if (SDL_strcmp(tableName, "ContentPath") == 0)
-    {
-        const char *createTableSQL = "CREATE TABLE IF NOT EXISTS ContentPath (\
-                                    ID INTEGER PRIMARY KEY AUTOINCREMENT, \
-                                    RelativePath TEXT NOT NULL UNIQUE, \
-                                    FileName TEXT, \
-                                    InnerName TEXT UNIQUE, \
-                                    ModifiedTime INTERGER,\
-                                    TYPE INTERGER,\
-                                    FileType INTERGER, \
-                                    ParentID INTEGER, \
-                                    FOREIGN KEY (ParentID) REFERENCES DirectoryTree(ID));";
+    const char *createTableSQL = "CREATE TABLE IF NOT EXISTS ContentPath (\
+                                ID INTEGER PRIMARY KEY AUTOINCREMENT, \
+                                RelativePath TEXT NOT NULL UNIQUE, \
+                                FileName TEXT, \
+                                InnerName TEXT UNIQUE, \
+                                ModifiedTime INTERGER,\
+                                TYPE INTERGER,\
+                                FileType INTERGER, \
+                                ParentID INTEGER, \
+                                FOREIGN KEY (ParentID) REFERENCES DirectoryTree(ID));";
 
-        if (sqlite3_exec(db, createTableSQL, NULL, NULL, NULL) != SQLITE_OK) 
-        {
-            SDL_Log("Failed to create table: %s\n", sqlite3_errmsg(db));
-            return false;
-        }
-    }
-    else if (SDL_strcmp(tableName, "AliasNamePair") == 0)
+    if (sqlite3_exec(db, createTableSQL, NULL, NULL, NULL) != SQLITE_OK) 
     {
-        const char *createTableSQL = "CREATE TABLE IF NOT EXISTS AliasNamePair (\
-                                    ID INTEGER PRIMARY KEY AUTOINCREMENT, \
-                                    Alias TEXT NOT NULL UNIQUE, \
-                                    Name TEXT);";
-
-        if (sqlite3_exec(db, createTableSQL, NULL, NULL, NULL) != SQLITE_OK) 
-        {
-            SDL_Log("Failed to create table: %s\n", sqlite3_errmsg(db));
-            return false;
-        }
+        SDL_Log("Failed to create table: %s\n", sqlite3_errmsg(db));
+        return false;
     }
-    else if (SDL_strcmp(tableName, "DeletedRow") == 0)
+
+    return true;
+}
+static bool createTableAliasNamePair(void)
+{
+    const char *createTableSQL = "CREATE TABLE IF NOT EXISTS AliasNamePair (\
+                                ID INTEGER PRIMARY KEY AUTOINCREMENT, \
+                                Alias TEXT NOT NULL UNIQUE, \
+                                Name TEXT);";
+
+    if (sqlite3_exec(db, createTableSQL, NULL, NULL, NULL) != SQLITE_OK) 
     {
-        const char *createTableSQL = "CREATE TABLE IF NOT EXISTS DeletedRow (\
-                                    ID INTEGER PRIMARY KEY AUTOINCREMENT, \
-                                    FileName TEXT UNIQUE, \
-                                    InnerName TEXT UNIQUE, \
-                                    TYPE INTERGER,\
-                                    FileType INTERGER);";
-
-        if (sqlite3_exec(db, createTableSQL, NULL, NULL, NULL) != SQLITE_OK) 
-        {
-            SDL_Log("Failed to create table: %s\n", sqlite3_errmsg(db));
-            return false;
-        }
+        SDL_Log("Failed to create table: %s\n", sqlite3_errmsg(db));
+        return false;
     }
+
+    return true;
+}
+static bool createTableDeletedRow(void)
+{
+    const char *createTableSQL = "CREATE TABLE IF NOT EXISTS DeletedRow (\
+                                ID INTEGER PRIMARY KEY AUTOINCREMENT, \
+                                FileName TEXT UNIQUE, \
+                                InnerName TEXT UNIQUE, \
+                                TYPE INTERGER,\
+                                FileType INTERGER);";
+
+    if (sqlite3_exec(db, createTableSQL, NULL, NULL, NULL) != SQLITE_OK) 
+    {
+        SDL_Log("Failed to create table: %s\n", sqlite3_errmsg(db));
+        return false;
+    }
+
     return true;
 }
 static int setSQLiteMem(void)
@@ -256,7 +258,7 @@ int generatePath(int argc, char * argv[])
 
     if (!tableExistJudge())
     {
-        if (createTable("AliasNamePair") == false) 
+        if (createTableAliasNamePair() == false) 
         {
             res = -2;
             goto cleanup;
@@ -274,13 +276,13 @@ int generatePath(int argc, char * argv[])
         }
     }
 
-    if (createTable("ContentPath") == false)
+    if (createTableContentPath() == false)
     {
         res = -4;
         goto cleanup;
     }
 
-    createTable("DeletedRow");
+    createTableDeletedRow();
 
     DB_Path pack = {0};
     pack.R_Begin = (Uint16)PathBeginLocation;

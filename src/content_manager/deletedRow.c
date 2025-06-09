@@ -16,12 +16,12 @@
 
 extern sqlite3 * db;
 
-static int findSameDeletedRow(const char * fileName, int type, Uint32 fileType)
+int findSameDeletedRow(const char * fileName, int type, Uint32 fileType, char * innerName)
 {
-    static const char * findSameFileName = "SELECT ID FROM DeletedRow WHERE FileName = ? AND TYPE = ? AND FileType = ?;";
+    static const char * findSameFileName = "SELECT ID, InnerName FROM DeletedRow WHERE FileName = ? AND TYPE = ? AND FileType = ?;";
 
     bool finalize = false;
-    int res = true;
+    int res = false;
     int id = -1;
     sqlite3_stmt * stmt = NULL;
 
@@ -32,7 +32,11 @@ static int findSameDeletedRow(const char * fileName, int type, Uint32 fileType)
     }
     finalize = true;
 
-    res |= sqlite3_bind_text(stmt, 1, fileName, -1, SQLITE_STATIC);
+    char * slash = SDL_strrchr(fileName, SEPRATOR_C);
+    if (slash) slash++;
+    else slash = fileName;
+
+    res |= sqlite3_bind_text(stmt, 1, slash, -1, SQLITE_STATIC);
     res |= sqlite3_bind_int(stmt, 2, type);
     res |= sqlite3_bind_int(stmt, 3, fileType);
 
@@ -46,6 +50,8 @@ static int findSameDeletedRow(const char * fileName, int type, Uint32 fileType)
     if (rc == SQLITE_ROW)
     {
         id = sqlite3_column_int(stmt, 0);
+        const char * nameGeted = sqlite3_column_text(stmt, 1);
+        if (nameGeted) (void)SDL_strlcpy(innerName, nameGeted, SDL_strlen(nameGeted) + 1);
     }
     else if (rc == SQLITE_DONE)
     {

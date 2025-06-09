@@ -1,4 +1,5 @@
 #include "SDL3/SDL_stdinc.h"
+#include "SDL3/SDL_filesystem.h"
 #include "sqlite3/sqlite3.h"
 #include "G_file/G_file_type.h"
 #include "uthash/uthash.h"
@@ -35,7 +36,17 @@ typedef struct _Fixed_File Fixed_File;
 // max row count in database
 #define MAX_ROW 1024
 
+extern void SDLCALL initFileTypeHashTable(void);
+extern bool SDLCALL tableExistJudge(void);
 extern int SDLCALL generatePath(int argc, char * argv[]);
+extern bool SDLCALL insertNode_2(const char * alias, const char * name);
+extern bool SDLCALL updateDatabase(DB_Path * pPack);
+extern int SDLCALL getRowsCount(void);
+extern bool SDLCALL insertNode3(int mainTableRowID);
+extern SDL_PathType SDLCALL getPathType(const int id);
+extern char* SDLCALL getPathByID(const int ID);
+extern char* SDLCALL getName(const int ID);
+extern int SDLCALL findSameDeletedRow(const char * fileName, int type, Uint32 fileType, char * innerName);
 
 #include "SDL3/SDL_close_code.h"
 
