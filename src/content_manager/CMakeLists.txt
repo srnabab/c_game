@@ -1,4 +1,4 @@
-add_executable(ContentManager content_manager.c main.c 
+add_executable(ContentManager contentPath.c aliasNamePair.c deletedRow.c content_manager.c main.c 
                             ${SRC_ROOT}/sqlite3_alloc_func.c
                             # ${SRC_ROOT}/sqlite3/sqlite3.c
                             ${SRC_ROOT}/G_allocator.c)
