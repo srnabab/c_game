@@ -36,6 +36,7 @@ typedef struct _Fixed_File Fixed_File;
 // max row count in database
 #define MAX_ROW 1024
 
+extern int SDLCALL createNewUUID(unsigned char * uuidStr);
 extern void SDLCALL initFileTypeHashTable(void);
 extern bool SDLCALL tableExistJudge(void);
 extern int SDLCALL generatePath(int argc, char * argv[]);
@@ -47,6 +48,7 @@ extern SDL_PathType SDLCALL getPathType(const int id);
 extern char* SDLCALL getPathByID(const int ID);
 extern char* SDLCALL getName(const int ID);
 extern int SDLCALL findSameDeletedRow(const char * fileName, int type, Uint32 fileType, char * innerName);
+extern bool SDLCALL deleteRow3(int ID);
 
 #include "SDL3/SDL_close_code.h"
 

@@ -32,7 +32,7 @@ int render(void * arg)
     int * threadIndex = NULL;
     void * datas[4];
     copy = createThreadPool(&threadPool, 2, "renderTask", false);
-    test_if (copy == false) 
+    if (copy == false) 
     {
         game_is_running = false;
         SDL_SignalSemaphore(allSync.signalSemaphore);

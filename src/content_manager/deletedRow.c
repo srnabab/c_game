@@ -130,3 +130,39 @@ bool insertNode3(int mainTableRowID)
 
     return res;
 }
+bool deleteRow3(int ID)
+{
+    const char * SQL = "DELETE FROM DeletedRow WHERE ID = ?";
+    sqlite3_stmt * stmt = NULL;
+    int res = 0;
+    bool finalize = false;
+
+    if (sqlite3_prepare_v2(db, SQL, -1, &stmt, NULL) != SQLITE_OK) 
+    {
+        SDL_Log("Failed to prepare statement: %s\n", sqlite3_errmsg(db));
+        res = -1;
+        goto cleanup;
+    }
+    finalize = true;
+
+    res |= sqlite3_bind_int(stmt, 1, ID);
+    if (res)
+    {
+        SDL_Log("Failed to bind: %s\n", sqlite3_errmsg(db));
+        res = -4;
+        goto cleanup;
+    }
+
+    if (sqlite3_step(stmt) != SQLITE_DONE) 
+    {
+        SDL_Log("Failed to execute statement: %s\n", sqlite3_errmsg(db));
+        res = -5;
+        goto cleanup;
+    }
+
+    cleanup:
+
+    if (finalize) if (sqlite3_finalize(stmt)) SDL_Log("Failed to finalize statement: %s\n", sqlite3_errmsg(db));
+
+    return res < 0 ? false : true;
+}

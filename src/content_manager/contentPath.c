@@ -13,6 +13,8 @@
 #include "sqlite3/sqlite3.h"
 #include "sqlite3/sqlite3_alloc_func.h"
 #include "uthash/uthash.h"
+#include <rpcdce.h>
+#include <string.h>
 
 extern sqlite3 * db;
 extern bool existInDatabase[MAX_ROW];
@@ -50,7 +52,7 @@ static FileType findFileType(const char * suffix)
     if (temp) return temp->fileType;
     return Unknown;
 }
-static int getID(const char * name)
+static int getID(const char * name, char * UUID)
 {
     static const char *findSQL = "SELECT ID FROM ContentPath WHERE RelativePath = ?;";
     sqlite3_stmt * stmt;
@@ -65,7 +67,8 @@ static int getID(const char * name)
     int rc = sqlite3_step(stmt);
     if (rc == SQLITE_ROW)
     {
-        rc = sqlite3_column_int(stmt, 0);
+        unsigned char * str = sqlite3_column_text(stmt, 0);
+        memcpy(UUID, str, 38);
     }
     else if (rc == SQLITE_DONE)
     {
@@ -142,28 +145,42 @@ int getRowsCount(void)
 static bool deleteRow(const int ID)
 {
     const char * SQL = "DELETE FROM ContentPath WHERE ID = ?";
-    sqlite3_stmt * stmt;
+    sqlite3_stmt * stmt = NULL;
+    int res = 0;
+    bool finalize = false;
 
     if (sqlite3_prepare_v2(db, SQL, -1, &stmt, NULL) != SQLITE_OK) 
     {
         SDL_Log("Failed to prepare statement: %s\n", sqlite3_errmsg(db));
-        return false;
+        res = -1;
+        goto cleanup;
     }
+    finalize = true;
 
-    sqlite3_bind_int(stmt, 1, ID);
+    res |= sqlite3_bind_int(stmt, 1, ID);
+    if (res)
+    {
+        SDL_Log("Failed to bind: %s\n", sqlite3_errmsg(db));
+        res = -4;
+        goto cleanup;
+    }
 
     if (sqlite3_step(stmt) != SQLITE_DONE) 
     {
         SDL_Log("Failed to execute statement: %s\n", sqlite3_errmsg(db));
-        return false;
+        res = -5;
+        goto cleanup;
     }
-    sqlite3_finalize(stmt);
 
-    return true;
+    cleanup:
+
+    if (finalize) if (sqlite3_finalize(stmt)) SDL_Log("Failed to finalize statement: %s\n", sqlite3_errmsg(db));
+
+    return res < 0 ? false : true;
 }
-static bool insertNodeInsertSQL_ID(const char *name, int parentID, Sint64 timeStamp, int type, Uint32 fileType, int gap_id)
+static bool insertNodeInsertSQL_ID(const char *name, const char * parentID, Sint64 timeStamp, int type, Uint32 fileType, const char * ID)
 {
-    static const char *insertSQL_ID = "INSERT INTO ContentPath (ID, RelativePath, FileName, ParentID, ModifiedTime, TYPE, FileType) VALUES (?, ?, ?, ?, ?, ?, ?);";
+    static const char *insertSQL_ID = "INSERT INTO ContentPath (ID, ParentID, RelativePath, FileName, TYPE, FileSize, ContentHash, ModifiedTime, LastSeenTime, FileType) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
 
     bool finalize = false;
     int res = SQLITE_OK;
@@ -296,19 +313,21 @@ static bool insertMetaData(const char * innerName, int ID)
     return res;
 }
 // insert to minest ID row in ContentPath
-static bool insertNode(const char *name, int parentID, Sint64 timeStamp, int type, Uint32 fileType)
+static bool insertNode(const char *name, int parentID, Sint64 timeStamp, int type, Uint32 fileType, Uint64 fileSize)
 {
-    char innerName[16];
-    int contentID = -1;
-    int id = -1;
+    char innerName[16] = {0};
+    unsigned char UUID[37];
     int res = false;
 
-    id = findSameDeletedRow(name, type, fileType, innerName);
-    res = insertNodeInsertSQL_ID(name, parentID, timeStamp, type, fileType, findMinesID());
+    // id = findSameDeletedRow(name, type, fileType, innerName);
+    res = createNewUUID(UUID);
+
+    res = insertNodeInsertSQL_ID(name, parentID, timeStamp, type, fileType, );
     contentID = getID(name);
     if (res > 0 && id > 0) 
     {
         res = insertMetaData(innerName, contentID);
+        deleteRow3(id);
     }
 
     return res < 0 ? false : true;
@@ -635,6 +654,9 @@ bool updateDatabase(DB_Path * pPack)
     char * ContentPath = pPack->A_path;
     SDL_PathInfo info = {0};
     SDL_GetPathInfo(ContentPath, &info);
+
+    // UUID * uuid;
+    // UuidCreate(UUID *Uuid)
 
     existInDatabase[0] = true;
 

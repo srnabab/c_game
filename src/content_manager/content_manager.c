@@ -1,5 +1,6 @@
 #include "content_manager/content_manager.h"
 #include "G_constants.h"
+#include "blake3.h"
 
 #include "G_file_type.h"
 
@@ -23,15 +24,31 @@ bool existInDatabase[MAX_ROW];
 static bool createTableContentPath(void)
 {
     const char *createTableSQL = "CREATE TABLE IF NOT EXISTS ContentPath (\
-                                ID INTEGER PRIMARY KEY AUTOINCREMENT, \
+                                ID TEXT PRIMARY KEY, \
+                                ParentID TEXT, \
                                 RelativePath TEXT NOT NULL UNIQUE, \
                                 FileName TEXT, \
-                                InnerName TEXT UNIQUE, \
-                                ModifiedTime INTERGER,\
                                 TYPE INTERGER,\
-                                FileType INTERGER, \
-                                ParentID INTEGER, \
-                                FOREIGN KEY (ParentID) REFERENCES DirectoryTree(ID));";
+                                FileSize INTERGER,\
+                                ContentHash TEXT,\
+                                ModifiedTime INTERGER,\
+                                LastSeenTime INTERGER,\
+                                InnerName TEXT UNIQUE, \
+                                FileType INTERGER);";
+
+    if (sqlite3_exec(db, createTableSQL, NULL, NULL, NULL) != SQLITE_OK) 
+    {
+        SDL_Log("Failed to create table: %s\n", sqlite3_errmsg(db));
+        return false;
+    }
+
+    return true;
+}
+static bool createTableImageLoadParameter(void)
+{
+    const char *createTableSQL = "CREATE TABLE IF NOT EXISTS ImageLoadParameter (\
+                                ID INTERGER PRIMART KEY AUTOINCREMENT, \
+                                FOREIGN KEY(FileID) REFERENCES contentPath(ID));";
 
     if (sqlite3_exec(db, createTableSQL, NULL, NULL, NULL) != SQLITE_OK) 
     {
@@ -60,7 +77,7 @@ static bool createTableDeletedRow(void)
 {
     const char *createTableSQL = "CREATE TABLE IF NOT EXISTS DeletedRow (\
                                 ID INTEGER PRIMARY KEY AUTOINCREMENT, \
-                                FileName TEXT UNIQUE, \
+                                FileName TEXTE, \
                                 InnerName TEXT UNIQUE, \
                                 TYPE INTERGER,\
                                 FileType INTERGER);";
@@ -282,6 +299,7 @@ int generatePath(int argc, char * argv[])
         goto cleanup;
     }
 
+    // createTableImageLoadParameter();
     createTableDeletedRow();
 
     DB_Path pack = {0};
