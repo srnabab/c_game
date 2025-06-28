@@ -1,3 +1,4 @@
+#include "SDL_stdinc.h"
 #include "content_manager/content_manager.h"
 #include "G_constants.h"
 
@@ -8,13 +9,14 @@
 #include "SDL3/SDL_log.h"
 #include "SDL3/SDL_iostream.h"
 
-#include "SDL_stdinc.h"
 #include "SDL_timer.h"
 #include "sqlite3/sqlite3.h"
 #include "sqlite3/sqlite3_alloc_func.h"
 #include "uthash/uthash.h"
 
 extern sqlite3 * db;
+extern char ContentPath[255];
+extern size_t PathBeginLocation;
 extern bool existInDatabase[MAX_ROW];
 static FileTypeHashTable * fileTypeHash = NULL;
 
@@ -529,13 +531,16 @@ static SDL_EnumerationResult SDLCALL createFolderDatabase(void *userdata, const 
     if (fname != NULL)
     {
         SDL_PathInfo info = {0};
-        char temp_A_Path[255];
-        SDL_strlcpy(temp_A_Path, ((DB_Path*)userdata)->A_path, 255);
+        char tempPath[255];
+        char tempParentPath[255];
+        SDL_strlcpy(tempPath, dirname, 255);
 
-        SDL_strlcat(temp_A_Path, SEPRATOR, 255);
+        SDL_strlcpy(tempParentPath, dirname + PathBeginLocation, 255);
+        char * slash = SDL_strrchr(tempParentPath, SEPRATOR_C);
+        if (slash != NULL) *(slash) = '\0';
 
-        SDL_strlcat(temp_A_Path, fname, 255);
-        SDL_GetPathInfo(temp_A_Path, &info);
+        SDL_strlcat(tempPath, fname, 255);
+        SDL_GetPathInfo(tempPath, &info);
 
         FileType fileType = Folder;
 
@@ -545,15 +550,11 @@ static SDL_EnumerationResult SDLCALL createFolderDatabase(void *userdata, const 
         // SDL_Log(temp_A_Path + ((DB_Path*)userdata)->R_Begin);
         // SDL_Log("type: %d, size: %llu, dirname:%s, fname:%s, begin: %u", info.type, info.size, dirname, fname, ((DB_Path*)userdata)->R_Begin);
 
-        insertNode(temp_A_Path + ((DB_Path*)userdata)->R_Begin, getID(((DB_Path*)userdata)->A_path + ((DB_Path*)userdata)->LenGetId),
+        insertNode(tempPath + PathBeginLocation, getID(tempParentPath),
                      info.modify_time, (int)info.type, fileType);
         if (info.type == SDL_PATHTYPE_DIRECTORY)
         {
-            DB_Path pack = {0};
-            pack.LenGetId = ((DB_Path*)userdata)->R_Begin;
-            pack.R_Begin = pack.LenGetId + (Uint16)SDL_strlen(dirname + ((DB_Path*)userdata)->R_Begin);
-            pack.A_path = temp_A_Path;
-            SDL_EnumerateDirectory(temp_A_Path, createFolderDatabase, &pack);
+            SDL_EnumerateDirectory(tempPath, createFolderDatabase, NULL);
         }
     }
     else if (fname == NULL)
@@ -570,13 +571,16 @@ static SDL_EnumerationResult SDLCALL updateFolderDatabase(void *userdata, const 
     if (fname)
     {
         SDL_PathInfo info = {0};
-        char temp_A_Path[255];
-        SDL_strlcpy(temp_A_Path, ((DB_Path*)userdata)->A_path, 255);
+        char tempPath[255];
+        char tempParentPath[255];
+        SDL_strlcpy(tempPath, dirname, 255);
 
-        SDL_strlcat(temp_A_Path, SEPRATOR, 255);
+        SDL_strlcpy(tempParentPath, dirname + PathBeginLocation, 255);
+        char * slash = SDL_strrchr(tempParentPath, SEPRATOR_C);
+        if (slash != NULL) *(slash) = '\0';
 
-        SDL_strlcat(temp_A_Path, fname, 255);
-        SDL_GetPathInfo(temp_A_Path, &info);
+        SDL_strlcat(tempPath, fname, 255);
+        SDL_GetPathInfo(tempPath, &info);
 
         FileType fileType = Folder;
 
@@ -585,9 +589,9 @@ static SDL_EnumerationResult SDLCALL updateFolderDatabase(void *userdata, const 
         // SDL_Log(temp_A_Path + ((DB_Path*)userdata)->R_Begin);
         // SDL_Log("type: %d, size: %llu, dirname:%s, fname:%s, begin: %u", info.type, info.size, dirname, fname, ((DB_Path*)userdata)->R_Begin);
 
-        const char * temp_R_Path = temp_A_Path + ((DB_Path*)userdata)->R_Begin;
+        const char * temp_R_Path = tempPath + PathBeginLocation;
         int ID = getID(temp_R_Path);
-        int ParentID = getID(((DB_Path*)userdata)->A_path + ((DB_Path*)userdata)->LenGetId);
+        int ParentID = getID(tempParentPath);
 
         if (ID < 0)
         {
@@ -615,16 +619,12 @@ static SDL_EnumerationResult SDLCALL updateFolderDatabase(void *userdata, const 
 
         if (info.type == SDL_PATHTYPE_DIRECTORY)
         {
-            DB_Path pack = {0};
-            pack.LenGetId = ((DB_Path*)userdata)->R_Begin;
-            pack.R_Begin = pack.LenGetId + (Uint16)SDL_strlen(dirname + ((DB_Path*)userdata)->R_Begin);
-            pack.A_path = temp_A_Path;
-            SDL_EnumerateDirectory(temp_A_Path, updateFolderDatabase, &pack);
+            SDL_EnumerateDirectory(tempPath, updateFolderDatabase, NULL);
         }
     }
     else
     {
-        // SDL_Log("End");
+        SDL_Log("End");
         return SDL_ENUM_SUCCESS;
     }
 
@@ -632,14 +632,13 @@ static SDL_EnumerationResult SDLCALL updateFolderDatabase(void *userdata, const 
 }
 bool updateDatabase(DB_Path * pPack)
 {
-    char * ContentPath = pPack->A_path;
     SDL_PathInfo info = {0};
     SDL_GetPathInfo(ContentPath, &info);
 
     existInDatabase[0] = true;
 
     int i;
-    int ID = getID(ContentPath + pPack->R_Begin);
+    int ID = getID(ContentPath + PathBeginLocation);
 
     int rowsCount = 0;
     if (ID == 1)
@@ -652,7 +651,7 @@ bool updateDatabase(DB_Path * pPack)
         existInDatabase[ID] = true;
 
         // SDL_Log("count: %d", rowsCount);
-        SDL_EnumerateDirectory(ContentPath, updateFolderDatabase, pPack);
+        SDL_EnumerateDirectory(ContentPath, updateFolderDatabase, NULL);
 
         rowsCount = getRowsCount();
         rowsCount *= 2;
@@ -670,7 +669,7 @@ bool updateDatabase(DB_Path * pPack)
     }
     else
     {
-        insertNode(ContentPath + pPack->R_Begin, 0, info.modify_time, (int)info.type, (Uint32)info.type);
+        insertNode(ContentPath + PathBeginLocation, 0, info.modify_time, (int)info.type, (Uint32)info.type);
 
         SDL_EnumerateDirectory(ContentPath, createFolderDatabase, pPack);
     }
