@@ -2,6 +2,7 @@
 CompileFlags:
   Add: [
     "-isystemC:/msys64/mingw64/include",
+    "-isystemC:/Program Files (x86)/Windows Kits/10/Include"
   ]
 
 # .clangd

@@ -17,7 +17,8 @@
 #include "uthash/uthash.h"
 
 sqlite3 * db = NULL;
-static size_t PathBeginLocation = 0;
+char ContentPath[255];
+size_t PathBeginLocation = 0;
 bool existInDatabase[MAX_ROW];
 
 // only for two different tables: ContentPath, AliasNamePair
@@ -235,7 +236,6 @@ int generatePath(int argc, char * argv[])
     
     PathBeginLocation = SDL_strlen(dataBasePath);
 
-    char ContentPath[255] = {0};
     char PathPath[255] = {0};
 
     SDL_strlcpy(ContentPath, dataBasePath, 255);
@@ -302,14 +302,9 @@ int generatePath(int argc, char * argv[])
     // createTableImageLoadParameter();
     createTableDeletedRow();
 
-    DB_Path pack = {0};
-    pack.R_Begin = (Uint16)PathBeginLocation;
-    pack.LenGetId = pack.R_Begin;
-    pack.A_path = ContentPath;
+    updateDatabase(NULL);
 
-    updateDatabase(&pack);
-
-    writePathFile(PathPath, template, templateCount);
+    // writePathFile(PathPath, template, templateCount);
 
     Uint64 ns = ((SDL_GetPerformanceCounter() - timeStart) * 1000000000ULL) / SDL_GetPerformanceFrequency();
     SDL_Log("time used: %llu ns, %lf ms, %lf s\n", ns, (double)ns / 1000000ULL, (double)ns / 1000000000ULL);
