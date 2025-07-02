@@ -28,8 +28,7 @@ static bool createTableContentPath(void)
                                 ModifiedTime INTERGER,\
                                 LastSeenTime INTERGER,\
                                 InnerName TEXT UNIQUE, \
-                                FileType INTERGER, \
-                                MARK INTERGER);";
+                                FileType INTERGER);";
 
     if (sqlite3_exec(db, createTableSQL, NULL, NULL, NULL) != SQLITE_OK) 
     {
@@ -360,8 +359,6 @@ int generatePath(int argc, char * argv[])
     SDL_Log("time used: %llu ns, %lf ms, %lf s\n", ns, (double)ns / 1000000ULL, (double)ns / 1000000000ULL);
 
     cleanup:
-
-    sqlite3_exec(db, "UPDATE ContentPath SET MARK = 1;", NULL, NULL, NULL);
 
     sqlite3_close(db);
 

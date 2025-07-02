@@ -1,9 +1,11 @@
+#include "SDL_stdinc.h"
 #include "content_manager/content_manager.h"
 #include "G_constants.h"
 
 #include "SDL3/SDL_filesystem.h"
 #include "SDL3/SDL_log.h"
 #include "SDL3/SDL_iostream.h"
+#include "sqlite3/sqlite3.h"
 
 extern sqlite3 * db;
 
@@ -59,19 +61,43 @@ int findSameDeletedRow(const char * fileName, int type, Uint32 fileType, char * 
 
     return id;
 }
-bool insertDeletedRowIntoDeletedRow(void)
+bool insertDeletedRowIntoDeletedRow(Uint64 timestamp)
 {
     const char * SQL = "INSERT INTO DeletedRow (FileName, InnerName, FileType) \
                         SELECT FileName, InnerName, FileType FROM ContentPath \
-                        WHERE MARK = 1 AND TYPE = 1;";
+                        WHERE LastSeenTime < ? AND TYPE = 1;";
+    sqlite3_stmt * stmt = NULL;
+    int res = 0;
+    bool finalize = false;
 
-    if (sqlite3_exec(db, SQL, NULL, NULL, NULL) != SQLITE_OK)
+    if (sqlite3_prepare_v2(db, SQL, -1, &stmt, NULL) != SQLITE_OK) 
     {
-        SDL_Log("Insert into deleted row failed: %s\n", sqlite3_errmsg(db));
-        return false;
+        SDL_Log("Failed to prepare statement: %s\n", sqlite3_errmsg(db));
+        res = -1;
+        goto cleanup;
+    }
+    finalize = true;
+
+    res |= sqlite3_bind_int64(stmt, 1, timestamp);
+    if (res)
+    {
+        SDL_Log("Failed to bind: %s\n", sqlite3_errmsg(db));
+        res = -4;
+        goto cleanup;
     }
 
-    return true;
+    if (sqlite3_step(stmt) != SQLITE_DONE) 
+    {
+        SDL_Log("Failed to execute statement: %s\n", sqlite3_errmsg(db));
+        res = -5;
+        goto cleanup;
+    }
+
+    cleanup:
+
+    if (finalize) if (sqlite3_finalize(stmt)) SDL_Log("Failed to finalize statement: %s\n", sqlite3_errmsg(db));
+
+    return res < 0 ? false : true;
 }
 bool insertNode3(int mainTableRowID)
 {

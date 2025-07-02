@@ -1,3 +1,5 @@
+#include "SDL_stdinc.h"
+#include "SDL_time.h"
 #include "content_manager/content_manager.h"
 #include "G_constants.h"
 
@@ -8,6 +10,7 @@
 #include "SDL3/SDL_iostream.h"
 
 #include "blake3.h"
+#include "sqlite3/sqlite3.h"
 
 extern sqlite3 * db;
 extern char ContentPath[255];
@@ -177,7 +180,7 @@ static bool deleteRow(const int ID)
 }
 static bool ifExistContentPath(void)
 {
-    const char * SQL = "SELECT MARK FROM ContentPath WHERE ParentID is NULL;";
+    const char * SQL = "SELECT TYPE FROM ContentPath WHERE ParentID is NULL;";
     sqlite3_stmt * stmt = NULL;
 
     if (sqlite3_prepare_v2(db, SQL, -1, &stmt, NULL) != SQLITE_OK) 
@@ -465,6 +468,32 @@ char * getName(const int ID)
     return name;
 }
 
+// update LastSeemTime in ContentPath by name 
+static void updateLastSeenTime(Sint64 timeStamp, const char * relativePath)
+{
+    const char * SQL = "UPDATE ContentPath SET LastSeenTime = ? WHERE RelativePath = ?";
+    sqlite3_stmt * stmt;
+
+    if (sqlite3_prepare_v2(db, SQL, -1, &stmt, NULL) != SQLITE_OK) 
+    {
+        SDL_Log("Failed to prepare statement: %s\n", sqlite3_errmsg(db));
+        return;
+    }
+
+    sqlite3_bind_int64(stmt, 1, timeStamp);
+    sqlite3_bind_text(stmt, 2, relativePath, -1, SQLITE_STATIC);
+
+    if (sqlite3_step(stmt) != SQLITE_DONE) 
+    {
+        SDL_Log("Failed to execute statement: %s\n", sqlite3_errmsg(db));
+        sqlite3_finalize(stmt);
+        return;
+    }
+
+    sqlite3_finalize(stmt);
+
+    return;
+}
 // update ModifiedTime in ContentPath by ID
 static void updateModifyTime(Sint64 timeStamp, const int ID)
 {
@@ -572,17 +601,41 @@ char * getPathByID(const int ID)
 
     return path;
 }
-static bool deleteUnenumeratedRow(void)
+static bool deleteUnenumeratedRow(Uint64 timestamp)
 {
-    const char *SQL = "DELETE FROM ContentPath WHERE MARK = 1;";
+    const char *SQL = "DELETE FROM ContentPath WHERE LastSeenTime < ?;";
+    sqlite3_stmt * stmt = NULL;
+    int res = 0;
+    bool finalize = false;
 
-    if (sqlite3_exec(db, SQL, NULL, NULL, NULL) != SQLITE_OK)
+    if (sqlite3_prepare_v2(db, SQL, -1, &stmt, NULL) != SQLITE_OK) 
     {
-        SDL_Log("delete failed: %s\n", sqlite3_errmsg(db));
-        return false;
+        SDL_Log("Failed to prepare statement: %s\n", sqlite3_errmsg(db));
+        res = -1;
+        goto cleanup;
+    }
+    finalize = true;
+
+    res |= sqlite3_bind_int64(stmt, 1, timestamp);
+    if (res)
+    {
+        SDL_Log("Failed to bind: %s\n", sqlite3_errmsg(db));
+        res = -4;
+        goto cleanup;
     }
 
-    return true;
+    if (sqlite3_step(stmt) != SQLITE_DONE) 
+    {
+        SDL_Log("Failed to execute statement: %s\n", sqlite3_errmsg(db));
+        res = -5;
+        goto cleanup;
+    }
+
+    cleanup:
+
+    if (finalize) if (sqlite3_finalize(stmt)) SDL_Log("Failed to finalize statement: %s\n", sqlite3_errmsg(db));
+
+    return res < 0 ? false : true;
 }
 // recursion to get all file and folder in Content Folder and create database
 static SDL_EnumerationResult SDLCALL createFolderDatabase(void *userdata, const char *dirname, const char *fname)
@@ -592,6 +645,7 @@ static SDL_EnumerationResult SDLCALL createFolderDatabase(void *userdata, const 
         SDL_PathInfo info = {};
         FileType fileType = Folder;
         Sint64 fileSize = 0;
+        Sint64 currentTime;
         char tempPath[255];
         char tempParentPath[255];
         unsigned char UUID[37];
@@ -612,6 +666,8 @@ static SDL_EnumerationResult SDLCALL createFolderDatabase(void *userdata, const 
         SDL_strlcat(tempPath, fname, 255);
         SDL_GetPathInfo(tempPath, &info);
 
+        SDL_GetCurrentTime(&currentTime);
+
         getID(tempParentPath, parentUUID);
 
         if (info.type != SDL_PATHTYPE_DIRECTORY) 
@@ -628,7 +684,7 @@ static SDL_EnumerationResult SDLCALL createFolderDatabase(void *userdata, const 
         }
 
         insertNodeContentPath(UUID, parentUUID, tempPath + PathBeginLocation, fname, info.type, fileSize, contentHashPtr\
-            , info.modify_time, info.access_time, (Uint32)fileType);
+            , info.modify_time, currentTime, (Uint32)fileType);
 
         switch (fileType) 
         {
@@ -655,96 +711,91 @@ static SDL_EnumerationResult SDLCALL createFolderDatabase(void *userdata, const 
 // recursion to update all file and folder in Content Folder and create database
 static SDL_EnumerationResult SDLCALL updateFolderDatabase(void *userdata, const char *dirname, const char *fname)
 {
-    // if (fname)
-    // {
-    //     SDL_PathInfo info = {0};
-    //     char tempPath[255];
-    //     char tempParentPath[255];
-    //     SDL_strlcpy(tempPath, dirname, 255);
+    if (fname)
+    {
+        SDL_PathInfo info = {0};
+        char tempPath[255];
+        char tempParentPath[255];
+        SDL_strlcpy(tempPath, dirname, 255);
 
-    //     SDL_strlcpy(tempParentPath, dirname + PathBeginLocation, 255);
-    //     char * slash = SDL_strrchr(tempParentPath, SEPRATOR_C);
-    //     if (slash != NULL) *(slash) = '\0';
+        SDL_strlcpy(tempParentPath, dirname + PathBeginLocation, 255);
+        char * slash = SDL_strrchr(tempParentPath, SEPRATOR_C);
+        if (slash != NULL) *(slash) = '\0';
 
-    //     SDL_strlcat(tempPath, fname, 255);
-    //     SDL_GetPathInfo(tempPath, &info);
+        SDL_strlcat(tempPath, fname, 255);
+        SDL_GetPathInfo(tempPath, &info);
 
-    //     FileType fileType = Folder;
+        FileType fileType = Folder;
+        Sint64 currentTime;
+        SDL_GetCurrentTime(&currentTime);
 
-    //     if (info.type != SDL_PATHTYPE_DIRECTORY) fileType = fileTypeJudge(fname);
-    //     // SDL_Log(temp_A_Path);
-    //     // SDL_Log(temp_A_Path + ((DB_Path*)userdata)->R_Begin);
-    //     // SDL_Log("type: %d, size: %llu, dirname:%s, fname:%s, begin: %u", info.type, info.size, dirname, fname, ((DB_Path*)userdata)->R_Begin);
+        updateLastSeenTime(currentTime, tempPath + PathBeginLocation);
 
-    //     const char * temp_R_Path = tempPath + PathBeginLocation;
-    //     int ID = getID(temp_R_Path);
-    //     int ParentID = getID(tempParentPath);
+        // if (info.type != SDL_PATHTYPE_DIRECTORY) fileType = fileTypeJudge(fname);
 
-    //     if (ID < 0)
-    //     {
-    //         insertNodeContentPath(temp_R_Path, ParentID, info.modify_time, (int)info.type, fileType);
-    //         existInDatabase[getID(temp_R_Path)] = true;
-    //     }
-    //     else if (info.modify_time > getModifyTime(ID))
-    //     {
-    //         updateModifyTime(info.modify_time, ID);
-    //         if (getParentID(ID) != ParentID)
-    //         {
-    //             updateParentID(ParentID, ID);
-    //         }
-    //         existInDatabase[ID] = true;
-    //     }
-    //     else
-    //     {
-    //         if (getParentID(ID) != ParentID)
-    //         {
-    //             updateParentID(ParentID, ID);
-    //         }
-    //         existInDatabase[ID] = true;
-    //     }
+        // const char * temp_R_Path = tempPath + PathBeginLocation;
+        // int ID = getID(temp_R_Path);
+        // int ParentID = getID(tempParentPath);
 
-    //     if (info.type == SDL_PATHTYPE_DIRECTORY)
-    //     {
-    //         SDL_EnumerateDirectory(tempPath, updateFolderDatabase, NULL);
-    //     }
-    // }
-    // else
-    // {
-    //     SDL_Log("End");
-    //     return SDL_ENUM_SUCCESS;
-    // }
+        // if (ID < 0)
+        // {
+        //     insertNodeContentPath(temp_R_Path, ParentID, info.modify_time, (int)info.type, fileType);
+        //     existInDatabase[getID(temp_R_Path)] = true;
+        // }
+        // else if (info.modify_time > getModifyTime(ID))
+        // {
+        //     updateModifyTime(info.modify_time, ID);
+        //     if (getParentID(ID) != ParentID)
+        //     {
+        //         updateParentID(ParentID, ID);
+        //     }
+        //     existInDatabase[ID] = true;
+        // }
+        // else
+        // {
+        //     if (getParentID(ID) != ParentID)
+        //     {
+        //         updateParentID(ParentID, ID);
+        //     }
+        //     existInDatabase[ID] = true;
+        // }
+
+        if (info.type == SDL_PATHTYPE_DIRECTORY)
+        {
+            SDL_EnumerateDirectory(tempPath, updateFolderDatabase, NULL);
+        }
+    }
+    else
+    {
+        SDL_Log("End");
         return SDL_ENUM_SUCCESS;
-
-    // return SDL_ENUM_CONTINUE;
+    }
+    return SDL_ENUM_CONTINUE;
 }
 bool updateDatabase(DB_Path * pPack)
 {
     SDL_PathInfo info = {0};
     SDL_GetPathInfo(ContentPath, &info);
 
+    Sint64 currentTime; 
+    SDL_GetCurrentTime(&currentTime);
     bool exist = ifExistContentPath();
 
     if (exist)
     {
-        // if (info.modify_time > getModifyTime(ID))
-        // {
-            // updateModifyTime(info.modify_time, ID);
-            // SDL_Log("update");
-        // }
-        // existInDatabase[ID] = true;
+        updateLastSeenTime(currentTime, ContentPath + PathBeginLocation);
 
-        // SDL_Log("count: %d", rowsCount);
-        // SDL_EnumerateDirectory(ContentPath, updateFolderDatabase, NULL);
+        SDL_EnumerateDirectory(ContentPath, updateFolderDatabase, NULL);
 
-        insertDeletedRowIntoDeletedRow();
-        deleteUnenumeratedRow();
+        insertDeletedRowIntoDeletedRow(currentTime);
+        deleteUnenumeratedRow(currentTime);
     }
     else
     {
         unsigned char UUID[37];
         createNewUUID(UUID);
         insertNodeContentPath(UUID, NULL, ContentPath + PathBeginLocation, "Content", (int)info.type, 0, NULL\
-        , info.modify_time, info.access_time, (Uint32)info.type);
+        , info.modify_time, currentTime, (Uint32)info.type);
 
         SDL_EnumerateDirectory(ContentPath, createFolderDatabase, pPack);
     }
