@@ -1,18 +1,13 @@
 #include "content_manager/content_manager.h"
 #include "G_constants.h"
 
-#include "G_file_type.h"
 #include "G_file/G_file.h"
 
-#include "G_allocator.h"
 #include "SDL3/SDL_filesystem.h"
 #include "SDL3/SDL_log.h"
 #include "SDL3/SDL_iostream.h"
-#include "SDL3/SDL_timer.h"
 
-#include "sqlite3/sqlite3.h"
 #include "blake3.h"
-#include <stdbool.h>
 
 extern sqlite3 * db;
 extern char ContentPath[255];

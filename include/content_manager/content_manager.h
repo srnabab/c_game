@@ -3,6 +3,7 @@
 #include "sqlite3/sqlite3.h"
 #include "G_file/G_file_type.h"
 #include "uthash/uthash.h"
+#include "G_allocator.h"
 
 #ifndef CONTENT_MANAGER_H
 #define CONTENT_MANAGER_H

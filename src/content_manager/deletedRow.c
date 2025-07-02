@@ -1,20 +1,9 @@
 #include "content_manager/content_manager.h"
 #include "G_constants.h"
 
-#include "G_file_type.h"
-
-#include "G_allocator.h"
 #include "SDL3/SDL_filesystem.h"
 #include "SDL3/SDL_log.h"
 #include "SDL3/SDL_iostream.h"
-
-#include "SDL_stdinc.h"
-#include "SDL_timer.h"
-#include "sqlite3/sqlite3.h"
-#include "sqlite3/sqlite3_alloc_func.h"
-#include "uthash/uthash.h"
-#include <stdbool.h>
-#include <string.h>
 
 extern sqlite3 * db;
 
@@ -73,7 +62,7 @@ int findSameDeletedRow(const char * fileName, int type, Uint32 fileType, char * 
 bool insertDeletedRowIntoDeletedRow(void)
 {
     const char * SQL = "INSERT INTO DeletedRow (FileName, InnerName, FileType) \
-                        SELECT FileName, InnerName, FileType FROM ContentPath \ 
+                        SELECT FileName, InnerName, FileType FROM ContentPath \
                         WHERE MARK = 1 AND TYPE = 1;";
 
     if (sqlite3_exec(db, SQL, NULL, NULL, NULL) != SQLITE_OK)
