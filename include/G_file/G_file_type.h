@@ -14,7 +14,7 @@ enum _FileType
     Shader,
     Txt,
     HashTable,
-    Unknown,
+    FileType_Unknown,
     MAX_TYPE = 0x7FFFFFFF
 };
 typedef enum _FileType FileType;

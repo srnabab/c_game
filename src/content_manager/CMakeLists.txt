@@ -1,4 +1,5 @@
-add_executable(ContentManager contentPath.c aliasNamePair.c deletedRow.c content_manager.c main.c 
+add_executable(ContentManager UUID.c blake_hash.c imageLoadParameter.c contentPath.c aliasNamePair.c deletedRow.c content_manager.c main.c
+                            ${SRC_ROOT}/G_file/G_readFile.c
                             ${SRC_ROOT}/sqlite3_alloc_func.c
                             # ${SRC_ROOT}/sqlite3/sqlite3.c
                             ${SRC_ROOT}/G_allocator.c)
@@ -15,6 +16,8 @@ target_include_directories(ContentManager PRIVATE "${INCLUDE_ROOT}"
 target_link_libraries(ContentManager PRIVATE 
                                     sqlite3.a
                                     SDL3.a
+                                    blake3.a
+                                    Rpcrt4
                                     setupapi winmm imm32 version)
 # target_compile_options(ContentManager PUBLIC -O2 -Wall)
 target_compile_options(ContentManager PUBLIC -static-libgcc -gdwarf-2 -g -DDEBUG -O0)

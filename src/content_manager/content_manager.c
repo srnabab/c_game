@@ -1,5 +1,6 @@
 #include "content_manager/content_manager.h"
 #include "G_constants.h"
+#include "SDL_stdinc.h"
 #include "blake3.h"
 
 #include "G_file_type.h"
@@ -10,11 +11,12 @@
 #include "SDL3/SDL_log.h"
 #include "SDL3/SDL_iostream.h"
 
-#include "SDL_stdinc.h"
-#include "SDL_timer.h"
+#include "SDL3/SDL_timer.h"
 #include "sqlite3/sqlite3.h"
 #include "sqlite3/sqlite3_alloc_func.h"
 #include "uthash/uthash.h"
+#include <stdbool.h>
+#include <string.h>
 
 sqlite3 * db = NULL;
 char ContentPath[255];
@@ -31,11 +33,12 @@ static bool createTableContentPath(void)
                                 FileName TEXT, \
                                 TYPE INTERGER,\
                                 FileSize INTERGER,\
-                                ContentHash TEXT,\
+                                ContentHash BLOB,\
                                 ModifiedTime INTERGER,\
                                 LastSeenTime INTERGER,\
                                 InnerName TEXT UNIQUE, \
-                                FileType INTERGER);";
+                                FileType INTERGER, \
+                                MARK INTERGER);";
 
     if (sqlite3_exec(db, createTableSQL, NULL, NULL, NULL) != SQLITE_OK) 
     {
@@ -48,12 +51,23 @@ static bool createTableContentPath(void)
 static bool createTableImageLoadParameter(void)
 {
     const char *createTableSQL = "CREATE TABLE IF NOT EXISTS ImageLoadParameter (\
-                                ID INTERGER PRIMART KEY AUTOINCREMENT, \
-                                FOREIGN KEY(FileID) REFERENCES contentPath(ID));";
+                                ID INTEGER PRIMARY KEY AUTOINCREMENT, \
+                                ContentHash BLOB, \
+                                FileID TEXT, \
+                                FOREIGN KEY(FileID) REFERENCES contentPath(ID) \
+                                ON DELETE SET NULL ON UPDATE CASCADE);";
 
     if (sqlite3_exec(db, createTableSQL, NULL, NULL, NULL) != SQLITE_OK) 
     {
         SDL_Log("Failed to create table: %s\n", sqlite3_errmsg(db));
+        return false;
+    }
+
+    if (sqlite3_exec(db, \
+        "CREATE INDEX IF NOT EXISTS ContentHashIndex ON ImageLoadParameter(ContentHash);", \
+        NULL, NULL, NULL) != SQLITE_OK) 
+    {
+        SDL_Log("Failed to create index: %s\n", sqlite3_errmsg(db));
         return false;
     }
 
@@ -74,13 +88,49 @@ static bool createTableAliasNamePair(void)
 
     return true;
 }
+static bool createTriggerOnUpdateCascadeBetweenContentPathAndTablesOnContentHash(const char * tableName)
+{
+    char buffer[350] = {};
+    SDL_snprintf(buffer, 350, "CREATE TRIGGER IF NOT EXISTS cascadeContentHash \
+                        AFTER UPDATE OF ContentHash ON ContentPath \
+                        FOR EACH ROW \
+                        BEGIN \
+                        UPDATE %s SET ContentHash = NEW.ContentHash WHERE FileID = OLD.ID; \
+                        END;", tableName);
+  
+    if (sqlite3_exec(db, buffer, NULL, NULL, NULL) != SQLITE_OK)
+    {
+        SDL_Log("failed to create trigger: %s\n", sqlite3_errmsg(db));
+        return false;
+    }
+
+    return true;
+}
+static bool createTriggerOnInsertContentPathUpdateTablesFileIDWhereSameContentHash(const char * tableName)
+{
+    char buffer[400] = {};
+    SDL_snprintf(buffer, 400, "CREATE TRIGGER IF NOT EXISTS onInsertUpdataFileID \
+                    AFTER INSERT ON ContentPath \
+                    FOR EACH ROW \
+                    WHEN NEW.ContentHash IS NOT NULL \
+                    BEGIN \
+                    UPDATE %s SET FileID = NEW.ID WHERE ContentHash = NEW.ContentHash; \
+                    END;", tableName);
+
+    if (sqlite3_exec(db, buffer, NULL, NULL, NULL) != SQLITE_OK)
+    {
+        SDL_Log("failed to create trigger: %s\n", sqlite3_errmsg(db));
+        return false;
+    }
+
+    return true;
+}
 static bool createTableDeletedRow(void)
 {
     const char *createTableSQL = "CREATE TABLE IF NOT EXISTS DeletedRow (\
                                 ID INTEGER PRIMARY KEY AUTOINCREMENT, \
                                 FileName TEXTE, \
                                 InnerName TEXT UNIQUE, \
-                                TYPE INTERGER,\
                                 FileType INTERGER);";
 
     if (sqlite3_exec(db, createTableSQL, NULL, NULL, NULL) != SQLITE_OK) 
@@ -271,6 +321,13 @@ int generatePath(int argc, char * argv[])
         goto cleanup;
     }
 
+    if (sqlite3_exec(db, "PRAGMA foreign_keys = ON;", NULL, NULL, NULL) != SQLITE_OK)
+    {
+        SDL_Log("failed to open foreign keys %s\n", sqlite3_errmsg(db));
+        res = -1;
+        goto cleanup;
+    }
+
     closeDB = true;
 
     if (!tableExistJudge())
@@ -299,7 +356,9 @@ int generatePath(int argc, char * argv[])
         goto cleanup;
     }
 
-    // createTableImageLoadParameter();
+    createTableImageLoadParameter();
+    createTriggerOnUpdateCascadeBetweenContentPathAndTablesOnContentHash("ImageLoadParameter");
+    createTriggerOnInsertContentPathUpdateTablesFileIDWhereSameContentHash("ImageLoadParameter");
     createTableDeletedRow();
 
     updateDatabase(NULL);
@@ -310,6 +369,8 @@ int generatePath(int argc, char * argv[])
     SDL_Log("time used: %llu ns, %lf ms, %lf s\n", ns, (double)ns / 1000000ULL, (double)ns / 1000000000ULL);
 
     cleanup:
+
+    sqlite3_exec(db, "UPDATE ContentPath SET MARK = 1;", NULL, NULL, NULL);
 
     sqlite3_close(db);
 

@@ -1,5 +1,4 @@
 #include "content_manager/content_manager.h"
-#include <string.h>
 #include <windows.h>
 #include <rpcdce.h>
 
@@ -16,7 +15,7 @@ int createNewUUID(unsigned char * uuidStr)
 
     memcpy(uuidStr, str, 38);
 
-    (void)RpcStringFree(str);
+    (void)RpcStringFree(&str);
 
     return 0;
 }

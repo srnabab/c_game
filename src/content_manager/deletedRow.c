@@ -13,6 +13,8 @@
 #include "sqlite3/sqlite3.h"
 #include "sqlite3/sqlite3_alloc_func.h"
 #include "uthash/uthash.h"
+#include <stdbool.h>
+#include <string.h>
 
 extern sqlite3 * db;
 
@@ -67,6 +69,20 @@ int findSameDeletedRow(const char * fileName, int type, Uint32 fileType, char * 
     if (finalize) if (sqlite3_finalize(stmt)) SDL_Log("Failed to finalize statement: %s\n", sqlite3_errmsg(db));
 
     return id;
+}
+bool insertDeletedRowIntoDeletedRow(void)
+{
+    const char * SQL = "INSERT INTO DeletedRow (FileName, InnerName, FileType) \
+                        SELECT FileName, InnerName, FileType FROM ContentPath \ 
+                        WHERE MARK = 1 AND TYPE = 1;";
+
+    if (sqlite3_exec(db, SQL, NULL, NULL, NULL) != SQLITE_OK)
+    {
+        SDL_Log("Insert into deleted row failed: %s\n", sqlite3_errmsg(db));
+        return false;
+    }
+
+    return true;
 }
 bool insertNode3(int mainTableRowID)
 {
