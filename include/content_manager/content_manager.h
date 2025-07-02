@@ -49,7 +49,7 @@ extern bool SDLCALL updateDatabase(DB_Path * pPack);
 extern int SDLCALL getRowsCount(void);
 extern bool SDLCALL insertNode3(int mainTableRowID);
 extern SDL_PathType SDLCALL getPathType(const int id);
-extern char* SDLCALL getPathByID(const int ID);
+// extern char* SDLCALL getPathByID(const int ID);
 extern char* SDLCALL getName(const int ID);
 extern int SDLCALL findSameDeletedRow(const char * fileName, int type, Uint32 fileType, char * innerName);
 extern bool SDLCALL deleteRow3(int ID);

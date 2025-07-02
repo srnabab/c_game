@@ -42,7 +42,7 @@ static bool createTableImageLoadParameter(void)
 {
     const char *createTableSQL = "CREATE TABLE IF NOT EXISTS ImageLoadParameter (\
                                 ID INTEGER PRIMARY KEY AUTOINCREMENT, \
-                                ContentHash BLOB, \
+                                ContentHash BLOB UNIQUE, \
                                 FileID TEXT, \
                                 FOREIGN KEY(FileID) REFERENCES contentPath(ID) \
                                 ON DELETE SET NULL ON UPDATE CASCADE);";
@@ -163,103 +163,103 @@ static bool isShader(const char * name)
 
 static void writePathFile(const char * PathPath, Fixed_File * template, int templateCount)
 {    
-    int rowsCount = 0;
-    rowsCount = getRowsCount() * 2;
-    SDL_IOStream * io = NULL;
-    io = SDL_IOFromFile(PathPath, "wb");
-    int fixedFileCount = 0;
-    int here = 0;
-    int i, j;
-    for (i = 0;i < templateCount;i++)
-    {
-        if (*template[i].name == '\0') 
-        {
-            char alias[255];
-            SDL_snprintf(alias, 255, "[%s]:\n", template[i].alias);
-            SDL_WriteIO(io, alias, SDL_strlen(alias));
-            SDL_WriteIO(io, "\n\n", SDL_strlen("\n\n"));
-            fixedFileCount++;
-            here = i;
-        }
-    }
-    here++;
-    for (i = here;i < templateCount;i++)
-    {
-        char alias[255];
-        SDL_snprintf(alias, 255, "[%s]:\n", template[i].alias);
-        SDL_WriteIO(io, alias, SDL_strlen(alias));
-        // SDL_Log(alias);
-        SDL_snprintf(alias, 255, "%s\n\n", template[i].name);
-        SDL_WriteIO(io, alias, SDL_strlen(alias));
-        // SDL_Log(alias);
-        fixedFileCount++;
-        here = i;
-    }
-    for (i = 0;i < rowsCount;i++)
-    {
-        if (getPathType(i) == SDL_PATHTYPE_FILE)
-        {
-            char * temp = getPathByID(i);
-            // if (fixedFileCount != templateCount)
-            // {
+    // int rowsCount = 0;
+    // rowsCount = getRowsCount() * 2;
+    // SDL_IOStream * io = NULL;
+    // io = SDL_IOFromFile(PathPath, "wb");
+    // int fixedFileCount = 0;
+    // int here = 0;
+    // int i, j;
+    // for (i = 0;i < templateCount;i++)
+    // {
+    //     if (*template[i].name == '\0') 
+    //     {
+    //         char alias[255];
+    //         SDL_snprintf(alias, 255, "[%s]:\n", template[i].alias);
+    //         SDL_WriteIO(io, alias, SDL_strlen(alias));
+    //         SDL_WriteIO(io, "\n\n", SDL_strlen("\n\n"));
+    //         fixedFileCount++;
+    //         here = i;
+    //     }
+    // }
+    // here++;
+    // for (i = here;i < templateCount;i++)
+    // {
+    //     char alias[255];
+    //     SDL_snprintf(alias, 255, "[%s]:\n", template[i].alias);
+    //     SDL_WriteIO(io, alias, SDL_strlen(alias));
+    //     // SDL_Log(alias);
+    //     SDL_snprintf(alias, 255, "%s\n\n", template[i].name);
+    //     SDL_WriteIO(io, alias, SDL_strlen(alias));
+    //     // SDL_Log(alias);
+    //     fixedFileCount++;
+    //     here = i;
+    // }
+    // for (i = 0;i < rowsCount;i++)
+    // {
+    //     if (getPathType(i) == SDL_PATHTYPE_FILE)
+    //     {
+    //         char * temp = getPathByID(i);
+    //         // if (fixedFileCount != templateCount)
+    //         // {
 
-            // }
-            char alias[255];
-            bool jump = false;
+    //         // }
+    //         char alias[255];
+    //         bool jump = false;
 
-            SDL_strlcpy(alias, SDL_strrchr(temp, SEPRATOR_C) + 1, 255);
-            if (fixedFileCount != templateCount)
-            {
-                for (j = 0;j < templateCount;j++)
-                {
-                    if (SDL_strcmp(alias, template[j].name) == 0)
-                    {
-                        SDL_strlcpy(alias, template[j].alias, 255);
-                        fixedFileCount++;
-                        jump = true;
-                    }
-                }
-            }
-            // SDL_Log(alias);
-            bool font = false;
-            bool shader = false;
+    //         SDL_strlcpy(alias, SDL_strrchr(temp, SEPRATOR_C) + 1, 255);
+    //         if (fixedFileCount != templateCount)
+    //         {
+    //             for (j = 0;j < templateCount;j++)
+    //             {
+    //                 if (SDL_strcmp(alias, template[j].name) == 0)
+    //                 {
+    //                     SDL_strlcpy(alias, template[j].alias, 255);
+    //                     fixedFileCount++;
+    //                     jump = true;
+    //                 }
+    //             }
+    //         }
+    //         // SDL_Log(alias);
+    //         bool font = false;
+    //         bool shader = false;
 
-            if (!jump)
-            {
-                alias[0] = (char)SDL_toupper(alias[0]);
-                char * ptr2 = SDL_strrchr(temp, '.');
+    //         if (!jump)
+    //         {
+    //             alias[0] = (char)SDL_toupper(alias[0]);
+    //             char * ptr2 = SDL_strrchr(temp, '.');
 
-                if (ptr2 != NULL)
-                {
-                    if (SDL_strcmp(ptr2, ".spv") == 0)
-                    {
-                        *ptr2 = '\0';
-                        font = true;
-                        ptr2 = SDL_strchr(temp, '.');
-                        if (isShader(ptr2 + 1)) shader = true;
-                    }
+    //             if (ptr2 != NULL)
+    //             {
+    //                 if (SDL_strcmp(ptr2, ".spv") == 0)
+    //                 {
+    //                     *ptr2 = '\0';
+    //                     font = true;
+    //                     ptr2 = SDL_strchr(temp, '.');
+    //                     if (isShader(ptr2 + 1)) shader = true;
+    //                 }
 
-                    char * ptr;
-                    if (font) ptr = SDL_strchr(alias, '.');
-                    else ptr = SDL_strrchr(alias, '.');
-                    SDL_strlcpy(ptr, ptr2 + 1, 255);
-                    *ptr = (char)SDL_toupper(*ptr);
-                    if (shader) SDL_strlcat(alias, "Shader", 255);
-                }
-            }
-            char test[255];
-            SDL_snprintf(test, 255, "[%s]:\n", alias);
-            SDL_WriteIO(io, test, SDL_strlen(test));
+    //                 char * ptr;
+    //                 if (font) ptr = SDL_strchr(alias, '.');
+    //                 else ptr = SDL_strrchr(alias, '.');
+    //                 SDL_strlcpy(ptr, ptr2 + 1, 255);
+    //                 *ptr = (char)SDL_toupper(*ptr);
+    //                 if (shader) SDL_strlcat(alias, "Shader", 255);
+    //             }
+    //         }
+    //         char test[255];
+    //         SDL_snprintf(test, 255, "[%s]:\n", alias);
+    //         SDL_WriteIO(io, test, SDL_strlen(test));
 
-            if (shader) SDL_strlcat(temp, ".spv\n", 255);
-            else SDL_strlcat(temp, "\n", 255);
+    //         if (shader) SDL_strlcat(temp, ".spv\n", 255);
+    //         else SDL_strlcat(temp, "\n", 255);
 
-            SDL_WriteIO(io, temp, SDL_strlen(temp));
-            SDL_WriteIO(io, "\n", SDL_strlen("\n"));
-            G_free(temp);
-        }
-    }
-    SDL_CloseIO(io);
+    //         SDL_WriteIO(io, temp, SDL_strlen(temp));
+    //         SDL_WriteIO(io, "\n", SDL_strlen("\n"));
+    //         G_free(temp);
+    //     }
+    // }
+    // SDL_CloseIO(io);
 }
 int generatePath(int argc, char * argv[])
 {
