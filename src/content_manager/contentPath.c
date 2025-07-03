@@ -51,7 +51,7 @@ static FileType findFileType(const char * suffix)
     if (temp) return temp->fileType;
     return FileType_Unknown;
 }
-static int getID(const char * name, char * UUID)
+static int getIDByRelativePath(const char * name, char * UUID)
 {
     if (UUID == NULL) return -2;
 
@@ -171,43 +171,6 @@ int getRowsCount(void)
     sqlite3_finalize(stmt);
     return rc;
 }
-// delete row in ContentPath by ID
-static bool deleteRow(const int ID)
-{
-    const char * SQL = "DELETE FROM ContentPath WHERE ID = ?";
-    sqlite3_stmt * stmt = NULL;
-    int res = 0;
-    bool finalize = false;
-
-    if (sqlite3_prepare_v2(db, SQL, -1, &stmt, NULL) != SQLITE_OK) 
-    {
-        SDL_Log("Failed to prepare statement: %s\n", sqlite3_errmsg(db));
-        res = -1;
-        goto cleanup;
-    }
-    finalize = true;
-
-    res |= sqlite3_bind_int(stmt, 1, ID);
-    if (res)
-    {
-        SDL_Log("Failed to bind: %s\n", sqlite3_errmsg(db));
-        res = -4;
-        goto cleanup;
-    }
-
-    if (sqlite3_step(stmt) != SQLITE_DONE) 
-    {
-        SDL_Log("Failed to execute statement: %s\n", sqlite3_errmsg(db));
-        res = -5;
-        goto cleanup;
-    }
-
-    cleanup:
-
-    if (finalize) if (sqlite3_finalize(stmt)) SDL_Log("Failed to finalize statement: %s\n", sqlite3_errmsg(db));
-
-    return res < 0 ? false : true;
-}
 static bool ifExistContentPath(void)
 {
     const char * SQL = "SELECT TYPE FROM ContentPath WHERE ParentID is NULL;";
@@ -289,167 +252,6 @@ static bool insertNodeContentPath(const unsigned char * ID, const unsigned char 
 
     return res;
 }
-static bool insertMetaData(const char * innerName, int ID)
-{
-    static const char * insertMetaData = "UPDATE ContentPath SET InnerName = ? WHERE ID = ?;";
-
-    bool finalize = false;
-    int res = false;
-    sqlite3_stmt * stmt = NULL;
-
-    if (sqlite3_prepare_v2(db, insertMetaData, -1, &stmt, NULL) != SQLITE_OK) 
-    {
-        SDL_Log("Failed to prepare statement: %s\n", sqlite3_errmsg(db));
-        res = false;
-        goto cleanup;
-    }
-    finalize = true;
-
-    res |= sqlite3_bind_text(stmt, 1, innerName, -1, SQLITE_STATIC);
-    res |= sqlite3_bind_int(stmt, 2, ID);
-
-    if (res)
-    {
-        SDL_Log("Failed to bind: %s\n", sqlite3_errmsg(db));
-        res = false;
-        goto cleanup;
-    }
-
-    if (sqlite3_step(stmt) != SQLITE_DONE) 
-    {
-        SDL_Log("Failed to execute statement: %s\n", sqlite3_errmsg(db));
-        res = false;
-        goto cleanup;
-    }
-
-    cleanup:
-    if (finalize) if (sqlite3_finalize(stmt)) SDL_Log("Failed to finalize statement: %s\n", sqlite3_errmsg(db));
-
-    return res;
-}
-// insert to minest ID row in ContentPath
-// static bool insertNodeContentPath__(const char *name, int parentID, Sint64 timeStamp, int type, Uint32 fileType, Uint64 fileSize)
-// {
-//     char innerName[16] = {0};
-//     unsigned char UUID[37];
-//     int res = false;
-
-//     // id = findSameDeletedRow(name, type, fileType, innerName);
-//     res = createNewUUID(UUID);
-
-//     res = insertNodeInsertSQL_ID(name, parentID, timeStamp, type, fileType, UUID);
-//     contentID = getID(name);
-//     if (res > 0 && id > 0) 
-//     {
-//         res = insertMetaData(innerName, contentID);
-//         deleteRow3(id);
-//     }
-
-//     return res < 0 ? false : true;
-// }
-// get ParentID in ContentPath by ID
-static int getParentID(const int ID)
-{
-    static const char *findSQL = "SELECT ParentID FROM ContentPath WHERE ID = ?;";
-    sqlite3_stmt * stmt;
-
-    if (sqlite3_prepare_v2(db, findSQL, -1, &stmt, NULL) != SQLITE_OK) 
-    {
-        SDL_Log("Failed to prepare statement: %s\n", sqlite3_errmsg(db));
-        return -1;
-    }
-
-    sqlite3_bind_int(stmt, 1, ID);
-    int rc = sqlite3_step(stmt);
-    if (rc == SQLITE_ROW)
-    {
-        rc = sqlite3_column_int(stmt, 0);
-    }
-    else if (rc == SQLITE_DONE)
-    {
-        rc = -1;
-    }
-    else
-    {
-        SDL_Log("Failed to execute statement: %s\n", sqlite3_errmsg(db));
-        rc = -1;
-    }
-
-    sqlite3_finalize(stmt);
-
-    return rc;
-}
-
-// get row TYPE(folder / file) in ContentPath by ID
-SDL_PathType getPathType(const int id)
-{
-    const char * SQL = "SELECT TYPE FROM ContentPath WHERE ID = ?";
-    sqlite3_stmt * stmt;
-
-    if (sqlite3_prepare_v2(db, SQL, -1, &stmt, NULL) != SQLITE_OK) 
-    {
-        SDL_Log("Failed to prepare statement: %s\n", sqlite3_errmsg(db));
-        return -3;
-    }
-
-    sqlite3_bind_int(stmt, 1, id);
-
-    int rc = sqlite3_step(stmt);
-    if (rc == SQLITE_ROW)
-    {
-        rc = sqlite3_column_int(stmt, 0);
-    }
-    else if (rc == SQLITE_DONE)
-    {
-        rc = -1;
-    }
-    else
-    {
-        SDL_Log("Failed to execute statement: %s\n", sqlite3_errmsg(db));
-        rc = -1;
-    }
-
-    sqlite3_finalize(stmt);
-
-    return rc;
-}
-// get Name in ContentPath by ID
-char * getName(const int ID)
-{
-    const char * SQL = "SELECT RelativePath FROM ContentPath WHERE ID = ?";
-    sqlite3_stmt * stmt;
-    
-
-    if (sqlite3_prepare_v2(db, SQL, -1, &stmt, NULL) != SQLITE_OK) 
-    {
-        SDL_Log("Failed to prepare statement: %s\n", sqlite3_errmsg(db));
-        return NULL;
-    }
-
-    sqlite3_bind_int(stmt, 1, ID);
-
-    int rc = sqlite3_step(stmt);
-    char * name;
-    if (rc == SQLITE_ROW)
-    {
-        const unsigned char * temp = sqlite3_column_text(stmt, 0);
-        name = (char *)G_malloc(strlen((const char*)temp) + 1);
-        SDL_strlcpy(name, (const char*)temp, 255);
-    }
-    else if (rc == SQLITE_DONE)
-    {
-        name = NULL;
-    }
-    else
-    {
-        SDL_Log("Failed to execute statement: %s\n", sqlite3_errmsg(db));
-        name = NULL;
-    }
-
-    sqlite3_finalize(stmt);
-    return name;
-}
-
 // update LastSeemTime in ContentPath by name 
 static void updateLastSeenTime(Sint64 timeStamp, const char * relativePath)
 {
@@ -503,7 +305,7 @@ static void updateModifyTime(Sint64 timeStamp, const char * relativePath)
     return;
 }
 // update ParentID in ContentPath by ID (parent folder changed)
-static void updateParentID(const unsigned char * parentID, const char * fname)
+static void updateParentIDByFileName(const unsigned char * parentID, const char * fname)
 {
     const char * SQL = "UPDATE ContentPath SET ParentID = ? WHERE FileName = ?";
     sqlite3_stmt * stmt;
@@ -528,29 +330,6 @@ static void updateParentID(const unsigned char * parentID, const char * fname)
 
     return;
 }
-// static void updateParentID(int parentID, int ID)
-// {
-//     const char * SQL = "UPDATE ContentPath SET ParentID = ? WHERE ID = ?";
-//     sqlite3_stmt * stmt;
-
-//     if (sqlite3_prepare_v2(db, SQL, -1, &stmt, NULL) != SQLITE_OK) 
-//     {
-//         SDL_Log("Failed to prepare statement: %s\n", sqlite3_errmsg(db));
-//         return;
-//     }
-
-//     sqlite3_bind_int64(stmt, 1, parentID);
-//     sqlite3_bind_int(stmt, 2, ID);
-
-//     if (sqlite3_step(stmt) != SQLITE_DONE) 
-//     {
-//         SDL_Log("Failed to execute statement: %s\n", sqlite3_errmsg(db));
-//         return;
-//     }
-//     sqlite3_finalize(stmt);
-
-//     return;
-// }
 static FileType SDLCALL fileTypeJudge(const char * fname)
 {
     char * temp;
@@ -573,43 +352,6 @@ static FileType SDLCALL fileTypeJudge(const char * fname)
 
     return Folder;
 }
-// get absolutely path by joint relative path 
-// char * getPathByID(const int ID)
-// {
-//     int IDs[15];
-//     IDs[14] = ID;
-//     int parentID = getParentID(ID);
-//     IDs[13] = parentID;
-//     int i = 13;
-//     while (parentID != 1)
-//     {
-//         parentID = getParentID(parentID);
-//         IDs[--i] = parentID;
-//     }
-//     char *path = (char *)G_calloc(255, 1);
-//     i++;
-//     char * temp = getName(IDs[i]);
-//     SDL_strlcat(path, temp, 255);
-//     // SDL_Log(path);
-//     G_free(temp);
-//     i++;
-//     for (;i < 15;i++)
-//     {
-//         char * tempName = getName(IDs[i]);
-//         SDL_strlcat(path, SDL_strchr(tempName, SEPRATOR_C), 255);
-
-//         // SDL_strlcat(path, temp, 255);
-//         // SDL_Log(path);
-//         G_free(tempName);
-//     }
-//     // char * temp = getName(db, IDs[i]);
-//     // SDL_strlcat(path, temp, 255);
-//     // // SDL_snprintf(path, 255, "%s ", temp);
-//     // SDL_Log(path);
-//     // G_free(temp);
-
-//     return path;
-// }
 static bool deleteUnenumeratedRow(Uint64 timestamp)
 {
     const char *SQL = "DELETE FROM ContentPath WHERE LastSeenTime < ?;";
@@ -683,7 +425,7 @@ static int updateRelativePathFileName(const char * relativePath, const char * fn
 
     return res < 0 ? false : true;
 }
-static int updateContentHash(const Uint8 * contentHash, const char * relativePath)
+static int updateContentHashRelativePath(const Uint8 * contentHash, const char * relativePath)
 {
     const char *SQL = "UPDATE ContentPath SET ContentHash = ? WHERE RelativePath = ?;";
     sqlite3_stmt * stmt = NULL;
@@ -764,7 +506,7 @@ static SDL_EnumerationResult SDLCALL createFolderDatabase(void *userdata, const 
 
         SDL_GetCurrentTime(&currentTime);
 
-        getID(tempParentPath, parentUUID);
+        getIDByRelativePath(tempParentPath, parentUUID);
 
         if (info.type != SDL_PATHTYPE_DIRECTORY) 
         {
@@ -833,7 +575,7 @@ static SDL_EnumerationResult SDLCALL updateFolderDatabase(void *userdata, const 
 
             SDL_GetCurrentTime(&pathModifyTime);
 
-            getID(tempParentPath, parentUUID);
+            getIDByRelativePath(tempParentPath, parentUUID);
 
             if (info.type != SDL_PATHTYPE_DIRECTORY) 
             {
@@ -856,7 +598,7 @@ static SDL_EnumerationResult SDLCALL updateFolderDatabase(void *userdata, const 
         else if (pathModifyTime == -1)
         {
             unsigned char parentUUID[37];
-            getID(tempParentPath, parentUUID);
+            getIDByRelativePath(tempParentPath, parentUUID);
 
             if (fileModifyTime != info.modify_time)
             {
@@ -874,14 +616,14 @@ static SDL_EnumerationResult SDLCALL updateFolderDatabase(void *userdata, const 
                     G_free(buffer);
                     contentHashPtr = contentHash;
 
-                    updateContentHash(contentHashPtr, tempPath + PathBeginLocation);
+                    updateContentHashRelativePath(contentHashPtr, tempPath + PathBeginLocation);
                 }
 
                 updateModifyTime(info.modify_time, tempPath + PathBeginLocation);
             }
 
             updateRelativePathFileName(tempPath + PathBeginLocation, fname);
-            updateParentID(parentUUID, fname);
+            updateParentIDByFileName(parentUUID, fname);
         }
         else
         {
@@ -901,7 +643,7 @@ static SDL_EnumerationResult SDLCALL updateFolderDatabase(void *userdata, const 
                     G_free(buffer);
                     contentHashPtr = contentHash;
 
-                    updateContentHash(contentHashPtr, tempPath + PathBeginLocation);
+                    updateContentHashRelativePath(contentHashPtr, tempPath + PathBeginLocation);
                 }
 
                 updateModifyTime(info.modify_time, tempPath + PathBeginLocation);
@@ -953,52 +695,3 @@ bool updateDatabase(DB_Path * pPack)
 
     return true;
 }
-
-// static int findMinesID(void)
-// {
-//     static const char *findMinestIDSQL = "SELECT t1.ID + 1 AS first_unused_id \
-//                                     FROM ( \
-//                                     SELECT ID \
-//                                     FROM ContentPath \
-//                                     ORDER BY ID \
-//                                     ) AS t1 \
-//                                     LEFT JOIN ( \
-//                                     SELECT ID \
-//                                     FROM ContentPath \
-//                                     ORDER BY ID \
-//                                     ) AS t2 ON t1.ID + 1 = t2.ID \
-//                                     WHERE t2.ID IS NULL \
-//                                     LIMIT 1";
-
-//     sqlite3_stmt *stmt = NULL;
-//     int gap_id = 1;
-//     bool finalize = false;
-
-//     if (sqlite3_prepare_v2(db, findMinestIDSQL, -1, &stmt, NULL) != SQLITE_OK) 
-//     {
-//         SDL_Log("Failed to prepare statement: %s\n", sqlite3_errmsg(db));
-//         goto cleanup;
-//     }
-//     finalize = true;
-
-//     int rc = sqlite3_step(stmt);
-//     if (rc == SQLITE_ROW)
-//     {
-//         gap_id = sqlite3_column_int(stmt, 0);
-//     }
-//     else if (rc == SQLITE_DONE)
-//     {
-//         gap_id = 1;
-//     }
-//     else
-//     {
-//         SDL_Log("Failed to execute statement: %s\n", sqlite3_errmsg(db));
-//         goto cleanup;
-//     }
-
-//     cleanup:
-
-//     if (finalize) if (sqlite3_finalize(stmt)) SDL_Log("Failed to finalize statement: %s\n", sqlite3_errmsg(db));
-
-//     return gap_id;
-// }
