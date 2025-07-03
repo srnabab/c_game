@@ -40,7 +40,7 @@ typedef struct _Fixed_File Fixed_File;
 extern int SDLCALL createNewUUID(unsigned char * uuidStr);
 extern void SDLCALL blake3HashContent(const unsigned char * content, const size_t len, Uint8 * output);
 extern void SDLCALL initFileTypeHashTable(void);
-extern bool SDLCALL insertIntoImageLoadParameter(const Uint8 * hash, const unsigned char * uuid);
+extern bool SDLCALL insertIntoImageLoadParameter(const char * fname, const Uint8 * hash, const unsigned char * uuid);
 extern bool SDLCALL insertDeletedRowIntoDeletedRow(Uint64 timestamp);
 extern bool SDLCALL tableExistJudge(void);
 extern int SDLCALL generatePath(int argc, char * argv[]);

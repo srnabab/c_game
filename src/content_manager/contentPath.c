@@ -1,3 +1,4 @@
+#include "G_file_type.h"
 #include "SDL_stdinc.h"
 #include "SDL_time.h"
 #include "content_manager/content_manager.h"
@@ -85,7 +86,7 @@ static int getID(const char * name, char * UUID)
     return rc;
 }
 // get MOdifiedTime in ContentPath by ID
-static Sint64 getModifyTime(const char * relativePath)
+static Sint64 getModifyTimeRelativePath(const char * relativePath)
 {
     const char * SQL = "SELECT ModifiedTime FROM ContentPath WHERE RelativePath = ?";
     sqlite3_stmt * stmt;
@@ -99,6 +100,35 @@ static Sint64 getModifyTime(const char * relativePath)
     }
 
     sqlite3_bind_text(stmt, 1, relativePath, -1, SQLITE_STATIC);
+
+    rc = sqlite3_step(stmt);
+    if (rc == SQLITE_ROW)
+    {
+        timeStamp = sqlite3_column_int64(stmt, 0);
+    }
+    else
+    {
+        SDL_Log("Failed to execute statement: %s\n", sqlite3_errmsg(db));
+        timeStamp = -1;
+    }
+
+    sqlite3_finalize(stmt);
+    return timeStamp;
+}
+static Sint64 getModifyTimeFileName(const char * fname)
+{
+    const char * SQL = "SELECT ModifiedTime FROM ContentPath WHERE FileName = ?";
+    sqlite3_stmt * stmt;
+    int rc = 0;
+    Sint64 timeStamp = 0;
+
+    if (sqlite3_prepare_v2(db, SQL, -1, &stmt, NULL) != SQLITE_OK) 
+    {
+        SDL_Log("Failed to prepare statement: %s\n", sqlite3_errmsg(db));
+        return -1;
+    }
+
+    sqlite3_bind_text(stmt, 1, fname, -1, SQLITE_STATIC);
 
     rc = sqlite3_step(stmt);
     if (rc == SQLITE_ROW)
@@ -473,9 +503,9 @@ static void updateModifyTime(Sint64 timeStamp, const char * relativePath)
     return;
 }
 // update ParentID in ContentPath by ID (parent folder changed)
-static void updateParentID(int parentID, int ID)
+static void updateParentID(const unsigned char * parentID, const char * fname)
 {
-    const char * SQL = "UPDATE ContentPath SET ParentID = ? WHERE ID = ?";
+    const char * SQL = "UPDATE ContentPath SET ParentID = ? WHERE FileName = ?";
     sqlite3_stmt * stmt;
 
     if (sqlite3_prepare_v2(db, SQL, -1, &stmt, NULL) != SQLITE_OK) 
@@ -484,18 +514,43 @@ static void updateParentID(int parentID, int ID)
         return;
     }
 
-    sqlite3_bind_int64(stmt, 1, parentID);
-    sqlite3_bind_int(stmt, 2, ID);
+    sqlite3_bind_text(stmt, 1, parentID, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, fname, -1, SQLITE_STATIC);
 
     if (sqlite3_step(stmt) != SQLITE_DONE) 
     {
         SDL_Log("Failed to execute statement: %s\n", sqlite3_errmsg(db));
+        sqlite3_finalize(stmt);
         return;
     }
+
     sqlite3_finalize(stmt);
 
     return;
 }
+// static void updateParentID(int parentID, int ID)
+// {
+//     const char * SQL = "UPDATE ContentPath SET ParentID = ? WHERE ID = ?";
+//     sqlite3_stmt * stmt;
+
+//     if (sqlite3_prepare_v2(db, SQL, -1, &stmt, NULL) != SQLITE_OK) 
+//     {
+//         SDL_Log("Failed to prepare statement: %s\n", sqlite3_errmsg(db));
+//         return;
+//     }
+
+//     sqlite3_bind_int64(stmt, 1, parentID);
+//     sqlite3_bind_int(stmt, 2, ID);
+
+//     if (sqlite3_step(stmt) != SQLITE_DONE) 
+//     {
+//         SDL_Log("Failed to execute statement: %s\n", sqlite3_errmsg(db));
+//         return;
+//     }
+//     sqlite3_finalize(stmt);
+
+//     return;
+// }
 static FileType SDLCALL fileTypeJudge(const char * fname)
 {
     char * temp;
@@ -591,6 +646,93 @@ static bool deleteUnenumeratedRow(Uint64 timestamp)
 
     return res < 0 ? false : true;
 }
+static int updateRelativePathFileName(const char * relativePath, const char * fname)
+{
+    const char *SQL = "UPDATE ContentPath SET RelativePath = ? WHERE FileName = ?;";
+    sqlite3_stmt * stmt = NULL;
+    int res = 0;
+    bool finalize = false;
+
+    if (sqlite3_prepare_v2(db, SQL, -1, &stmt, NULL) != SQLITE_OK) 
+    {
+        SDL_Log("Failed to prepare statement: %s\n", sqlite3_errmsg(db));
+        res = -1;
+        goto cleanup;
+    }
+    finalize = true;
+
+    res |= sqlite3_bind_text(stmt, 1, relativePath, -1, SQLITE_STATIC);
+    res |= sqlite3_bind_text(stmt, 2, fname, -1, SQLITE_STATIC);
+    if (res)
+    {
+        SDL_Log("Failed to bind: %s\n", sqlite3_errmsg(db));
+        res = -4;
+        goto cleanup;
+    }
+
+    if (sqlite3_step(stmt) != SQLITE_DONE) 
+    {
+        SDL_Log("Failed to execute statement: %s\n", sqlite3_errmsg(db));
+        res = -5;
+        goto cleanup;
+    }
+
+    cleanup:
+
+    if (finalize) if (sqlite3_finalize(stmt)) SDL_Log("Failed to finalize statement: %s\n", sqlite3_errmsg(db));
+
+    return res < 0 ? false : true;
+}
+static int updateContentHash(const Uint8 * contentHash, const char * relativePath)
+{
+    const char *SQL = "UPDATE ContentPath SET ContentHash = ? WHERE RelativePath = ?;";
+    sqlite3_stmt * stmt = NULL;
+    int res = 0;
+    bool finalize = false;
+
+    if (sqlite3_prepare_v2(db, SQL, -1, &stmt, NULL) != SQLITE_OK) 
+    {
+        SDL_Log("Failed to prepare statement: %s\n", sqlite3_errmsg(db));
+        res = -1;
+        goto cleanup;
+    }
+    finalize = true;
+
+    res |= sqlite3_bind_blob(stmt, 1, contentHash, BLAKE3_OUT_LEN, SQLITE_STATIC);
+    res |= sqlite3_bind_text(stmt, 2, relativePath, -1, SQLITE_STATIC);
+    if (res)
+    {
+        SDL_Log("Failed to bind: %s\n", sqlite3_errmsg(db));
+        res = -4;
+        goto cleanup;
+    }
+
+    if (sqlite3_step(stmt) != SQLITE_DONE) 
+    {
+        SDL_Log("Failed to execute statement: %s\n", sqlite3_errmsg(db));
+        res = -5;
+        goto cleanup;
+    }
+
+    cleanup:
+
+    if (finalize) if (sqlite3_finalize(stmt)) SDL_Log("Failed to finalize statement: %s\n", sqlite3_errmsg(db));
+
+    return res < 0 ? false : true;
+}
+static bool insertIntoTypeTable(FileType fileType, const char * fname, const Uint8 * hash, const unsigned char * uuid)
+{
+    switch (fileType) 
+    {
+        case Png:
+        insertIntoImageLoadParameter(fname, hash, uuid);
+
+        default:
+        ;
+    }
+
+    return true;
+}
 // recursion to get all file and folder in Content Folder and create database
 static SDL_EnumerationResult SDLCALL createFolderDatabase(void *userdata, const char *dirname, const char *fname)
 {
@@ -640,14 +782,7 @@ static SDL_EnumerationResult SDLCALL createFolderDatabase(void *userdata, const 
         insertNodeContentPath(UUID, parentUUID, tempPath + PathBeginLocation, fname, info.type, fileSize, contentHashPtr\
             , info.modify_time, currentTime, (Uint32)fileType);
 
-        switch (fileType) 
-        {
-            case Png:
-            insertIntoImageLoadParameter(contentHashPtr, UUID);
-
-            default:
-            ;
-        }
+        insertIntoTypeTable(fileType, fname, contentHashPtr, UUID);
         
         if (info.type == SDL_PATHTYPE_DIRECTORY)
         {
@@ -680,26 +815,54 @@ static SDL_EnumerationResult SDLCALL updateFolderDatabase(void *userdata, const 
         SDL_GetPathInfo(tempPath, &info);
 
         FileType fileType = Folder;
-        Sint64 currentTime;
-        currentTime = getModifyTime(tempPath + PathBeginLocation);
+        Sint64 pathModifyTime, fileModifyTime;
+        pathModifyTime = getModifyTimeRelativePath(tempPath + PathBeginLocation);
+        fileModifyTime = getModifyTimeFileName(fname);
 
-        if (currentTime < info.modify_time)
+        if (fileModifyTime == -1)
         {
-            if (currentTime == -1)
+            Sint64 fileSize = 0;
+            unsigned char UUID[37];
+            unsigned char parentUUID[37];
+            Uint8 contentHash[BLAKE3_OUT_LEN];
+            Uint8 * contentHashPtr = NULL;
+            int res = 0;
+
+            res = createNewUUID(UUID);
+            if (res) return SDL_ENUM_FAILURE;
+
+            SDL_GetCurrentTime(&pathModifyTime);
+
+            getID(tempParentPath, parentUUID);
+
+            if (info.type != SDL_PATHTYPE_DIRECTORY) 
+            {
+                readFile(tempPath, NULL, &fileSize);
+                char * buffer = G_malloc(fileSize);
+                readFile(tempPath, buffer, &fileSize);
+
+                blake3HashContent(buffer, fileSize, contentHash);
+                G_free(buffer);
+                contentHashPtr = contentHash;
+
+                fileType = fileTypeJudge(fname);
+            }
+
+            insertNodeContentPath(UUID, parentUUID, tempPath + PathBeginLocation, fname, info.type, fileSize, contentHashPtr\
+                , info.modify_time, pathModifyTime, (Uint32)fileType);
+
+            insertIntoTypeTable(fileType, fname, contentHashPtr, UUID);
+        }
+        else if (pathModifyTime == -1)
+        {
+            unsigned char parentUUID[37];
+            getID(tempParentPath, parentUUID);
+
+            if (fileModifyTime != info.modify_time)
             {
                 Sint64 fileSize = 0;
-                unsigned char UUID[37];
-                unsigned char parentUUID[37];
                 Uint8 contentHash[BLAKE3_OUT_LEN];
                 Uint8 * contentHashPtr = NULL;
-                int res = 0;
-
-                res = createNewUUID(UUID);
-                if (res) return SDL_ENUM_FAILURE;
-
-                SDL_GetCurrentTime(&currentTime);
-
-                getID(tempParentPath, parentUUID);
 
                 if (info.type != SDL_PATHTYPE_DIRECTORY) 
                 {
@@ -711,29 +874,42 @@ static SDL_EnumerationResult SDLCALL updateFolderDatabase(void *userdata, const 
                     G_free(buffer);
                     contentHashPtr = contentHash;
 
-                    fileType = fileTypeJudge(fname);
+                    updateContentHash(contentHashPtr, tempPath + PathBeginLocation);
                 }
 
-                insertNodeContentPath(UUID, parentUUID, tempPath + PathBeginLocation, fname, info.type, fileSize, contentHashPtr\
-                    , info.modify_time, currentTime, (Uint32)fileType);
-
-                switch (fileType) 
-                {
-                    case Png:
-                    insertIntoImageLoadParameter(contentHashPtr, UUID);
-
-                    default:
-                    ;
-                }
+                updateModifyTime(info.modify_time, tempPath + PathBeginLocation);
             }
-            else
+
+            updateRelativePathFileName(tempPath + PathBeginLocation, fname);
+            updateParentID(parentUUID, fname);
+        }
+        else
+        {
+            if (info.modify_time != fileModifyTime)
             {
+                Sint64 fileSize = 0;
+                Uint8 contentHash[BLAKE3_OUT_LEN];
+                Uint8 * contentHashPtr = NULL;
+
+                if (info.type != SDL_PATHTYPE_DIRECTORY) 
+                {
+                    readFile(tempPath, NULL, &fileSize);
+                    char * buffer = G_malloc(fileSize);
+                    readFile(tempPath, buffer, &fileSize);
+
+                    blake3HashContent(buffer, fileSize, contentHash);
+                    G_free(buffer);
+                    contentHashPtr = contentHash;
+
+                    updateContentHash(contentHashPtr, tempPath + PathBeginLocation);
+                }
+
                 updateModifyTime(info.modify_time, tempPath + PathBeginLocation);
             }
         }
 
-        SDL_GetCurrentTime(&currentTime);
-        updateLastSeenTime(currentTime, tempPath + PathBeginLocation);
+        SDL_GetCurrentTime(&pathModifyTime);
+        updateLastSeenTime(pathModifyTime, tempPath + PathBeginLocation);
 
         if (info.type == SDL_PATHTYPE_DIRECTORY)
         {
@@ -762,7 +938,7 @@ bool updateDatabase(DB_Path * pPack)
 
         SDL_EnumerateDirectory(ContentPath, updateFolderDatabase, NULL);
 
-        insertDeletedRowIntoDeletedRow(currentTime);
+        // insertDeletedRowIntoDeletedRow(currentTime);
         deleteUnenumeratedRow(currentTime);
     }
     else

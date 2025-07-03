@@ -27,7 +27,6 @@ static bool createTableContentPath(void)
                                 ContentHash BLOB,\
                                 ModifiedTime INTERGER,\
                                 LastSeenTime INTERGER,\
-                                InnerName TEXT UNIQUE, \
                                 FileType INTERGER);";
 
     if (sqlite3_exec(db, createTableSQL, NULL, NULL, NULL) != SQLITE_OK) 
@@ -42,6 +41,8 @@ static bool createTableImageLoadParameter(void)
 {
     const char *createTableSQL = "CREATE TABLE IF NOT EXISTS ImageLoadParameter (\
                                 ID INTEGER PRIMARY KEY AUTOINCREMENT, \
+                                FileName TEXT UNIQUE, \
+                                InnerName TEXT UNIQUE, \
                                 ContentHash BLOB UNIQUE, \
                                 FileID TEXT, \
                                 FOREIGN KEY(FileID) REFERENCES contentPath(ID) \
@@ -78,6 +79,23 @@ static bool createTableAliasNamePair(void)
 
     return true;
 }
+static bool createTriggerOnInsertContentPathCheckContentHash(void)
+{
+    const char * SQL = "CREATE TRIGGER IF NOT EXISTS onInsertUpdateContentPath \
+                    BEFORE INSERT ON ContentPath \
+                    FOR EACH ROW \
+                    BEGIN \
+                    DELETE FROM ContentPath WHERE ContentHash = NEW.ContentHash; \
+                    END;";
+
+    if (sqlite3_exec(db, SQL, NULL, NULL, NULL) != SQLITE_OK)
+    {
+        SDL_Log("failed to create trigger: %s\n", sqlite3_errmsg(db));
+        return false;
+    }
+
+    return true;
+}
 static bool createTriggerOnUpdateCascadeBetweenContentPathAndTablesOnContentHash(const char * tableName)
 {
     char buffer[350] = {};
@@ -104,7 +122,7 @@ static bool createTriggerOnInsertContentPathUpdateTablesFileIDWhereSameContentHa
                     FOR EACH ROW \
                     WHEN NEW.ContentHash IS NOT NULL \
                     BEGIN \
-                    UPDATE %s SET FileID = NEW.ID WHERE ContentHash = NEW.ContentHash; \
+                    UPDATE %s SET FileID = NEW.ID, FileName = NEW.FileName WHERE ContentHash = NEW.ContentHash OR FileName = NEW.FileName;\
                     END;", tableName);
 
     if (sqlite3_exec(db, buffer, NULL, NULL, NULL) != SQLITE_OK)
@@ -349,7 +367,8 @@ int generatePath(int argc, char * argv[])
     createTableImageLoadParameter();
     createTriggerOnUpdateCascadeBetweenContentPathAndTablesOnContentHash("ImageLoadParameter");
     createTriggerOnInsertContentPathUpdateTablesFileIDWhereSameContentHash("ImageLoadParameter");
-    createTableDeletedRow();
+    createTriggerOnInsertContentPathCheckContentHash();
+    // createTableDeletedRow();
 
     updateDatabase(NULL);
 

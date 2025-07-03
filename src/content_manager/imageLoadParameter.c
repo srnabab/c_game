@@ -4,9 +4,9 @@
 
 extern sqlite3 * db;
 
-bool insertIntoImageLoadParameter(const Uint8 * hash, const unsigned char * uuid)
+bool insertIntoImageLoadParameter(const char * fname, const Uint8 * hash, const unsigned char * uuid)
 {
-    const char * insertSQL = "INSERT INTO ImageLoadParameter (ContentHash, FileID) VALUES (?, ?);";
+    const char * insertSQL = "INSERT INTO ImageLoadParameter (FileName, ContentHash, FileID) VALUES (?, ?, ?);";
 
     bool finalize = false;
     int res = SQLITE_OK;
@@ -20,8 +20,9 @@ bool insertIntoImageLoadParameter(const Uint8 * hash, const unsigned char * uuid
     }
     finalize = true;
 
-    res |= sqlite3_bind_blob(stmt, 1, hash, BLAKE3_OUT_LEN, SQLITE_STATIC);
-    res |= sqlite3_bind_text(stmt, 2, uuid, -1, SQLITE_STATIC);
+    res |= sqlite3_bind_text(stmt, 1, fname, -1, SQLITE_STATIC);
+    res |= sqlite3_bind_blob(stmt, 2, hash, BLAKE3_OUT_LEN, SQLITE_STATIC);
+    res |= sqlite3_bind_text(stmt, 3, uuid, -1, SQLITE_STATIC);
     if (res)
     {
         SDL_Log("Failed to bind: %s\n", sqlite3_errmsg(db));
