@@ -91,7 +91,7 @@ G_StaticModel * loadStaticModel(G_StaticModelPool * pModelPool, Uint32 instanceC
     }
 
     pModelPool->models[modelCount].firstInstance = pModelPool->offsets[offsetCount - 1];
-    pModelPool->models[modelCount].matrix = (mat4*)G_malloc(sizeof(mat4) * instanceCount * 2);
+    pModelPool->models[modelCount].matrix = (mat4*)G_aligned_alloc(16, sizeof(mat4) * instanceCount * 2);
     pModelPool->models[modelCount].matrixCount = 0;
     pModelPool->models[modelCount].totalMatrixCount = instanceCount;
     SDL_strlcpy(pModelPool->models[modelCount].innerName, innerName, 16);
@@ -315,7 +315,7 @@ void destroyStaticModelPool(G_StaticModelPool * pModelPool)
 
     for (Uint32 i = 0;i < pModelPool->modelCount;i++)
     {
-        G_free(pModelPool->models[i].matrix);
+        G_aligned_free(pModelPool->models[i].matrix);
     }
     G_free(pModelPool->models);
     G_free(pModelPool->offsets);
