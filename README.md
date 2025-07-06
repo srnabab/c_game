@@ -1,15 +1,1 @@
-# Still Ongoing
-
-# Package
-1. SDL3
-2. SDL3_Mixer
-3. SDL3_Image
-4. Box2d
-5. Zlib
-6. Vulkan 1.3.280
-7. spirv_reflect
-8. FreeType
-9. cglm
-10. stb_image_write.h
-11. unistring
-12. sqlite3
+it's temporarily be shelved
