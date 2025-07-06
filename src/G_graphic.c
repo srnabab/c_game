@@ -627,6 +627,7 @@ void initVulkan(void)
 
 static void cleanAllInOne(void)
 {
+#warning will occur double_free on integrated gpu
     Uint32 i;
     for (i = 0;i < 16;i++)
     {
