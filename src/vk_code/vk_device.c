@@ -6,10 +6,6 @@
 #include "G_log.h"
 #include "G_allocator.h"
 
-#define RTX_2060 0
-#define INTEL_GPU 1
-#define GPU_CHOOSED RTX_2060
-
 extern VK_ALL allInOne;
 
 static Uint64 getPhysicalDeviceTotalMemory(VkPhysicalDeviceMemoryProperties *pPhysicalDeviceMemoryProperties)
@@ -176,7 +172,6 @@ void pickPhysicalDevice(void)
     resultVulkan(vkEnumeratePhysicalDevices(allInOne.instance, &deviceCount, devices), 1, devices);
 
 	VkPhysicalDevice device = devices[getBestPhysicalDeviceIndex(devices, deviceCount)];
-    device = devices[GPU_CHOOSED];
 	VkPhysicalDeviceFeatures deviceFeatures;
 	vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
 
@@ -191,8 +186,6 @@ void pickPhysicalDevice(void)
         G_free(devices);
     }
 
-    if (GPU_CHOOSED) print("device picked: INTEL_GPU");
-    else print("device picked: RTX_2060");
 }
 static bool * extensionSupportedCheck_Optional(Uint32 neededExtensionCount, char ** neededExtensions, Uint32 extensionCount, VkExtensionProperties * pExtensionProperties)
 {
@@ -305,7 +298,7 @@ void createLogicalDevice(void)
 
     bool * enabledGroup = extensionSupportedCheck_Optional(optionalDeviceExtensionCount, (char **)vmaExtension, physicalDeviceExtensionCount, physicalDeviceExtension);
     G_free(physicalDeviceExtension);
-    char ** enabledExtension = (char**)G_malloc(sizeof(char**) * (optionalDeviceExtensionCount + requiredDeviceExtensionCount));
+    char ** enabledExtension = (char**)G_malloc(sizeof(char*) * (optionalDeviceExtensionCount + requiredDeviceExtensionCount));
 
     Uint32 enabledExtensionCount = 0;
     enabledExtension[0] = (char *)requiredDeviceExtensions[0];

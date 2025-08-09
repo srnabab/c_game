@@ -1,0 +1,1 @@
+#include "G_resources.h"

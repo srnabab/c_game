@@ -153,15 +153,8 @@ target_link_libraries(game PRIVATE
 
 # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mwindows")
 
-# target_compile_options(game PUBLIC -static-libgcc -gdwarf-2 -g -DDEBUG -O0 -Wall -Werror -Wpedantic -Wconversion -Wsign-conversion -Wfloat-conversion -Wdouble-promotion
-#  -Wcast-qual -Wnull-dereference -Winit-self -Wmaybe-uninitialized -Wstrict-aliasing=2 -Wshadow -Wformat=2 -Wundef -Wmissing-declarations -Wmissing-prototypes
-#  -Wredundant-decls -Wpacked-bitfield-compat -Wuseless-cast -Wlogical-op -Warray-bounds=2 -Wstack-usage=8192 -Winline -std=c17)
-# target_compile_options(game PUBLIC -static-libgcc -gdwarf-2 -g -DDEBUG -O0 -Wall -Werror -Wpedantic -std=c17)
-target_compile_options(game PUBLIC -static-libgcc -gdwarf-2 -g -DDEBUG -O0 -Wall -Wpedantic -std=c17)
-# target_compile_options(game PUBLIC -fsanitize=address -fno-omit-frame-pointer -g)
-# target_link_options(game PRIVATE -fsanitize=address)
-# target_compile_options(game PUBLIC -O0 -Wall -Wextra)
-# target_compile_options(game PUBLIC -Os -Wall)
+# target_compile_options(game PUBLIC -static-libgcc -gdwarf-2 -g -DDEBUG -O0 -Wall -Wpedantic -std=c17)
+target_compile_options(game PUBLIC -static-libgcc -O0 -std=c17)
 
 add_dependencies(GeneratePath ContentManager ShaderCompile)
 add_dependencies(GenerateCode GeneratePath)
