@@ -111,7 +111,7 @@ static void recordCommandBuffer2D(Uint32 imageIndex, Uint32 currentFrame, VkComm
     //loading1 png
     drawPic(TEXTURE_LOADING, currentFrame, currentCommandBuffer, allInOne.graphicPipelineLayout);
     //circle
-    // drawPic(TEXTURE_CIRCLE, currentFrame, currentCommandBuffer);
+    drawPic(TEXTURE_CIRCLE, currentFrame, currentCommandBuffer, allInOne.graphicPipelineLayout);
     // box
     // drawPic(TEXTURE_BOX, currentFrame, currentCommandBuffer);
     // main font png

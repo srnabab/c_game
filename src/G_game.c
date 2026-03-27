@@ -27,7 +27,7 @@ SDL_MessageBoxData * boxData = NULL;
 // static bool pause = false;
 // static bool pause_signal_send = false;
 
-// static bool ballAdd = false;
+bool ballAdd = false;
 uint8_t leftButtonClickedTimes = 0;
 bool leftButtonEnabled = true;
 Uint32 ballCount = 2;
@@ -455,7 +455,7 @@ bool process_input(void)
                 {
                     leftButtonClickedTimes++;
                     ballCount++;
-                    // ballAdd = true;
+                    ballAdd = true;
                 }
             }
             break;

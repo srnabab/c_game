@@ -41,6 +41,7 @@ Scene scene = First_Scene;
 extern float mouse_x;
 extern float mouse_y;
 
+extern bool ballAdd;
 extern bool resolutionChanged; 
 extern bool resolutionChanged2; 
 
@@ -174,6 +175,9 @@ static void processKeys(void)
         camera.direction[3] = false;
     }
 }
+
+extern float physicalCoffectX;
+extern float physicalCoffectY;
 
 extern bool minimize;
 
@@ -477,64 +481,38 @@ int update(void * arg)
             shapePushConstants.scale[0] = (float)18 / (600 / 2);
             shapePushConstants.scale[1] = (float)18 / (600 / 2);
 
-            // print("mPoint: (%d, %d)", (int32_t)mPoint.position.x, (int32_t)mPoint.position.y);
-            // SDL_LockMutex(sdl_mutex_2);
-            // if (pictureMove[0])
-            // {
-            //     *allInOne.pPictureY += 200 * delta_time;
-            //     //print("y: %f, enabled: %d, delta time: %lf, last_frame_time: %lu ----%s", *allInOne.pPictureY, pictureMove[0], delta_time, last_frame_time, timeNow);
-            // }
-            // if (pictureMove[1])
-            // {
-            //     *allInOne.pPictureY -= 200 * delta_time;
-            // }
-            // if (pictureMove[2])
-            // {
-            //     *allInOne.pPictureX -= 200 * delta_time;
-            // }
-            // if (pictureMove[3])
-            // {
-            //     *allInOne.pPictureX += 200 * delta_time;
-            // }
-            // if (scale)
-            // {
-            //     glm_scale_self(allInOne.ppVertices2D, 2.0f, 1);
-            // }
-            // if (pictureMove[0] | pictureMove[1] | pictureMove[2] | pictureMove[3] | scale)
-            // {
-            //     updatePosition(*allInOne.pPictureX, *allInOne.pPictureY, allInOne.pExtent2D, allInOne.ppVertices2D, 1);
-            //     scale = false;
-            // }
-            // SDL_UnlockMutex(sdl_mutex_2);
-
             // size_t bufferSize = sizeof(Vertex332_) * count;
 
             // Uint32 indiceCount = *allInOne.pIndicesCount;
             // size_t bufferSize2 = sizeof(uint16_t) * indiceCount;
 
-            // if (ballAdd)
-            // {
-            //     //allInOne.pVertices2D = (Vertex332_ *)realloc(allInOne.pVertices2D, count * sizeof(Vertex332_));
-            //     int x = SDL_rand(250);
-            //     if (SDL_rand(2))
-            //     {
-            //         x *= -1;
-            //     }
-            //     // float averagePhysicalCoffect = (physicalCoffectX + physicalCoffectY) / 2.0f;
-            //     textureVertexInit(x * physicalCoffectX, 280 * physicalCoffectY, 16 * physicalCoffectY, 16 * physicalCoffectY, 0.9, allInOne.vertices2DCount, allInOne.pVertices2D, getTexture(TEXTURE_CIRCLE));
+            if (ballAdd)
+            {
+                print("1");
+                //allInOne.pVertices2D = (Vertex332_ *)realloc(allInOne.pVertices2D, count * sizeof(Vertex332_));
+                int x = SDL_rand(250);
+                if (SDL_rand(2))
+                {
+                    x *= -1;
+                }
+                // float averagePhysicalCoffect = (physicalCoffectX + physicalCoffectY) / 2.0f;
+                textureVertexInit(x * physicalCoffectX, 280 * physicalCoffectY, 16, 16, 0.9, &allInOne.vertices2DCount, allInOne.pVertices2D, getTexture(TEXTURE_CIRCLE));
 
-            //     ballStack.pushFn(&ballStack, &x);
-            //     //print("indices count: %u\n", indiceCount);
-            //     //*allInOne.ppIndices = (uint16_t *)realloc(*allInOne.ppIndices, indiceCount * sizeof(uint16_t));
+                ballStack.pushFn(&ballStack, &x);
+                //print("indices count: %u\n", indiceCount);
+                //*allInOne.ppIndices = (uint16_t *)realloc(*allInOne.ppIndices, indiceCount * sizeof(uint16_t));
 
-            //     ballAdd = false;
-            // }
+                ballAdd = false;
+                vertex2dChanged1 = vertex2dChanged2 = true;
+                
+            }
         
             static int id_timeStep = 0;
             while (intervalIsDone(f32_s_to_ns(TIME_STEP), &id_timeStep, -1))
             {
                 updateCircle(); 
                 // accumulator -= timeStep;
+                vertex2dChanged1 = vertex2dChanged2 = true;
             }
 
             vertexEnd = allInOne.vertices2DCount;

@@ -172,6 +172,7 @@ void updateCircle(void)
     if (stepDone)
     {
         // float averagePhysicalCoffect = (physicalCoffectX + physicalCoffectY) / 2.0f;
+        // print("2");
         while (ballStack.top != -1)
         {
             int temp;
@@ -229,6 +230,11 @@ void cleanWorld(void)
     deInitStack(&ballStack);
     destroyThreadPool(&worldThreadPool);
     if (worldId.index1) b2DestroyWorld(worldId);
+    G_free(bodyDefs);
+    G_free(bodyIds);
+    G_free(dynamicBoxs);
+    G_free(shapeDefs);
+    G_free(shapeIds);
 }
 void destroyFloor(void)
 {
